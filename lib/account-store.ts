@@ -1395,8 +1395,17 @@ export async function ensureTravelerShare(email: string, tripId: string, travele
  * Who a traveler-scoped link belongs to, and everything its own app page
  * needs: the trip's itinerary (attachments stripped — see
  * getSharedItineraryByShareId, the same rule applies to every client link,
- * traveler-scoped or not), the trip's own share token for the shared chat
- * thread, and the names shown in the app's header.
+ * traveler-scoped or not), and the names shown in the app's header.
+ *
+ * `internalChatKey` IS THE TRIP'S OWN WHOLE-TRIP SHARE TOKEN — a strictly
+ * MORE powerful credential than the one this traveler actually holds, since
+ * it opens /i/[shareId] unredacted for every unit on the trip. It exists here
+ * ONLY so resolveCompanionShare (below) can find the one shared chat thread
+ * every traveler and the advisor post into. NEVER send this field to a
+ * browser or echo it in an API response — a page that did this once already
+ * (app/t/[shareId]/app/page.tsx, fixed) handed a redacted viewer the key to
+ * their own unredacted trip. Use resolveCompanionShare, not this field
+ * directly, for anything chat-related.
  */
 export async function getSharedTraveler(shareId: string) {
   const rec = await readJson<{ ownerEmail: string; tripId: string; travelerId: string }>(travelerShareKey(shareId));
@@ -1410,10 +1419,31 @@ export async function getSharedTraveler(shareId: string) {
     tripId: rec.tripId,
     traveler,
     itinerary: withoutAttachments(trip.itinerary),
-    tripShareId: trip.shareId,
+    internalChatKey: trip.shareId,
     ownerName: record?.name,
     advisor: trip.advisor?.trim() ?? "",
   };
+}
+
+/**
+ * Resolve ANY token that opens the companion app's chat — a trip-wide
+ * /i/[shareId] token, or a traveler-scoped /t/[shareId] one — to the trip's
+ * owner and the ONE real chat key every side's messages are actually stored
+ * under (always the trip's own whole-trip share token, so a family and the
+ * advisor share one thread regardless of which door each person came in by).
+ *
+ * THE RETURNED chatKey IS SERVER-SIDE ONLY. It is what lib/companion-chat-store.ts
+ * is keyed by internally; it must never be echoed back in a response or
+ * handed to a browser as a value it can act on — the caller already has
+ * `shareId`, its own, less-powerful token, for anything the client needs to
+ * keep using.
+ */
+export async function resolveCompanionShare(shareId: string): Promise<{ ownerEmail: string; chatKey: string } | null> {
+  const ownerEmail = await getShareOwnerEmail(shareId);
+  if (ownerEmail) return { ownerEmail, chatKey: shareId };
+  const traveler = await getSharedTraveler(shareId);
+  if (traveler?.internalChatKey) return { ownerEmail: traveler.ownerEmail, chatKey: traveler.internalChatKey };
+  return null;
 }
 
 // ---- Client forms ---------------------------------------------------------

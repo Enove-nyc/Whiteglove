@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData, getShareOwnerEmail } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, resolveCompanionShare } from "@/lib/account-store";
 import { appendReport } from "@/lib/companion-chat-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
@@ -34,15 +34,19 @@ export async function POST(request: NextRequest) {
   const at = body?.at?.trim();
   if (!shareId || !at) return NextResponse.json({ error: "Nothing to report." }, { status: 400 });
 
-  const owner = await getShareOwnerEmail(shareId);
-  if (!owner) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+  // Accepts either a whole-trip token or a traveler-scoped one, resolved to
+  // the same underlying thread — see resolveCompanionShare and the note on
+  // it in lib/account-store.ts. The resolved chatKey is server-side only.
+  const resolved = await resolveCompanionShare(shareId);
+  if (!resolved) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+  const { ownerEmail: owner, chatKey } = resolved;
   // Business-only, the same gate as the chat it reports on — a non-Business
   // share link has no thread to report against.
   if (!mayServeCompanionClients(await getPlan(owner))) {
     return NextResponse.json({ error: "That link is not active." }, { status: 404 });
   }
 
-  const limited = await rateLimit(`companion-report:${shareId}`, { limit: 30, windowSeconds: 3600 });
+  const limited = await rateLimit(`companion-report:${chatKey}`, { limit: 30, windowSeconds: 3600 });
   if (!limited.ok) {
     return NextResponse.json({ error: "That is a lot of reports at once — try again shortly." }, { status: 429 });
   }
@@ -51,7 +55,7 @@ export async function POST(request: NextRequest) {
   const account = await getCurrentAccountData(cookie);
   const by = account?.email && identityKey(account.email) === identityKey(owner) ? "advisor" : "client";
 
-  const ok = await appendReport(shareId, { by, messageAt: at, at: new Date().toISOString() });
+  const ok = await appendReport(chatKey, { by, messageAt: at, at: new Date().toISOString() });
   if (!ok) return NextResponse.json({ error: "Reporting needs the private store connected." }, { status: 503 });
   return NextResponse.json({ ok: true });
 }

@@ -62,8 +62,12 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   await checkTripFlightStatus(shared.ownerEmail, shared.tripId).catch(() => []);
   trip.liveAlerts = await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
 
+  // THIS traveler's own token, never shared.internalChatKey — that field is
+  // the trip's whole, unredacted share token and must never reach a browser.
+  // The chat route resolves this token to the same shared thread server-side
+  // (resolveCompanionShare in lib/account-store.ts).
   const chat = {
-    shareId: shared.tripShareId ?? shareId,
+    shareId,
     side: "client" as const,
     advisorName: trip.contactName ?? "your advisor",
   };

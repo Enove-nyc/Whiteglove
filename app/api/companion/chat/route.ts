@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData, getShareOwnerEmail } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, resolveCompanionShare } from "@/lib/account-store";
 import {
   MAX_CHAT_LABEL,
   MAX_CHAT_TEXT,
@@ -64,10 +64,18 @@ const NOUN_FOR: Record<ChatMediaKind, string> = { image: "picture", video: "vide
  * browser claims: the signed-in owner of the trip's share is the advisor;
  * anybody else holding the link is the client. So a client cannot post as the
  * advisor by asking to, and the owner's replies are always theirs.
+ *
+ * ACCEPTS EITHER A WHOLE-TRIP TOKEN OR A TRAVELER-SCOPED ONE
+ * (resolveCompanionShare) so a family's own /t/ link reaches the same thread
+ * as everyone else's. `chatKey` is the real storage key — always the trip's
+ * whole-trip token internally — and is used for every read/write below; the
+ * `shareId` the caller sent stays exactly what it was, never upgraded or
+ * echoed back as something more powerful than it is.
  */
-async function sideFor(shareId: string): Promise<{ owner: string; side: CompanionChatSide } | null> {
-  const owner = await getShareOwnerEmail(shareId);
-  if (!owner) return null;
+async function sideFor(shareId: string): Promise<{ owner: string; side: CompanionChatSide; chatKey: string } | null> {
+  const resolved = await resolveCompanionShare(shareId);
+  if (!resolved) return null;
+  const { ownerEmail: owner, chatKey } = resolved;
   // The thread is the client-facing app, so it is Business-only — the SAME gate
   // as the client app page (app/i/[shareId]/app) and the inbox. A share link
   // from a Gold or Traveler account is a real read-only itinerary, never a
@@ -78,7 +86,7 @@ async function sideFor(shareId: string): Promise<{ owner: string; side: Companio
   const account = await getCurrentAccountData(cookie);
   const side: CompanionChatSide =
     account?.email && identityKey(account.email) === identityKey(owner) ? "advisor" : "client";
-  return { owner, side };
+  return { owner, side, chatKey };
 }
 
 const otherSideOf = (side: CompanionChatSide): CompanionChatSide => (side === "advisor" ? "client" : "advisor");
@@ -88,7 +96,7 @@ export async function GET(request: NextRequest) {
   if (!shareId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
-  const messages = await readChat(shareId);
+  const messages = await readChat(who.chatKey);
   // Loading the thread IS reading it — there is no separate "mark as read"
   // action, the same as a phone's messaging app. The other side sees this as
   // soon as their own next poll picks the marker up. The one exception is a
@@ -98,16 +106,16 @@ export async function GET(request: NextRequest) {
   const peek = request.nextUrl.searchParams.get("peek") === "1";
   if (!peek) {
     const latest = messages[messages.length - 1];
-    if (latest) await markRead(shareId, who.side, latest.at);
+    if (latest) await markRead(who.chatKey, who.side, latest.at);
   }
   return NextResponse.json({
     messages,
     side: who.side,
     available: chatStoreAvailable(),
-    readMarkers: await readMarkers(shareId),
+    readMarkers: await readMarkers(who.chatKey),
     // Whether the OTHER side has typed within the last few seconds — never
     // my own, which the composer already knows without asking the server.
-    typing: await isTyping(shareId, otherSideOf(who.side)),
+    typing: await isTyping(who.chatKey, otherSideOf(who.side)),
     // The server's real, deploy-specific picture size limit — see
     // effectiveMediaLimit() in lib/media.ts. Read fresh so the composer's
     // own cap never drifts from what the server will actually accept.
@@ -130,14 +138,14 @@ export async function PATCH(request: NextRequest) {
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
 
-  const limited = await rateLimit(`companion-edit:${shareId}`, { limit: 30, windowSeconds: 3600 });
+  const limited = await rateLimit(`companion-edit:${who.chatKey}`, { limit: 30, windowSeconds: 3600 });
   if (!limited.ok) {
     return NextResponse.json({ error: "That is a lot of edits at once — try again shortly." }, { status: 429 });
   }
 
   // editMessageText itself re-checks who sent the original — `by` here is
   // only ever this request's own verified side, never anything the body says.
-  const messages = await editMessageText(shareId, at, who.side, text.slice(0, MAX_CHAT_TEXT));
+  const messages = await editMessageText(who.chatKey, at, who.side, text.slice(0, MAX_CHAT_TEXT));
   if (!messages) return NextResponse.json({ error: "That message can't be changed." }, { status: 404 });
   return NextResponse.json({ messages, side: who.side });
 }
@@ -156,7 +164,7 @@ export async function DELETE(request: NextRequest) {
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
 
-  const messages = await deleteMessage(shareId, at, who.side);
+  const messages = await deleteMessage(who.chatKey, at, who.side);
   if (!messages) return NextResponse.json({ error: "That message can't be deleted." }, { status: 404 });
   return NextResponse.json({ messages, side: who.side });
 }
@@ -194,7 +202,7 @@ export async function POST(request: NextRequest) {
   // one cheap Redis SET, the composer already throttles how often it sends
   // one, and the same-origin and plan checks above are the fence that matters.
   if (body?.typing === true) {
-    await setTyping(shareId, who.side);
+    await setTyping(who.chatKey, who.side);
     return NextResponse.json({ ok: true });
   }
 
@@ -202,7 +210,7 @@ export async function POST(request: NextRequest) {
   // server-side (quoteFor), never taken as whatever text the client sent
   // alongside replyToAt. A stale or made-up `at` just means the message goes
   // out as an ordinary one rather than failing the whole send over it.
-  const replyTo = typeof body?.replyToAt === "string" && body.replyToAt ? await quoteFor(shareId, body.replyToAt) : undefined;
+  const replyTo = typeof body?.replyToAt === "string" && body.replyToAt ? await quoteFor(who.chatKey, body.replyToAt) : undefined;
 
   // "Ask about this day" / "Ask to move this" — a short label naming the
   // itinerary item the thread was opened from, carried on the one message it
@@ -233,7 +241,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Sharing a ${NOUN_FOR[media.kind]} needs the private store connected.` }, { status: 503 });
     }
 
-    const limited = await rateLimit(`companion-${media.kind}:${shareId}`, {
+    const limited = await rateLimit(`companion-${media.kind}:${who.chatKey}`, {
       limit: RATE_LIMIT_FOR[media.kind],
       windowSeconds: 3600,
     });
@@ -250,7 +258,7 @@ export async function POST(request: NextRequest) {
     }
     const id = await putMedia(contentType, base64);
     if (!id) return NextResponse.json({ error: `Could not save the ${NOUN_FOR[media.kind]}.` }, { status: 503 });
-    const messages = await appendChat(shareId, {
+    const messages = await appendChat(who.chatKey, {
       from: who.side,
       kind: media.kind,
       text: (body.text ?? "").trim().slice(0, MAX_CHAT_LABEL),
@@ -267,7 +275,7 @@ export async function POST(request: NextRequest) {
     if (!Number.isFinite(body.lat) || !Number.isFinite(body.lng) || Math.abs(body.lat) > 90 || Math.abs(body.lng) > 180) {
       return NextResponse.json({ error: "That location did not look right." }, { status: 400 });
     }
-    const messages = await appendChat(shareId, {
+    const messages = await appendChat(who.chatKey, {
       from: who.side,
       kind: "location",
       text: (body.label ?? "").trim().slice(0, MAX_CHAT_LABEL),
@@ -284,7 +292,7 @@ export async function POST(request: NextRequest) {
   // — shared by its own address rather than a device fix, so an advisor can
   // send where something IS instead of only where they happen to be standing.
   if (typeof body?.address === "string" && body.address.trim()) {
-    const messages = await appendChat(shareId, {
+    const messages = await appendChat(who.chatKey, {
       from: who.side,
       kind: "location",
       text: (body.label ?? "").trim().slice(0, MAX_CHAT_LABEL),
@@ -299,7 +307,7 @@ export async function POST(request: NextRequest) {
   // Words.
   const text = body?.text?.trim();
   if (!text) return NextResponse.json({ error: "Nothing to send." }, { status: 400 });
-  const messages = await appendChat(shareId, {
+  const messages = await appendChat(who.chatKey, {
     from: who.side,
     kind: "text",
     text: text.slice(0, MAX_CHAT_TEXT),
