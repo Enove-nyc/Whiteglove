@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
-import { getSharedItineraryByShareId } from "@/lib/account-store";
+import { getSharedItineraryByShareIdWithAttachments } from "@/lib/account-store";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
@@ -34,7 +34,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function SharedAppPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
-  const shared = await getSharedItineraryByShareId(shareId);
+  const shared = await getSharedItineraryByShareIdWithAttachments(shareId);
   if (!shared) redirect(`/i/${shareId}`); // the shared view shows the "not available" notice
 
   // Handing the app to a client is Business-only; a non-Business owner's link

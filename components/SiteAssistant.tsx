@@ -41,14 +41,15 @@ import type { AssistantTurn } from "@/lib/assistant-conversation";
 type Thread = { turns: AssistantTurn[]; signedIn: boolean; kept: boolean };
 
 /**
- * The one door a client reaches with no account at all — the trip their
- * adviser's code opens, at /i/<shareId>/app. It fills the whole screen with
- * its own chrome (tabs, the chat with their real adviser) and none of the
- * site's own; a corner launcher floating over it has nothing to do there and
- * only sits in the way of the app's own buttons in that same corner.
+ * The White Glove app itself, full screen — the trip a client's adviser code
+ * opens at /i/<shareId>/app, and a signed-in Gold or Business account's own
+ * trip at /app. Both fill the whole screen with the app's own chrome (tabs, a
+ * bottom bar, its own "Message" buttons) and none of the site's own; a corner
+ * launcher floating over either has nothing to do there and only sits in the
+ * way of the app's own buttons in that same corner. See CompanionApp.tsx.
  */
 export function isClientCodeAppView(pathname: string | null): boolean {
-  return /^\/i\/[^/]+\/app(\/|$)/.test(pathname ?? "");
+  return /^\/app(\/|$)/.test(pathname ?? "") || /^\/i\/[^/]+\/app(\/|$)/.test(pathname ?? "");
 }
 
 /** "rgb(a)(…)" → its parts, or null for a value we cannot read. */

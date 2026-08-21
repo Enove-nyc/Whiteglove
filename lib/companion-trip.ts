@@ -237,6 +237,15 @@ export function itineraryToCompanionTrip(
   const lastDate = days[days.length - 1]?.date;
   const tripFinished = Boolean(lastDate && opts.today > lastDate);
 
+  // Before the trip starts, "today" is nobody's real day — the countdown is
+  // the honest thing to lead with, not a Day 1 the traveller has not reached.
+  const firstDate = days[0]?.date;
+  const hasStarted = compDays.some((d) => d.today) || tripFinished;
+  const daysUntilStart =
+    !hasStarted && firstDate && firstDate > opts.today
+      ? Math.round((new Date(firstDate).getTime() - new Date(opts.today).getTime()) / 86400000)
+      : undefined;
+
   const who = travelerSummary(itin);
   const people = travelersOf(itin);
   const adults = people.filter((p) => (p.kind ?? "adult") === "adult").length;
@@ -255,9 +264,13 @@ export function itineraryToCompanionTrip(
   const openDay = compDays[todayIndex];
   const homeKicker = tripFinished
     ? `Trip finished · ${compDays.length} ${compDays.length === 1 ? "day" : "days"}`
-    : openDay
-      ? `${fmt(days[todayIndex].date, { day: "numeric", month: "long" })} · day ${todayIndex + 1} of ${compDays.length}`
-      : `Day 1 of ${compDays.length}`;
+    : daysUntilStart !== undefined
+      ? daysUntilStart === 1
+        ? "Leaving tomorrow"
+        : `${daysUntilStart} days to go`
+      : openDay
+        ? `${fmt(days[todayIndex].date, { day: "numeric", month: "long" })} · day ${todayIndex + 1} of ${compDays.length}`
+        : `Day 1 of ${compDays.length}`;
 
   const prefs = [
     who ? { label: "Travelling", value: who } : null,
@@ -276,6 +289,7 @@ export function itineraryToCompanionTrip(
     tripDates: formatRange(itin.startDate, itin.endDate),
     todayIndex,
     tripFinished,
+    ...(daysUntilStart !== undefined ? { daysUntilStart } : {}),
     family: who || title,
     familyMeta,
     days: compDays,

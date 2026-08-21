@@ -189,3 +189,25 @@ export function countAttachments(itinerary: {
   const rows = [...(itinerary.flights ?? []), ...(itinerary.lodging ?? []), ...(itinerary.activities ?? [])];
   return rows.reduce((sum, row) => sum + (row.attachments?.length ?? 0), 0);
 }
+
+/**
+ * Whether one attachment id is actually attached to a stop on this itinerary.
+ *
+ * Used to let a client on a per-trip share link open a boarding pass or
+ * confirmation that is genuinely theirs, without handing them the account
+ * owner's whole attachment library. Checking the id against THIS itinerary
+ * (rather than only against the file's owner) is what keeps a client's access
+ * scoped to their own trip, even though the advisor may hold files for
+ * several clients under the one account.
+ */
+export function itineraryHasAttachmentId(
+  itinerary: {
+    flights?: Array<{ attachments?: Array<{ id: string }> }>;
+    lodging?: Array<{ attachments?: Array<{ id: string }> }>;
+    activities?: Array<{ attachments?: Array<{ id: string }> }>;
+  },
+  id: string,
+): boolean {
+  const rows = [...(itinerary.flights ?? []), ...(itinerary.lodging ?? []), ...(itinerary.activities ?? [])];
+  return rows.some((row) => row.attachments?.some((a) => a.id === id));
+}

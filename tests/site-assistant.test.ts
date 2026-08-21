@@ -370,10 +370,15 @@ describe("the assistant stays off a client's code-only app view", () => {
     assert.equal(isClientCodeAppView("/i/abc123"), false);
   });
 
-  it("stays shown everywhere else, including a real account's own /app", () => {
-    assert.equal(isClientCodeAppView("/app"), false);
+  it("is also hidden on a signed-in account's own /app — same full-screen chrome, same corner", () => {
+    assert.equal(isClientCodeAppView("/app"), true);
+    assert.equal(isClientCodeAppView("/app/"), true);
+  });
+
+  it("stays shown everywhere else", () => {
     assert.equal(isClientCodeAppView("/"), false);
     assert.equal(isClientCodeAppView("/itinerary"), false);
+    assert.equal(isClientCodeAppView("/account"), false);
     assert.equal(isClientCodeAppView(null), false);
   });
 
