@@ -1,16 +1,30 @@
 import { readWords } from "@/lib/site-words-store";
 import { pageMetadata } from "@/lib/seo";
-import { SITE_DOMAIN, SITE_NAME } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import { resolvePage } from "@/lib/pages";
+import { BRAND_DOMAIN, BRAND_NAME } from "@/lib/site-brand-core";
+import { currentBrand } from "@/lib/site-brand";
 
-export const metadata = pageMetadata({
-  title: "Terms of Use — White Glove Kosher Travel",
-  description: "The terms that govern your use of White Glove Kosher Travel.",
-  path: "/terms",
-});
+// A LEGAL DOCUMENT, NOT JUST A TITLE. This page named a business by whichever
+// domain a visitor was actually on used to be true only of the tab title;
+// the body below named the kosher brand outright regardless. A policy that
+// names the wrong company is not a small typo — it is the document a
+// visitor reads to find out who they are agreeing with. Prerendering a
+// single static page cannot answer "which brand asked", so this page is
+// rendered per request instead.
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const brand = await currentBrand();
+  const name = BRAND_NAME[brand];
+  return pageMetadata({
+    title: `Terms of Use — ${name}`,
+    description: `The terms that govern your use of ${name}.`,
+    path: "/terms",
+  });
+}
 
 const UPDATED = "August 10, 2026";
 
@@ -38,12 +52,16 @@ export default async function TermsOfUsePage() {
     );
   }
   const { contactEmail, affiliateDisclosure } = await readWords();
+  const brand = await currentBrand();
+  const itineraries = brand === "itineraries";
+  const siteName = BRAND_NAME[brand];
+  const siteDomain = BRAND_DOMAIN[brand];
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Kosher Travel</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">{siteName}</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Terms of Use</h1>
           <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
         </div>
@@ -51,12 +69,16 @@ export default async function TermsOfUsePage() {
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
-          These Terms of Use govern your access to and use of {SITE_NAME} at {SITE_DOMAIN} (the &ldquo;Service&rdquo;).
+          These Terms of Use govern your access to and use of {siteName} at {siteDomain} (the &ldquo;Service&rdquo;).
           By using the Service, you agree to these terms. If you do not agree, please do not use the Service.
         </p>
 
         <Section title="The Service">
-          <p>White Glove provides informational travel guides and planning tools for kosher travel and Jewish heritage journeys, including destination guides, cemetery and access information, saved routes, and flight and hotel search. The Service is provided for personal, non-commercial use.</p>
+          {itineraries ? (
+            <p>White Glove Itineraries provides trip-planning tools — a day-by-day itinerary builder, saved routes, and flight and hotel search. The Service is provided for personal use, and, for a Business account, for planning travel on behalf of clients.</p>
+          ) : (
+            <p>White Glove provides informational travel guides and planning tools for kosher travel and Jewish heritage journeys, including destination guides, cemetery and access information, saved routes, and flight and hotel search. The Service is provided for personal, non-commercial use.</p>
+          )}
         </Section>
 
         <Section title="Your account">
@@ -91,7 +113,7 @@ export default async function TermsOfUsePage() {
         </Section>
 
         <Section title="Intellectual property">
-          <p>The Service, including its guides, text, design, and logo, is owned by White Glove Kosher Travel and protected by applicable laws. We grant you a personal, limited, non-transferable right to use the Service for your own travel planning. All other rights are reserved.</p>
+          <p>The Service, including its guides, text, design, and logo, is owned by {siteName} and protected by applicable laws. We grant you a personal, limited, non-transferable right to use the Service for your own travel planning. All other rights are reserved.</p>
         </Section>
 
         <Section title="Disclaimer">
@@ -99,7 +121,7 @@ export default async function TermsOfUsePage() {
         </Section>
 
         <Section title="Limitation of liability">
-          <p>To the fullest extent permitted by law, White Glove Kosher Travel will not be liable for any indirect, incidental, or consequential damages, or for any loss arising from your use of the Service, third-party travel services, or reliance on information provided through the Service.</p>
+          <p>To the fullest extent permitted by law, {siteName} will not be liable for any indirect, incidental, or consequential damages, or for any loss arising from your use of the Service, third-party travel services, or reliance on information provided through the Service.</p>
         </Section>
 
         <Section title="Changes">
