@@ -153,8 +153,8 @@ describe("reading the thread also marks it read", () => {
   const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
 
   it("records this side's own marker at the newest message, and returns both sides' markers", () => {
-    assert.match(GET, /markRead\(shareId, who\.side, latest\.at\)/);
-    assert.match(GET, /readMarkers: await readMarkers\(shareId\)/);
+    assert.match(GET, /markRead\(who\.chatKey, who\.side, latest\.at\)/);
+    assert.match(GET, /readMarkers: await readMarkers\(who\.chatKey\)/);
     assert.ok(GET.indexOf("markRead") < GET.indexOf("readMarkers:"), "the poll's own read is recorded before the response is built");
   });
 });
@@ -176,11 +176,11 @@ describe("changing or removing a message is fenced", () => {
     assert.ok(PATCH.indexOf("rateLimit") < PATCH.indexOf("editMessageText"));
     // The side passed to the store is the one sideFor() worked out from the
     // session, not anything the caller could put in the JSON body.
-    assert.match(PATCH, /editMessageText\(shareId, at, who\.side, text/);
+    assert.match(PATCH, /editMessageText\(who\.chatKey, at, who\.side, text/);
   });
 
   it("delete proves ownership the same way", () => {
-    assert.match(DEL, /deleteMessage\(shareId, at, who\.side\)/);
+    assert.match(DEL, /deleteMessage\(who\.chatKey, at, who\.side\)/);
   });
 });
 
@@ -218,7 +218,7 @@ describe("reporting a message is fenced", () => {
   it("reads who is reporting from the link, never from the request body", () => {
     // The side is derived from the share owner + session, the same as the chat
     // route — a client cannot claim to be the advisor.
-    assert.match(ROUTE, /getShareOwnerEmail/);
+    assert.match(ROUTE, /resolveCompanionShare/);
     assert.match(ROUTE, /identityKey\(account\.email\) === identityKey\(owner\)/);
   });
 });
@@ -228,7 +228,7 @@ describe("a reply quotes a real message, never a client-supplied one", () => {
   const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
 
   it("looks the quote up server-side from replyToAt, never takes quoted text from the body", () => {
-    assert.match(POST, /quoteFor\(shareId, body\.replyToAt\)/);
+    assert.match(POST, /quoteFor\(who\.chatKey, body\.replyToAt\)/);
     assert.doesNotMatch(POST, /replyTo:\s*body\.replyTo/);
   });
 
@@ -237,7 +237,7 @@ describe("a reply quotes a real message, never a client-supplied one", () => {
     const locationBranch = POST.slice(POST.indexOf("A place"), POST.indexOf("// Words."));
     const textBranch = POST.slice(POST.indexOf("// Words."));
     for (const branch of [mediaBranch, locationBranch, textBranch]) {
-      assert.match(branch, /appendChat\(shareId, \{[\s\S]*replyTo,[\s\S]*?\}\)/);
+      assert.match(branch, /appendChat\(who\.chatKey, \{[\s\S]*replyTo,[\s\S]*?\}\)/);
     }
   });
 
@@ -260,7 +260,7 @@ describe("an itinerary reference is sanitized and carried on every kind of send"
     const locationBranch = POST.slice(POST.indexOf("A place"), POST.indexOf("// Words."));
     const textBranch = POST.slice(POST.indexOf("// Words."));
     for (const branch of [mediaBranch, locationBranch, textBranch]) {
-      assert.match(branch, /appendChat\(shareId, \{[\s\S]*itineraryRef,[\s\S]*?\}\)/);
+      assert.match(branch, /appendChat\(who\.chatKey, \{[\s\S]*itineraryRef,[\s\S]*?\}\)/);
     }
   });
 });
@@ -276,7 +276,7 @@ describe("typing is a courtesy signal, not a message", () => {
 
   it("GET reports the OTHER side's typing state, never this side's own", () => {
     const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
-    assert.match(GET, /isTyping\(shareId, otherSideOf\(who\.side\)\)/);
+    assert.match(GET, /isTyping\(who\.chatKey, otherSideOf\(who\.side\)\)/);
   });
 });
 
