@@ -1209,6 +1209,10 @@ export async function ensureTravelerShare(email: string, tripId: string, travele
   const existing = trip.travelerShares?.[travelerId];
   if (existing) {
     await writeJson(travelerShareKey(existing), { ownerEmail: normalized, tripId, travelerId, createdAt: new Date().toISOString() });
+    // A trip that already had per-traveler links from before this was added
+    // may still have no trip-wide share — ensure one now, since the chat
+    // thread a traveler's link opens is keyed by the TRIP's own share token.
+    await ensureTripShare(normalized, tripId);
     return existing;
   }
   const token = shareToken();
@@ -1226,18 +1230,37 @@ export async function ensureTravelerShare(email: string, tripId: string, travele
       : t,
   );
   const saved = await writeTrips(normalized, next, activeId);
-  return saved ? token : null;
+  if (!saved) return null;
+  // Same reason as above: guarantee a trip-wide share exists so this
+  // traveler's app has a chat thread to open, even if the planner never
+  // created a whole-trip client link.
+  await ensureTripShare(normalized, tripId);
+  return token;
 }
 
-/** Who a traveler-scoped link belongs to, and which trip and person it opens. */
+/**
+ * Who a traveler-scoped link belongs to, and everything its own app page
+ * needs: the trip's itinerary (attachments stripped — see
+ * getSharedItineraryByShareId, the same rule applies to every client link,
+ * traveler-scoped or not), the trip's own share token for the shared chat
+ * thread, and the names shown in the app's header.
+ */
 export async function getSharedTraveler(shareId: string) {
   const rec = await readJson<{ ownerEmail: string; tripId: string; travelerId: string }>(travelerShareKey(shareId));
   if (!rec) return null;
-  const data = await getAccountData(rec.ownerEmail);
+  const [data, record] = await Promise.all([getAccountData(rec.ownerEmail), getAccountRecord(rec.ownerEmail)]);
   const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
   const traveler = trip?.itinerary.travelers?.find((p) => p.id === rec.travelerId);
   if (!trip || !traveler) return null;
-  return { ownerEmail: rec.ownerEmail, tripId: rec.tripId, traveler };
+  return {
+    ownerEmail: rec.ownerEmail,
+    tripId: rec.tripId,
+    traveler,
+    itinerary: withoutAttachments(trip.itinerary),
+    tripShareId: trip.shareId,
+    ownerName: record?.name,
+    advisor: trip.advisor?.trim() ?? "",
+  };
 }
 
 // ---- Client forms ---------------------------------------------------------

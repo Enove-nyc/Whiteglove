@@ -156,7 +156,7 @@ describe("the guide is redirected off the itineraries domain", () => {
     for (const guide of ["/kosher", "/cemeteries", "/heritage", "/destinations", "/hotels", "/things-to-do", "/directory"]) {
       assert.ok(list.includes(`"${guide}"`), `guide prefix ${guide} should be redirected`);
     }
-    for (const planner of ["/plan", "/itinerary", "/app", "/account", "/i", "/f", "/book", "/proposal", "/p", "/library", "/forms", "/form", "/pipeline"]) {
+    for (const planner of ["/plan", "/itinerary", "/app", "/account", "/i", "/f", "/book", "/proposal", "/p", "/library", "/forms", "/form", "/pipeline", "/t"]) {
       assert.ok(!list.includes(`"${planner}"`), `planner path ${planner} must stay on the itineraries domain`);
     }
   });
