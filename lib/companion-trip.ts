@@ -180,9 +180,12 @@ function itemsForDay(day: ItineraryDay): CompanionItem[] {
     items.push({
       time: f.departTime ?? "",
       title: `${f.from} → ${f.to}`,
-      place: f.arriveTime ? `Lands ${f.arriveTime}${f.arriveDate ? " next day" : ""}` : "By air",
+      // The airline/flight, like an arriving leg — a landing time is not a
+      // place, and doesn't belong in the "Where" row it used to sit in.
+      place: f.airline ? `${f.airline}${f.flightNo ? " " + f.flightNo : ""}` : "By air",
       kind: "travel",
       note: f.confirmation ? `Reference ${f.confirmation}.` : "",
+      ...(f.arriveTime ? { arriveNote: `Lands ${f.arriveTime}${f.arriveDate ? " next day" : ""}` } : {}),
     });
   }
 
@@ -375,9 +378,18 @@ export function itineraryToCompanionTrip(
   const lastIndex = days.length - 1;
   const compDays = days.map((d, i) => dayFor(d, i, lastIndex, opts.today, zmanimByDate?.[d.date], kosherOn));
 
-  // Which day the app opens on: today when the trip is on now, else the first.
+  // Which day the app opens on: today when the trip is on now, else the
+  // first — a reasonable page to land a browser on, whether the trip hasn't
+  // started yet or has already finished.
   let todayIndex = compDays.findIndex((d) => d.today);
   if (todayIndex < 0) todayIndex = 0;
+
+  // The trip is over, not merely "not today" — the difference between
+  // opening early (fine to read as day one) and opening after the last day
+  // (must not be read as day one, or today, at all). ISO dates compare
+  // lexicographically the same as chronologically.
+  const lastDate = days[days.length - 1]?.date;
+  const tripFinished = Boolean(lastDate && opts.today > lastDate);
 
   const who = travelerSummary(itin);
   const people = travelersOf(itin);
@@ -395,9 +407,11 @@ export function itineraryToCompanionTrip(
 
   const title = opts.client?.trim() || itin.title || opts.tripName || "Your trip";
   const openDay = compDays[todayIndex];
-  const homeKicker = openDay
-    ? `${fmt(days[todayIndex].date, { day: "numeric", month: "long" })} · day ${todayIndex + 1} of ${compDays.length}`
-    : `Day 1 of ${compDays.length}`;
+  const homeKicker = tripFinished
+    ? `Trip finished · ${compDays.length} ${compDays.length === 1 ? "day" : "days"}`
+    : openDay
+      ? `${fmt(days[todayIndex].date, { day: "numeric", month: "long" })} · day ${todayIndex + 1} of ${compDays.length}`
+      : `Day 1 of ${compDays.length}`;
 
   const prefs = [
     who ? { label: "Travelling", value: who } : null,
@@ -423,6 +437,7 @@ export function itineraryToCompanionTrip(
     tripTitle: who ? `${itin.title || title} — ${who}` : itin.title || title,
     tripDates: formatRange(itin.startDate, itin.endDate),
     todayIndex,
+    tripFinished,
     ...(nearest
       ? {
           kosherTitle: nearest.name,

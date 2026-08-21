@@ -24,6 +24,9 @@ export type CompanionItem = {
   note: string;
   /** How far on foot, when it is worth saying. */
   walk?: string;
+  /** A departing flight's landing time — belongs with "When" it lands, not
+   *  "Where" it is, so it is its own field rather than living in `place`. */
+  arriveNote?: string;
   /** Whether the advisor may swap this one out around weather. */
   swappable?: boolean;
 };
@@ -103,6 +106,10 @@ export type CompanionTrip = {
   tripDates: string;
   /** Which day is "today" — the index the app opens on. */
   todayIndex: number;
+  /** Whether the trip's last day is already in the past. When true, the app
+   *  opens on day one to browse from, but must not claim that day as today —
+   *  see homeKicker and the "Day N of M" pill. Never true for the demo. */
+  tripFinished?: boolean;
   /** The one line under "Eating today" on the home screen. */
   /** The one "Eating today" line on the home screen. Hidden when absent. */
   kosherTitle?: string;

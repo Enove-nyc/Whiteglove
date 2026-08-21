@@ -32,9 +32,27 @@ describe("a planner trip, wired into the app", () => {
     // today === startDate here, so it opens on day one.
     assert.equal(trip.todayIndex, 0);
     assert.equal(trip.days[trip.todayIndex].today, true);
+    assert.equal(trip.tripFinished, false, "not over — never claim it is");
 
-    const past = itineraryToCompanionTrip(itin, days, { today: "2000-01-01" });
-    assert.equal(past.todayIndex, 0);
+    // Before the trip starts: day one is a fine place to open, and this is
+    // NOT "finished" — that word is reserved for a trip already in the past.
+    const early = itineraryToCompanionTrip(itin, days, { today: "2000-01-01" });
+    assert.equal(early.todayIndex, 0);
+    assert.equal(early.tripFinished, false);
+  });
+
+  it("says the trip has finished rather than pretending it is day one, once its last day has passed", () => {
+    const lastDay = itin.endDate;
+    assert.ok(lastDay, "the sample trip has an end date");
+    const dayAfter = new Date(`${lastDay}T12:00:00Z`);
+    dayAfter.setUTCDate(dayAfter.getUTCDate() + 1);
+    const after = itineraryToCompanionTrip(itin, days, { today: dayAfter.toISOString().slice(0, 10) });
+    assert.equal(after.tripFinished, true);
+    assert.match(after.homeKicker, /Trip finished/);
+    assert.doesNotMatch(after.homeKicker, /day 1 of/i);
+    // Still opens somewhere sane to browse from, just not claimed as "today".
+    assert.equal(after.todayIndex, 0);
+    assert.equal(after.days.every((d) => !d.today), true, "no day is marked today once the trip is over");
   });
 
   it("puts the real flights and stay in the wallet", () => {
@@ -130,6 +148,34 @@ describe("a planner trip, wired into the app", () => {
     assert.equal(trip.guideSections.length, 0);
     const friday = trip.days.find((d) => d.dow === "Fri");
     assert.equal(friday?.shabbosLabel, "Erev Shabbos");
+  });
+
+  it("puts a departing flight's landing time with When, not Where", () => {
+    const oneFlight: Itinerary = {
+      ...emptyItinerary(),
+      startDate: "2026-06-01",
+      endDate: "2026-06-01",
+      flights: [
+        {
+          id: "f1",
+          from: "Rome (FCO)",
+          to: "New York (JFK)",
+          date: "2026-06-01",
+          departTime: "11:20",
+          arriveTime: "15:10",
+          arriveDate: "2026-06-02",
+          airline: "El Al",
+          flightNo: "007",
+        },
+      ],
+    };
+    const oneDays = buildDays(oneFlight);
+    const wired = itineraryToCompanionTrip(oneFlight, oneDays, { today: "2026-06-01" });
+    const flightItem = wired.days[0].items.find((it) => it.title === "Rome (FCO) → New York (JFK)");
+    assert.ok(flightItem, "the departing flight is on the day");
+    assert.equal(flightItem!.place, "El Al 007", "Where holds the flight, not a landing time");
+    assert.equal(flightItem!.arriveNote, "Lands 15:10 next day");
+    assert.doesNotMatch(flightItem!.place, /Lands/);
   });
 
   it("stands up an empty trip without throwing", () => {

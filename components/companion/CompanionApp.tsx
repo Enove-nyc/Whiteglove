@@ -215,7 +215,7 @@ export default function CompanionApp({
     home: trip.homeKicker,
     day: `Day ${st.selDay + 1} of ${trip.days.length}`,
     activity: sel.name,
-    chat: hasConcierge ? "Your advisor" : "On your own",
+    chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
     messages: advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
     alerts: open ? "One needs you" : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
@@ -299,11 +299,15 @@ export default function CompanionApp({
   );
 
   // The activity detail rows, read off the stop itself rather than invented.
+  // A flight's landing time rides with When, since it is a time, not a place.
   const actRows = [
-    act.time ? { label: "When", value: act.time } : null,
+    act.time ? { label: "When", value: act.arriveNote ? `${act.time} · ${act.arriveNote}` : act.time } : null,
     act.place ? { label: "Where", value: act.place } : null,
     act.walk ? { label: "On foot", value: act.walk } : null,
   ].filter(Boolean) as { label: string; value: string }[];
+  // Directions means walking to a real place — a flight's airline reference
+  // or an open/Shabbos day's empty place is not one.
+  const actHasDirections = Boolean(act.place) && act.kind !== "travel";
 
   // ── shared bits of style ────────────────────────────────────────────────
   const serif = "Georgia,'Times New Roman',serif";
@@ -327,7 +331,9 @@ export default function CompanionApp({
         <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap", fontSize: 13, color: "#57534e" }}>
           <span>{trip.tripDates}</span>
           <span style={{ width: 4, height: 4, borderRadius: 14, background: "#a8a29e" }} />
-          <span style={{ background: "#e7edf1", color: "#1f3f5c", fontWeight: 600, padding: "4px 10px", borderRadius: 14, fontSize: 11.5 }}>Day {trip.todayIndex + 1} of {trip.days.length}</span>
+          <span style={{ background: "#e7edf1", color: "#1f3f5c", fontWeight: 600, padding: "4px 10px", borderRadius: 14, fontSize: 11.5 }}>
+            {trip.tripFinished ? "Trip finished" : `Day ${trip.todayIndex + 1} of ${trip.days.length}`}
+          </span>
         </div>
       </div>
 
@@ -400,7 +406,11 @@ export default function CompanionApp({
           <button onClick={() => go(usesRealChat ? "messages" : "chat")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "11px 16px", borderRadius: 14, color: "#26323a" }}>Message</button>
         </div>
       )}
-      {isGuideMode && (
+      {/* "On your own" is only true without a real advisor thread — with one,
+          the liveChat card below already offers the right door to it, and
+          telling a client with a live advisor they are on their own would
+          contradict it. */}
+      {isGuideMode && !usesRealChat && (
         <div style={{ margin: "14px 14px 0", padding: "16px 18px", borderRadius: 20, background: "#ece8df", display: "flex", alignItems: "center", gap: 13 }}>
           <div style={{ flex: "none", width: 46, height: 46, borderRadius: 14, background: "#e7edf1", display: "flex", alignItems: "center", justifyContent: "center", font: `400 20px/1 ${serif}`, color: "#1f3f5c" }}>{placeName.charAt(0).toUpperCase()}</div>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -583,7 +593,17 @@ export default function CompanionApp({
           ))}
         </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-          <button className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: CREAM, font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14 }}>Directions</button>
+          {actHasDirections && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.place)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="wg-press"
+              style={{ border: 0, cursor: "pointer", background: GOLD, color: CREAM, font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+            >
+              Directions
+            </a>
+          )}
           <button
             onClick={() => {
               setSt((s) => ({ ...s, chatSubject: act.title }));
@@ -700,7 +720,7 @@ export default function CompanionApp({
       <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "#57534e", textWrap: "pretty" }}>
         {trip.guideSections.length > 0
           ? "Built the same way as your itinerary — everything below is a record this site already publishes, kept here so it works with no signal."
-          : "The kosher food, the Shabbos times and the sights near this trip land here, kept on the phone for when there is no signal."}
+          : "There is nothing local to show for this trip yet."}
       </p>
       {trip.guideSections.map((g, gi) => (
         <div key={gi} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
@@ -775,8 +795,17 @@ export default function CompanionApp({
         </div>
       )}
       <div style={{ padding: 20, borderRadius: 20, background: "#f7eee0", border: "1px solid rgba(183,138,74,.25)", display: "flex", flexDirection: "column", gap: 11 }}>
-        <span style={kicker("#765321")}>Signed in as</span>
-        <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#5c4322", textWrap: "pretty" }}>{st.role === "advisor" ? "The advisor side: the trips you are holding today, and the one that needs a decision from you." : "The trip is in your name. Two others can look at it; nobody but you can change it."}</p>
+        {/* A client on a code from their adviser has no account — "signed in"
+            would simply be false for them, so this reads differently for the
+            two people who can land on this screen. */}
+        <span style={kicker("#765321")}>{liveChat?.side === "client" ? "Your trip" : "Signed in as"}</span>
+        <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#5c4322", textWrap: "pretty" }}>
+          {liveChat?.side === "client"
+            ? "You opened this with the code your adviser sent you — no account needed."
+            : st.role === "advisor"
+              ? "The advisor side: the trips you are holding today, and the one that needs a decision from you."
+              : "The trip is in your name. Two others can look at it; nobody but you can change it."}
+        </p>
         {hasConcierge && (
           <div style={{ display: "flex", gap: 6, padding: 5, background: "rgba(255,255,255,.8)", borderRadius: 14, alignSelf: "flex-start" }}>
             {roleOpts.map((r) => (
