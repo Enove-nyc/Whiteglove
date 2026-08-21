@@ -16,15 +16,20 @@ import { getActivePromotions } from "@/lib/admin-content";
 import { burialsForSlugs } from "@/lib/kever-search";
 
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
 // A share link is given to somebody, not found. Indexing it would put a
 // stranger's trip — with their dates and their stops — into search results.
-export const metadata = pageMetadata({
-  title: "A shared itinerary | White Glove Kosher Travel",
-  description: "An itinerary shared with you.",
-  path: "/i",
-  noIndex: true,
-});
+// Brand-aware: /i is one of the itineraries domain's own pages too.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "A shared itinerary | White Glove Itineraries" : "A shared itinerary | White Glove Kosher Travel",
+    description: "An itinerary shared with you.",
+    path: "/i",
+    noIndex: true,
+  });
+}
 
 export const dynamic = "force-dynamic";
 

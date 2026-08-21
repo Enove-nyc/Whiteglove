@@ -8,9 +8,12 @@ import {
   chatStoreAvailable,
   deleteMessage,
   editMessageText,
+  isTyping,
   markRead,
+  quoteFor,
   readChat,
   readMarkers,
+  setTyping,
   type CompanionChatSide,
 } from "@/lib/companion-chat-store";
 import {
@@ -78,6 +81,8 @@ async function sideFor(shareId: string): Promise<{ owner: string; side: Companio
   return { owner, side };
 }
 
+const otherSideOf = (side: CompanionChatSide): CompanionChatSide => (side === "advisor" ? "client" : "advisor");
+
 export async function GET(request: NextRequest) {
   const shareId = request.nextUrl.searchParams.get("share")?.trim();
   if (!shareId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
@@ -86,14 +91,27 @@ export async function GET(request: NextRequest) {
   const messages = await readChat(shareId);
   // Loading the thread IS reading it — there is no separate "mark as read"
   // action, the same as a phone's messaging app. The other side sees this as
-  // soon as their own next poll picks the marker up.
-  const latest = messages[messages.length - 1];
-  if (latest) await markRead(shareId, who.side, latest.at);
+  // soon as their own next poll picks the marker up. The one exception is a
+  // "peek" (?peek=1) — used only to badge the Messages tab before the
+  // thread is actually opened — which must not silently mark a message read
+  // that nobody has looked at yet.
+  const peek = request.nextUrl.searchParams.get("peek") === "1";
+  if (!peek) {
+    const latest = messages[messages.length - 1];
+    if (latest) await markRead(shareId, who.side, latest.at);
+  }
   return NextResponse.json({
     messages,
     side: who.side,
     available: chatStoreAvailable(),
     readMarkers: await readMarkers(shareId),
+    // Whether the OTHER side has typed within the last few seconds — never
+    // my own, which the composer already knows without asking the server.
+    typing: await isTyping(shareId, otherSideOf(who.side)),
+    // The server's real, deploy-specific picture size limit — see
+    // effectiveMediaLimit() in lib/media.ts. Read fresh so the composer's
+    // own cap never drifts from what the server will actually accept.
+    imageLimit: effectiveMediaLimit(),
   });
 }
 
@@ -148,7 +166,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
   const body = (await request.json().catch(() => null)) as
-    | { share?: string; text?: string; dataUrl?: string; lat?: number; lng?: number; label?: string }
+    | {
+        share?: string;
+        text?: string;
+        dataUrl?: string;
+        lat?: number;
+        lng?: number;
+        address?: string;
+        label?: string;
+        replyToAt?: string;
+        typing?: boolean;
+        itineraryRef?: string;
+      }
     | null;
   const shareId = body?.share?.trim();
   if (!shareId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
@@ -160,6 +189,28 @@ export async function POST(request: NextRequest) {
   // only be added to a thread by somebody who genuinely holds that trip's link.
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+
+  // "I am typing" — a courtesy signal, not a message. No rate limit: it is
+  // one cheap Redis SET, the composer already throttles how often it sends
+  // one, and the same-origin and plan checks above are the fence that matters.
+  if (body?.typing === true) {
+    await setTyping(shareId, who.side);
+    return NextResponse.json({ ok: true });
+  }
+
+  // A reply quotes a real message in THIS thread — looked up and re-built
+  // server-side (quoteFor), never taken as whatever text the client sent
+  // alongside replyToAt. A stale or made-up `at` just means the message goes
+  // out as an ordinary one rather than failing the whole send over it.
+  const replyTo = typeof body?.replyToAt === "string" && body.replyToAt ? await quoteFor(shareId, body.replyToAt) : undefined;
+
+  // "Ask about this day" / "Ask to move this" — a short label naming the
+  // itinerary item the thread was opened from, carried on the one message it
+  // rides in with rather than jammed into the words themselves.
+  const itineraryRef =
+    typeof body?.itineraryRef === "string" && body.itineraryRef.trim()
+      ? body.itineraryRef.trim().slice(0, MAX_CHAT_LABEL)
+      : undefined;
 
   // A picture, a video, or a voice note. Rate limited BEFORE the work, because
   // this is the one message a client with no account can push real bytes with
@@ -205,6 +256,8 @@ export async function POST(request: NextRequest) {
       text: (body.text ?? "").trim().slice(0, MAX_CHAT_LABEL),
       mediaId: id,
       at: new Date().toISOString(),
+      replyTo,
+      itineraryRef,
     });
     return NextResponse.json({ messages, side: who.side });
   }
@@ -221,6 +274,24 @@ export async function POST(request: NextRequest) {
       lat: body.lat,
       lng: body.lng,
       at: new Date().toISOString(),
+      replyTo,
+      itineraryRef,
+    });
+    return NextResponse.json({ messages, side: who.side });
+  }
+
+  // A place from the itinerary itself — the hotel, the activity, the eatery
+  // — shared by its own address rather than a device fix, so an advisor can
+  // send where something IS instead of only where they happen to be standing.
+  if (typeof body?.address === "string" && body.address.trim()) {
+    const messages = await appendChat(shareId, {
+      from: who.side,
+      kind: "location",
+      text: (body.label ?? "").trim().slice(0, MAX_CHAT_LABEL),
+      address: body.address.trim().slice(0, MAX_CHAT_LABEL),
+      at: new Date().toISOString(),
+      replyTo,
+      itineraryRef,
     });
     return NextResponse.json({ messages, side: who.side });
   }
@@ -233,6 +304,8 @@ export async function POST(request: NextRequest) {
     kind: "text",
     text: text.slice(0, MAX_CHAT_TEXT),
     at: new Date().toISOString(),
+    replyTo,
+    itineraryRef,
   });
   return NextResponse.json({ messages, side: who.side });
 }

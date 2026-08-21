@@ -36,9 +36,16 @@ export type CompanionChatMessage = {
   text: string;
   /** kind "image", "video" or "audio": the media-store id, served back through /api/media. */
   mediaId?: string;
-  /** kind "location": a point the other side can open in a map. */
+  /** kind "location": a point the other side can open in a map — the
+   *  sender's own device fix. */
   lat?: number;
   lng?: number;
+  /**
+   * kind "location", alternative to lat/lng: a place's own street address,
+   * shared from the itinerary rather than found by the sender's device —
+   * the hotel, the restaurant, the activity, not "where I am standing".
+   */
+  address?: string;
   /** ISO timestamp. */
   at: string;
   /**
@@ -57,6 +64,30 @@ export type CompanionChatMessage = {
    * coordinates from anything deleted before it ever leaves the store.
    */
   deletedAt?: string;
+  /**
+   * A quoted reply — a snapshot taken from the ORIGINAL message at the moment
+   * this one was sent, not a live reference. So it survives the original
+   * being edited or deleted afterwards (the quote still reads as it did when
+   * this reply was written), and a reply never has to look anything up to
+   * render. Built server-side from a real message in this same thread — see
+   * quoteFor() — never trusted from the client, or a reply could quote words
+   * nobody ever actually sent.
+   */
+  replyTo?: {
+    at: string;
+    from: CompanionChatSide;
+    kind: CompanionChatKind;
+    /** A short snippet — the words, or what to call a picture/video/voice
+     *  note/place when there are none to show. */
+    text: string;
+  };
+  /**
+   * A short label for the day or activity this message was started from —
+   * "Day 3 — The Colosseum" — set once, when "Ask about this" opens the
+   * thread. Plain display text, not sensitive: the same trust level as the
+   * message's own words, just capped and stripped the same way.
+   */
+  itineraryRef?: string;
 };
 
 /** The most a text message may carry, and the most a thread keeps. */
@@ -117,11 +148,11 @@ export function parseChatMessages(rows: string[] | null): CompanionChatMessage[]
         continue;
       }
       const kind = kindOf(m.kind);
-      // A picture, video or voice note with no file, or a place with no
-      // coordinate, is a broken row, not a message — skip it rather than
-      // render an empty bubble.
+      // A picture, video or voice note with no file, or a place with neither
+      // a coordinate nor an address, is a broken row, not a message — skip it
+      // rather than render an empty bubble.
       if ((kind === "image" || kind === "video" || kind === "audio") && typeof m.mediaId !== "string") continue;
-      if (kind === "location" && !(Number.isFinite(m.lat) && Number.isFinite(m.lng))) continue;
+      if (kind === "location" && !(Number.isFinite(m.lat) && Number.isFinite(m.lng)) && !(typeof m.address === "string" && m.address.trim())) continue;
       out.push({ ...m, kind });
     } catch {
       /* skip a corrupt row rather than drop the thread */
@@ -150,6 +181,33 @@ export async function appendChat(
   await command(["RPUSH", key, JSON.stringify(message)]);
   await command(["LTRIM", key, -MAX_THREAD, -1]);
   return readChat(shareId);
+}
+
+/** A short label for a message with nothing to show as its own words. */
+function quoteLabelFor(m: CompanionChatMessage): string {
+  const kind = kindOf(m.kind);
+  if (kind === "image") return "Photo";
+  if (kind === "video") return "Video";
+  if (kind === "audio") return "Voice note";
+  if (kind === "location") return m.text || "Location";
+  return m.text;
+}
+
+/** How much of a quoted message's words a reply carries. Shorter than a
+ *  caption — this is context for a reply, not the message itself. */
+const MAX_QUOTE_TEXT = 120;
+
+/**
+ * The snapshot a reply carries of the message it quotes — built from a real
+ * row in THIS thread, never from anything the client sends. A stale or
+ * fabricated `at` (the wrong trip, a made-up id) quietly means the reply is
+ * sent as a plain message rather than failing the whole send over it.
+ */
+export async function quoteFor(shareId: string, at: string): Promise<CompanionChatMessage["replyTo"] | undefined> {
+  const thread = await readChat(shareId);
+  const original = thread.find((m) => m.at === at);
+  if (!original) return undefined;
+  return { at: original.at, from: original.from, kind: kindOf(original.kind), text: quoteLabelFor(original).slice(0, MAX_QUOTE_TEXT) };
 }
 
 /**
@@ -241,6 +299,8 @@ export async function deleteConversation(shareId: string): Promise<boolean> {
   await command(["DEL", reportKeyFor(shareId)]);
   await command(["DEL", readKeyFor(shareId, "client")]);
   await command(["DEL", readKeyFor(shareId, "advisor")]);
+  await command(["DEL", typingKeyFor(shareId, "client")]);
+  await command(["DEL", typingKeyFor(shareId, "advisor")]);
   return true;
 }
 
@@ -272,6 +332,34 @@ export async function readMarkers(shareId: string): Promise<Partial<Record<Compa
   if (client) out.client = client;
   if (advisor) out.advisor = advisor;
   return out;
+}
+
+/* ---- typing ----------------------------------------------------------------
+ *
+ * "X is typing…" is a courtesy, not a record — nobody needs to know a week
+ * from now that somebody was typing at 3pm on Tuesday. So it is a key with a
+ * short expiry rather than anything appended to: the composer refreshes it
+ * every couple of seconds while there are words in the box, and it simply
+ * expires on its own a few seconds after the last keystroke — the same way a
+ * phone's messaging app stops showing "typing…" when nothing has been typed
+ * for a moment, without either side having to say "I stopped."
+ */
+
+const typingKeyFor = (shareId: string, side: CompanionChatSide) => `white-glove:companion-typing:${shareId}:${side}`;
+/** How long a "typing" signal lasts without being refreshed. Longer than the
+ *  composer's own refresh interval, so a normal pause between keystrokes
+ *  doesn't flicker the indicator off and straight back on. */
+const TYPING_TTL_SECONDS = 6;
+
+/** `side` is typing right now (or still within the last few seconds of it). */
+export async function setTyping(shareId: string, side: CompanionChatSide): Promise<void> {
+  if (!chatStoreAvailable()) return;
+  await command(["SET", typingKeyFor(shareId, side), "1", "EX", TYPING_TTL_SECONDS]);
+}
+
+/** Whether `side` was typing within the last few seconds. */
+export async function isTyping(shareId: string, side: CompanionChatSide): Promise<boolean> {
+  return Boolean(await command<string>(["GET", typingKeyFor(shareId, side)]));
 }
 
 /* ---- reporting ----------------------------------------------------------- */

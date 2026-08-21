@@ -24,11 +24,21 @@ export type CompanionItem = {
   note: string;
   /** How far on foot, when it is worth saying. */
   walk?: string;
+  /** A departing flight's landing time — belongs with "When" it lands, not
+   *  "Where" it is, so it is its own field rather than living in `place`. */
+  arriveNote?: string;
+  /** A number worth calling — the venue, the driver, the front desk. */
+  phone?: string;
+  /** A confirmation, booking or reference page for this stop, when there is one. */
+  href?: string;
   /** Whether the advisor may swap this one out around weather. */
   swappable?: boolean;
 };
 
 export type CompanionDay = {
+  /** ISO date, YYYY-MM-DD — set only on a real, wired trip, where it doubles
+   *  as the key for guideNote (Itinerary.guideNotes) and any edit to it. */
+  date?: string;
   dow: string;
   dom: string;
   short: string;
@@ -38,6 +48,9 @@ export type CompanionDay = {
   today?: boolean;
   shabbosLabel?: string;
   shabbosNote?: string;
+  /** A practical note for this day — the side door, where to eat, where to
+   *  park. Never kosher or Shabbos content; see Itinerary.guideNotes. */
+  guideNote?: string;
   items: CompanionItem[];
 };
 
@@ -56,7 +69,21 @@ export type CompanionHandledStep = { what: string; when: string };
 export type CompanionGuideItem = { title: string; note: string; tint: string };
 export type CompanionGuideSection = { name: string; items: CompanionGuideItem[] };
 
-export type CompanionWalletRow = { title: string; ref: string; sub: string };
+export type CompanionWalletRow = {
+  title: string;
+  ref: string;
+  sub: string;
+  /** A number worth calling — the front desk, the driver. Tappable when set. */
+  phone?: string;
+  /** A real address — tappable as directions when set. */
+  address?: string;
+  /** The itinerary stop this row came from, and which array it lives in —
+   *  set only on a real, wired trip. Lets the advisor attach a boarding pass
+   *  or a ticket straight from the wallet, without a separate id lookup. */
+  id?: string;
+  stopKind?: "flight" | "lodging" | "activity";
+  attachments?: import("@/data/itinerary").ItinAttachment[];
+};
 export type CompanionWalletGroup = { name: string; rows: CompanionWalletRow[] };
 
 export type CompanionPref = { label: string; value: string };
@@ -88,6 +115,9 @@ export type CompanionTrip = {
    * concierge backend exists, a real trip can carry it too.
    */
   concierge: boolean;
+  /** The trip's own id, for the advisor's "add a boarding pass or ticket"
+   *  control on the wallet — only set on a real, wired trip. */
+  tripId?: string;
   advisorName: string;
   /**
    * The client's point of contact, shown on a wired trip that has no live
@@ -103,6 +133,10 @@ export type CompanionTrip = {
   tripDates: string;
   /** Which day is "today" — the index the app opens on. */
   todayIndex: number;
+  /** Whether the trip's last day is already in the past. When true, the app
+   *  opens on day one to browse from, but must not claim that day as today —
+   *  see homeKicker and the "Day N of M" pill. Never true for the demo. */
+  tripFinished?: boolean;
   /** The one line under "Eating today" on the home screen. */
   /** The one "Eating today" line on the home screen. Hidden when absent. */
   kosherTitle?: string;

@@ -12,15 +12,20 @@ import {
 } from "@/lib/flight-itinerary";
 import { getFlightItineraryByShareId } from "@/lib/flight-itinerary-store";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
 // A flight itinerary is handed to a named customer, not found. Indexing it
 // would put their name, dates and confirmation code into search results.
-export const metadata = pageMetadata({
-  title: "Flight itinerary | White Glove Kosher Travel",
-  description: "A flight itinerary prepared for you.",
-  path: "/f",
-  noIndex: true,
-});
+// Brand-aware: /f is one of the itineraries domain's own pages too.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Flight itinerary | White Glove Itineraries" : "Flight itinerary | White Glove Kosher Travel",
+    description: "A flight itinerary prepared for you.",
+    path: "/f",
+    noIndex: true,
+  });
+}
 
 export const dynamic = "force-dynamic";
 

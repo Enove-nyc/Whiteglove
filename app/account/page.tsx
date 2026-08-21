@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
 import BusinessBrandPanel from "@/components/BusinessBrandPanel";
-import CompanionSettings from "@/components/companion/CompanionSettings";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
@@ -24,14 +23,20 @@ import { isAdminAccount } from "@/lib/admin-roles";
 import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
-// Private to one person. Nothing here belongs in a search result.
-export const metadata = pageMetadata({
-  title: "Your account | White Glove Kosher Travel",
-  description: "Your saved route, itineraries and account settings.",
-  path: "/account",
-  noIndex: true,
-});
+// Private to one person. Nothing here belongs in a search result. Brand-aware
+// for the same reason /login is: an itineraries visitor landing here right
+// after signing in must not read "White Glove Kosher Travel" in the tab.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Your account | White Glove Itineraries" : "Your account | White Glove Kosher Travel",
+    description: "Your saved route, itineraries and account settings.",
+    path: "/account",
+    noIndex: true,
+  });
+}
 
 /**
  * Five areas, in reading order: Itineraries, Route, Favorites, Details, Sign
@@ -153,7 +158,7 @@ export default async function AccountPage() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The White Glove app</span>
-                  <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, the kosher side of each day, and the travel wallet kept for when there is no signal. Add it to your home screen.</span>
+                  <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal. Add it to your home screen.</span>
                 </div>
                 <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
               </div>
@@ -164,7 +169,6 @@ export default async function AccountPage() {
                   and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
                 </p>
               )}
-              <CompanionSettings />
             </div>
           )}
         </section>

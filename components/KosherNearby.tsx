@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { coordinatesToPoint, placeMapUrl } from "@/data/route-utils";
+import { BRAND_ORIGIN, brandForHost } from "@/lib/site-brand-core";
 import type { ItinActivity } from "@/data/itinerary";
 import {
   curatedKosherPlacesNear,
@@ -76,6 +77,16 @@ export default function KosherNearby({
 }) {
   const point = useMemo(() => coordinatesToPoint(coordinates), [coordinates]);
   const [added, setAdded] = useState<Record<string, boolean>>({});
+  // This card is also used inside the itinerary builder, reachable on the
+  // itineraries domain — where /kosher does not exist (middleware.ts sends
+  // guide-only paths to the kosher site). A same-tab link there would bounce
+  // the visitor off-domain mid-build, which also breaks out of an installed
+  // itineraries app entirely, so it opens the kosher site in a new tab there
+  // instead of navigating away from the trip being built.
+  const [itineraries, setItineraries] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") setItineraries(brandForHost(window.location.hostname) === "itineraries");
+  }, []);
   const requireSignIn = useRequireSignIn();
   const places = useMemo<CuratedKosherPlaceNearby[]>(() => {
     if (query?.trim()) return searchCuratedKosherPlaces(query);
@@ -95,7 +106,13 @@ export default function KosherNearby({
           {query?.trim()
             ? "No White Glove kosher listings match that search."
             : `No White Glove kosher listings are within ${radiusKm} km of here.`}{" "}
-          <a href="/kosher" className="underline decoration-[var(--gold)] underline-offset-2">Browse the kosher food finder.</a>
+          <a
+            href={itineraries ? `${BRAND_ORIGIN.kosher}/kosher` : "/kosher"}
+            {...(itineraries ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            className="underline decoration-[var(--gold)] underline-offset-2"
+          >
+            Browse the kosher food finder.
+          </a>
         </p>
       ) : (
         <ul className="mt-3 divide-y divide-[var(--gold-light)]">

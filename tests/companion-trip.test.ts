@@ -4,12 +4,6 @@ import assert from "node:assert/strict";
 import { buildDays, emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { itineraryToCompanionTrip } from "@/lib/companion-trip";
 import { SAMPLE_ITINERARY } from "@/data/sample-itinerary";
-import { zmanimRequestFor } from "@/lib/trip-zmanim";
-import { zmanimForDay } from "@/lib/zmanim-day-calculate";
-import { curatedKosherPlacesNear } from "@/lib/curated-kosher";
-import { hechsherLabel } from "@/data/hechsherim";
-import { coordinatesToPoint } from "@/data/route-utils";
-import type { ZmanimDay } from "@/lib/zmanim-day";
 
 /**
  * The one place a planner trip becomes an app trip. These hold the wiring
@@ -32,9 +26,27 @@ describe("a planner trip, wired into the app", () => {
     // today === startDate here, so it opens on day one.
     assert.equal(trip.todayIndex, 0);
     assert.equal(trip.days[trip.todayIndex].today, true);
+    assert.equal(trip.tripFinished, false, "not over — never claim it is");
 
-    const past = itineraryToCompanionTrip(itin, days, { today: "2000-01-01" });
-    assert.equal(past.todayIndex, 0);
+    // Before the trip starts: day one is a fine place to open, and this is
+    // NOT "finished" — that word is reserved for a trip already in the past.
+    const early = itineraryToCompanionTrip(itin, days, { today: "2000-01-01" });
+    assert.equal(early.todayIndex, 0);
+    assert.equal(early.tripFinished, false);
+  });
+
+  it("says the trip has finished rather than pretending it is day one, once its last day has passed", () => {
+    const lastDay = itin.endDate;
+    assert.ok(lastDay, "the sample trip has an end date");
+    const dayAfter = new Date(`${lastDay}T12:00:00Z`);
+    dayAfter.setUTCDate(dayAfter.getUTCDate() + 1);
+    const after = itineraryToCompanionTrip(itin, days, { today: dayAfter.toISOString().slice(0, 10) });
+    assert.equal(after.tripFinished, true);
+    assert.match(after.homeKicker, /Trip finished/);
+    assert.doesNotMatch(after.homeKicker, /day 1 of/i);
+    // Still opens somewhere sane to browse from, just not claimed as "today".
+    assert.equal(after.todayIndex, 0);
+    assert.equal(after.days.every((d) => !d.today), true, "no day is marked today once the trip is over");
   });
 
   it("puts the real flights and stay in the wallet", () => {
@@ -44,6 +56,19 @@ describe("a planner trip, wired into the app", () => {
 
     const stay = trip.walletGroups.find((g) => g.name === "Where you are staying");
     assert.ok(stay && stay.rows.length > 0, "the hotel is there");
+  });
+
+  it("carries the stop's id and kind on each wallet row, so the advisor can attach a document to it", () => {
+    const flights = trip.walletGroups.find((g) => g.name === "Flights")!;
+    assert.ok(flights.rows.every((r) => r.id && r.stopKind === "flight"));
+    const stay = trip.walletGroups.find((g) => g.name === "Where you are staying")!;
+    assert.ok(stay.rows.every((r) => r.id && r.stopKind === "lodging"));
+
+    // Without a tripId, the wallet still renders fine — the "add" control is
+    // simply never offered, since it has nowhere to save.
+    assert.equal(trip.tripId, undefined);
+    const withId = itineraryToCompanionTrip(itin, days, { today: itin.startDate, tripId: "trip-9" });
+    assert.equal(withId.tripId, "trip-9");
   });
 
   it("NEVER fabricates the advisor side on a wired trip", () => {
@@ -61,60 +86,33 @@ describe("a planner trip, wired into the app", () => {
     assert.ok(trip.family.length > 0);
   });
 
-  it("carries the kosher and Shabbos layer when it is handed one", () => {
-    const zmanimByDate: Record<string, ZmanimDay> = {};
-    for (const request of zmanimRequestFor(days)) zmanimByDate[request.date] = zmanimForDay(request);
-    const cc =
-      itin.lodging.find((l) => l.coordinates?.trim())?.coordinates ??
-      itin.activities.find((a) => a.coordinates?.trim())?.coordinates;
-    const center = coordinatesToPoint(cc);
-    const kosher = center
-      ? curatedKosherPlacesNear({ lat: center.lat, lng: center.lng }, 25).slice(0, 6).map((k) => ({
-          name: k.name,
-          city: k.city,
-          kind: k.category,
-          diet: k.diet,
-          hechsher: hechsherLabel(k.hechsher),
-          km: k.km,
-        }))
-      : [];
-
-    const withLayer = itineraryToCompanionTrip(itin, days, {
-      today: itin.startDate,
-      layer: { zmanimByDate, kosher },
-    });
-
-    // Erev Shabbos carries a real candle-lighting time, not a weekday guess.
-    const friday = withLayer.days.find((d) => d.dow === "Fri");
-    assert.ok(friday, "the week has a Friday");
-    assert.match(friday!.shabbosLabel ?? "", /Candle-lighting \d{1,2}:\d{2}/);
-
-    // Shabbos knows when it ends.
-    const shabbos = withLayer.days.find((d) => d.dow === "Sat");
-    assert.match(shabbos!.shabbosNote ?? "", /Shabbos ends about \d{1,2}:\d{2}/);
-
-    // The guide fills with the site's own records.
-    const names = withLayer.guideSections.map((s) => s.name);
-    assert.ok(names.includes("Shabbos here"), "a Shabbos section");
-    assert.ok(names.includes("Kosher, near you"), "a kosher section");
-    assert.ok(withLayer.kosherTitle, "an Eating today line on the home screen");
-
-    // And still never invents the advisor side.
-    assert.equal(withLayer.concierge, false);
+  // A wired trip once carried an opt-in "kosher-and-Shabbos layer" — a
+  // Guide tab, per-day candle-lighting notes, an "Eating today" line. All of
+  // it is gone now, at the owner's word: the app is a general itinerary
+  // tool and has nothing to do with kosher or Shabbos. itineraryToCompanionTrip
+  // no longer even accepts the options that used to switch it on, so there
+  // is no path left for a real trip to carry any of this.
+  it("carries no kosher or Shabbos content, on any real trip", () => {
+    assert.equal(trip.guideSections.length, 0, "no guide sections, ever");
+    assert.equal(trip.kosherTitle, undefined, "no Eating today line");
+    assert.equal(trip.kosherNote, undefined);
+    for (const day of trip.days) {
+      assert.equal(day.shabbosLabel, undefined, `${day.name} carries no Shabbos label`);
+      assert.equal(day.shabbosNote, undefined);
+    }
+    assert.ok(!trip.prefs.some((p) => p.label === "Zmanim"), "no Zmanim row in prefs");
   });
 
-  it("drops the whole kosher and Shabbos layer when it is turned off", () => {
-    const zmanimByDate: Record<string, ZmanimDay> = {};
-    for (const request of zmanimRequestFor(days)) zmanimByDate[request.date] = zmanimForDay(request);
-    const off = itineraryToCompanionTrip(itin, days, {
-      today: itin.startDate,
-      kosher: false,
-      layer: { zmanimByDate, kosher: [{ name: "Ba'Ghetto", city: "Rome", kind: "Restaurant", hechsher: "x", km: 0 }] },
-    });
-    assert.equal(off.guideSections.length, 0, "no guide sections");
-    assert.equal(off.kosherTitle, undefined, "no Eating today line");
-    const friday = off.days.find((d) => d.dow === "Fri");
-    assert.equal(friday?.shabbosLabel, undefined, "no Shabbos label on a plain itinerary");
+  // The Guide tab came back after the kosher layer left — but for a
+  // different reason: a plain, per-day note the advisor writes (the side
+  // door, where to eat, where to park). Nothing here reads it off zmanim or
+  // hechsherim; it comes straight from Itinerary.guideNotes.
+  it("carries a day's practical note when the itinerary has one, and nothing when it doesn't", () => {
+    const noted: Itinerary = { ...itin, guideNotes: { [itin.startDate]: "  Enter through the side door.  " } };
+    const withNote = itineraryToCompanionTrip(noted, days, { today: itin.startDate });
+    assert.equal(withNote.days[0].guideNote, "Enter through the side door.", "trimmed, and on the right day");
+    assert.equal(withNote.days[1]?.guideNote, undefined, "no note bleeds onto a day that has none");
+    assert.equal(trip.days[0].guideNote, undefined, "no guideNotes on the itinerary → no note at all");
   });
 
   it("shows the advisor as the client's contact, and never invents one", () => {
@@ -125,11 +123,32 @@ describe("a planner trip, wired into the app", () => {
     assert.equal(trip.contactName, undefined);
   });
 
-  it("falls back to a weekday Shabbos note when no zmanim are handed in", () => {
-    // No layer at all — the guide is empty and the note is the weekday one.
-    assert.equal(trip.guideSections.length, 0);
-    const friday = trip.days.find((d) => d.dow === "Fri");
-    assert.equal(friday?.shabbosLabel, "Erev Shabbos");
+  it("puts a departing flight's landing time with When, not Where", () => {
+    const oneFlight: Itinerary = {
+      ...emptyItinerary(),
+      startDate: "2026-06-01",
+      endDate: "2026-06-01",
+      flights: [
+        {
+          id: "f1",
+          from: "Rome (FCO)",
+          to: "New York (JFK)",
+          date: "2026-06-01",
+          departTime: "11:20",
+          arriveTime: "15:10",
+          arriveDate: "2026-06-02",
+          airline: "El Al",
+          flightNo: "007",
+        },
+      ],
+    };
+    const oneDays = buildDays(oneFlight);
+    const wired = itineraryToCompanionTrip(oneFlight, oneDays, { today: "2026-06-01" });
+    const flightItem = wired.days[0].items.find((it) => it.title === "Rome (FCO) → New York (JFK)");
+    assert.ok(flightItem, "the departing flight is on the day");
+    assert.equal(flightItem!.place, "El Al 007", "Where holds the flight, not a landing time");
+    assert.equal(flightItem!.arriveNote, "Lands 15:10 next day");
+    assert.doesNotMatch(flightItem!.place, /Lands/);
   });
 
   it("stands up an empty trip without throwing", () => {
@@ -140,5 +159,7 @@ describe("a planner trip, wired into the app", () => {
     // Every day still has at least one item — an open day rather than a blank.
     assert.ok(wired.days.every((d) => d.items.length > 0));
     assert.equal(wired.concierge, false);
+    // An empty Saturday reads as an open day, not "Shabbos".
+    assert.ok(wired.days.every((d) => d.items.every((it) => it.kind !== "shabbos")));
   });
 });

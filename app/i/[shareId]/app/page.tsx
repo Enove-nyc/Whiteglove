@@ -6,14 +6,13 @@ import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
-import { getAppPrefs } from "@/lib/app-prefs-store";
 import { pageMetadata } from "@/lib/seo";
 
 // A link given to a client, not found. It carries somebody's dates and stops;
 // it does not belong in a search result.
 export const metadata = pageMetadata({
   title: "Your trip",
-  description: "The trip in your pocket — a day at a time, the kosher side of each day, and the Shabbos that stops early.",
+  description: "The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal.",
   path: "/i",
   noIndex: true,
 });
@@ -43,17 +42,13 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   const plan = await getPlan(shared.ownerEmail);
   if (!mayServeCompanionClients(plan)) redirect(`/i/${shareId}`);
 
-  const [brand, prefs] = await Promise.all([
-    readBrand(shared.ownerEmail).catch(() => null),
-    getAppPrefs(shared.ownerEmail).catch(() => ({ kosherFeatures: false })),
-  ]);
+  const brand = await readBrand(shared.ownerEmail).catch(() => null);
   const trip = await buildCompanionFromItinerary(
     { ...emptyItinerary(), ...shared.itinerary },
     {
       today: new Date().toISOString().slice(0, 10),
       advisorName: shared.advisor || (brand?.enabled ? brand.name : undefined) || shared.ownerName,
       client: shared.client,
-      kosher: prefs.kosherFeatures,
     },
   );
   if (!trip) redirect(`/i/${shareId}`); // no dates / no days — the document still reads

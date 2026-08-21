@@ -455,6 +455,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         })()}
         {tab === "hotel" && (
           <LodgingForm
+            key={editingLodgingId ?? "new"}
             startDate={itin.startDate}
             initial={itin.lodging.find((l) => l.id === editingLodgingId)}
             onAdd={(l) => { saveLodging(l); setTab(null); setEditingLodgingId(null); }}
@@ -832,6 +833,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
         />
         {openLeg && (
           <FlightForm
+            key={openLeg.id}
             startDate={day.date}
             initial={openLeg}
             onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
@@ -1578,8 +1580,10 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
         </div>
         {status && <p className="mt-2 text-xs text-[var(--navy)]">{status}</p>}
       </div>
-      <Field label="From *"><AirportAutocomplete required value={f.from ?? ""} onChange={(v) => updateFlight({ from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
-      <Field label="To *"><AirportAutocomplete required value={f.to ?? ""} onChange={(v) => updateFlight({ to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
+      {/* allowGroups={false} — a booked flight lands at one specific airport,
+          never "all airports in the city", which is a search-time idea. */}
+      <Field label="From *"><AirportAutocomplete required allowGroups={false} value={f.from ?? ""} onChange={(v) => updateFlight({ from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
+      <Field label="To *"><AirportAutocomplete required allowGroups={false} value={f.to ?? ""} onChange={(v) => updateFlight({ to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
       <Field label="Airline"><input className={inputClass} value={f.airline ?? ""} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
       <Field label="Flight #"><input className={inputClass} value={f.flightNo ?? ""} onChange={(e) => setF({ ...f, flightNo: e.target.value })} placeholder="e.g. LY1" /></Field>
       <Field label="Date *"><DateField ariaLabel="Flight date" required className={inputClass} value={f.date ?? ""} onChange={(date) => updateFlight({ date })} /></Field>
@@ -1643,6 +1647,7 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
                 <label className="block">
                   <span className={caption}>Stop {i + 1}</span>
                   <AirportAutocomplete
+                    allowGroups={false}
                     value={stop.airport}
                     onChange={(v) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, airport: v } : x)) })}
                     className={inputClass}

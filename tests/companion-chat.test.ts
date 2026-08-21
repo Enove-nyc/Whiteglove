@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { parseChatMessages } from "@/lib/companion-chat-store";
+import { parseChatMessages, quoteFor } from "@/lib/companion-chat-store";
 
 /**
  * The concierge thread: text, a picture, a video, a voice note, or a place —
@@ -39,6 +39,15 @@ describe("reading a stored thread", () => {
     assert.equal(out[2].mediaId, "m-1-c");
     assert.equal(out[3].kind, "location");
     assert.equal(out[3].lat, 41.9);
+  });
+
+  it("reads a place shared by its own address — a trip stop, not a device fix", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", kind: "location", text: "The Grand Hotel", address: "Via Roma 1, Rome", at: "t4" }),
+    ]);
+    assert.equal(m.kind, "location");
+    assert.equal(m.address, "Via Roma 1, Rome");
+    assert.equal(m.lat, undefined);
   });
 
   it("drops a broken picture, video, voice note or place rather than showing an empty bubble", () => {
@@ -132,6 +141,11 @@ describe("sending a picture, video or voice note is fenced", () => {
     assert.match(ROUTE, /Math\.abs\(body\.lat\) > 90/);
     assert.match(ROUTE, /Math\.abs\(body\.lng\) > 180/);
   });
+
+  it("also accepts a trip stop shared by its own address, not only a device fix", () => {
+    assert.match(ROUTE, /typeof body\?\.address === "string" && body\.address\.trim\(\)/);
+    assert.match(ROUTE, /address: body\.address\.trim\(\)\.slice\(0, MAX_CHAT_LABEL\)/);
+  });
 });
 
 describe("reading the thread also marks it read", () => {
@@ -209,6 +223,78 @@ describe("reporting a message is fenced", () => {
   });
 });
 
+describe("a reply quotes a real message, never a client-supplied one", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+
+  it("looks the quote up server-side from replyToAt, never takes quoted text from the body", () => {
+    assert.match(POST, /quoteFor\(shareId, body\.replyToAt\)/);
+    assert.doesNotMatch(POST, /replyTo:\s*body\.replyTo/);
+  });
+
+  it("attaches the same replyTo to every kind of send — media, location and text", () => {
+    const mediaBranch = POST.slice(POST.indexOf("body.dataUrl"), POST.indexOf("A place"));
+    const locationBranch = POST.slice(POST.indexOf("A place"), POST.indexOf("// Words."));
+    const textBranch = POST.slice(POST.indexOf("// Words."));
+    for (const branch of [mediaBranch, locationBranch, textBranch]) {
+      assert.match(branch, /appendChat\(shareId, \{[\s\S]*replyTo,[\s\S]*?\}\)/);
+    }
+  });
+
+  it("returns nothing for a stale or made-up `at` rather than failing the send", async () => {
+    assert.equal(await quoteFor("no-such-share-id", "no-such-at"), undefined);
+  });
+});
+
+describe("an itinerary reference is sanitized and carried on every kind of send", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+
+  it("is trimmed and capped the same way a caption is, never trusted raw", () => {
+    assert.match(POST, /body\?\.itineraryRef === "string" && body\.itineraryRef\.trim\(\)/);
+    assert.match(POST, /body\.itineraryRef\.trim\(\)\.slice\(0, MAX_CHAT_LABEL\)/);
+  });
+
+  it("attaches to media, location and text sends alike", () => {
+    const mediaBranch = POST.slice(POST.indexOf("body.dataUrl"), POST.indexOf("A place"));
+    const locationBranch = POST.slice(POST.indexOf("A place"), POST.indexOf("// Words."));
+    const textBranch = POST.slice(POST.indexOf("// Words."));
+    for (const branch of [mediaBranch, locationBranch, textBranch]) {
+      assert.match(branch, /appendChat\(shareId, \{[\s\S]*itineraryRef,[\s\S]*?\}\)/);
+    }
+  });
+});
+
+describe("typing is a courtesy signal, not a message", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+
+  it("short-circuits before a reply is even looked up, and carries no rate limit", () => {
+    assert.match(POST, /body\?\.typing === true/);
+    assert.ok(POST.indexOf("body?.typing === true") < POST.indexOf("quoteFor"), "typing returns before a quote is looked up");
+  });
+
+  it("GET reports the OTHER side's typing state, never this side's own", () => {
+    const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
+    assert.match(GET, /isTyping\(shareId, otherSideOf\(who\.side\)\)/);
+  });
+});
+
+describe("a peek does not mark the thread read", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
+
+  it("only marks read when ?peek=1 was not sent", () => {
+    assert.match(GET, /searchParams\.get\("peek"\) === "1"/);
+    assert.match(GET, /if \(!peek\)/);
+    assert.ok(GET.indexOf('searchParams.get("peek")') < GET.indexOf("markRead"), "peek is read before markRead runs");
+  });
+
+  it("still reports the server's real picture size limit either way", () => {
+    assert.match(GET, /imageLimit: effectiveMediaLimit\(\)/);
+  });
+});
+
 describe("deleting a whole conversation is fenced", () => {
   const ROUTE = readFileSync("app/api/companion/chats/route.ts", "utf8");
   const DEL = ROUTE.slice(ROUTE.indexOf("export async function DELETE"));
@@ -236,5 +322,12 @@ describe("deleting a whole conversation is fenced", () => {
     const body = DEL.slice(DEL.indexOf("const owns"));
     assert.match(body, /await deleteConversation\(shareId\)/);
     assert.doesNotMatch(body, /stopTripShare|deleteTrip|removeTrip/);
+  });
+
+  it("clearing a conversation also clears both sides' typing signal, not just the messages", () => {
+    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
+    const fn = STORE.slice(STORE.indexOf("export async function deleteConversation"), STORE.indexOf("/* ---- read markers"));
+    assert.match(fn, /DEL", typingKeyFor\(shareId, "client"\)/);
+    assert.match(fn, /DEL", typingKeyFor\(shareId, "advisor"\)/);
   });
 });
