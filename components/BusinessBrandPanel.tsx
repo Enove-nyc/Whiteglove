@@ -3,6 +3,7 @@
 import { type FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { type BusinessBrand, MAX_BRAND_LINE, MAX_BRAND_NAME } from "@/lib/business-brand";
+import { BRAND_DOMAIN, BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core";
 
 /**
  * A Business account putting its own name on the itineraries it prints.
@@ -25,8 +26,10 @@ const captionClass = "text-[11px] font-bold uppercase tracking-[0.12em] text-sto
 /** Comfortably inside what the store will take, once base64 has grown it. */
 const MAX_UPLOAD_BYTES = 600 * 1024;
 
-export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) {
+export default function BusinessBrandPanel({ brand, siteBrand }: { brand: BusinessBrand; siteBrand: SiteBrand }) {
   const router = useRouter();
+  const siteName = BRAND_NAME[siteBrand];
+  const siteDomain = BRAND_DOMAIN[siteBrand];
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(brand.name);
   const [contactLine, setContactLine] = useState(brand.contactLine);
@@ -215,18 +218,18 @@ export default function BusinessBrandPanel({ brand }: { brand: BusinessBrand }) 
                   White Glove
                 </p>
                 <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
-                  Kosher Travel
+                  {siteBrand === "itineraries" ? "Itineraries" : "Kosher Travel"}
                 </p>
               </>
             )}
             <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">
-              {enabled && name.trim() ? `Prepared by ${name}` : "A White Glove Kosher Travel journey"}
+              {enabled && name.trim() ? `Prepared by ${name}` : `A ${siteName} journey`}
             </p>
             {enabled && contactLine.trim() && <p className="mt-1.5 text-[10px] text-stone-500">{contactLine}</p>}
             <p className="mt-4 font-[family-name:var(--font-display)] text-base text-[var(--navy)]">Your client&rsquo;s trip</p>
           </div>
           <p className="mt-3 text-[10px] leading-5 text-stone-500">
-            {enabled && name.trim() ? "Planned with whiteglovekoshertravel.com" : "whiteglovekoshertravel.com"}
+            {enabled && name.trim() ? `Planned with ${siteDomain}` : siteDomain}
           </p>
           {/* The one case where the preview is right and looks wrong: the
               switch is off and there is something to show. Said here rather
