@@ -291,7 +291,7 @@ export default async function HeritagePage() {
             <SectionHeading
               eyebrow="How we verify"
               title="Before you travel"
-              description="Somebody drives four hours on the strength of a line on one of these pages. So every practical detail carries a label saying how far it has been checked, and nothing is published to fill a gap."
+              description="Every practical detail carries a label saying how far it has been checked."
             />
             <div className="mt-8 flex flex-wrap gap-3">
               <VerificationBadge descriptor={TRUST_LEVELS.verified} lastChecked={undefined} />
@@ -299,11 +299,6 @@ export default async function HeritagePage() {
               <VerificationBadge descriptor={TRUST_LEVELS["being-checked"]} />
               <VerificationBadge descriptor={TRUST_LEVELS.reconfirm} />
             </div>
-            <p className="mt-6 max-w-2xl leading-7 text-stone-600">
-              Coordinates open the pin rather than the nearest street. Driving times come from real road routing, so a
-              day&apos;s plan holds up. A shomer&apos;s number is the kind of thing that changes without anybody
-              announcing it, which is what the fourth label is for.
-            </p>
             <p className="mt-6">
               <Link
                 href="/verification"

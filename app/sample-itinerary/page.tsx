@@ -69,8 +69,7 @@ export default async function SampleItineraryPage() {
               A week in Rome, as it arrives.
             </h1>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-              A family of five, seven nights, and a Shabbos in the middle of it. This is the document you are handed at
-              the end: a day per page, the walking and driving worked out, and the kosher side answered for each day.
+              A family of five, seven nights, and a Shabbos in the middle of it — the document you are actually handed.
             </p>
             <p className="mt-4 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#fcf6e9] px-5 py-3 leading-7 text-stone-700">
               <span className="font-semibold text-[var(--navy)]">{SAMPLE_NOTICE}</span>
@@ -79,30 +78,17 @@ export default async function SampleItineraryPage() {
         </section>
       )}
 
-      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-        <SectionHeading
-          eyebrow="Contents"
-          title="What is in it"
-          description="You will find each of them in the document below."
-        />
-        <dl className="mt-10 grid gap-x-10 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
-          {WHAT_IS_IN_IT.map(([term, detail]) => (
-            <div key={term} className="border-t border-[var(--gold-light)] pt-4">
-              <dt className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{term}</dt>
-              <dd className="mt-2 leading-7 text-stone-600">{detail}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
+      {/* THE SAMPLE COMES FIRST, right after the hero — before, this page
+          explained what was in the document across two sections before
+          showing it. A visitor here wants to see it, not read about it. */}
       <section className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
           <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
             The document
           </h2>
           <p className="mt-3 max-w-3xl leading-7 text-stone-600">
-            A cover, then a page per day. It also arrives in your account here, where you can move a day, drop a stop,
-            and print it again.
+            A cover, then a page per day — and it arrives in your account too, where you can move a day and print it
+            again.
           </p>
 
           {/* Framed rather than dropped straight onto the page, so it reads as
@@ -119,6 +105,18 @@ export default async function SampleItineraryPage() {
             Shown at the width it prints. On a phone, slide the panel sideways to read across it.
           </p>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
+        <SectionHeading eyebrow="Contents" title="What is in it" />
+        <dl className="mt-10 grid gap-x-10 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
+          {WHAT_IS_IN_IT.map(([term, detail]) => (
+            <div key={term} className="border-t border-[var(--gold-light)] pt-4">
+              <dt className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{term}</dt>
+              <dd className="mt-2 leading-7 text-stone-600">{detail}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">

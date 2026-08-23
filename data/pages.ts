@@ -423,7 +423,7 @@ export const editablePages: PageDef[] = [
     seoTitle: "Kosher travel — food, Shabbos, minyanim and mikvaos | White Glove Kosher Travel",
     seoDescription: "Kosher food, places to stay, shuls, mikvaos, zmanim and kevarim — the practical side of travelling kosher, in one place.",
     blocks: [
-      { id: "kosher-travel-hero", kind: "hero", eyebrow: "Kosher travel", heading: "Practical kosher travel.", intro: "" },
+      { id: "kosher-travel-hero", kind: "hero", eyebrow: "Kosher travel", heading: "Kosher travel, worked into the trip.", intro: "" },
     ],
   },
   {
