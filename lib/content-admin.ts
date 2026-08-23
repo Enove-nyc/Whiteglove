@@ -1103,7 +1103,27 @@ export type NewStayFields = {
   website: string | null;
   notes: string[];
   sourceUrl: string;
+  /**
+   * Kosher / Shabbos attributes — each "yes" | "no" | "unknown", defaulting to
+   * "unknown" when the form leaves them alone. Never inferred from kind or
+   * kosherClaim.
+   */
+  onSiteKosherFood?: string;
+  kosherBreakfast?: string;
+  shabbosMeals?: string;
+  nearbyKosherFood?: string;
+  nearbyShulOrMinyan?: string;
+  eruv?: string;
+  shabbosAccessInfo?: string | null;
+  shabbosElevator?: string;
+  kitchenSelfCatering?: string;
+  kosherKitchen?: string;
+  walkingDistanceToJewishArea?: string;
 };
+
+function confirmedField(value: string | undefined): string {
+  return ["yes", "no", "unknown"].includes(value ?? "") ? (value as string) : "unknown";
+}
 
 export async function createKosherStay(fields: NewStayFields) {
   const prisma = await db();
@@ -1125,6 +1145,17 @@ export async function createKosherStay(fields: NewStayFields) {
       notes: fields.notes,
       sourceUrl: fields.sourceUrl,
       status: "PUBLISHED",
+      onSiteKosherFood: confirmedField(fields.onSiteKosherFood),
+      kosherBreakfast: confirmedField(fields.kosherBreakfast),
+      shabbosMeals: confirmedField(fields.shabbosMeals),
+      nearbyKosherFood: confirmedField(fields.nearbyKosherFood),
+      nearbyShulOrMinyan: confirmedField(fields.nearbyShulOrMinyan),
+      eruv: confirmedField(fields.eruv),
+      shabbosAccessInfo: fields.shabbosAccessInfo ?? null,
+      shabbosElevator: confirmedField(fields.shabbosElevator),
+      kitchenSelfCatering: confirmedField(fields.kitchenSelfCatering),
+      kosherKitchen: confirmedField(fields.kosherKitchen),
+      walkingDistanceToJewishArea: confirmedField(fields.walkingDistanceToJewishArea),
     },
     select: { slug: true, name: true },
   });
