@@ -18,10 +18,19 @@ export default function StartingPoints({
   omit = [],
   heading = "Ways to start",
   intro,
+  deemphasize = [],
 }: {
   omit?: string[];
   heading?: string;
   intro?: string;
+  /**
+   * Hrefs to show with less visual weight than the others — still a real
+   * door, still named and linked the same as everywhere else, just not
+   * competing for attention. Get recommendations earns revenue and stays on
+   * the page; it does not have to stay the same size as the doors the owner
+   * wants leading.
+   */
+  deemphasize?: string[];
 }) {
   const points = startingPointsExcept(...omit);
   if (points.length === 0) return null;
@@ -34,22 +43,43 @@ export default function StartingPoints({
       {intro && <p className="mt-3 max-w-2xl leading-7 text-stone-600">{intro}</p>}
 
       <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {points.map((point) => (
-          <li key={point.href}>
-            <Link
-              href={point.href}
-              className="wg-card group flex h-full flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5"
-            >
-              <span className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                {point.label}
-              </span>
-              <span className="mt-3 flex-1 text-sm leading-6 text-stone-600">{point.body}</span>
-              <span className="mt-5 text-sm font-semibold text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
-                {point.cta} →
-              </span>
-            </Link>
-          </li>
-        ))}
+        {points.map((point) => {
+          const low = deemphasize.includes(point.href);
+          return (
+            <li key={point.href} className={low ? "sm:self-end" : undefined}>
+              <Link
+                href={point.href}
+                className={
+                  low
+                    ? "group flex h-full flex-col rounded-2xl border border-transparent p-5 transition hover:border-[var(--gold-light)]"
+                    : "wg-card group flex h-full flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-5"
+                }
+              >
+                <span
+                  className={
+                    low
+                      ? "block text-base font-semibold leading-tight text-stone-600 group-hover:text-[var(--navy)]"
+                      : "block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]"
+                  }
+                >
+                  {point.label}
+                </span>
+                <span className={low ? "mt-2 flex-1 text-xs leading-5 text-stone-500" : "mt-3 flex-1 text-sm leading-6 text-stone-600"}>
+                  {point.body}
+                </span>
+                <span
+                  className={
+                    low
+                      ? "mt-3 text-xs font-semibold text-stone-500 transition group-hover:text-[var(--gold-ink)]"
+                      : "mt-5 text-sm font-semibold text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]"
+                  }
+                >
+                  {point.cta} →
+                </span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

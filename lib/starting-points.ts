@@ -51,7 +51,7 @@ export const STARTING_POINTS: readonly StartingPoint[] = [
   {
     href: "/itinerary",
     label: "Build the trip yourself",
-    body: "Days, stops, driving times, Shabbos.",
+    body: "Days, stops, and driving times.",
     cta: "Open the itinerary planner",
   },
   {
