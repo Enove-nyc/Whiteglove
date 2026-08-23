@@ -48,7 +48,10 @@ export async function listAdminCatalog(kind: AdminCatalogKind): Promise<AdminCat
       country: item.country,
       sourceUrl: item.sourceUrl,
       viewHref: `/hotels#${item.slug}`,
-      editHref: "/admin/add",
+      // Only an owner-added stay has a database row to edit. A stay the site
+      // shipped with (in data/kosher-stays.ts) has nowhere to save a change to
+      // yet, so it still points at Add — the same as before this screen existed.
+      editHref: item.ownerAdded ? `/admin/directory/stays/${item.slug}/edit` : "/admin/add",
       ownerAdded: item.ownerAdded,
     }));
   }

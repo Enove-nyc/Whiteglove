@@ -34,7 +34,7 @@ import type { HeritageCardModel } from "@/lib/destination-directory";
  * built-in files).
  */
 
-import type { Season, TripTheme, VacationDestination } from "@/data/vacation-destinations";
+import { deriveYomTovThemes, type Season, type TripTheme, type VacationDestination } from "@/data/vacation-destinations";
 import type { VacationDestinationItem } from "@/lib/vacation-destinations-view";
 import { vacationDestinationHref } from "@/lib/route-migration";
 
@@ -396,7 +396,8 @@ export function cardSlug(card: DirectoryCard): string {
  * only that.
  */
 export function cardThemes(card: DirectoryCard): readonly TripTheme[] {
-  return card.kind === "vacation" ? card.destination.themes : ["heritage"];
+  if (card.kind !== "vacation") return ["heritage"];
+  return [...card.destination.themes, ...deriveYomTovThemes(card.destination.bestFor)];
 }
 
 /**
@@ -455,17 +456,26 @@ function tally<V extends string>(
   cards: readonly DirectoryCard[],
   options: ReadonlyArray<{ value: V; label: string }>,
   has: (card: DirectoryCard, value: V) => boolean,
+  minCount = 1,
 ): Array<FilterOption<V>> {
   return options
     .map((option) => ({ ...option, count: cards.filter((card) => has(card, option.value)).length }))
-    .filter((option) => option.count > 0);
+    .filter((option) => option.count >= minCount);
 }
+
+/**
+ * Trip-type chip row minimum. A chip that answers for exactly one destination
+ * reads as a category invented for that one place rather than a real way to
+ * browse — so a trip type needs at least two real destinations behind it
+ * before it is offered as a way in.
+ */
+const MIN_TRIP_TYPE_DESTINATIONS = 2;
 
 export function themeOptions(
   cards: readonly DirectoryCard[],
   themes: ReadonlyArray<{ value: TripTheme; label: string }>,
 ): Array<FilterOption<TripTheme>> {
-  return tally(cards, themes, (card, value) => cardThemes(card).includes(value));
+  return tally(cards, themes, (card, value) => cardThemes(card).includes(value), MIN_TRIP_TYPE_DESTINATIONS);
 }
 
 export function seasonOptions(
@@ -503,6 +513,31 @@ export function kosherOptions(cards: readonly DirectoryCard[]): Array<FilterOpti
 
 export function shabbosOptions(cards: readonly DirectoryCard[]): Array<FilterOption<ShabbosLevel>> {
   return tally(cards, SHABBOS_FILTERS, (card, value) => card.kind === "vacation" && card.shabbos.level === value);
+}
+
+/** Meteorological season for the northern hemisphere, from a real month. */
+export function currentSeason(now: Date = new Date()): Season {
+  const month = now.getMonth(); // 0-11
+  if (month <= 1 || month === 11) return "winter";
+  if (month <= 4) return "spring";
+  if (month <= 7) return "summer";
+  return "autumn";
+}
+
+/**
+ * Destinations for a compact "featured this season" row — active, opted into
+ * featuring by an admin, AND actually one of the destination's own recorded
+ * seasons. No hardcoded "always feature Pesach": a destination only ever
+ * appears here because someone both turned it on and it genuinely answers to
+ * the season it is now.
+ */
+export function featuredThisSeason(
+  destinations: readonly VacationDestinationItem[],
+  season: Season = currentSeason(),
+): VacationDestinationItem[] {
+  return destinations.filter(
+    (d) => (d.seasonActive ?? true) && d.seasonFeatured === true && d.seasons.includes(season),
+  );
 }
 
 /** Tailwind per tone. Kept here so a second component cannot invent a palette. */

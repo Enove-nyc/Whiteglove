@@ -166,6 +166,17 @@ export async function addKosherStayAction(_prev: ActionResult | null, formData: 
       website: nullable(formData, "website"),
       notes: lines(formData, "notes"),
       sourceUrl,
+      onSiteKosherFood: str(formData, "onSiteKosherFood"),
+      kosherBreakfast: str(formData, "kosherBreakfast"),
+      shabbosMeals: str(formData, "shabbosMeals"),
+      nearbyKosherFood: str(formData, "nearbyKosherFood"),
+      nearbyShulOrMinyan: str(formData, "nearbyShulOrMinyan"),
+      eruv: str(formData, "eruv"),
+      shabbosAccessInfo: nullable(formData, "shabbosAccessInfo"),
+      shabbosElevator: str(formData, "shabbosElevator"),
+      kitchenSelfCatering: str(formData, "kitchenSelfCatering"),
+      kosherKitchen: str(formData, "kosherKitchen"),
+      walkingDistanceToJewishArea: str(formData, "walkingDistanceToJewishArea"),
     });
     revalidateTripContent("stay");
     return { ok: true, message: `Added “${name}”. It is in the where-to-stay list, the search and the hotel picker now.` };

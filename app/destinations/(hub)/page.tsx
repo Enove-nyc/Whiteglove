@@ -3,12 +3,13 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
+import SeasonalFeaturedRow from "@/components/SeasonalFeaturedRow";
 import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { heritageCards } from "@/lib/destination-directory";
-import { asDirectoryCards, asHeritageCards, cardModels } from "@/lib/vacation-ideas";
+import { asDirectoryCards, asHeritageCards, cardModels, featuredThisSeason } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
 import StructuredData from "@/components/StructuredData";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -92,6 +93,7 @@ export default async function VacationIdeasPage({
           ("Destinations"), and it is the one the owner can edit; a second
           heading here said the same word twice. */}
       <section id="browse" className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
+        <SeasonalFeaturedRow destinations={featuredThisSeason(destinations)} />
         <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
       </section>
 
