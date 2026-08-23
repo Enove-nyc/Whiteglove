@@ -50,6 +50,15 @@ export type StayKind =
  */
 export type KosherClaim = "none" | "reported" | "confirmed";
 
+/**
+ * A confirmed fact about a stay's kosher/Shabbos attributes — never inferred.
+ * "unknown" is the default and stays invisible to customers: only "yes" ever
+ * shows as a badge or matches a filter. "no" is a recorded negative, kept
+ * distinct from "unknown" so admin can tell "checked, doesn't have it" from
+ * "nobody has asked".
+ */
+export type Confirmed = "yes" | "no" | "unknown";
+
 /** The shul or quarter a stay is measured from. Public, published locations. */
 export type StayAnchor = {
   name: string;
@@ -73,6 +82,25 @@ export type KosherStay = {
   notes?: string[];
   website?: string;
   sourceUrl: string;
+
+  /**
+   * Kosher / Shabbos accommodation attributes. All optional, all default to
+   * "unknown" when absent — never inferred from kind or kosherClaim. Only a
+   * "yes" is ever shown to a customer (badge or filter match); "unknown"
+   * stays invisible on the public site and "no" is a recorded negative.
+   */
+  onSiteKosherFood?: Confirmed;
+  kosherBreakfast?: Confirmed;
+  shabbosMeals?: Confirmed;
+  nearbyKosherFood?: Confirmed;
+  nearbyShulOrMinyan?: Confirmed;
+  eruv?: Confirmed;
+  /** Free text — key/access details relevant for Shabbos. Optional. */
+  shabbosAccessInfo?: string;
+  shabbosElevator?: Confirmed;
+  kitchenSelfCatering?: Confirmed;
+  kosherKitchen?: Confirmed;
+  walkingDistanceToJewishArea?: Confirmed;
 };
 
 /**

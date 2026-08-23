@@ -1103,7 +1103,88 @@ export type NewStayFields = {
   website: string | null;
   notes: string[];
   sourceUrl: string;
+  /**
+   * Kosher / Shabbos attributes — each "yes" | "no" | "unknown", defaulting to
+   * "unknown" when the form leaves them alone. Never inferred from kind or
+   * kosherClaim.
+   */
+  onSiteKosherFood?: string;
+  kosherBreakfast?: string;
+  shabbosMeals?: string;
+  nearbyKosherFood?: string;
+  nearbyShulOrMinyan?: string;
+  eruv?: string;
+  shabbosAccessInfo?: string | null;
+  shabbosElevator?: string;
+  kitchenSelfCatering?: string;
+  kosherKitchen?: string;
+  walkingDistanceToJewishArea?: string;
 };
+
+function confirmedField(value: string | undefined): string {
+  return ["yes", "no", "unknown"].includes(value ?? "") ? (value as string) : "unknown";
+}
+
+/** One owner-added stay, for the edit screen. Static (file-seeded) stays have
+ *  no database row and are not reachable here — they are not editable. */
+export async function getKosherStayForAdmin(slug: string) {
+  const prisma = await db();
+  return prisma.kosherStay.findUnique({ where: { slug } });
+}
+
+/**
+ * Correct an owner-added stay already on the site.
+ *
+ * Unlike a destination, a stay has no built-in text to fall back to — this is
+ * a full row already saved through {@link createKosherStay}, so every field
+ * is simply overwritten with what the form now says, the same as updatePlace.
+ * The slug is never touched: it is how the public list and this row agree on
+ * which listing this is.
+ */
+export async function updateKosherStay(slug: string, fields: NewStayFields) {
+  const prisma = await db();
+  const before = await prisma.kosherStay.findUnique({ where: { slug } });
+  if (!before) throw new Error("That stay could not be found.");
+  const row = await prisma.kosherStay.update({
+    where: { slug },
+    data: {
+      name: fields.name,
+      city: fields.city,
+      country: fields.country,
+      kind: fields.kind,
+      summary: fields.summary,
+      anchorName: fields.anchorName,
+      anchorCoords: fields.anchorCoords,
+      season: fields.season,
+      kosherClaim: ["none", "reported", "confirmed"].includes(fields.kosherClaim) ? fields.kosherClaim : "none",
+      website: fields.website,
+      notes: fields.notes,
+      sourceUrl: fields.sourceUrl,
+      onSiteKosherFood: confirmedField(fields.onSiteKosherFood),
+      kosherBreakfast: confirmedField(fields.kosherBreakfast),
+      shabbosMeals: confirmedField(fields.shabbosMeals),
+      nearbyKosherFood: confirmedField(fields.nearbyKosherFood),
+      nearbyShulOrMinyan: confirmedField(fields.nearbyShulOrMinyan),
+      eruv: confirmedField(fields.eruv),
+      shabbosAccessInfo: fields.shabbosAccessInfo ?? null,
+      shabbosElevator: confirmedField(fields.shabbosElevator),
+      kitchenSelfCatering: confirmedField(fields.kitchenSelfCatering),
+      kosherKitchen: confirmedField(fields.kosherKitchen),
+      walkingDistanceToJewishArea: confirmedField(fields.walkingDistanceToJewishArea),
+    },
+    select: { slug: true, name: true },
+  });
+  await recordChange({
+    kind: "listing",
+    rowId: slug,
+    title: fields.name,
+    before: before as unknown as Record<string, unknown>,
+    after: fields as unknown as Record<string, unknown>,
+  });
+  invalidateSiteSearchIndex();
+  await bustTag(ATTRACTIONS_PUBLIC_TAG);
+  return row;
+}
 
 export async function createKosherStay(fields: NewStayFields) {
   const prisma = await db();
@@ -1125,6 +1206,17 @@ export async function createKosherStay(fields: NewStayFields) {
       notes: fields.notes,
       sourceUrl: fields.sourceUrl,
       status: "PUBLISHED",
+      onSiteKosherFood: confirmedField(fields.onSiteKosherFood),
+      kosherBreakfast: confirmedField(fields.kosherBreakfast),
+      shabbosMeals: confirmedField(fields.shabbosMeals),
+      nearbyKosherFood: confirmedField(fields.nearbyKosherFood),
+      nearbyShulOrMinyan: confirmedField(fields.nearbyShulOrMinyan),
+      eruv: confirmedField(fields.eruv),
+      shabbosAccessInfo: fields.shabbosAccessInfo ?? null,
+      shabbosElevator: confirmedField(fields.shabbosElevator),
+      kitchenSelfCatering: confirmedField(fields.kitchenSelfCatering),
+      kosherKitchen: confirmedField(fields.kosherKitchen),
+      walkingDistanceToJewishArea: confirmedField(fields.walkingDistanceToJewishArea),
     },
     select: { slug: true, name: true },
   });
