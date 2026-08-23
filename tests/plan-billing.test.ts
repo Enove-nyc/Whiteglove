@@ -17,6 +17,8 @@ import {
   type PlanPricing,
   priceIdFor,
   readOfferingHow,
+  TRIAL_DAYS,
+  trialEligible,
   type PlanOffering,
 } from "@/lib/plan-billing";
 
@@ -121,6 +123,30 @@ describe("one-time vs. subscription", () => {
     assert.equal(isOneTimePlan("starter"), false);
     assert.equal(isOneTimePlan("pro"), false);
     assert.equal(isOneTimePlan("free"), false);
+  });
+});
+
+describe("the free trial", () => {
+  it("is offered on a first subscription", () => {
+    assert.equal(trialEligible("starter", false), true);
+    assert.equal(trialEligible("pro", false), true);
+  });
+
+  it("is NEVER offered on One Trip, first time or not — it is a single payment", () => {
+    assert.equal(trialEligible("one_trip", false), false);
+    assert.equal(trialEligible("one_trip", true), false);
+  });
+
+  it("is refused to somebody who has already had a subscription", () => {
+    // Upgrading Starter to Pro, or resubscribing after cancelling, is still
+    // "has subscribed before" — a second trial on a different plan would be
+    // the same free ride under a new name.
+    assert.equal(trialEligible("starter", true), false);
+    assert.equal(trialEligible("pro", true), false);
+  });
+
+  it("is a real number of days, not zero or something silly", () => {
+    assert.ok(TRIAL_DAYS >= 7 && TRIAL_DAYS <= 30);
   });
 });
 

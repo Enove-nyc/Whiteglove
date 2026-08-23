@@ -189,6 +189,10 @@ export type CheckoutSession = { id: string; url?: string | null; customer?: stri
  * is how a payment finds the person who made it. The customer's email is
  * pre-filled so Stripe does not create a second customer for somebody who
  * already has one.
+ *
+ * `trialDays`, when given, is attached to `subscription_data` and Stripe's own
+ * checkout page shows the trial terms before anybody enters a card — nothing
+ * on this site has to say so separately for the charge itself to be honest.
  */
 export async function createCheckoutSession(input: {
   priceId: string;
@@ -201,6 +205,12 @@ export async function createCheckoutSession(input: {
   plan: string;
   /** "subscription" unless told otherwise — see the note above. */
   mode?: "subscription" | "payment";
+  /**
+   * Days free before the card is charged — only ever set for a first
+   * subscription, never a one-time purchase. See trialEligible in
+   * lib/plan-billing.ts, the one place that decides who qualifies.
+   */
+  trialDays?: number;
 }): Promise<StripeResult<CheckoutSession>> {
   const mode = input.mode ?? "subscription";
   const body: Record<string, unknown> = {
@@ -215,7 +225,10 @@ export async function createCheckoutSession(input: {
   if (mode === "subscription") {
     // Repeated on the subscription itself: the events that arrive months later
     // — a renewal, a cancellation — carry the subscription, not the session.
-    body.subscription_data = { metadata: { account: input.account.slice(0, 200), plan: input.plan } };
+    body.subscription_data = {
+      metadata: { account: input.account.slice(0, 200), plan: input.plan },
+      ...(input.trialDays && input.trialDays > 0 ? { trial_period_days: input.trialDays } : {}),
+    };
   }
   if (input.customerId) body.customer = input.customerId;
   else if (input.email) body.customer_email = input.email;

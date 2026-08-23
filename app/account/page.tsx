@@ -15,8 +15,8 @@ import { getPlan, openRequestFor } from "@/lib/account-plan-store";
 import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
-import { isOneTimePlan, offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
-import { readPlanOffering } from "@/lib/plan-billing-store";
+import { isOneTimePlan, offerablePlans, offerLine, periodsFor, priceIdFor, trialEligible } from "@/lib/plan-billing";
+import { readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
 import { describePrice, readPrice } from "@/lib/stripe";
 import { getLimitOverrides, usageLineFor } from "@/lib/account-limits-store";
 import { getTrips } from "@/lib/account-store";
@@ -76,6 +76,10 @@ export default async function AccountPage() {
   const offering = await readPlanOffering();
   const offerChoices: PlanOffer[] = [];
   if (offering.open) {
+    // One read, reused for every card — whether this account has EVER had a
+    // subscription (any plan, even one now cancelled) is what trialEligible
+    // in lib/plan-billing.ts asks, not which plan it is looking at today.
+    const hasSubscribedBefore = Boolean(await readSubscription(who));
     for (const paid of offerablePlans(offering)) {
       const periods = await Promise.all(
         periodsFor(offering, paid).map(async (period) => ({
@@ -97,6 +101,7 @@ export default async function AccountPage() {
         periods: usable,
         limitsLine: describeLimits(paid, limitsFor(paid, overrides)),
         oneTime: isOneTimePlan(paid),
+        trialEligible: offering.how === "stripe" && trialEligible(paid, hasSubscribedBefore),
       });
     }
   }

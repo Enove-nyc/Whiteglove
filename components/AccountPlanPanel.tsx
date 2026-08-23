@@ -12,6 +12,7 @@ import {
   plansToAskAbout,
   whatYouGet,
 } from "@/lib/account-plans";
+import { TRIAL_DAYS } from "@/lib/plan-billing";
 
 /**
  * What kind of account this is, and how to come by a different one.
@@ -53,6 +54,8 @@ export type PlanOffer = {
   limitsLine: string;
   /** A single fee, not a subscription — see lib/plan-billing.ts's ONE_TIME_PLANS. */
   oneTime: boolean;
+  /** Worked out on the server from trialEligible in lib/plan-billing.ts. */
+  trialEligible: boolean;
 };
 
 export default function AccountPlanPanel({
@@ -263,24 +266,33 @@ export default function AccountPlanPanel({
                   {entry?.line && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{entry.line}</p>}
 
                   {takingCards && entry ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {entry.periods.map((option) => (
-                        <button
-                          key={option.period}
-                          type="button"
-                          onClick={() => subscribe(choice, option.period)}
-                          disabled={sending}
-                          className="min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)] disabled:opacity-50"
-                        >
-                          {sending
-                            ? "One moment…"
-                            : entry.oneTime
-                              ? `Buy — ${option.line}`
-                              : entry.periods.length > 1
-                                ? `${option.period === "yearly" ? "Yearly" : "Monthly"} — ${option.line}`
-                                : `Subscribe — ${option.line}`}
-                        </button>
-                      ))}
+                    <div className="mt-4">
+                      {entry.trialEligible && (
+                        <p className="mb-2 text-xs font-semibold text-[var(--gold-ink)]">
+                          Free for {TRIAL_DAYS} days, then billed — cancel any time before that and nothing is charged.
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {entry.periods.map((option) => (
+                          <button
+                            key={option.period}
+                            type="button"
+                            onClick={() => subscribe(choice, option.period)}
+                            disabled={sending}
+                            className="min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)] disabled:opacity-50"
+                          >
+                            {sending
+                              ? "One moment…"
+                              : entry.oneTime
+                                ? `Buy — ${option.line}`
+                                : entry.trialEligible
+                                  ? `Start free trial — then ${option.line}`
+                                  : entry.periods.length > 1
+                                    ? `${option.period === "yearly" ? "Yearly" : "Monthly"} — ${option.line}`
+                                    : `Subscribe — ${option.line}`}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <button

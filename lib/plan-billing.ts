@@ -69,6 +69,26 @@ export function isOneTimePlan(plan: AccountPlan): boolean {
   return (ONE_TIME_PLANS as readonly string[]).includes(plan);
 }
 
+/**
+ * How many days a first subscription runs free before the card is charged.
+ *
+ * ONLY THE FIRST. Somebody upgrading from Starter to Pro, or resubscribing
+ * after cancelling, has already had their trial — `trialEligible` below
+ * takes whether they have ever had a subscription at all, not which plan
+ * they are choosing now. One Trip is a single payment, not a subscription,
+ * so it is never eligible regardless.
+ */
+export const TRIAL_DAYS = 14;
+
+/**
+ * Whether THIS checkout gets a trial. THE ONE PLACE THIS IS DECIDED, so the
+ * checkout route and the account page (which has to say so before anybody
+ * presses the button) cannot drift apart on who qualifies.
+ */
+export function trialEligible(plan: PaidPlan, hasSubscribedBefore: boolean): boolean {
+  return !isOneTimePlan(plan) && !hasSubscribedBefore;
+}
+
 /** How often the subscription renews. Both are offered; neither is assumed. */
 export const BILLING_PERIODS = ["monthly", "yearly"] as const;
 export type BillingPeriod = (typeof BILLING_PERIODS)[number];

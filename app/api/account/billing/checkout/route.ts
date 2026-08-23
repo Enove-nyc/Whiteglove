@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
-import { isBillingPeriod, isOneTimePlan, isPaidPlan, planIsOfferable, priceIdFor } from "@/lib/plan-billing";
+import { isBillingPeriod, isOneTimePlan, isPaidPlan, planIsOfferable, priceIdFor, TRIAL_DAYS, trialEligible } from "@/lib/plan-billing";
 import { readPlanOffering, readSubscription, rememberCustomer } from "@/lib/plan-billing-store";
 import { siteOrigin } from "@/lib/seo";
 import { createCheckoutSession } from "@/lib/stripe";
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
     successUrl: `${origin}/account?subscribed=${encodeURIComponent(plan)}`,
     cancelUrl: `${origin}/account?subscribed=cancelled`,
     mode: oneTime ? "payment" : "subscription",
+    trialDays: trialEligible(plan, Boolean(existing)) ? TRIAL_DAYS : undefined,
   });
 
   if (!session.ok || !session.data.url) {

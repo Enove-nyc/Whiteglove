@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { describe, it } from "node:test";
-import { customerIdOf, describePrice, statusIsPaid, verifyWebhook } from "@/lib/stripe";
+import { afterEach, describe, it } from "node:test";
+import { createCheckoutSession, customerIdOf, describePrice, statusIsPaid, verifyWebhook } from "@/lib/stripe";
 
 /**
  * The webhook signature, which is the only thing standing between the internet
@@ -121,5 +121,57 @@ describe("saying what a price is", () => {
 
   it("says the money without a period when nothing renews", () => {
     assert.equal(describePrice({ id: "p", unit_amount: 5000, currency: "usd" }), "$50");
+  });
+});
+
+describe("starting a checkout", () => {
+  const originalFetch = globalThis.fetch;
+  const originalKey = process.env.STRIPE_SECRET_KEY;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = originalKey;
+  });
+
+  /** Stubs Stripe's response and hands back whatever body this call sent it. */
+  function captureBody(): { body: string } {
+    process.env.STRIPE_SECRET_KEY = "sk_test_x";
+    const captured = { body: "" };
+    globalThis.fetch = (async (_input, init) => {
+      captured.body = String(init?.body ?? "");
+      return new Response(JSON.stringify({ id: "cs_1", url: "https://checkout.stripe.com/x" }), { status: 200 });
+    }) as typeof fetch;
+    return captured;
+  }
+
+  const base = {
+    priceId: "price_1",
+    account: "a@b.com",
+    successUrl: "https://x/success",
+    cancelUrl: "https://x/cancel",
+  };
+
+  it("ATTACHES A TRIAL TO THE SUBSCRIPTION, WHEN GIVEN ONE", async () => {
+    // trial_period_days belongs on subscription_data, not the top-level body —
+    // Stripe rejects it anywhere else.
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "starter", trialDays: 14 });
+    assert.match(captured.body, /subscription_data%5Btrial_period_days%5D=14/);
+  });
+
+  it("NEVER ATTACHES A TRIAL TO A ONE-TIME PURCHASE", async () => {
+    // Stripe rejects trial_period_days outright in payment mode — this is not
+    // just a copy decision, sending it here would fail the checkout entirely.
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "one_trip", mode: "payment", trialDays: 14 });
+    assert.doesNotMatch(captured.body, /trial_period_days/);
+    assert.doesNotMatch(captured.body, /subscription_data/);
+  });
+
+  it("says nothing about a trial when none was asked for", async () => {
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "starter" });
+    assert.doesNotMatch(captured.body, /trial_period_days/);
   });
 });

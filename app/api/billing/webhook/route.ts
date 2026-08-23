@@ -10,7 +10,7 @@ import {
   type SubscriptionRecord,
   writeSubscription,
 } from "@/lib/plan-billing-store";
-import { customerIdOf, statusIsPaid, stripeWebhookSecret, verifyWebhook } from "@/lib/stripe";
+import { customerIdOf, readSubscriptionFromStripe, statusIsPaid, stripeWebhookSecret, verifyWebhook } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -99,12 +99,18 @@ export async function POST(request: NextRequest) {
       const subscriptionId = typeof object.subscription === "string" ? object.subscription : customerIdOf(object.subscription);
       const now = new Date().toISOString();
       const existing = await readSubscription(account);
+      // Read back from Stripe rather than assuming "active" — a first
+      // subscription with a trial attached (see lib/plan-billing.ts's
+      // TRIAL_DAYS) is "trialing" from the moment this event fires, and the
+      // next event that would otherwise correct it may not arrive for the
+      // whole length of the trial.
+      const stripeSub = subscriptionId ? await readSubscriptionFromStripe(subscriptionId) : null;
       const record: SubscriptionRecord = {
         account,
         plan,
         customerId,
         subscriptionId,
-        status: "active",
+        status: stripeSub?.status || "active",
         startedAt: existing?.startedAt || now,
         updatedAt: now,
       };
