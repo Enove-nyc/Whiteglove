@@ -76,7 +76,7 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 type Tab = "flight" | "hotel" | "activity" | "import" | null;
 type ItineraryView = "days" | "calendar";
 
-export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [] }: {
+export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false }: {
   /** What is known about the borders this trip crosses. Read on the server. */
   crossings?: Crossing[];
   /**
@@ -94,6 +94,12 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
    * say three different things about the same day.
    */
   assume?: PlannerAssumptions;
+  /**
+   * True on the White Glove Itineraries brand. That product is not kosher or
+   * Jewish travel — it never offers zmanim, the kever directory, or kosher
+   * food nearby, whatever a trip's own data happens to hold.
+   */
+  itineraries?: boolean;
 }) {
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
@@ -271,7 +277,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     [days],
   );
   useEffect(() => {
-    if (!itin.showZmanim || !days.length) return;
+    if (itineraries || !itin.showZmanim || !days.length) return;
     let current = true;
     fetchTripZmanim(days).then((result) => {
       if (current) setZmanim({ key: zmanimKey, days: result });
@@ -283,10 +289,11 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     // times, so the fetch follows that instead.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itin.showZmanim, zmanimKey]);
-  const zmanimForToday = itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
+  const zmanimForToday = !itineraries && itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
-  // Who is buried at each beis hachaim on the trip, looked up by slug.
-  const burials = useKeverBurials(itin.activities);
+  // Who is buried at each beis hachaim on the trip, looked up by slug. Never
+  // looked up on Itineraries — that brand has no kever directory to look up.
+  const burials = useKeverBurials(itineraries ? [] : itin.activities);
   const hasDates = Boolean(itin.startDate && itin.endDate);
 
   // Boarding passes need an account; without one there is nowhere to keep
@@ -477,7 +484,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             onCancel={() => { setTab(null); setEditingLodgingId(null); }}
           />
         )}
-        {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
+        {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} itineraries={itineraries} />}
         {tab === "import" && <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />}
         </div>
       </section>
@@ -562,19 +569,22 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <div className="ml-auto flex flex-wrap items-center gap-3">
               {/* Off until asked for. Somebody keeping the times wants them on
                   every day of the trip and on whichever phone they open it on,
-                  so the answer is saved with the trip rather than the browser. */}
-              <button
-                type="button"
-                onClick={() => set({ showZmanim: !itin.showZmanim })}
-                aria-pressed={Boolean(itin.showZmanim)}
-                className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(23,45,82,.08)] transition ${
-                  itin.showZmanim
-                    ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
-                    : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
-                }`}
-              >
-                {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
-              </button>
+                  so the answer is saved with the trip rather than the browser.
+                  Not offered on Itineraries — no zmanim on that brand. */}
+              {!itineraries && (
+                <button
+                  type="button"
+                  onClick={() => set({ showZmanim: !itin.showZmanim })}
+                  aria-pressed={Boolean(itin.showZmanim)}
+                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(23,45,82,.08)] transition ${
+                    itin.showZmanim
+                      ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
+                      : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
+                  }`}
+                >
+                  {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
+                </button>
+              )}
               <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
                 <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${view === "calendar" ? "translate-x-full" : "translate-x-0"}`} />
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
@@ -640,6 +650,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   // — then the day they are on does, and day one is history.
                   defaultOpen={todayInTrip ? day.date === todayInTrip : day.index === 0}
                   burials={burials}
+                  itineraries={itineraries}
                   onMove={moveStopBy}
                   onUpdate={updateActivity}
                   onSetAttachments={setActivityAttachments}
@@ -730,7 +741,7 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
+function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, itineraries = false, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
   day: ReturnType<typeof buildDays>[number];
   /** Today, on the traveler's own device. Marked, and opened. */
   isToday?: boolean;
@@ -744,6 +755,8 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
   /** Boarding passes need an account; without one there is nowhere to put them. */
   signedIn: boolean;
   burials: Record<string, string[]>;
+  /** True on the White Glove Itineraries brand — no kosher tools here. */
+  itineraries?: boolean;
   onMove: (id: string, direction: -1 | 1) => void;
   onUpdate: (a: ItinActivity) => void;
   /**
@@ -979,7 +992,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
         )}
         {/* Who you are going to daven by. The reason for the stop belongs
             on the stop, not one click away on the cemetery page. */}
-        {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
+        {!itineraries && a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
           <details className="mt-3 rounded-lg bg-[var(--cream)] px-3 py-2 text-sm text-stone-700">
             <summary className="cursor-pointer font-semibold text-[var(--gold-ink)]">Who is buried here ({burials[a.keverSlug].length})</summary>
             <p className="mt-1 break-words leading-6">{burials[a.keverSlug].join(" · ")}</p>
@@ -1174,6 +1187,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
             onAddStop({ ...a, date: a.date || day.date });
             setAdding(null);
           }}
+          itineraries={itineraries}
         />
       )}
       {adding === "hotel" && (
@@ -1272,7 +1286,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
           </div>
         </div>
       )}
-      {anchor?.coordinates && (
+      {!itineraries && anchor?.coordinates && (
         <details className="group/food mt-4 rounded-xl border border-[var(--gold-light)] bg-white">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-[var(--navy)] marker:content-none">
             Kosher food near this day
@@ -1850,7 +1864,7 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
   );
 }
 
-function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: ItinActivity) => void }) {
+function ActivityForm({ startDate, onAdd, itineraries = false }: { startDate: string; onAdd: (a: ItinActivity) => void; itineraries?: boolean }) {
   const [a, setA] = useState<Partial<ItinActivity>>({ date: startDate });
 
   function pickKever(k: KeverResult) {
@@ -1890,17 +1904,23 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
   return (
     <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
-        <span className={caption}>Add a kever from our list</span>
-        <KeverPicker onPick={pickKever} />
-        <span className={`${caption} mt-3 block`}>…or any place: a sight, a kosher restaurant, a shul, a mikvah</span>
+        {!itineraries && (
+          <>
+            <span className={caption}>Add a kever from our list</span>
+            <KeverPicker onPick={pickKever} />
+          </>
+        )}
+        <span className={`${caption} mt-3 block`}>
+          {itineraries ? "Search a place — a sight, a restaurant, a museum…" : "…or any place: a sight, a kosher restaurant, a shul, a mikvah"}
+        </span>
         <AttractionPicker onPick={pickAttraction} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}.</p>}
       </div>
-      <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
+      <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder={itineraries ? "Museum, meal, activity…" : "Kever, museum, meal…"} /></Field>
       <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
       <Field label="Phone"><input type="tel" className={inputClass} value={a.phone ?? ""} onChange={(e) => setA({ ...a, phone: e.target.value })} placeholder="Contact number for this stop" /></Field>
-      <Field label="Link"><input type="url" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ ...a, href: e.target.value })} placeholder="https://… (map, booking, our kever page)" /></Field>
+      <Field label="Link"><input type="url" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ ...a, href: e.target.value })} placeholder={itineraries ? "https://… (map, booking, website)" : "https://… (map, booking, our kever page)"} /></Field>
       <Field label="Date (leave empty to let the planner place it)"><DateField ariaLabel="Stop date" className={inputClass} value={a.date ?? ""} onChange={(date) => setA({ ...a, date })} /></Field>
       <Field label="Time"><input type="time" className={inputClass} value={a.startTime ?? ""} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
       <Field label="Duration (min)"><input type="number" min={0} className={inputClass} value={a.durationMins ?? ""} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>

@@ -33,6 +33,9 @@ export async function generateMetadata() {
 export default async function ItineraryPage() {
   // The planner is signed-in only, at the owner's word.
   await requireSignedIn("/itinerary");
+  // Itineraries is not a kosher product — the builder hides kosher/heritage-
+  // specific tools (kevarim, zmanim, kosher food nearby) on that brand.
+  const itineraries = (await currentBrand()) === "itineraries";
   const userAgent = (await headers()).get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
   const footerPromotions = await getActivePromotions("itinerary-footer", "/itinerary", device);
@@ -71,7 +74,7 @@ export default async function ItineraryPage() {
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
         <div className="itinerary-planner mt-6">
           <SharedWithMe />
-          <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} assume={assume} templates={templates} />
+          <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} assume={assume} templates={templates} itineraries={itineraries} />
         </div>
 
         <ItineraryFooter promotion={footerPromotions[0] ?? null} />
