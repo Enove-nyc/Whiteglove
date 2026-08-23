@@ -29,6 +29,7 @@ import TripSwitcher from "@/components/TripSwitcher";
 import type { AttractionResult } from "@/lib/attraction-search";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
+import type { PlaceLodgingResult } from "@/lib/hotel-places";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { moveStop, planRoute } from "@/lib/route-plan";
 import { applyTemplate, type TripTemplate } from "@/lib/trip-setup";
@@ -1748,6 +1749,13 @@ function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
     setL((prev) => ({ ...prev, name: g.name, address: g.address ?? prev.address, phone: g.phone ?? prev.phone, notes: prev.notes || g.notes }));
   }
 
+  // From the general hotel lookup (any hotel, anywhere) — unlike the
+  // researched list above, this one carries the hotel's own coordinates, so
+  // picking it also fills the map pin and the drive times.
+  function pickPlace(p: PlaceLodgingResult) {
+    setL((prev) => ({ ...prev, name: p.name, address: p.address ?? prev.address, coordinates: p.coordinates ?? prev.coordinates, phone: p.phone ?? prev.phone }));
+  }
+
   // A stay is a number of nights, so check-out is the next day at the
   // earliest — "exclusive" in lib/date-range.
   const checkIn = l.checkIn ?? startDate;
@@ -1786,6 +1794,8 @@ function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
         <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
           <span className={caption}>Pick from our listed lodging</span>
           <LodgingPicker onPick={pickLodging} />
+          <span className={`${caption} mt-3 block`}>…or search any hotel</span>
+          <HotelPlacePicker onPick={pickPlace} />
           <p className="mt-2 text-[11px] text-stone-500">Confirm rates and availability directly, or type your own below.</p>
         </div>
       )}
@@ -1855,6 +1865,75 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
               >
                 <span className="text-sm font-semibold text-[var(--navy)]">{g.name}</span>
                 <span className="block text-xs text-stone-500">{g.city}{g.phone ? ` · ${g.phone}` : ""}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// Search-and-pick any hotel, worldwide — the general lookup, not the site's
+// own researched list. See lib/hotel-places.ts.
+function HotelPlacePicker({ onPick }: { onPick: (p: PlaceLodgingResult) => void }) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<PlaceLodgingResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const query = q.trim();
+    if (query.length < 3) { setResults([]); setLoading(false); return; }
+    let active = true;
+    setLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/lodging/places-search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (active) setResults(data.results ?? []);
+      } catch {
+        if (active) setResults([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }, 350);
+    return () => { active = false; clearTimeout(timer); };
+  }, [q]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  return (
+    <div ref={boxRef} className="relative mt-1">
+      <input
+        className={inputClass}
+        value={q}
+        onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="Search any hotel by name — e.g. Marriott Vienna…"
+        autoComplete="off"
+      />
+      {open && loading && q.trim().length >= 3 && (
+        <p className="absolute left-0 right-0 top-full z-30 border border-[var(--gold-light)] bg-[#fcfaf6] px-3 py-2 text-xs text-stone-500 shadow-[0_16px_36px_rgba(23,45,82,.14)]">
+          Searching…
+        </p>
+      )}
+      {open && !loading && results.length > 0 && (
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
+          {results.map((p, i) => (
+            <li key={`${p.name}-${i}`}>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); onPick(p); setQ(""); setResults([]); setOpen(false); }}
+                className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
+              >
+                <span className="text-sm font-semibold text-[var(--navy)]">{p.name}</span>
+                {p.address && <span className="block text-xs text-stone-500">{p.address}</span>}
               </button>
             </li>
           ))}
