@@ -84,6 +84,11 @@ function fieldsFrom(formData: FormData): VacationDestinationFields {
     outlineTitle: nullable(formData, "outlineTitle"),
     outlineDays: lines(formData, "outlineDays"),
     cautions: lines(formData, "cautions"),
+    seasonFeatured: formData.get("seasonFeatured") === "on",
+    // The form places a checkbox named "seasonActive" before a same-named
+    // hidden "off" fallback, so FormData.get (which returns the first entry)
+    // reads "on" when ticked and "off" only when it is not.
+    seasonActive: formData.get("seasonActive") === "on",
   };
 }
 
@@ -153,6 +158,8 @@ export async function createDestinationAction(_prev: ActionResult | null, formDa
       outlineTitle: null,
       outlineDays: [],
       cautions: [],
+      seasonFeatured: false,
+      seasonActive: true,
     });
     refresh(slug);
     return { ok: true, message: `Added. It is at /destinations/${slug}.` };

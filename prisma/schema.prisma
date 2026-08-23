@@ -374,6 +374,15 @@ model VacationDestination {
   outlineDays      String[] @default([])
   cautions         String[] @default([])
 
+  /**
+   * Seasonal discovery (compact row on the destinations hub, gated by real
+   * season match — never a hardcoded "always show Pesach"). seasonActive
+   * defaults true so existing rows keep behaving as before; seasonFeatured
+   * defaults false so nothing is promoted until an admin opts it in.
+   */
+  seasonFeatured Boolean @default(false)
+  seasonActive   Boolean @default(true)
+
   photos    Photo[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -418,6 +427,25 @@ model KosherStay {
   website      String?
   sourceUrl    String
   status       ContentStatus @default(PUBLISHED)
+
+  /**
+   * Kosher / Shabbos accommodation attributes. Each is "yes" | "no" | "unknown"
+   * stored as plain String (same pattern as kind/kosherClaim above) — never
+   * inferred, defaults to "unknown", and "unknown" is invisible to customers:
+   * only a "yes" ever shows as a badge or matches a filter.
+   */
+  onSiteKosherFood         String  @default("unknown")
+  kosherBreakfast          String  @default("unknown")
+  shabbosMeals             String  @default("unknown")
+  nearbyKosherFood         String  @default("unknown")
+  nearbyShulOrMinyan       String  @default("unknown")
+  eruv                     String  @default("unknown")
+  shabbosAccessInfo        String?
+  shabbosElevator          String  @default("unknown")
+  kitchenSelfCatering      String  @default("unknown")
+  kosherKitchen            String  @default("unknown")
+  walkingDistanceToJewishArea String @default("unknown")
+
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
