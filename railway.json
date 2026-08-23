@@ -1,7 +1,7 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "deploy": {
-    "preDeployCommand": "npm run db:migrate",
+    "preDeployCommand": "npx prisma migrate resolve --applied 0_init && npx prisma migrate resolve --applied 20260731110000_catch_up_directory_attractions_stays && npx prisma migrate resolve --applied 20260731120000_place_category_values && npx prisma migrate resolve --applied 20260731120100_verification_consent_and_photos && npx prisma migrate resolve --applied 20260731130000_featured_reason && npx prisma migrate resolve --applied 20260731140000_photos_on_listings && npx prisma migrate resolve --applied 20260731150000_visitor_photo_submissions && npx prisma migrate resolve --applied 20260811140000_bulk_content_import && npx prisma migrate resolve --applied 20260811160000_trello_candidate_review && npx prisma migrate resolve --applied 20260811170000_remove_retired_map_imports && npx prisma migrate resolve --applied 20260812150000_contact_name && npx prisma migrate resolve --applied 20260812180000_experience_ratings && npx prisma migrate resolve --applied 20260812190000_dedupe_lookup_indexes && npx prisma migrate resolve --applied 20260813120000_destination_links && npx prisma migrate resolve --applied 20260816120000_place_reviews && npx prisma migrate resolve --applied 20260818120000_vacation_destinations && npm run db:migrate",
     "healthcheckPath": "/version",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
