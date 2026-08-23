@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 import { emptyProposal, emptyProposalOption, type Proposal } from "@/data/proposal";
-import { needsAttention, tripStage } from "@/data/trip-pipeline";
+import { needsAttention, pipelineStats, tripStage, type PipelineStatsRow } from "@/data/trip-pipeline";
 
 const TODAY = "2026-06-10";
 
@@ -65,6 +65,57 @@ describe("whether a trip needs the planner's attention", () => {
     assert.equal(needsAttention(proposalWith("changes_requested")), true);
     assert.equal(needsAttention(proposalWith("sent")), false);
     assert.equal(needsAttention(undefined), false);
+  });
+});
+
+describe("the business, at a glance", () => {
+  function row(over: Partial<PipelineStatsRow> = {}): PipelineStatsRow {
+    return { stage: "confirmed", startDate: "", ...over };
+  }
+
+  it("counts every trip that is not completed as active", () => {
+    const stats = pipelineStats(
+      [row({ stage: "inquiry" }), row({ stage: "planning" }), row({ stage: "traveling" }), row({ stage: "completed" })],
+      TODAY,
+    );
+    assert.equal(stats.activeCount, 3);
+  });
+
+  it("counts only confirmed trips leaving within the next 30 days", () => {
+    const stats = pipelineStats(
+      [
+        row({ stage: "confirmed", startDate: "2026-06-15" }), // 5 days out — in
+        row({ stage: "confirmed", startDate: "2026-07-15" }), // 35 days out — not yet
+        row({ stage: "confirmed", startDate: "2026-06-05" }), // already past — not "soon"
+        row({ stage: "traveling", startDate: "2026-06-12" }), // already traveling, not "departing"
+      ],
+      TODAY,
+    );
+    assert.equal(stats.departingSoon, 1);
+  });
+
+  it("says nothing about departures without a today to count from", () => {
+    assert.equal(pipelineStats([row({ stage: "confirmed", startDate: "2026-06-15" })], "").departingSoon, 0);
+  });
+
+  it("sums what is outstanding per currency, never mixing two into one number", () => {
+    const stats = pipelineStats(
+      [
+        row({ outstandingCents: 50000, currency: "USD" }),
+        row({ outstandingCents: 30000, currency: "USD" }),
+        row({ outstandingCents: 20000, currency: "EUR" }),
+        row({ outstandingCents: 0, currency: "USD" }), // paid off — not owed
+        row({}), // no balance set up at all
+      ],
+      TODAY,
+    );
+    assert.deepEqual(
+      new Map(stats.outstandingByCurrency),
+      new Map([
+        ["USD", 80000],
+        ["EUR", 20000],
+      ]),
+    );
   });
 });
 

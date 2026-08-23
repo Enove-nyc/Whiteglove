@@ -5,6 +5,7 @@ import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { readChat, readMarkers } from "@/lib/companion-chat-store";
 import { needsAttention, tripStage, type ManualTripStage, type TripStage } from "@/data/trip-pipeline";
+import { hasBalance, outstandingCents } from "@/data/trip-payments";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,9 @@ export type PipelineRow = {
   /** True when the client's last word in the thread hasn't been read yet. */
   unread: boolean;
   updatedAt: string;
+  /** What this trip still owes, when a balance has actually been set up. */
+  outstandingCents?: number;
+  currency?: string;
 };
 
 /**
@@ -68,6 +72,7 @@ export async function GET() {
         shareId: t.shareId,
         unread,
         updatedAt: t.updatedAt,
+        ...(t.balance && hasBalance(t.balance) ? { outstandingCents: outstandingCents(t.balance), currency: t.balance.currency } : {}),
       };
     }),
   );

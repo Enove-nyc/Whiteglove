@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
+import { pipelineStats, TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
+import { formatCents } from "@/data/trip-payments";
 
 type Row = {
   id: string;
@@ -16,6 +17,9 @@ type Row = {
   shareId?: string;
   unread: boolean;
   updatedAt: string;
+  /** What this trip still owes, when a balance has actually been set up. */
+  outstandingCents?: number;
+  currency?: string;
 };
 
 type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread";
@@ -157,6 +161,11 @@ export default function PipelineDashboard() {
   const filtered = useMemo(() => rowsFor(view, rows, today), [view, rows, today]);
   const counts = useMemo(() => Object.fromEntries(VIEWS.map((v) => [v.id, rowsFor(v.id, rows, today).length])), [rows, today]);
 
+  // The business, at a glance — above the row-by-row board, not instead of
+  // it. See pipelineStats in data/trip-pipeline.ts for the actual rules,
+  // kept pure and tested there rather than inline here.
+  const stats = useMemo(() => pipelineStats(rows, today), [rows, today]);
+
   async function openTrip(id: string, path: string) {
     setSwitching(id);
     try {
@@ -192,6 +201,31 @@ export default function PipelineDashboard() {
 
   return (
     <div>
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={cardBase}>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Active client trips</p>
+          <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.activeCount}</p>
+        </div>
+        <div className={cardBase}>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Traveling now</p>
+          <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{counts.traveling}</p>
+        </div>
+        <div className={cardBase}>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Departing in 30 days</p>
+          <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.departingSoon}</p>
+        </div>
+        <div className={cardBase}>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Outstanding</p>
+          {stats.outstandingByCurrency.length === 0 ? (
+            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{formatCents(0)}</p>
+          ) : (
+            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+              {stats.outstandingByCurrency.map(([currency, cents]) => formatCents(cents, currency)).join(" · ")}
+            </p>
+          )}
+        </div>
+      </div>
+
       <div className="flex flex-wrap gap-2 border-b border-[var(--gold-light)] pb-4">
         {VIEWS.map((v) => (
           <button
