@@ -134,6 +134,14 @@ export const CONNECTIONS: Connection[] = [
     where: "Google Cloud. This one is public by design — it is in the browser, and is restricted by domain rather than kept secret.",
   },
   {
+    vars: ["GOOGLE_PLACES_API_KEY"],
+    what: "The general hotel lookup in the itinerary builder — type a hotel's name anywhere in the world, get its address, phone and coordinates.",
+    without:
+      "Only the site's own researched lodging can be picked from a list; any other hotel has to be typed in by hand, with no address or coordinates filled in.",
+    weight: "feature",
+    where: "Google Cloud console, with the Places API (New) enabled. Server-side only — restrict it to that one API rather than by domain.",
+  },
+  {
     vars: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_MESSAGING_SERVICE_SID", "TWILIO_FROM_NUMBER"],
     what: "Text messages.",
     without: "Somebody who signed up with a phone number rather than an email cannot be sent a verification code, so they cannot finish signing up.",
@@ -153,6 +161,14 @@ export const CONNECTIONS: Connection[] = [
     without: "A traveller typing a flight number gets nothing back and has to enter the times by hand.",
     weight: "nicety",
     where: "AeroDataBox, through RapidAPI. The free tier is small, so a busy minute can hit its limit.",
+  },
+  {
+    vars: ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "NEXT_PUBLIC_VAPID_PUBLIC_KEY"],
+    what: "Push notifications on a client's own trip — a flight delay, a cancellation, a gate change, sent straight to their phone.",
+    without: "The Changes screen still shows every alert; nothing is pushed until they open the app to look.",
+    weight: "nicety",
+    where:
+      "Generated once with the web-push package's own key generator, not fetched from a console — see lib/push-notify.ts. VAPID_PUBLIC_KEY and NEXT_PUBLIC_VAPID_PUBLIC_KEY are the same value; the public one is also needed under its NEXT_PUBLIC_ name because the browser reads that copy.",
   },
   {
     vars: ["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"],

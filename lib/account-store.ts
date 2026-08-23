@@ -18,6 +18,8 @@ import { passwordProblem } from "@/lib/password-rules";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 import { templateFromTrip, tripFromTemplate } from "@/lib/trip-templates";
+import type { PushSubscriptionRecord } from "@/data/push-subscriptions";
+import { sendPushToSubscriptions } from "@/lib/push-notify";
 
 type RedisResult<T> = { result?: T };
 
@@ -181,6 +183,13 @@ export type SavedTrip = {
    * status reading becomes one of these; see data/trip-alerts.ts.
    */
   alerts?: TripAlert[];
+  /**
+   * Devices asking to be pushed a notification when one of the alerts above
+   * is created — a client's own phone, subscribed from inside the app they
+   * were sent (see components/companion/CompanionApp.tsx). Absent until
+   * somebody actually opts in; never set on their behalf.
+   */
+  pushSubscriptions?: PushSubscriptionRecord[];
   createdAt: string;
   updatedAt: string;
 };
@@ -1336,7 +1345,47 @@ export async function checkTripFlightStatus(email: string, tripId: string): Prom
       : t,
   );
   await writeTrips(normalized, nextTrips, activeId);
+
+  // Told, not just recorded — a device subscribed to this trip (see
+  // savePushSubscription) is pushed the moment there is something worth
+  // knowing, rather than only finding out the next time the app happens to
+  // be opened. Best-effort: nothing here is allowed to fail the check itself.
+  if (newAlerts.length && trip.pushSubscriptions?.length) {
+    await notifySubscribers(normalized, tripId, trip.pushSubscriptions, trip.shareId, newAlerts).catch((error) =>
+      console.error("[account-store] push notify failed:", error),
+    );
+  }
+
   return newAlerts;
+}
+
+/** One push, summarizing however many alerts a single check turned up. */
+async function notifySubscribers(
+  ownerEmail: string,
+  tripId: string,
+  subscriptions: PushSubscriptionRecord[],
+  shareId: string | undefined,
+  alerts: TripAlert[],
+): Promise<void> {
+  const payload =
+    alerts.length === 1
+      ? { title: alerts[0].title, body: alerts[0].note }
+      : { title: `${alerts.length} changes on your trip`, body: alerts.map((a) => a.title).join(" · ") };
+  const { expired } = await sendPushToSubscriptions(subscriptions, {
+    ...payload,
+    ...(shareId ? { url: `/i/${shareId}/app` } : {}),
+  });
+  if (!expired.length) return;
+
+  // Endpoints the push service itself says are gone — pruned in their own
+  // write so a slow or failed send never risks the alerts just recorded.
+  const data = await getAccountData(ownerEmail);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip?.pushSubscriptions?.length) return;
+  const kept = trip.pushSubscriptions.filter((s) => !expired.includes(s.endpoint));
+  const nextTrips = trips.map((t) => (t.id === tripId ? { ...t, pushSubscriptions: kept } : t));
+  await writeTrips(ownerEmail, nextTrips, activeId);
 }
 
 /** Every alert recorded on this trip so far, oldest first — read fresh after checkTripFlightStatus so a just-created alert is included. */
@@ -1573,6 +1622,58 @@ export async function resolveCompanionShare(shareId: string): Promise<{ ownerEma
   const traveler = await getSharedTraveler(shareId);
   if (traveler?.internalChatKey) return { ownerEmail: traveler.ownerEmail, chatKey: traveler.internalChatKey };
   return null;
+}
+
+// ---- Push notifications ----------------------------------------------------
+//
+// Kept per trip, not per account — a client has no account, only the link
+// they were sent, and either kind of link (the whole-trip one or a single
+// traveler's own) resolves to the same trip's subscriptions, because a
+// flight delay is news to everyone on the trip alike.
+
+/** Either shape of client link, resolved down to the one trip it opens. */
+async function resolveShareToTrip(shareId: string): Promise<{ ownerEmail: string; tripId: string } | null> {
+  const ownerEmail = await getShareOwnerEmail(shareId);
+  if (ownerEmail) {
+    const trip = withTrips(await getAccountData(ownerEmail)).trips.find((t) => t.shareId === shareId);
+    if (trip) return { ownerEmail, tripId: trip.id };
+  }
+  const traveler = await getSharedTraveler(shareId);
+  if (traveler) return { ownerEmail: traveler.ownerEmail, tripId: traveler.tripId };
+  return null;
+}
+
+const MAX_PUSH_SUBSCRIPTIONS = 12;
+
+/** A device asking to be told about this trip's alerts — added from inside the app itself, never on anyone's behalf. */
+export async function savePushSubscription(shareId: string, subscription: PushSubscriptionRecord): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const resolved = await resolveShareToTrip(shareId);
+  if (!resolved) return false;
+  const data = await getAccountData(resolved.ownerEmail);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === resolved.tripId);
+  if (!trip) return false;
+  const existing = (trip.pushSubscriptions ?? []).filter((s) => s.endpoint !== subscription.endpoint);
+  // A phone re-subscribing (a fresh key after clearing site data) replaces
+  // its old entry rather than piling up a duplicate under the same endpoint.
+  const next = [...existing, subscription].slice(-MAX_PUSH_SUBSCRIPTIONS);
+  const nextTrips = trips.map((t) => (t.id === resolved.tripId ? { ...t, pushSubscriptions: next, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(resolved.ownerEmail, nextTrips, activeId));
+}
+
+/** Turning notifications back off on one device. */
+export async function removePushSubscription(shareId: string, endpoint: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const resolved = await resolveShareToTrip(shareId);
+  if (!resolved) return false;
+  const data = await getAccountData(resolved.ownerEmail);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === resolved.tripId);
+  if (!trip?.pushSubscriptions?.length) return true; // nothing to remove is not a failure
+  const next = trip.pushSubscriptions.filter((s) => s.endpoint !== endpoint);
+  const nextTrips = trips.map((t) => (t.id === resolved.tripId ? { ...t, pushSubscriptions: next, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(resolved.ownerEmail, nextTrips, activeId));
 }
 
 // ---- Client forms ---------------------------------------------------------

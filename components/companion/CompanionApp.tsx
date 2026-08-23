@@ -1000,6 +1000,11 @@ export default function CompanionApp({
 
   const alertsScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 14, animation: "wgIn .28s ease both" }}>
+      {/* Only where a client is looking at their own trip through a real
+          share link — the subscription is keyed by that token (see
+          savePushSubscription in lib/account-store.ts), and neither the
+          advisor's own view nor the scripted demo has one. */}
+      {isClientViewer && liveChat?.shareId && <NotifyControl shareId={liveChat.shareId} />}
       {/* Real flight-status alerts — never present on the demo. Newest
           first, each with a Dismiss control on the advisor's own side only;
           a client sees the same alert with nothing to manage. */}
@@ -1458,6 +1463,137 @@ const MAX_CHAT_IMAGE_BYTES_FLOOR = 900 * 1024;
 
 function formatBytes(n: number): string {
   return n >= 1024 * 1024 ? `${(n / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`;
+}
+
+/** A VAPID key, as Google's console gives it, into the form the Push API wants. */
+function urlBase64ToUint8Array(base64: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+type NotifyStatus = "checking" | "unsupported" | "off" | "on" | "denied";
+
+/**
+ * "Tell me on my phone" — a client's own opt-in to a push notification when
+ * something on their trip changes (see lib/push-notify.ts for what actually
+ * sends it). Renders nothing when the browser can't do push at all, or when
+ * this deployment has no VAPID key configured — an offer nobody can accept
+ * is not an offer.
+ */
+function NotifyControl({ shareId }: { shareId: string }) {
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const [status, setStatus] = useState<NotifyStatus>("checking");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!publicKey || typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setStatus("unsupported");
+      return;
+    }
+    let active = true;
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => {
+        if (active) setStatus(sub ? "on" : Notification.permission === "denied" ? "denied" : "off");
+      })
+      .catch(() => {
+        if (active) setStatus("off");
+      });
+    return () => {
+      active = false;
+    };
+  }, [publicKey]);
+
+  async function subscribe() {
+    if (!publicKey) return;
+    setBusy(true);
+    setError("");
+    try {
+      const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+      if (permission !== "granted") {
+        setStatus("denied");
+        return;
+      }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource });
+      const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
+      if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) throw new Error("incomplete subscription");
+      const res = await fetch("/api/companion/push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shareId, subscription: { endpoint: json.endpoint, keys: json.keys } }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      setStatus("on");
+    } catch {
+      setError("Could not turn on notifications. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function unsubscribe() {
+    setBusy(true);
+    setError("");
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await fetch("/api/companion/push", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shareId, action: "unsubscribe", endpoint: sub.endpoint }),
+        }).catch(() => undefined);
+        await sub.unsubscribe();
+      }
+      setStatus("off");
+    } catch {
+      setError("Could not turn off notifications. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (status === "unsupported" || status === "checking") return null;
+
+  const serif = "Georgia,'Times New Roman',serif";
+  return (
+    <div style={{ padding: "16px 18px", borderRadius: 20, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <span style={{ fontSize: 14.5, fontWeight: 600 }}>Notify me about changes</span>
+        <span style={{ fontSize: 12, color: "#57534e" }}>
+          {status === "denied"
+            ? "Notifications are blocked in your browser's settings."
+            : status === "on"
+              ? "On for this device."
+              : "A delay, a cancellation, a gate change — sent straight to your phone."}
+        </span>
+        {error && <span style={{ fontSize: 12, color: "#b42318" }}>{error}</span>}
+      </div>
+      {status !== "denied" && (
+        <button
+          onClick={() => void (status === "on" ? unsubscribe() : subscribe())}
+          disabled={busy}
+          className="wg-press"
+          style={{
+            flex: "none",
+            border: status === "on" ? "1px solid rgba(38,50,58,.16)" : 0,
+            background: status === "on" ? "#ffffff" : GOLD,
+            color: status === "on" ? "#26323a" : CREAM,
+            cursor: "pointer",
+            font: `400 13px/1 ${serif}`,
+            padding: "11px 16px",
+            borderRadius: 14,
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          {status === "on" ? "Turn off" : "Turn on"}
+        </button>
+      )}
+    </div>
+  );
 }
 /** The most a video may weigh — a short clip, not a film. Matches
  * MAX_CHAT_VIDEO_BYTES in lib/media.ts; kept as its own number here because a
