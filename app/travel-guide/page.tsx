@@ -104,7 +104,7 @@ export default async function TravelGuidePage() {
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]"><GloveMark size="xs" />Passports, visas &amp; entry</p>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Documents</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-600">
-            Entry rules depend on the passport you hold and change without warning, so we don&apos;t restate them here — a wrong answer can leave you at a border. Below is what to check, and the official source for each country we travel to.
+            Entry rules change without warning and depend on your passport — confirm with the official source for each country below.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

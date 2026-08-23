@@ -54,9 +54,7 @@ export default async function EruvinPage() {
             Eruvin
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
-            These are communities that maintain an eruv, each with a source that establishes it
-            and, where the community publishes one, a map of its boundary. An eruv can come down
-            on any Shabbos — the community&rsquo;s own current word is what to rely on before you carry.
+            An eruv can come down on any Shabbos — always rely on the community&rsquo;s own current word before you carry.
           </p>
         </div>
       </section>
