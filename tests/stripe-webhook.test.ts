@@ -5,7 +5,7 @@ import { customerIdOf, describePrice, statusIsPaid, verifyWebhook } from "@/lib/
 
 /**
  * The webhook signature, which is the only thing standing between the internet
- * and a free Business account.
+ * and a free paid account.
  *
  * The endpoint's whole job is to put accounts onto paid plans. If this check
  * can be got past — by a missing header, an empty secret, a replayed capture, a

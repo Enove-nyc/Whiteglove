@@ -1,28 +1,32 @@
 /**
- * Whether Gold and Business are offered at all, and how somebody pays for one.
+ * Whether One Trip, Advisor Starter and Advisor Pro are offered at all, and
+ * how somebody pays for one.
  *
  * ONE SWITCH DECIDES WHETHER ANY OF THIS EXISTS. `open: false` — which is what
  * a deployment that has never been configured gets — means the account page
- * says nothing about Gold or Business, the checkout answers "not open", and the
- * site is exactly what it was before this file was written. The owner turns it
- * on when he wants it on, and nothing happens in the meantime.
+ * says nothing about any of the three, the checkout answers "not open", and
+ * the site is exactly what it was before this file was written. The owner
+ * turns it on when he wants it on, and nothing happens in the meantime.
  *
  * THREE WAYS SOMEBODY CAN COME BY ONE, AND THEY ARE NOT THE SAME PROMISE.
  *
- *   "soon"   — the two accounts are named, and nobody can take one yet. Asking
- *              leaves an address to be written to on the day they open. This is
- *              for the stretch where the owner knows what he is building and has
- *              not settled what each one includes, and it exists so that stretch
- *              does not have to be spent with a live sign-up nobody can honour.
+ *   "soon"   — the three accounts are named, and nobody can take one yet.
+ *              Asking leaves an address to be written to on the day they
+ *              open. This is for the stretch where the owner knows what he
+ *              is building and has not settled what each one includes, and
+ *              it exists so that stretch does not have to be spent with a
+ *              live sign-up nobody can honour.
  *
  *   "ask"    — somebody asks, the owner answers, and the owner sets the plan by
  *              hand from /admin/accounts. No card is taken anywhere on the site.
  *              This is what the plan requests already did, and it still works
  *              with nothing configured at all.
  *
- *   "stripe" — a real subscription. The card is handled by Stripe on Stripe's
- *              own page; no card number ever reaches this site. Stripe tells us
- *              the subscription started, and the plan is set from that.
+ *   "stripe" — real money. One Trip is a single Checkout in payment mode —
+ *              no card number ever reaches this site, and there is nothing to
+ *              renew. Advisor Starter and Advisor Pro are real subscriptions,
+ *              the same way. Stripe tells us what happened, and the plan is
+ *              set from that.
  *
  * "soon" AND "ask" DIFFER IN ONE WORD AND ONE PROMISE. Both take a request and
  * neither takes a card. "ask" says a person will answer about an account they
@@ -44,12 +48,25 @@
 
 import { type AccountPlan, PLAN_LABELS } from "@/lib/account-plans";
 
-/** The plans somebody can actually pay for. Traveler is what everyone is. */
-export const PAID_PLANS = ["pro", "business"] as const;
+/** The plans somebody can actually pay for. "free" is what nothing bought looks like. */
+export const PAID_PLANS = ["one_trip", "starter", "pro"] as const;
 export type PaidPlan = (typeof PAID_PLANS)[number];
 
 export function isPaidPlan(value: unknown): value is PaidPlan {
   return typeof value === "string" && (PAID_PLANS as readonly string[]).includes(value);
+}
+
+/**
+ * One Trip is a single fee, not a subscription — there is nothing to renew
+ * and nothing to cancel. Checked wherever a subscription's usual assumptions
+ * (a period, a renewal, a cancel-at-period-end) would otherwise be made of
+ * it: the checkout mode (lib/stripe.ts), the webhook (app/api/billing/
+ * webhook/route.ts), and the account page's own wording.
+ */
+export const ONE_TIME_PLANS = ["one_trip"] as const;
+
+export function isOneTimePlan(plan: AccountPlan): boolean {
+  return (ONE_TIME_PLANS as readonly string[]).includes(plan);
 }
 
 /** How often the subscription renews. Both are offered; neither is assumed. */
@@ -78,7 +95,7 @@ export type PlanOffering = {
   open: boolean;
   /** How somebody comes by one of them. See the note at the top of this file. */
   how: "soon" | "ask" | "stripe";
-  /** Which of the paid plans are offered. Either, both, or neither. */
+  /** Which of the paid plans are offered. Any, all, or none. */
   plans: Record<PaidPlan, boolean>;
   pricing: Record<PaidPlan, PlanPricing>;
   updatedAt?: string;
@@ -86,6 +103,12 @@ export type PlanOffering = {
 };
 
 const EMPTY_PRICING: PlanPricing = { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" };
+const EMPTY_PLANS: Record<PaidPlan, boolean> = { one_trip: true, starter: true, pro: true };
+const EMPTY_PRICING_BY_PLAN: Record<PaidPlan, PlanPricing> = {
+  one_trip: { ...EMPTY_PRICING },
+  starter: { ...EMPTY_PRICING },
+  pro: { ...EMPTY_PRICING },
+};
 
 /**
  * Which setting a value is asking for. THE ONLY PLACE THAT DECIDES.
@@ -128,8 +151,8 @@ export function readOfferingHow(raw: unknown): PlanOffering["how"] {
 export const DEFAULT_OFFERING: PlanOffering = {
   open: true,
   how: "soon",
-  plans: { pro: true, business: true },
-  pricing: { pro: { ...EMPTY_PRICING }, business: { ...EMPTY_PRICING } },
+  plans: { ...EMPTY_PLANS },
+  pricing: { ...EMPTY_PRICING_BY_PLAN },
 };
 
 /**
@@ -152,8 +175,12 @@ export function cleanOffering(raw: unknown): PlanOffering {
   return {
     open: value.open !== false,
     how: readOfferingHow(value.how),
-    plans: { pro: plans.pro !== false, business: plans.business !== false },
-    pricing: { pro: one("pro"), business: one("business") },
+    plans: {
+      one_trip: plans.one_trip !== false,
+      starter: plans.starter !== false,
+      pro: plans.pro !== false,
+    },
+    pricing: { one_trip: one("one_trip"), starter: one("starter"), pro: one("pro") },
     updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : undefined,
     updatedBy: typeof value.updatedBy === "string" ? value.updatedBy : undefined,
   };
@@ -202,7 +229,9 @@ export function periodsFor(offering: PlanOffering, plan: PaidPlan): BillingPerio
 export function offeringProblem(offering: PlanOffering, stripeReady: { secretKey: boolean; webhookSecret: boolean }): string | null {
   if (!offering.open) return null; // Closed is always a valid thing to be.
   const chosen = PAID_PLANS.filter((plan) => offering.plans[plan]);
-  if (chosen.length === 0) return "Turn on at least one of Gold or Business, or leave the whole thing closed.";
+  if (chosen.length === 0) {
+    return `Turn on at least one of ${PAID_PLANS.map((p) => PLAN_LABELS[p]).join(", ")}, or leave the whole thing closed.`;
+  }
   if (offering.how !== "stripe") return null;
 
   if (!stripeReady.secretKey) return "Stripe cannot take payment until STRIPE_SECRET_KEY is set on the deployment.";
@@ -225,7 +254,7 @@ export function offeringProblem(offering: PlanOffering, stripeReady: { secretKey
  */
 export function describeOffering(offering: PlanOffering): string {
   if (!offering.open) {
-    return "Closed. Nobody is shown Gold or Business, and nothing on the site can charge anybody.";
+    return `Closed. Nobody is shown ${PAID_PLANS.map((p) => PLAN_LABELS[p]).join(", ")}, and nothing on the site can charge anybody.`;
   }
   const names = offerablePlans(offering).map((plan) => PLAN_LABELS[plan]);
   if (names.length === 0) {

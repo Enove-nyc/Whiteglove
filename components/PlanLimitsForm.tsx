@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from "react";
 import { saveLimitsAction } from "@/app/admin/settings/limits/actions";
-import { ACCOUNT_PLANS, PLAN_LABELS } from "@/lib/account-plans";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { BUILT_IN_LIMITS, describeLimits, type LimitOverrides, limitsFor, UNLIMITED } from "@/lib/account-limits";
+import { PAID_PLANS } from "@/lib/plan-billing";
 
 /**
  * The two numbers, per plan.
@@ -27,12 +28,12 @@ const boxValue = (v: number | null) => (v === UNLIMITED ? "" : String(v));
 export default function PlanLimitsForm({ current, storeReady }: { current: LimitOverrides; storeReady: boolean }) {
   const [draft, setDraft] = useState<LimitOverrides>(() => {
     const start: LimitOverrides = {};
-    for (const plan of ACCOUNT_PLANS) start[plan] = limitsFor(plan, current);
+    for (const plan of PAID_PLANS) start[plan] = limitsFor(plan, current);
     return start;
   });
   const [state, act, busy] = useActionState(saveLimitsAction, null);
 
-  const set = (plan: (typeof ACCOUNT_PLANS)[number], field: "trips" | "printsPerWeek", raw: string) => {
+  const set = (plan: (typeof PAID_PLANS)[number], field: "trips" | "printsPerWeek", raw: string) => {
     const n = raw.trim() === "" ? UNLIMITED : Number(raw);
     setDraft({ ...draft, [plan]: { ...draft[plan], [field]: Number.isFinite(n as number) ? n : UNLIMITED } });
   };
@@ -41,13 +42,13 @@ export default function PlanLimitsForm({ current, storeReady }: { current: Limit
     <form action={act} className="mt-8 space-y-6">
       {!storeReady && (
         <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-          The private store is not connected, so nothing here can be saved. The built-in numbers are in force:{" "}
-          {BUILT_IN_LIMITS.traveler.trips} trips and {BUILT_IN_LIMITS.traveler.printsPerWeek} printable copy a week on a
-          Traveler account.
+          The private store is not connected, so nothing here can be saved. The built-in numbers are in force:
+          nothing can be planned before a plan is chosen, and {PLAN_LABELS.one_trip} is capped at{" "}
+          {BUILT_IN_LIMITS.one_trip.trips} trip.
         </p>
       )}
 
-      {ACCOUNT_PLANS.map((plan) => {
+      {PAID_PLANS.map((plan) => {
         const shown = limitsFor(plan, draft);
         return (
           <div key={plan} className="rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-4">

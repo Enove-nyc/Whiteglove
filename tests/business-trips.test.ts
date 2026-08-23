@@ -4,8 +4,8 @@ import { describe, it } from "node:test";
 import { MAX_TRIP_CLIENT } from "@/lib/account-store";
 
 /**
- * The two things a Business account does in the planner: say who a trip is
- * for, and send the finished thing to them.
+ * The two things an Advisor Pro account does in the planner: say who a trip
+ * is for, and send the finished thing to them.
  *
  * BOTH ARE GATED ON THE SERVER, AND THAT IS WHAT MOST OF THIS FILE CHECKS. The
  * panel not being drawn is a courtesy; the route is the door. The send route in
@@ -45,7 +45,7 @@ describe("saying who a trip is for", () => {
 });
 
 describe("sending an itinerary to a client", () => {
-  it("is Business only, and says so before anything else happens", () => {
+  it("is Advisor Pro only, and says so before anything else happens", () => {
     assert.match(SEND_ROUTE, /mayBrandOwnItinerary/);
     assert.ok(SEND_ROUTE.indexOf("mayBrandOwnItinerary") < SEND_ROUTE.indexOf("sendItineraryToClient"));
   });
@@ -107,13 +107,13 @@ describe("what the client's email says", () => {
   });
 });
 
-describe("what Business is said to be for", () => {
+describe("what Advisor Pro is said to be for", () => {
   it("describes planning for other people, not being in the directory", () => {
     const plans = readFileSync("lib/account-plans.ts", "utf8");
-    // PLAN_LABELS holds a `business:` line too, and it comes first — so the
+    // PLAN_LABELS holds a `pro:` line too, and it comes first — so the
     // blurb is read from inside PLAN_BLURB rather than from the first match.
     const table = plans.slice(plans.indexOf("PLAN_BLURB"));
-    const blurb = /business: "([^"]+)"/.exec(table)?.[1] ?? "";
-    assert.match(blurb, /plans? trips for other people|agency/i);
+    const blurb = /pro: "([^"]+)"/.exec(table)?.[1] ?? "";
+    assert.match(blurb, /advisor|clients?|agency/i);
   });
 });

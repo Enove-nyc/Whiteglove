@@ -3,7 +3,9 @@
 import { useActionState, useState } from "react";
 import { savePlanOfferingAction } from "@/app/admin/settings/plans/actions";
 import { PLAN_BLURB, PLAN_LABELS } from "@/lib/account-plans";
-import { PAID_PLANS, type PaidPlan, type PlanOffering } from "@/lib/plan-billing";
+import { isOneTimePlan, PAID_PLANS, type PaidPlan, type PlanOffering } from "@/lib/plan-billing";
+
+const PAID_PLAN_LIST = PAID_PLANS.map((plan) => PLAN_LABELS[plan]).join(", ");
 
 const input =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -48,10 +50,10 @@ export default function AdminPlanOfferingForm({
             className="mt-1.5"
           />
           <span>
-            <span className="font-semibold text-[var(--navy)]">Offer Gold and Business</span>
+            <span className="font-semibold text-[var(--navy)]">Offer {PAID_PLAN_LIST}</span>
             <span className="block text-stone-500">
-              Off means the account page says nothing about either, and nothing on the site can charge anybody. This is
-              the switch — everything below is what happens when it is on.
+              Off means the account page says nothing about any of them, and nothing on the site can charge anybody.
+              This is the switch — everything below is what happens when it is on.
             </span>
           </span>
         </label>
@@ -84,10 +86,11 @@ export default function AdminPlanOfferingForm({
           <label className="flex cursor-pointer gap-3 text-sm leading-6 text-stone-700">
             <input type="radio" name="how" value="stripe" checked={how === "stripe"} onChange={() => setHow("stripe")} className="mt-1.5" />
             <span>
-              <span className="font-semibold text-[var(--navy)]">Stripe subscription</span>
+              <span className="font-semibold text-[var(--navy)]">Stripe checkout</span>
               <span className="block text-stone-500">
-                A real recurring payment on Stripe&rsquo;s own page. The account is put on the plan when Stripe says the
-                money moved, and taken off it when the subscription ends.
+                A real payment on Stripe&rsquo;s own page — one-time for One Trip, recurring for the others. The
+                account is put on the plan when Stripe says the money moved, and a subscription plan is taken off it
+                when the subscription ends.
               </span>
             </span>
           </label>
@@ -111,42 +114,54 @@ export default function AdminPlanOfferingForm({
       </fieldset>
 
       <fieldset disabled={!open || !storeReady || busy} className={`space-y-6 ${open ? "" : "opacity-50"}`}>
-        <legend className={caption}>The two plans</legend>
-        {PAID_PLANS.map((plan: PaidPlan) => (
-          <div key={plan} className="rounded-md border border-[var(--gold-light)] bg-white p-4">
-            <label className="flex cursor-pointer gap-3 text-sm leading-6 text-stone-700">
-              <input type="checkbox" name={`${plan}-on`} defaultChecked={current.plans[plan]} className="mt-1.5" />
-              <span>
-                <span className="font-semibold text-[var(--navy)]">{PLAN_LABELS[plan]}</span>
-                <span className="block text-stone-500">{PLAN_BLURB[plan]}</span>
-              </span>
-            </label>
+        <legend className={caption}>The plans</legend>
+        {PAID_PLANS.map((plan: PaidPlan) => {
+          const oneTime = isOneTimePlan(plan);
+          return (
+            <div key={plan} className="rounded-md border border-[var(--gold-light)] bg-white p-4">
+              <label className="flex cursor-pointer gap-3 text-sm leading-6 text-stone-700">
+                <input type="checkbox" name={`${plan}-on`} defaultChecked={current.plans[plan]} className="mt-1.5" />
+                <span>
+                  <span className="font-semibold text-[var(--navy)]">{PLAN_LABELS[plan]}</span>
+                  <span className="block text-stone-500">{PLAN_BLURB[plan]}</span>
+                </span>
+              </label>
 
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="block sm:col-span-2">
-                <span className={caption}>What the page says it costs — only used when they ask rather than pay</span>
-                <input
-                  name={`${plan}-asking`}
-                  defaultValue={current.pricing[plan].askingLine}
-                  placeholder="Leave blank to say nothing about money"
-                  className={input}
-                />
-              </label>
-              <label className="block">
-                <span className={caption}>Stripe price id — monthly</span>
-                <input name={`${plan}-monthly`} defaultValue={current.pricing[plan].monthlyPriceId} placeholder="price_…" className={input} />
-              </label>
-              <label className="block">
-                <span className={caption}>Stripe price id — yearly</span>
-                <input name={`${plan}-yearly`} defaultValue={current.pricing[plan].yearlyPriceId} placeholder="price_… (optional)" className={input} />
-              </label>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <label className="block sm:col-span-2">
+                  <span className={caption}>What the page says it costs — only used when they ask rather than pay</span>
+                  <input
+                    name={`${plan}-asking`}
+                    defaultValue={current.pricing[plan].askingLine}
+                    placeholder="Leave blank to say nothing about money"
+                    className={input}
+                  />
+                </label>
+                {oneTime ? (
+                  <label className="block sm:col-span-2">
+                    <span className={caption}>Stripe price id — one-time</span>
+                    <input name={`${plan}-monthly`} defaultValue={current.pricing[plan].monthlyPriceId} placeholder="price_…" className={input} />
+                  </label>
+                ) : (
+                  <>
+                    <label className="block">
+                      <span className={caption}>Stripe price id — monthly</span>
+                      <input name={`${plan}-monthly`} defaultValue={current.pricing[plan].monthlyPriceId} placeholder="price_…" className={input} />
+                    </label>
+                    <label className="block">
+                      <span className={caption}>Stripe price id — yearly</span>
+                      <input name={`${plan}-yearly`} defaultValue={current.pricing[plan].yearlyPriceId} placeholder="price_… (optional)" className={input} />
+                    </label>
+                  </>
+                )}
+              </div>
+              <p className="mt-2 text-xs leading-5 text-stone-500">
+                With Stripe chosen, the price a visitor reads is fetched from Stripe itself — so it cannot disagree with
+                what their card is charged. The line above is not used then.
+              </p>
             </div>
-            <p className="mt-2 text-xs leading-5 text-stone-500">
-              With Stripe chosen, the price a visitor reads is fetched from Stripe itself — so it cannot disagree with
-              what their card is charged. The line above is not used then.
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </fieldset>
 
       <div className="flex flex-wrap items-center gap-4">

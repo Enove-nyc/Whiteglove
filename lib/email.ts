@@ -233,10 +233,9 @@ export async function sendSubmissionNotification(sub: SubmissionNotification): P
 export type PlanRequestNotification = {
   /** What they sign in with — an email address or a phone number. */
   account: string;
-  /** "Gold" or "Business", already spelled for a person. */
+  /** "Advisor Starter" or "Advisor Pro", already spelled for a person. */
   wanted: string;
   currentPlan: string;
-  businessName?: string;
   note?: string;
 };
 
@@ -245,7 +244,6 @@ export async function sendPlanRequestNotification(request: PlanRequestNotificati
     ["Who", request.account],
     ["Asked about", request.wanted],
     ["On now", request.currentPlan],
-    ["Business", request.businessName],
     ["They wrote", request.note],
   ]);
   const to = editsInbox();
@@ -410,7 +408,7 @@ export async function sendPasswordResetEmail(email: string, code: string) {
 export type SubscriptionNotification = {
   /** What they sign in with. */
   account: string;
-  /** "Gold" or "Business", already spelled for a person. */
+  /** "One Trip", "Advisor Starter" or "Advisor Pro", already spelled for a person. */
   plan: string;
   event: "started" | "ended";
 };
@@ -420,7 +418,7 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
   const { html, text } = table([
     ["Who", note.account],
     ["Plan", note.plan],
-    ["What happened", started ? "Subscription started" : "Subscription ended — the account is back on Traveler"],
+    ["What happened", started ? "Subscription started" : "Subscription ended — the account is back with no plan"],
   ]);
   const to = editsInbox();
   const result = await postResend(
@@ -428,7 +426,7 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
       to,
       ...(note.account.includes("@") ? { reply_to: note.account } : {}),
       subject: started
-        ? `White Glove: ${note.account} subscribed to ${note.plan}`
+        ? `White Glove: ${note.account} is now on ${note.plan}`
         : `White Glove: ${note.account}'s ${note.plan} subscription ended`,
       html:
         `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${started ? "New subscription" : "Subscription ended"}</h2>${html}` +

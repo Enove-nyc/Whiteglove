@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { countdownPhrase, tripProgress } from "@/lib/trip-progress";
+import { isAccountPlan } from "@/lib/account-plans";
+import { mayUseTripTemplates } from "@/lib/account-limits";
 
 // The traveler's trips, and a way to move between them.
 //
@@ -50,6 +52,10 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   // anybody else — a greyed-out control advertising an upgrade has no place in
   // the middle of somebody's planning.
   const [mayNameClient, setMayNameClient] = useState(false);
+  // Saving and starting from templates is Advisor Pro — read off the same
+  // branding response rather than a second request, since it already
+  // resolves the account's plan server-side.
+  const [mayUseTemplates, setMayUseTemplates] = useState(false);
   const [clientFor, setClientFor] = useState<string | null>(null);
   const [draftClient, setDraftClient] = useState("");
   // The agent on the trip, edited the same way as the client name.
@@ -89,7 +95,11 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
     let live = true;
     fetch("/api/account/branding", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => live && setMayNameClient(Boolean(d?.allowed)))
+      .then((d) => {
+        if (!live) return;
+        setMayNameClient(Boolean(d?.allowed));
+        setMayUseTemplates(isAccountPlan(d?.plan) ? mayUseTripTemplates(d.plan) : false);
+      })
       .catch(() => undefined);
     return () => {
       live = false;
@@ -378,17 +388,19 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                 <button type="button" disabled={busy} onClick={() => void act("duplicate", { id: trip.id })} className={smallButton}>
                   Make a copy
                 </button>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => {
-                    setSavingTemplateFor(trip.id);
-                    setTemplateDraftName(trip.name);
-                  }}
-                  className={smallButton}
-                >
-                  Save as template
-                </button>
+                {mayUseTemplates && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setSavingTemplateFor(trip.id);
+                      setTemplateDraftName(trip.name);
+                    }}
+                    className={smallButton}
+                  >
+                    Save as template
+                  </button>
+                )}
                 {trips.length > 1 && (
                   <button
                     type="button"

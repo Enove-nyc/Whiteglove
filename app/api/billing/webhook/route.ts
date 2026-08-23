@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { type AccountPlan, PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan, setPlan } from "@/lib/account-plan-store";
 import { sendSubscriptionNotification } from "@/lib/email";
-import { isPaidPlan } from "@/lib/plan-billing";
+import { isOneTimePlan, isPaidPlan } from "@/lib/plan-billing";
 import {
   accountForCustomer,
   readSubscription,
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
  *
  * SO IT VERIFIES FIRST AND DOES NOTHING ELSE UNTIL IT HAS. The raw body is
  * signed with the endpoint secret; anything that does not match is a 400 with
- * no detail. Without that check this URL would hand out Business accounts to
+ * no detail. Without that check this URL would hand out paid accounts to
  * anybody who could POST to it.
  *
  * IT ALWAYS ANSWERS 200 ONCE THE EVENT IS REAL. Stripe retries anything else
@@ -78,13 +78,25 @@ export async function POST(request: NextRequest) {
       const account = await accountFor(object);
       const plan = planFrom(object);
       const customerId = customerIdOf(object.customer);
-      const subscriptionId = typeof object.subscription === "string" ? object.subscription : customerIdOf(object.subscription);
       if (!account || !plan) {
         console.error("[billing] checkout completed with no account or plan on it:", { account, plan, customerId });
         return NextResponse.json({ received: true });
       }
       if (customerId) await rememberCustomer(customerId, account);
 
+      // One Trip pays once — no subscription object exists for it at all, so
+      // there is nothing to record beyond the plan itself, and nothing that
+      // could ever end it from underneath somebody the way a cancelled
+      // subscription can. See lib/plan-billing.ts's ONE_TIME_PLANS.
+      if (object.mode === "payment" || isOneTimePlan(plan)) {
+        if (!(await setPlan(account, plan, "Stripe one-time purchase"))) {
+          console.error("[billing] paid but the plan could not be set:", { account, plan });
+        }
+        await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "started" });
+        return NextResponse.json({ received: true });
+      }
+
+      const subscriptionId = typeof object.subscription === "string" ? object.subscription : customerIdOf(object.subscription);
       const now = new Date().toISOString();
       const existing = await readSubscription(account);
       const record: SubscriptionRecord = {
@@ -138,7 +150,7 @@ export async function POST(request: NextRequest) {
         // owner granted by hand is his to take away, not Stripe's.
         const current = await getPlan(account);
         if (current === plan) {
-          await setPlan(account, "traveler", "Stripe subscription ended");
+          await setPlan(account, "free", "Stripe subscription ended");
           await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "ended" });
         }
       }

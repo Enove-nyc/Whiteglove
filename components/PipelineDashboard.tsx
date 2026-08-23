@@ -129,6 +129,9 @@ export default function PipelineDashboard() {
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
   const [today, setToday] = useState("");
+  // The business-at-a-glance strip is Advisor Pro — read off the same
+  // response the rows already come from, not a second request.
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [view, setView] = useState<View>("board");
@@ -146,6 +149,7 @@ export default function PipelineDashboard() {
         } else {
           setRows(data?.rows || []);
           setToday(data?.today || "");
+          setShowAnalytics(Boolean(data?.showAnalytics));
         }
       } catch {
         if (active) setError("Could not reach the account service.");
@@ -201,30 +205,32 @@ export default function PipelineDashboard() {
 
   return (
     <div>
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className={cardBase}>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Active client trips</p>
-          <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.activeCount}</p>
+      {showAnalytics && (
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className={cardBase}>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Active client trips</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.activeCount}</p>
+          </div>
+          <div className={cardBase}>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Traveling now</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{counts.traveling}</p>
+          </div>
+          <div className={cardBase}>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Departing in 30 days</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.departingSoon}</p>
+          </div>
+          <div className={cardBase}>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Outstanding</p>
+            {stats.outstandingByCurrency.length === 0 ? (
+              <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{formatCents(0)}</p>
+            ) : (
+              <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+                {stats.outstandingByCurrency.map(([currency, cents]) => formatCents(cents, currency)).join(" · ")}
+              </p>
+            )}
+          </div>
         </div>
-        <div className={cardBase}>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Traveling now</p>
-          <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{counts.traveling}</p>
-        </div>
-        <div className={cardBase}>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Departing in 30 days</p>
-          <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.departingSoon}</p>
-        </div>
-        <div className={cardBase}>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Outstanding</p>
-          {stats.outstandingByCurrency.length === 0 ? (
-            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{formatCents(0)}</p>
-          ) : (
-            <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-              {stats.outstandingByCurrency.map(([currency, cents]) => formatCents(cents, currency)).join(" · ")}
-            </p>
-          )}
-        </div>
-      </div>
+      )}
 
       <div className="flex flex-wrap gap-2 border-b border-[var(--gold-light)] pb-4">
         {VIEWS.map((v) => (

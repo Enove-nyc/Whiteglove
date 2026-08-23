@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getAccountData, getCurrentAccountData, savePipelineStage, withTrips } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { mayServeCompanionClients } from "@/lib/account-limits";
+import { mayServeCompanionClients, mayViewPipelineAnalytics } from "@/lib/account-limits";
 import { readChat, readMarkers } from "@/lib/companion-chat-store";
 import { needsAttention, tripStage, type ManualTripStage, type TripStage } from "@/data/trip-pipeline";
 import { hasBalance, outstandingCents } from "@/data/trip-payments";
@@ -33,17 +33,21 @@ export type PipelineRow = {
  * Trip Pipeline. Reads three things that already exist rather than keeping a
  * fourth in sync with them: each trip's own proposal status, its own dates,
  * and its chat thread's read marker (lib/companion-chat-store.ts, the same
- * one the advisor inbox already reads). BUSINESS-ONLY, same door as the
- * client inbox and the proposal/library/form pages — a Gold account has the
- * app for its own trips and no clients to run a pipeline of.
+ * one the advisor inbox already reads). ADVISOR STARTER AND UP, same door as
+ * the client inbox and the proposal/library/form pages — One Trip has the
+ * app for its own one trip and no clients to run a pipeline of.
  */
 export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  if (!mayServeCompanionClients(await getPlan(account.email))) {
-    return NextResponse.json({ error: "The trip pipeline is part of a Business account." }, { status: 403 });
+  const plan = await getPlan(account.email);
+  if (!mayServeCompanionClients(plan)) {
+    return NextResponse.json({ error: "The trip pipeline is part of Advisor Starter and up." }, { status: 403 });
   }
+  // The business-at-a-glance numbers strip is Advisor Pro only — everything
+  // else on this response (the rows themselves) is the same for Starter.
+  const showAnalytics = mayViewPipelineAnalytics(plan);
 
   const data = await getAccountData(account.email);
   const { trips } = withTrips(data);
@@ -77,7 +81,7 @@ export async function GET() {
     }),
   );
 
-  return NextResponse.json({ rows, today });
+  return NextResponse.json({ rows, today, showAnalytics });
 }
 
 /** Move a trip between "Inquiry" and "Planning" — the only stage a planner sets by hand. */
@@ -89,7 +93,7 @@ export async function POST(request: NextRequest) {
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   if (!mayServeCompanionClients(await getPlan(account.email))) {
-    return NextResponse.json({ error: "The trip pipeline is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ error: "The trip pipeline is part of Advisor Starter and up." }, { status: 403 });
   }
 
   const body = (await request.json().catch(() => null)) as { tripId?: string; stage?: string } | null;

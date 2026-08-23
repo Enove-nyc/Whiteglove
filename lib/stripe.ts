@@ -179,7 +179,11 @@ export function describePrice(price: StripePrice | null): string {
 export type CheckoutSession = { id: string; url?: string | null; customer?: string | null };
 
 /**
- * A hosted checkout page for one subscription.
+ * A hosted checkout page for one subscription, or for a single one-time
+ * payment — see lib/plan-billing.ts's ONE_TIME_PLANS. `mode: "payment"` has
+ * no renewal and no cancellation, so `subscription_data` — meaningless for a
+ * one-time charge, and rejected by Stripe if sent with one — is only ever
+ * attached in subscription mode.
  *
  * `clientReferenceId` is the account — it comes back on the completed event and
  * is how a payment finds the person who made it. The customer's email is
@@ -195,19 +199,24 @@ export async function createCheckoutSession(input: {
   cancelUrl: string;
   /** So the webhook knows which plan was bought without looking the price up. */
   plan: string;
+  /** "subscription" unless told otherwise — see the note above. */
+  mode?: "subscription" | "payment";
 }): Promise<StripeResult<CheckoutSession>> {
+  const mode = input.mode ?? "subscription";
   const body: Record<string, unknown> = {
-    mode: "subscription",
+    mode,
     line_items: [{ price: input.priceId, quantity: 1 }],
     success_url: input.successUrl,
     cancel_url: input.cancelUrl,
     client_reference_id: input.account.slice(0, 200),
     allow_promotion_codes: true,
     metadata: { account: input.account.slice(0, 200), plan: input.plan },
+  };
+  if (mode === "subscription") {
     // Repeated on the subscription itself: the events that arrive months later
     // — a renewal, a cancellation — carry the subscription, not the session.
-    subscription_data: { metadata: { account: input.account.slice(0, 200), plan: input.plan } },
-  };
+    body.subscription_data = { metadata: { account: input.account.slice(0, 200), plan: input.plan } };
+  }
   if (input.customerId) body.customer = input.customerId;
   else if (input.email) body.customer_email = input.email;
   return call<CheckoutSession>("checkout/sessions", body);

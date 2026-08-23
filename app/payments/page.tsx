@@ -29,7 +29,7 @@ export default async function PaymentsPage() {
   await requireSignedIn("/payments");
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
-  const plan = account ? await getPlan(account.email) : "traveler";
+  const plan = account ? await getPlan(account.email) : "free";
   const allowed = mayServeCompanionClients(plan);
 
   return (
@@ -51,12 +51,12 @@ export default async function PaymentsPage() {
         ) : (
           <div className="mt-8 max-w-xl rounded-2xl border border-[var(--gold-light)] bg-white p-6">
             <p className="text-base leading-7 text-stone-600">
-              Trip payments are part of a Business account. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.business}{" "}
+              Trip payments are part of {PLAN_LABELS.starter} and up. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.starter}{" "}
               from your account, and we will be in touch.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link href="/account" className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-                Ask about {PLAN_LABELS.business}
+                Ask about {PLAN_LABELS.starter}
               </Link>
               <Link href="/itinerary" className="rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-white">
                 Back to the planner

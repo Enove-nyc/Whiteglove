@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
-import { isBillingPeriod, isPaidPlan, planIsOfferable, priceIdFor } from "@/lib/plan-billing";
+import { isBillingPeriod, isOneTimePlan, isPaidPlan, planIsOfferable, priceIdFor } from "@/lib/plan-billing";
 import { readPlanOffering, readSubscription, rememberCustomer } from "@/lib/plan-billing-store";
 import { siteOrigin } from "@/lib/seo";
 import { createCheckoutSession } from "@/lib/stripe";
@@ -36,19 +36,26 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as { plan?: unknown; period?: unknown } | null;
   const plan = body?.plan;
   if (!isPaidPlan(plan)) return NextResponse.json({ error: "Choose which account you want." }, { status: 400 });
-  const period = isBillingPeriod(body?.period) ? body.period : "monthly";
+  const oneTime = isOneTimePlan(plan);
+  // One Trip has one price, not a monthly/yearly choice — the period a
+  // traveler sends is ignored for it, and its single price lives in the
+  // same "monthly" slot every other plan's monthly price does.
+  const period = oneTime ? "monthly" : isBillingPeriod(body?.period) ? body.period : "monthly";
 
   const offering = await readPlanOffering();
   if (offering.how !== "stripe" || !planIsOfferable(offering, plan)) {
     return NextResponse.json(
-      { error: "That is not something you can subscribe to here at the moment." },
+      { error: oneTime ? "That is not something you can buy here at the moment." : "That is not something you can subscribe to here at the moment." },
       { status: 409 },
     );
   }
 
   const priceId = priceIdFor(offering, plan, period);
   if (!priceId) {
-    return NextResponse.json({ error: `${PLAN_LABELS[plan]} is not offered ${period === "yearly" ? "yearly" : "monthly"}.` }, { status: 409 });
+    return NextResponse.json(
+      { error: oneTime ? `${PLAN_LABELS[plan]} is not offered right now.` : `${PLAN_LABELS[plan]} is not offered ${period === "yearly" ? "yearly" : "monthly"}.` },
+      { status: 409 },
+    );
   }
 
   const current = await getPlan(account.email);
@@ -69,6 +76,7 @@ export async function POST(request: NextRequest) {
     customerId: existing?.customerId || undefined,
     successUrl: `${origin}/account?subscribed=${encodeURIComponent(plan)}`,
     cancelUrl: `${origin}/account?subscribed=cancelled`,
+    mode: oneTime ? "payment" : "subscription",
   });
 
   if (!session.ok || !session.data.url) {

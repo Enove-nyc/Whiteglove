@@ -13,11 +13,11 @@ import { accountCookieName, readSessionEmail } from "@/lib/account-store";
  *
  * NOTHING IS CHARGED HERE, and there is nothing in this file that could
  * charge anybody: no card, no processor, no order. It writes down that a
- * person wants Pro or a Business account so the owner can see it and answer.
- * The screen that calls this says so in as many words.
+ * person wants One Trip, Advisor Starter or Advisor Pro so the owner can see
+ * it and answer. The screen that calls this says so in as many words.
  *
- * The plan itself is never set from here. A person saying they would like Pro
- * is not the same as having it, and an endpoint that granted what it was
+ * The plan itself is never set from here. A person saying they would like
+ * one is not the same as having it, and an endpoint that granted what it was
  * asked for would make the whole thing meaningless.
  */
 export async function POST(request: NextRequest) {
@@ -28,27 +28,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Plans are unavailable at the moment. Please try again shortly." }, { status: 503 });
   }
 
-  const body = (await request.json().catch(() => null)) as
-    | { wanted?: string; businessName?: string; note?: string }
-    | null;
+  const body = (await request.json().catch(() => null)) as { wanted?: string; note?: string } | null;
   if (!body) return NextResponse.json({ error: "Choose which kind of account you want." }, { status: 400 });
 
   // Checked against what they are actually on, read now — not against
   // whatever the page believed when it was drawn.
   const current = await getPlan(account);
-  const problem = requestProblem({
-    current,
-    wanted: body.wanted,
-    businessName: body.businessName,
-    note: body.note,
-  });
+  const problem = requestProblem({ current, wanted: body.wanted, note: body.note });
   if (problem) return NextResponse.json({ error: problem }, { status: 400 });
 
   const saved = await askForPlan({
     account,
     // Safe: requestProblem returned null, so this is one of the known plans.
-    wanted: body.wanted as "pro" | "business",
-    businessName: body.businessName,
+    wanted: body.wanted as "one_trip" | "starter" | "pro",
     note: body.note,
   });
   if (!saved) return NextResponse.json({ error: "That could not be saved. Please try again." }, { status: 500 });
@@ -62,18 +54,15 @@ export async function POST(request: NextRequest) {
   // person sees, which would have them ask again and again.
   void sendPlanRequestNotification({
     account,
-    wanted: PLAN_LABELS[body.wanted as "pro" | "business"],
+    wanted: PLAN_LABELS[body.wanted as "one_trip" | "starter" | "pro"],
     currentPlan: PLAN_LABELS[current],
-    businessName: body.businessName,
     note: body.note,
   }).catch(() => undefined);
 
   // And a card, for an owner who works from a board rather than an inbox.
   void cardIfWanted({
-    // The business name where there is one, never the person's email address:
-    // a Trello board is shared, often outside the team.
     kind: "plan",
-    about: body.businessName?.trim() || PLAN_LABELS[body.wanted as "pro" | "business"],
+    about: PLAN_LABELS[body.wanted as "one_trip" | "starter" | "pro"],
     siteUrl: siteOrigin()?.toString(),
   });
 

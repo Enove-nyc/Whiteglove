@@ -9,6 +9,8 @@ import {
   saveTripAsTemplate,
   startTripFromTemplate,
 } from "@/lib/account-store";
+import { getPlan } from "@/lib/account-plan-store";
+import { mayUseTripTemplates } from "@/lib/account-limits";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +21,14 @@ async function signedInEmail() {
   return account?.email ?? null;
 }
 
+// Saving and starting from templates is Advisor Pro — see PlanFeatures.templates
+// in lib/account-limits.ts. Reading the list still answers for anybody signed
+// in (an empty list, or a plain refusal), so the switcher can simply not draw
+// the section rather than treat a 403 as a real failure.
 export async function GET() {
   const email = await signedInEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  if (!mayUseTripTemplates(await getPlan(email))) return NextResponse.json({ templates: [] });
   const templates = await getTemplates(email);
   return NextResponse.json({ templates });
 }
@@ -32,6 +39,9 @@ export async function POST(request: NextRequest) {
   }
   const email = await signedInEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  if (!mayUseTripTemplates(await getPlan(email))) {
+    return NextResponse.json({ ok: false, error: "Trip templates are part of Advisor Pro." }, { status: 403 });
+  }
 
   const body = (await request.json().catch(() => null)) as
     | { action?: string; id?: string; tripId?: string; name?: string; startDate?: string }

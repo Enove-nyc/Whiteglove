@@ -25,13 +25,8 @@ function Answer({ request, now }: { request: PlanRequest; now: string }) {
     <div className="border border-[var(--gold-light)] bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-            {request.businessName || request.account}
-          </p>
-          <p className="mt-1 text-xs text-stone-500">
-            {request.businessName ? `${request.account} · ` : ""}
-            asked {waitingFor(request, now)}
-          </p>
+          <p className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{request.account}</p>
+          <p className="mt-1 text-xs text-stone-500">asked {waitingFor(request, now)}</p>
         </div>
         <span className="shrink-0 border border-[var(--gold)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
           {PLAN_LABELS[request.wanted]}

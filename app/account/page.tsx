@@ -15,7 +15,7 @@ import { getPlan, openRequestFor } from "@/lib/account-plan-store";
 import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
-import { offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
+import { isOneTimePlan, offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
 import { readPlanOffering } from "@/lib/plan-billing-store";
 import { describePrice, readPrice } from "@/lib/stripe";
 import { getLimitOverrides, usageLineFor } from "@/lib/account-limits-store";
@@ -96,6 +96,7 @@ export default async function AccountPage() {
         line: offerLine(offering, paid, usable[0]?.line),
         periods: usable,
         limitsLine: describeLimits(paid, limitsFor(paid, overrides)),
+        oneTime: isOneTimePlan(paid),
       });
     }
   }

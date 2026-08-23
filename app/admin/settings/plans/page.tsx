@@ -1,9 +1,11 @@
 import Link from "next/link";
 import AdminPlanOfferingForm from "@/components/AdminPlanOfferingForm";
 import { PLAN_LABELS } from "@/lib/account-plans";
-import { describeOffering } from "@/lib/plan-billing";
+import { describeOffering, PAID_PLANS } from "@/lib/plan-billing";
 import { listSubscriptions, planBillingStoreAvailable, readPlanOffering } from "@/lib/plan-billing-store";
 import { stripeReadiness } from "@/lib/stripe";
+
+const PAID_PLAN_LIST = PAID_PLANS.map((plan) => PLAN_LABELS[plan]).join(", ");
 
 export const dynamic = "force-dynamic";
 
@@ -28,10 +30,10 @@ export default async function PlanOfferingSettings() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Gold and Business
+              {PAID_PLAN_LIST}
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
-              Whether the two paid accounts are offered, and how somebody comes by one. Off is the state a site that has
+              Whether the paid plans are offered, and how somebody comes by one. Off is the state a site that has
               never been set up is in, and it is a perfectly good state to leave this in.
             </p>
           </div>
@@ -58,9 +60,9 @@ export default async function PlanOfferingSettings() {
       <section className={`${card} mt-8`}>
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Nothing is taken away</h2>
         <p className="mt-3 text-sm leading-6 text-stone-600">
-          Turning this off does not close anybody&rsquo;s account or demote anybody. People already on Gold or Business
-          stay on it; the offering simply stops being shown to anybody new. The same is true of a subscription that
-          ends — the trips, the notes and the shared links are all still there on a Traveler account, with the two free
+          Turning this off does not close anybody&rsquo;s account or demote anybody. People already on a paid plan stay
+          on it; the offering simply stops being shown to anybody new. The same is true of a subscription that ends —
+          the trips, the notes and the shared links are all still there on the account, with no plan chosen and its
           limits back in place for anything new.
         </p>
       </section>
