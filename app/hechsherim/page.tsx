@@ -125,9 +125,8 @@ export default async function HechsherimPage() {
         <div className="mt-14 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
           <SectionHeading eyebrow="On a listing" title="What the circle beside a place means" />
           <p className="mt-5 max-w-3xl leading-7 text-stone-600">
-            A gold mark on a restaurant or a hotel means the hechsher was confirmed against a teudah, the rov, or the
-            agency&rsquo;s own list. A grey one means no such confirmation exists here, whether or not a name is shown —
-            ask to see the current teudah before you eat. Supervision changes hands; confirm it close to your dates.
+            Gold means the hechsher was confirmed against a teudah, the rov, or the agency&rsquo;s list; grey means it
+            wasn&rsquo;t. Supervision changes hands — always ask to see the current teudah before you eat.
           </p>
           <p className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
             <Link

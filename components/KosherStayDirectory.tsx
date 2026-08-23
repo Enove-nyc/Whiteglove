@@ -224,12 +224,21 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
               </p>
             )}
 
+            {/* The kashrus and seasonal warnings above are never hidden — this
+                is the secondary, practical-preference detail (which quarter,
+                how walkable), collapsed so the card stays scannable. */}
             {s.notes && s.notes.length > 0 && (
-              <ul className="mt-4 space-y-2 text-sm leading-6 text-stone-600">
-                {s.notes.map((note, i) => (
-                  <li key={i} className="border-l-2 border-[var(--gold-light)] pl-3">{note}</li>
-                ))}
-              </ul>
+              <details className="group mt-4">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+                  More details
+                  <span aria-hidden="true" className="inline-block text-xs transition group-open:rotate-90">→</span>
+                </summary>
+                <ul className="mt-3 space-y-2 text-sm leading-6 text-stone-600">
+                  {s.notes.map((note, i) => (
+                    <li key={i} className="border-l-2 border-[var(--gold-light)] pl-3">{note}</li>
+                  ))}
+                </ul>
+              </details>
             )}
 
             <p className="mt-4 text-xs leading-5 text-stone-500">

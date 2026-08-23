@@ -89,7 +89,7 @@ export default async function DirectoryPage() {
         </p>
 
         <p className="mt-8 max-w-3xl text-xs leading-5 text-stone-400">
-          Listings are gathered from public sources and provider submissions. White Glove does not endorse or guarantee any provider — please confirm details and kashrus arrangements directly before booking.
+          Gathered from public sources and submissions — not an endorsement. Confirm details and kashrus arrangements directly before booking.
         </p>
       </section>
 
