@@ -33,6 +33,9 @@ type Trip = {
   updatedAt: string;
 };
 
+/** An advisor's own saved trip shape — see lib/trip-templates.ts. */
+type Template = { id: string; name: string; createdAt: string };
+
 const smallButton =
   "min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:opacity-50";
 
@@ -53,6 +56,16 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   const [advisorFor, setAdvisorFor] = useState<string | null>(null);
   const [draftAdvisor, setDraftAdvisor] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  // The advisor's own saved trip shapes — a separate list from the trips
+  // themselves, fetched the same way.
+  const [templates, setTemplates] = useState<Template[] | null>(null);
+  const [savingTemplateFor, setSavingTemplateFor] = useState<string | null>(null);
+  const [templateDraftName, setTemplateDraftName] = useState("");
+  const [renamingTemplate, setRenamingTemplate] = useState<string | null>(null);
+  const [templateRenameDraft, setTemplateRenameDraft] = useState("");
+  const [startingFrom, setStartingFrom] = useState<string | null>(null);
+  const [startDraftName, setStartDraftName] = useState("");
+  const [startDraftDate, setStartDraftDate] = useState("");
   // This site's own origin, so the client link is absolute and copyable. This
   // panel only ever renders after its trips have loaded on the client, so
   // window is always here by the time the link is drawn — no effect needed.
@@ -82,6 +95,51 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
       live = false;
     };
   }, []);
+
+  const loadTemplates = useCallback(() => {
+    fetch("/api/account/templates", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.templates && setTemplates(d.templates))
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
+
+  const templateAct = useCallback(
+    async (action: string, payload: { id?: string; tripId?: string; name?: string; startDate?: string } = {}, reload = false) => {
+      setBusy(true);
+      setError("");
+      try {
+        const res = await fetch("/api/account/templates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, ...payload }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) {
+          setError(data?.error ?? "That did not work. Try again.");
+          return;
+        }
+        if (data.templates) setTemplates(data.templates);
+        else loadTemplates();
+        // Starting a trip from a template creates a real trip, which the
+        // switcher's own trips list needs to show — same response shape
+        // /api/account/trips already returns.
+        if (data.trips) setTrips(data.trips);
+        setSavingTemplateFor(null);
+        setRenamingTemplate(null);
+        setStartingFrom(null);
+        if (reload) onSwitched?.();
+      } catch {
+        setError("Could not reach the server.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [loadTemplates, onSwitched],
+  );
 
   const act = useCallback(
     async (action: string, payload: { id?: string; name?: string; client?: string; advisor?: string } = {}, reload = false) => {
@@ -220,6 +278,30 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                     Cancel
                   </button>
                 </form>
+              ) : savingTemplateFor === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void templateAct("save", { tripId: trip.id, name: templateDraftName });
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={templateDraftName}
+                    onChange={(e) => setTemplateDraftName(e.target.value)}
+                    aria-label="Template name"
+                    placeholder="Rome, four days, family of five"
+                    maxLength={80}
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setSavingTemplateFor(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
               ) : (
                 <>
                   <p className="font-semibold text-[var(--navy)]">
@@ -249,7 +331,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
               )}
             </div>
 
-            {renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+            {renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && savingTemplateFor !== trip.id && (
               <div className="flex flex-wrap gap-2">
                 {!trip.active && (
                   <button type="button" disabled={busy} onClick={() => void act("switch", { id: trip.id }, true)} className={smallButton}>
@@ -295,6 +377,17 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                 )}
                 <button type="button" disabled={busy} onClick={() => void act("duplicate", { id: trip.id })} className={smallButton}>
                   Make a copy
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    setSavingTemplateFor(trip.id);
+                    setTemplateDraftName(trip.name);
+                  }}
+                  className={smallButton}
+                >
+                  Save as template
                 </button>
                 {trips.length > 1 && (
                   <button
@@ -363,6 +456,121 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
           </li>
         ))}
       </ul>
+
+      {/* Trip shapes the advisor has saved for reuse — separate from the
+          trips themselves, and only shown once there is at least one. */}
+      {templates && templates.length > 0 && (
+        <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Your templates</p>
+          <p className="mt-1 text-sm leading-6 text-stone-600">
+            Saved from a trip, with no client on it — start a new trip from one whenever you need the same shape again.
+          </p>
+          <ul className="mt-3 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
+            {templates.map((tpl) => (
+              <li key={tpl.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  {renamingTemplate === tpl.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void templateAct("rename", { id: tpl.id, name: templateRenameDraft });
+                      }}
+                      className="flex flex-wrap gap-2"
+                    >
+                      <input
+                        value={templateRenameDraft}
+                        onChange={(e) => setTemplateRenameDraft(e.target.value)}
+                        aria-label="Template name"
+                        autoFocus
+                        className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                      />
+                      <button type="submit" disabled={busy} className={smallButton}>
+                        Save
+                      </button>
+                      <button type="button" onClick={() => setRenamingTemplate(null)} className={smallButton}>
+                        Cancel
+                      </button>
+                    </form>
+                  ) : startingFrom === tpl.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void templateAct("start", { id: tpl.id, name: startDraftName, startDate: startDraftDate }, true);
+                      }}
+                      className="flex flex-wrap gap-2"
+                    >
+                      <input
+                        value={startDraftName}
+                        onChange={(e) => setStartDraftName(e.target.value)}
+                        aria-label="New trip name"
+                        placeholder="The Friedman family"
+                        maxLength={80}
+                        autoFocus
+                        className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                      />
+                      <input
+                        type="date"
+                        value={startDraftDate}
+                        onChange={(e) => setStartDraftDate(e.target.value)}
+                        aria-label="Start date"
+                        required
+                        className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                      />
+                      <button type="submit" disabled={busy} className={smallButton}>
+                        Start
+                      </button>
+                      <button type="button" onClick={() => setStartingFrom(null)} className={smallButton}>
+                        Cancel
+                      </button>
+                    </form>
+                  ) : (
+                    <p className="font-semibold text-[var(--navy)]">{tpl.name}</p>
+                  )}
+                </div>
+                {renamingTemplate !== tpl.id && startingFrom !== tpl.id && (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        setStartingFrom(tpl.id);
+                        setStartDraftName(tpl.name);
+                        setStartDraftDate("");
+                      }}
+                      className={smallButton}
+                    >
+                      Start a trip from this
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        setRenamingTemplate(tpl.id);
+                        setTemplateRenameDraft(tpl.name);
+                      }}
+                      className={smallButton}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        if (confirm(`Delete the template “${tpl.name}”? This does not touch any trip already started from it.`)) {
+                          void templateAct("delete", { id: tpl.id });
+                        }
+                      }}
+                      className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700 disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
     </section>
