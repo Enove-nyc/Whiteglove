@@ -4,6 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { pipelineStats, TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
 import { formatCents } from "@/data/trip-payments";
+import { useDeviceClock } from "@/components/TripProgressStrip";
+import { followAlong, tripProgress, type FollowStop } from "@/lib/trip-progress";
+
+/** One day of a traveling trip, as the pipeline API sends it — see TravelDay in app/api/account/pipeline/route.ts. */
+type TravelDay = { date: string; activities: FollowStop[]; lodging?: { name: string; address?: string } };
 
 type Row = {
   id: string;
@@ -20,6 +25,8 @@ type Row = {
   /** What this trip still owes, when a balance has actually been set up. */
   outstandingCents?: number;
   currency?: string;
+  /** Only present for a trip in the "traveling" stage — see travelDaysFor server-side. */
+  travelDays?: TravelDay[];
 };
 
 type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread";
@@ -110,6 +117,59 @@ function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) =>
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * A traveling client's row, showing where they are RIGHT NOW rather than
+ * just their dates.
+ *
+ * Reuses the same followAlong/tripProgress logic already driving the
+ * client-facing app and the advisor's own live planner view
+ * (components/TripProgressStrip.tsx) — read here off the ADVISOR's own
+ * device clock, since it is the advisor's screen, not the traveler's.
+ */
+function TravelingRowCard({ row, onOpen }: { row: Row; onOpen: (path: string) => void }) {
+  const { today, nowMinutes } = useDeviceClock();
+  const progress = tripProgress({ startDate: row.startDate, endDate: row.endDate, today });
+  const todayStops = progress.followDate ? row.travelDays?.find((d) => d.date === progress.followDate) : undefined;
+  const follow = todayStops ? followAlong({ stops: todayStops.activities, nowMinutes }) : null;
+
+  return (
+    <div className={cardBase}>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="font-semibold text-[var(--navy)]">{row.client || row.name}</p>
+          {row.client && <p className="text-xs text-stone-500">{row.name}</p>}
+        </div>
+        {progress.phase === "during" && (
+          <span className="rounded-full bg-[var(--gold)]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--gold-ink)]">
+            Day {progress.dayNumber} of {progress.totalDays}
+          </span>
+        )}
+      </div>
+      {follow ? (
+        <p className="mt-2 text-sm leading-6 text-stone-600">{follow.says}</p>
+      ) : (
+        <p className="mt-2 text-sm text-stone-500">{row.startDate} → {row.endDate}</p>
+      )}
+      {todayStops?.lodging && (
+        <p className="mt-1 text-xs leading-5 text-stone-500">
+          Tonight: {todayStops.lodging.name}
+          {todayStops.lodging.address ? ` — ${todayStops.lodging.address}` : ""}
+        </p>
+      )}
+      <div className="mt-3 flex flex-wrap gap-3">
+        <button type="button" onClick={() => onOpen("/itinerary")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          Open itinerary
+        </button>
+        {row.shareId && (
+          <a href={`/app?trip=${row.id}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+            Open in the app
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -277,9 +337,13 @@ export default function PipelineDashboard() {
           {filtered.length === 0 ? (
             <p className="text-sm text-stone-500">Nothing here right now.</p>
           ) : (
-            filtered.map((row) => (
-              <RowCard key={row.id} row={row} onOpen={(path) => (switching ? undefined : openTrip(row.id, path))} />
-            ))
+            filtered.map((row) =>
+              view === "traveling" && row.travelDays ? (
+                <TravelingRowCard key={row.id} row={row} onOpen={(path) => (switching ? undefined : openTrip(row.id, path))} />
+              ) : (
+                <RowCard key={row.id} row={row} onOpen={(path) => (switching ? undefined : openTrip(row.id, path))} />
+              ),
+            )
           )}
         </div>
       )}
