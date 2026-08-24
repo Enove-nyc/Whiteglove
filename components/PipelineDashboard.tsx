@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
 import { formatCents } from "@/data/trip-payments";
 import { clientKey } from "@/data/clients";
+import type { TripReminder } from "@/data/trip-reminders";
 
 type Row = {
   id: string;
@@ -19,10 +20,11 @@ type Row = {
   unread: boolean;
   outstandingCents?: number;
   currency?: string;
+  reminders: TripReminder[];
   updatedAt: string;
 };
 
-type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread" | "payment_due";
+type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread" | "payment_due" | "nudge";
 
 const VIEWS: Array<{ id: View; label: string }> = [
   { id: "board", label: "Board" },
@@ -32,6 +34,7 @@ const VIEWS: Array<{ id: View; label: string }> = [
   { id: "attention", label: "Changes requiring attention" },
   { id: "unread", label: "Unread messages" },
   { id: "payment_due", label: "Payment due" },
+  { id: "nudge", label: "Needs a nudge" },
 ];
 
 const cardBase = "rounded-xl border border-[var(--gold-light)] bg-white p-4 text-sm";
@@ -50,6 +53,8 @@ function rowsFor(view: View, rows: Row[], today: string): Row[] {
       return rows.filter((r) => r.unread);
     case "payment_due":
       return rows.filter((r) => (r.outstandingCents ?? 0) > 0);
+    case "nudge":
+      return rows.filter((r) => r.reminders.length > 0);
     default:
       return rows;
   }
@@ -85,6 +90,15 @@ function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) =>
         <p className="mt-2 text-xs text-stone-500">
           {row.startDate} {row.endDate ? `→ ${row.endDate}` : ""}
         </p>
+      )}
+      {row.reminders.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-1">
+          {row.reminders.map((r) => (
+            <li key={r.reason} className="text-xs font-semibold text-[var(--gold-ink)]">
+              ⚑ {r.message}
+            </li>
+          ))}
+        </ul>
       )}
       <div className="mt-3 flex flex-wrap gap-3">
         <button type="button" onClick={() => onOpen("/itinerary")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">

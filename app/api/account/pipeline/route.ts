@@ -6,6 +6,7 @@ import { mayServeCompanionClients } from "@/lib/account-limits";
 import { readChat, readMarkers } from "@/lib/companion-chat-store";
 import { needsAttention, tripStage, type ManualTripStage, type TripStage } from "@/data/trip-pipeline";
 import { hasBalance, outstandingCents } from "@/data/trip-payments";
+import { tripReminders, type TripReminder } from "@/data/trip-reminders";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,9 @@ export type PipelineRow = {
   /** Absent when no balance has been set up. Zero once it's fully paid. */
   outstandingCents?: number;
   currency?: string;
+  /** What needs a planner's attention on this trip — worked out fresh each
+   *  time, never stored. See data/trip-reminders.ts. */
+  reminders: TripReminder[];
   updatedAt: string;
 };
 
@@ -63,6 +67,10 @@ export async function GET() {
         const last = messages[messages.length - 1];
         unread = Boolean(last && last.from === "client" && (!markers.advisor || last.at > markers.advisor));
       }
+      const stage = tripStage(
+        { pipelineStage: t.pipelineStage, proposal: t.proposal, startDate: t.itinerary?.startDate, endDate: t.itinerary?.endDate },
+        today,
+      );
       return {
         id: t.id,
         name: t.name,
@@ -70,15 +78,13 @@ export async function GET() {
         advisor: t.advisor?.trim() ?? "",
         startDate: t.itinerary?.startDate ?? "",
         endDate: t.itinerary?.endDate ?? "",
-        stage: tripStage(
-          { pipelineStage: t.pipelineStage, proposal: t.proposal, startDate: t.itinerary?.startDate, endDate: t.itinerary?.endDate },
-          today,
-        ),
+        stage,
         needsAttention: needsAttention(t.proposal),
         shareId: t.shareId,
         unread,
         outstandingCents: t.balance && hasBalance(t.balance) ? outstandingCents(t.balance) : undefined,
         currency: t.balance?.currency,
+        reminders: tripReminders({ stage, proposal: t.proposal, balance: t.balance, addons: t.addons, startDate: t.itinerary?.startDate }, today),
         updatedAt: t.updatedAt,
       };
     }),

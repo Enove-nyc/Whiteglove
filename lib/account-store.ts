@@ -4,9 +4,10 @@ import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
-import type { PaymentRecord, TripBalance } from "@/data/trip-payments";
+import { formatCents, type PaymentRecord, type TripBalance } from "@/data/trip-payments";
 import type { CommissionRecord } from "@/data/trip-commission";
 import type { AddonItem } from "@/data/trip-addons";
+import { withActivity, type ActivityEntry } from "@/data/trip-activity";
 import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -210,6 +211,12 @@ export type SavedTrip = {
    *  `shareId` and `proposalShareId`, the same reason those two are kept
    *  apart from each other. */
   addonsShareId?: string;
+  /**
+   * What actually happened on this trip, in order — a proposal sent or
+   * answered, a payment landing, an add-on accepted, a stage changed by
+   * hand. Absent until the first entry. See data/trip-activity.ts.
+   */
+  activity?: ActivityEntry[];
   /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
@@ -1209,8 +1216,10 @@ export async function savePipelineStage(email: string, tripId: string, stage: Ma
   const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   const { trips, activeId } = withTrips(data);
-  if (!trips.some((t) => t.id === tripId)) return false;
-  const next = trips.map((t) => (t.id === tripId ? { ...t, pipelineStage: stage, updatedAt: new Date().toISOString() } : t));
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const activity = withActivity(trip.activity ?? [], activityEntry("stage_changed", `Moved to ${stage === "planning" ? "Planning" : "Inquiry"}.`));
+  const next = trips.map((t) => (t.id === tripId ? { ...t, pipelineStage: stage, activity, updatedAt: new Date().toISOString() } : t));
   return Boolean(await writeTrips(normalized, next, activeId));
 }
 
@@ -1257,8 +1266,14 @@ export async function recordPayment(ownerEmail: string, tripId: string, record: 
   if (!trip) return false;
   const balance: TripBalance = trip.balance ?? { currency: record.currency, splitMode: "equal", assignments: [], schedule: [], showTotalToTravelers: false, payments: [] };
   if (balance.payments.some((p) => p.stripePaymentIntentId === record.stripePaymentIntentId)) return true;
+  const activity =
+    record.status === "succeeded"
+      ? withActivity(trip.activity ?? [], activityEntry("payment_received", `Payment received: ${formatCents(record.amountCents, record.currency)}.`))
+      : trip.activity;
   const next = trips.map((t) =>
-    t.id === tripId ? { ...t, balance: { ...balance, payments: [...balance.payments, record] }, updatedAt: new Date().toISOString() } : t,
+    t.id === tripId
+      ? { ...t, balance: { ...balance, payments: [...balance.payments, record] }, activity, updatedAt: new Date().toISOString() }
+      : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));
 }
@@ -1323,6 +1338,55 @@ export async function listCommissionSummaries(email: string): Promise<
   return trips
     .filter((t) => (t.commissions?.length ?? 0) > 0)
     .map((t) => ({ tripId: t.id, tripName: t.name, client: t.client?.trim() ?? "", records: t.commissions ?? [] }));
+}
+
+// ---- Activity ---------------------------------------------------------------
+//
+// A trip's own feed of what actually happened — see data/trip-activity.ts.
+// Entries are appended by the actions below that already touch the trip
+// (a payment recorded, a proposal answered, an add-on answered, a stage
+// changed by hand); nothing reads this file's writes as an occasion to log
+// something itself, so there is exactly one place each kind of entry is
+// ever written.
+
+function activityId() {
+  return randomBytes(6).toString("base64url");
+}
+
+function activityEntry(kind: ActivityEntry["kind"], message: string): ActivityEntry {
+  return { id: activityId(), kind, message, at: new Date().toISOString() };
+}
+
+/** One trip's activity feed, most recent first. */
+export async function getActivity(email: string, tripId: string): Promise<ActivityEntry[]> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return [...(trip?.activity ?? [])].reverse();
+}
+
+/**
+ * Append one entry to a trip's activity feed, on its own — used by an
+ * action (like a proposal being answered) whose own save function already
+ * exists and shouldn't have to know about logging. A second small write
+ * right after the first, the same trade-off the itinerary comment
+ * notification already makes for its own email.
+ */
+async function appendActivity(email: string, tripId: string, kind: ActivityEntry["kind"], message: string): Promise<void> {
+  if (!hasAccountStorage()) return;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return;
+  const activity = withActivity(trip.activity ?? [], activityEntry(kind, message));
+  const next = trips.map((t) => (t.id === tripId ? { ...t, activity } : t));
+  await writeTrips(normalized, next, activeId);
+}
+
+/** Log that the planner sent the proposal — called from the route that sets
+ *  its status to "sent", the one place that happens by hand. */
+export async function logProposalSent(email: string, tripId: string): Promise<void> {
+  await appendActivity(email, tripId, "proposal_sent", "Sent the proposal to the client.");
 }
 
 // ---- Add-ons ---------------------------------------------------------------
@@ -1420,8 +1484,10 @@ export async function applyAddonClientAction(
 ): Promise<{ items: AddonItem[]; ownerEmail: string; tripName: string; addon: AddonItem } | null> {
   const rec = await readJson<{ ownerEmail: string; tripId: string }>(addonsShareKey(shareId));
   if (!rec) return null;
-  const data = await getAccountData(rec.ownerEmail);
-  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  const normalized = normalizeId(rec.ownerEmail);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === rec.tripId);
   if (!trip) return null;
   const existing = trip.addons ?? [];
   const found = existing.find((i) => i.id === itemId);
@@ -1429,7 +1495,12 @@ export async function applyAddonClientAction(
   const now = new Date().toISOString();
   const answered: AddonItem = { ...found, status: accepted ? "accepted" : "declined", respondedAt: now, updatedAt: now };
   const items = existing.map((i) => (i.id === itemId ? answered : i));
-  const ok = await saveAddonItem(rec.ownerEmail, rec.tripId, answered);
+  const activity = withActivity(
+    trip.activity ?? [],
+    activityEntry(accepted ? "addon_accepted" : "addon_declined", `${accepted ? "Accepted" : "Declined"} the add-on: ${answered.name}.`),
+  );
+  const next = trips.map((t) => (t.id === rec.tripId ? { ...t, addons: items, activity, updatedAt: now } : t));
+  const ok = await writeTrips(normalized, next, activeId);
   return ok ? { items, ownerEmail: rec.ownerEmail, tripName: trip.client || trip.name, addon: answered } : null;
 }
 
@@ -1597,6 +1668,11 @@ export async function applyProposalClientAction(
   }
 
   const ok = await saveProposal(rec.ownerEmail, rec.tripId, next);
+  if (ok && action.kind === "approve") {
+    await appendActivity(rec.ownerEmail, rec.tripId, "proposal_approved", "Client approved the proposal.");
+  } else if (ok && action.kind === "request_changes") {
+    await appendActivity(rec.ownerEmail, rec.tripId, "proposal_changes_requested", "Client asked for changes to the proposal.");
+  }
   return ok ? { proposal: next, ownerEmail: rec.ownerEmail, tripName: trip.client || trip.name } : null;
 }
 

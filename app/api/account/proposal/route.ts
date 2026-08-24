@@ -7,6 +7,7 @@ import {
   getCurrentAccountData,
   getProposal,
   getTripItinerary,
+  logProposalSent,
   resolveBusinessOwner,
   saveProposal,
 } from "@/lib/account-store";
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
       const sent: Proposal = { ...current, status: "sent", sentAt: now, updatedAt: now };
       const ok = await saveProposal(email, tripId, sent);
       if (!ok) return NextResponse.json({ ok: false, error: "Could not save the proposal." }, { status: 503 });
+      await logProposalSent(email, tripId);
       return NextResponse.json({ ok: true, proposal: sent, shareId });
     }
     case "share": {
