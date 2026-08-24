@@ -197,12 +197,21 @@ export async function POST(request: NextRequest) {
               await setAccountAgency(member.account, undefined);
               await setPlan(member.account, await ownEntitledPlan(member.account), "The agency's Advisor Pro subscription ended");
             }
-            if (others.length > 0) {
-              await writeAgency({
-                ...agency,
-                members: agency.members.filter((m) => identityKey(m.account) === identityKey(account)),
-                updatedAt: new Date().toISOString(),
-              });
+            // Always written, even when `others` is empty: seatsPurchased
+            // resets to the base seat (the owner alone) because nothing is
+            // paying for extra seats once the subscription that bought them
+            // has ended. Left at the old count, a resubscribed owner could
+            // invite straight back up to capacity Stripe was never asked to
+            // charge for again — buy-seats sets a fresh count the next time
+            // seats are actually bought.
+            const cleared = {
+              ...agency,
+              members: agency.members.filter((m) => identityKey(m.account) === identityKey(account)),
+              seatsPurchased: 1,
+              updatedAt: new Date().toISOString(),
+            };
+            if (!(await writeAgency(cleared))) {
+              console.error(`[agency] could not clear the roster for ${agencyId} after its Pro subscription ended`);
             }
             // Any invite still open would otherwise keep working, whether or
             // not anybody had accepted one yet — used days later, it mints a

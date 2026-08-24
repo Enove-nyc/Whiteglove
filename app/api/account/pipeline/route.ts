@@ -129,7 +129,7 @@ export async function GET() {
         updatedAt: t.updatedAt,
         ...(t.balance && hasBalance(t.balance) ? { outstandingCents: outstandingCents(t.balance), currency: t.balance.currency } : {}),
         ...(stage === "traveling" && t.itinerary ? { travelDays: travelDaysFor(t.itinerary, borderCost, assume) } : {}),
-        ...(showAnalytics && t.commissionCents
+        ...(showAnalytics && t.commissionCents !== undefined
           ? { commissionCents: t.commissionCents, commissionCurrency: t.commissionCurrency ?? "USD" }
           : {}),
       };

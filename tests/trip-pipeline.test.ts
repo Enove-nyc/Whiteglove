@@ -161,4 +161,12 @@ describe("the pipeline route keeps the same fences everything else does", () => 
     assert.doesNotMatch(ROUTE, /getAccountData\(request/);
     assert.match(ROUTE, /getAccountData\(account\.email\)/);
   });
+
+  it("KEEPS A RECORDED ZERO COMMISSION, rather than treating it the same as none recorded", () => {
+    // A truthy check on commissionCents would drop a trip an advisor
+    // deliberately recorded as earning nothing — it would look identical to
+    // one they never touched at all, on the next load.
+    assert.match(ROUTE, /t\.commissionCents !== undefined/);
+    assert.doesNotMatch(ROUTE, /showAnalytics && t\.commissionCents\s*\?/);
+  });
 });

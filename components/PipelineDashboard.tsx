@@ -123,7 +123,7 @@ function CommissionField({
       }}
       className="mt-2 text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
     >
-      {cents ? `Commission: ${formatCents(cents, currency)}` : "Add commission"}
+      {cents !== undefined ? `Commission: ${formatCents(cents, currency)}` : "Add commission"}
     </button>
   );
 }

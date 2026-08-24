@@ -217,6 +217,16 @@ describe("what happens when the Pro subscription that pays for it all lapses", (
     assert.match(branch, /deleteInvite\(invite\)/);
   });
 
+  it("resets seatsPurchased to the base seat, so a resubscribed owner cannot invite onto capacity nobody is paying for", () => {
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('if (plan === "pro")'));
+    assert.match(branch, /seatsPurchased: 1/);
+  });
+
+  it("checks the roster write, rather than trusting a member-clearing save that may have failed", () => {
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('if (plan === "pro")'));
+    assert.match(branch, /if \(!\(await writeAgency\(cleared\)\)\)/);
+  });
+
   it("refuses a NEW invite once the owner's own plan has lapsed, not just once nobody owns the agency", () => {
     // Being the agency's owner (a fact about the record) and being paid up
     // on Pro (a fact about the account) can drift apart the moment the
