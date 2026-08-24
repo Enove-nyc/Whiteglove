@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import {
   deleteBlastAction,
   saveBlastAction,
@@ -104,6 +105,28 @@ export default function BlastComposer({
   const [blocks, setBlocks] = useState<BlastBlock[]>([{ kind: "text", text: "" }]);
   /** Which saved message is being edited, or "" for a new one. */
   const [editing, setEditing] = useState("");
+  // The composer opens over the list rather than sitting open above it. It is
+  // a long form with a full-size preview of the email in it, and it used to be
+  // the first thing on the screen — so coming here to look at what you had
+  // already written meant scrolling past the whole of it first. Pressing Edit
+  // on a saved message also threw you back to the top to find it.
+  const [composing, setComposing] = useState(false);
+  const composerRef = useFocusTrap<HTMLDivElement>(composing, () => setComposing(false));
+
+  // A save that went through puts the composer away; the list behind it has
+  // already been refreshed by the action's own revalidate.
+  useEffect(() => {
+    if (saveState?.ok) setComposing(false);
+  }, [saveState]);
+
+  /** Start a new message, or load a saved one — either way, in the composer. */
+  function compose(blast?: EmailBlast) {
+    setEditing(blast?.id ?? "");
+    setSubject(blast?.subject ?? "");
+    setChosen(blast?.topics ?? []);
+    setBlocks(blast ? blocksOf(blast) : [{ kind: "text", text: "" }]);
+    setComposing(true);
+  }
 
   // The audience for what is being written, counted the same way the server
   // will count it: each person once, if they ticked ANY of the chosen topics.
@@ -186,8 +209,30 @@ export default function BlastComposer({
       </section>
 
       {/* ---- writing one ---- */}
-      <section className={card}>
-        <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Write a message</h2>
+      {composing && (
+      <div
+        className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+        onClick={(e) => { if (e.target === e.currentTarget) setComposing(false); }}
+      >
+      <section
+        ref={composerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={editing ? "Edit the message" : "Write a message"}
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
+            {editing ? "Edit the message" : "Write a message"}
+          </h2>
+          <button
+            type="button"
+            onClick={() => setComposing(false)}
+            className="shrink-0 text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]"
+          >
+            Close
+          </button>
+        </div>
 
         <form action={saveAct} className="mt-5 space-y-6">
           <fieldset>
@@ -278,20 +323,41 @@ export default function BlastComposer({
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={saving || !storeReady}
-            className="bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50"
-          >
-            {saving ? "Saving…" : editing ? "Save changes" : "Save it"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving || !storeReady}
+              className="bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50"
+            >
+              {saving ? "Saving…" : editing ? "Save changes" : "Save it"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setComposing(false)}
+              className="px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]"
+            >
+              Cancel
+            </button>
+          </div>
           <Note state={saveState} />
         </form>
       </section>
+      </div>
+      )}
 
       {/* ---- what has been written ---- */}
       <section>
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Messages</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Messages</h2>
+          <button
+            type="button"
+            onClick={() => compose()}
+            disabled={!storeReady}
+            className="min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-50"
+          >
+            Write a message
+          </button>
+        </div>
         {blasts.length === 0 ? (
           <p className={`${card} mt-3 text-sm leading-6 text-stone-600`}>Nothing written yet.</p>
         ) : (
@@ -358,13 +424,7 @@ export default function BlastComposer({
                     {blast.state === "draft" && (
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditing(blast.id);
-                          setSubject(blast.subject);
-                          setChosen(blast.topics);
-                          setBlocks(blocksOf(blast));
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
+                        onClick={() => compose(blast)}
                         className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
                       >
                         Edit
