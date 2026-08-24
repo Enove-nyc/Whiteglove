@@ -78,34 +78,42 @@ export function isTransientMigrateError(output) {
 }
 
 /**
- * The connection the MIGRATION should use — direct, never the pooler.
+ * The connections to try for the MIGRATION, best first.
  *
- * Named for whichever platform set it: DIRECT_URL is Prisma's own convention,
- * DATABASE_URL_UNPOOLED is Neon's, and Railway prefixes a linked database's
- * variables with the service name. The pooled DATABASE_URL is the fallback,
- * so a database with no separate direct endpoint still migrates exactly as it
- * did before.
+ * Neon's direct endpoint is its pooled one with "-pooler" taken out of the
+ * host — same project, same credentials, same region. Deriving it from
+ * DATABASE_URL is the only safe way to name it: this service also carries
+ * `databaseneon_*` variables left over from an older, now-unreachable Neon
+ * project, and picking one of those by pattern sent a migration at a database
+ * in the wrong region that no longer exists. Whatever is tried, it is a
+ * rewriting of the URL the app itself uses, or an explicit DIRECT_URL.
+ *
+ * The pooled URL stays in the list as a fallback: if a direct endpoint cannot
+ * be reached, migrating through the pooler is how this always worked, and is
+ * better than refusing to deploy.
  */
-function migrationDatabaseUrl(env) {
-  const direct =
-    env.DIRECT_URL ||
-    env.DATABASE_URL_UNPOOLED ||
-    env.POSTGRES_URL_NON_POOLING ||
-    Object.entries(env).find(([name]) => /DATABASE_URL_UNPOOLED$|POSTGRES_URL_NON_POOLING$/.test(name))?.[1];
-  return direct || env.DATABASE_URL;
+export function migrationUrls(env) {
+  const pooled = env.DATABASE_URL;
+  const urls = [];
+  if (env.DIRECT_URL) urls.push(env.DIRECT_URL);
+  if (pooled && pooled.includes("-pooler.")) urls.push(pooled.replace("-pooler.", "."));
+  if (pooled) urls.push(pooled);
+  return [...new Set(urls.filter(Boolean))];
 }
 
-export { migrationDatabaseUrl };
+/** Could not reach the server at all — try the next connection, don't wait. */
+function isUnreachable(output) {
+  return /\bP1001\b/.test(String(output ?? "")) || /Can't reach database server/i.test(String(output ?? ""));
+}
 
-function attemptMigrate() {
+function runMigrate(url) {
   // Piped rather than inherited so the output can be classified, then printed
   // as it was — the deploy log should read exactly as it did before.
-  const url = migrationDatabaseUrl(process.env);
   const run = spawnSync("npx", ["prisma", "migrate", "deploy"], {
     encoding: "utf8",
     // DATABASE_URL is what prisma.config.ts reads. Overridden for this one
-    // child process only — the app it is about to start still gets the pooled
-    // one from its own environment.
+    // child process only — the site it is about to start still reads the
+    // pooled one from its own environment, which is what a pooler is for.
     env: { ...process.env, ...(url ? { DATABASE_URL: url } : {}) },
   });
   const output = `${run.stdout ?? ""}${run.stderr ?? ""}`;
@@ -113,6 +121,21 @@ function attemptMigrate() {
   if (run.stderr) process.stderr.write(run.stderr);
   // A spawn that could not start at all (npx missing) has no status.
   return { ok: run.status === 0, output: run.error ? String(run.error) : output };
+}
+
+/** One pass: the direct endpoint if there is one, then the pooled one. */
+function attemptMigrate() {
+  const urls = migrationUrls(process.env);
+  let last = { ok: false, output: "" };
+  for (const [index, url] of urls.entries()) {
+    last = runMigrate(url);
+    if (last.ok) return last;
+    if (!isUnreachable(last.output)) return last;
+    if (index < urls.length - 1) {
+      console.log("[migrate] That endpoint could not be reached — trying the next connection.");
+    }
+  }
+  return last;
 }
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

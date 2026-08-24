@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 // A plain .mjs script, imported for the one function worth testing.
-import { isTransientMigrateError, migrationDatabaseUrl } from "../scripts/migrate-deploy.mjs";
+import { isTransientMigrateError, migrationUrls } from "../scripts/migrate-deploy.mjs";
 
 const SOURCE = readFileSync("scripts/migrate-deploy.mjs", "utf8");
 
@@ -54,29 +54,40 @@ describe("waiting out another deploy's migration", () => {
 });
 
 describe("which connection the migration uses", () => {
-  const POOLED = "postgresql://u:p@ep-misty-pooler.c-5.us-east-2.aws.neon.tech/neondb";
-  const DIRECT = "postgresql://u:p@ep-misty.c-5.us-east-2.aws.neon.tech/neondb";
+  const POOLED = "postgresql://u:p@ep-misty-wildflower-aybq0gyx-pooler.c-5.us-east-2.aws.neon.tech/neondb";
+  const DIRECT = "postgresql://u:p@ep-misty-wildflower-aybq0gyx.c-5.us-east-2.aws.neon.tech/neondb";
 
-  it("migrates over a direct connection, never the pooler", () => {
-    // The whole cause of the stuck deploys: an advisory lock belongs to a
-    // session, and a pooler hands out a different session per transaction, so
-    // the lock could sit held by a pooled connection nobody was using.
-    assert.equal(
-      migrationDatabaseUrl({ DATABASE_URL: POOLED, databaseneon_DATABASE_URL_UNPOOLED: DIRECT }),
-      DIRECT,
-    );
-    assert.equal(migrationDatabaseUrl({ DATABASE_URL: POOLED, DIRECT_URL: DIRECT }), DIRECT);
-    assert.equal(migrationDatabaseUrl({ DATABASE_URL: POOLED, POSTGRES_URL_NON_POOLING: DIRECT }), DIRECT);
+  it("tries the direct endpoint first, derived from the app's own URL", () => {
+    // An advisory lock belongs to a session, and a pooler hands out a
+    // different session per transaction — which is how the migration lock came
+    // to sit held by a pooled connection nobody was using.
+    assert.deepEqual(migrationUrls({ DATABASE_URL: POOLED }), [DIRECT, POOLED]);
   });
 
-  it("still migrates when there is no separate direct endpoint", () => {
-    // A plain Postgres with one URL must behave exactly as it did before.
-    assert.equal(migrationDatabaseUrl({ DATABASE_URL: POOLED }), POOLED);
+  it("keeps the pooled URL as a fallback rather than refusing to deploy", () => {
+    assert.equal(migrationUrls({ DATABASE_URL: POOLED }).at(-1), POOLED);
+  });
+
+  it("never takes a URL from another project's leftover variables", () => {
+    // The mistake that broke a deploy: this service also carries
+    // databaseneon_* variables from an older Neon project in another region
+    // that no longer answers. Only the app's own URL may be rewritten.
+    const stale = "postgresql://u:p@ep-cool-hall-av1nw636.c-11.us-east-1.aws.neon.tech/neondb";
+    const urls = migrationUrls({ DATABASE_URL: POOLED, databaseneon_DATABASE_URL_UNPOOLED: stale });
+    assert.equal(urls.includes(stale), false);
+    assert.deepEqual(urls, [DIRECT, POOLED]);
+  });
+
+  it("honours an explicit DIRECT_URL, which is Prisma's own convention", () => {
+    assert.equal(migrationUrls({ DATABASE_URL: POOLED, DIRECT_URL: DIRECT })[0], DIRECT);
+  });
+
+  it("leaves a plain single-URL database exactly as it was", () => {
+    const plain = "postgresql://u:p@db.internal:5432/app";
+    assert.deepEqual(migrationUrls({ DATABASE_URL: plain }), [plain]);
   });
 
   it("leaves the running site on the pooled connection", () => {
-    // The override is scoped to the migration child process — the app that
-    // starts afterwards reads its own DATABASE_URL, which is what a pooler is for.
     assert.match(SOURCE, /env:\s*\{\s*\.\.\.process\.env/);
   });
 });
