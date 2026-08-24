@@ -95,3 +95,23 @@ describe("a trip starting soon with nothing confirmed", () => {
     assert.deepEqual(tripReminders({ stage: "planning", startDate: "2026-12-01" }, TODAY), []);
   });
 });
+
+describe("a completed trip with no rating request sent", () => {
+  it("flags it once the trip has ended", () => {
+    const out = tripReminders({ stage: "completed", endDate: "2026-05-20" }, TODAY);
+    assert.equal(out.length, 1);
+    assert.equal(out[0].reason, "trip_completed_no_rating_sent");
+  });
+
+  it("stays quiet once a request has already been sent", () => {
+    assert.deepEqual(tripReminders({ stage: "completed", endDate: "2026-05-20", ratingRequestSentAt: "2026-05-21T00:00:00Z" }, TODAY), []);
+  });
+
+  it("stays quiet for a trip that ended too long ago to bother nudging", () => {
+    assert.deepEqual(tripReminders({ stage: "completed", endDate: "2025-01-01" }, TODAY), []);
+  });
+
+  it("stays quiet for a trip that isn't over yet", () => {
+    assert.deepEqual(tripReminders({ stage: "traveling", endDate: "2026-06-05" }, TODAY), []);
+  });
+});

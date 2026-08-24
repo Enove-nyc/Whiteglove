@@ -593,3 +593,47 @@ export async function sendItineraryToClient(input: {
     "itinerary to client",
   );
 }
+
+/**
+ * Post-trip automation: a request for the trip rating (RATING_KINDS "trip",
+ * see lib/experience-ratings.ts) — the same "How was White Glove?" form,
+ * asking only how White Glove itself did during the trip, never how the
+ * trip went. Sent by a planner's own action once a trip has ended, not by a
+ * cron (this deployment has none — see lib/account-store.ts's flight-status
+ * note); the pipeline flags a completed trip that hasn't had one yet, and
+ * the planner sends it with one click.
+ *
+ * IT GOES OUT AS THE BUSINESS, the same reason sendItineraryToClient does —
+ * the client has never heard of White Glove.
+ */
+export async function sendRatingRequestEmail(input: {
+  to: string;
+  from: string;
+  replyTo?: string;
+  tripTitle: string;
+  url: string;
+}): Promise<SendResult> {
+  const business = escapeHtml(input.from);
+  const title = escapeHtml(input.tripTitle || "your trip");
+  const url = escapeHtml(input.url);
+  return postResend(
+    {
+      to: input.to,
+      ...(input.replyTo?.includes("@") ? { reply_to: input.replyTo } : {}),
+      subject: `${input.from}: how did we do on ${input.tripTitle || "your trip"}?`,
+      html:
+        `<div style="max-width:560px;margin:0 auto;padding:8px 4px;">` +
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;margin:0 0 16px;">Welcome back!</h2>` +
+        `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#333;">` +
+        `Now that <strong>${title}</strong> is behind you, ${business} would appreciate a minute of your time — not about how the trip itself went, just how the planning and the information along the way held up.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Leave feedback →</a></p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8a8a8a;margin-top:24px;">Sent by ${business}. Reply to this email to reach them.</p></div>`,
+      text:
+        `Welcome back!\n\n` +
+        `Now that ${input.tripTitle || "your trip"} is behind you, ${input.from} would appreciate a minute of your time — not about how the trip itself went, just how the planning and the information along the way held up.\n\n${input.url}\n\n` +
+        `Sent by ${input.from}. Reply to this email to reach them.`,
+    },
+    input.to,
+    "rating request",
+  );
+}

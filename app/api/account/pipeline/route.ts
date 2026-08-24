@@ -84,7 +84,18 @@ export async function GET() {
         unread,
         outstandingCents: t.balance && hasBalance(t.balance) ? outstandingCents(t.balance) : undefined,
         currency: t.balance?.currency,
-        reminders: tripReminders({ stage, proposal: t.proposal, balance: t.balance, addons: t.addons, startDate: t.itinerary?.startDate }, today),
+        reminders: tripReminders(
+          {
+            stage,
+            proposal: t.proposal,
+            balance: t.balance,
+            addons: t.addons,
+            startDate: t.itinerary?.startDate,
+            endDate: t.itinerary?.endDate,
+            ratingRequestSentAt: t.ratingRequestSentAt,
+          },
+          today,
+        ),
         updatedAt: t.updatedAt,
       };
     }),

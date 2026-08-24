@@ -60,6 +60,65 @@ function rowsFor(view: View, rows: Row[], today: string): Row[] {
   }
 }
 
+/**
+ * Post-trip automation's action: the pipeline flags a completed trip with
+ * no rating request sent yet (data/trip-reminders.ts); this is how the
+ * planner actually sends one. The client's email isn't kept on the trip
+ * (nothing else stores it either — see SavedTrip.client, a display name,
+ * not an address), so it's asked for here, once, at the moment it's used.
+ */
+function RatingRequestAction({ tripId }: { tripId: string }) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  if (sent) return <p className="mt-1 text-xs font-semibold text-emerald-700">Rating request sent.</p>;
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+        Send rating request
+      </button>
+    );
+  }
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-2">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="client@email.com"
+        className="min-h-8 w-48 rounded-lg border border-[var(--gold-light)] px-2 text-xs"
+      />
+      <button
+        type="button"
+        disabled={sending || !email.trim()}
+        onClick={async () => {
+          setSending(true);
+          setError("");
+          try {
+            const res = await fetch("/api/account/rating-request", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tripId, clientEmail: email }),
+            });
+            const data = await res.json().catch(() => null);
+            if (res.ok) setSent(true);
+            else setError(data?.error || "Could not send that.");
+          } finally {
+            setSending(false);
+          }
+        }}
+        className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-3 py-1 text-[11px] font-bold text-white disabled:opacity-60"
+      >
+        {sending ? "Sending…" : "Send"}
+      </button>
+      {error && <span className="text-xs font-semibold text-red-700">{error}</span>}
+    </div>
+  );
+}
+
 function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) => void; onStage?: (stage: "inquiry" | "planning") => void }) {
   return (
     <div className={cardBase}>
@@ -96,6 +155,7 @@ function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) =>
           {row.reminders.map((r) => (
             <li key={r.reason} className="text-xs font-semibold text-[var(--gold-ink)]">
               ⚑ {r.message}
+              {r.reason === "trip_completed_no_rating_sent" && <RatingRequestAction tripId={row.id} />}
             </li>
           ))}
         </ul>

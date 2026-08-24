@@ -234,6 +234,13 @@ export type SavedTrip = {
    */
   optimization?: OptimizationResult;
   /**
+   * When a post-trip rating request was sent to the client, if ever. Set by
+   * markRatingRequestSent — the one thing that stops the pipeline flagging a
+   * completed trip for a rating request every time it's viewed after the
+   * first send. See data/trip-reminders.ts.
+   */
+  ratingRequestSentAt?: string;
+  /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
    * lib/flight-status.ts and checkTripFlightStatus below.
@@ -1236,6 +1243,18 @@ export async function savePipelineStage(email: string, tripId: string, stage: Ma
   if (!trip) return false;
   const activity = withActivity(trip.activity ?? [], activityEntry("stage_changed", `Moved to ${stage === "planning" ? "Planning" : "Inquiry"}.`));
   const next = trips.map((t) => (t.id === tripId ? { ...t, pipelineStage: stage, activity, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** Mark that a post-trip rating request has gone out for this trip — see
+ *  data/trip-reminders.ts's trip_completed_no_rating_sent. */
+export async function markRatingRequestSent(email: string, tripId: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, ratingRequestSentAt: new Date().toISOString(), updatedAt: new Date().toISOString() } : t));
   return Boolean(await writeTrips(normalized, next, activeId));
 }
 

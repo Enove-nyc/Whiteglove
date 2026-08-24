@@ -18,7 +18,8 @@ export type ReminderReason =
   | "proposal_expiring"
   | "payment_due_soon"
   | "addon_pending"
-  | "trip_soon_unconfirmed";
+  | "trip_soon_unconfirmed"
+  | "trip_completed_no_rating_sent";
 
 export type TripReminder = { reason: ReminderReason; message: string };
 
@@ -34,6 +35,9 @@ const EXPIRING_PROPOSAL_DAYS = 2;
 const PAYMENT_DUE_SOON_DAYS = 7;
 const STALE_ADDON_DAYS = 5;
 const TRIP_SOON_DAYS = 14;
+/** A rating request stops being nudged this long after the trip ends — a
+ *  trip from two years ago isn't worth surfacing on the pipeline forever. */
+const RATING_REQUEST_WINDOW_DAYS = 30;
 
 /**
  * Every reminder worth a planner's attention on this trip, right now.
@@ -47,6 +51,8 @@ export function tripReminders(
     balance?: TripBalance;
     addons?: AddonItem[];
     startDate?: string;
+    endDate?: string;
+    ratingRequestSentAt?: string;
   },
   today: string,
 ): TripReminder[] {
@@ -84,6 +90,10 @@ export function tripReminders(
     if (trip.stage !== "confirmed" && trip.stage !== "traveling" && trip.stage !== "completed") {
       out.push({ reason: "trip_soon_unconfirmed", message: `Starts in ${daysBetween(today, trip.startDate)} days — nothing confirmed yet.` });
     }
+  }
+
+  if (trip.stage === "completed" && !trip.ratingRequestSentAt && trip.endDate && daysBetween(trip.endDate, today) <= RATING_REQUEST_WINDOW_DAYS) {
+    out.push({ reason: "trip_completed_no_rating_sent", message: "Trip's over — send a rating request." });
   }
 
   return out;
