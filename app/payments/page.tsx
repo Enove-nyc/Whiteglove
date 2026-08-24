@@ -1,12 +1,11 @@
-import Link from "next/link";
 import Footer from "@/components/Footer";
+import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import PaymentsPanel from "@/components/PaymentsPanel";
 import { requireSignedIn } from "@/lib/require-signed-in";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
-import { PLAN_LABELS } from "@/lib/account-plans";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
 import { cookies } from "next/headers";
@@ -49,20 +48,15 @@ export default async function PaymentsPage() {
             <PaymentsPanel />
           </div>
         ) : (
-          <div className="mt-8 max-w-xl rounded-2xl border border-[var(--gold-light)] bg-white p-6">
-            <p className="text-base leading-7 text-stone-600">
-              Trip payments are part of {PLAN_LABELS.starter} and up. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.starter}{" "}
-              from your account, and we will be in touch.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/account" className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-                Ask about {PLAN_LABELS.starter}
-              </Link>
-              <Link href="/itinerary" className="rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-white">
-                Back to the planner
-              </Link>
-            </div>
-          </div>
+          <LockedToolCard
+            toolLabel="Trip payments"
+            plan={plan}
+            bullets={[
+              "Set one total for a trip and split it across families or travelers.",
+              "See what each person has paid and what's outstanding.",
+              "Money goes straight to your own connected Stripe account.",
+            ]}
+          />
         )}
       </section>
       <Footer />
