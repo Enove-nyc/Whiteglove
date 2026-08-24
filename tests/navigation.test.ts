@@ -145,7 +145,7 @@ describe("the header renders the list rather than its own copy", () => {
     // all four, so somebody who wanted their trips landed on their own name
     // and scrolled. Signed out it is a door: it opens the sign-in dialog
     // rather than leaving whatever page somebody is reading.
-    assert.match(NAVBAR, /<AccountMenu \/>/);
+    assert.match(NAVBAR, /<AccountMenu plan=\{plan\} \/>/);
     assert.match(NAVBAR, /label="Sign in"/);
     // Both carry a label, which is what this test is actually protecting.
     const menu = readFileSync("components/AccountMenu.tsx", "utf8");

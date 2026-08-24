@@ -180,25 +180,38 @@ export default async function AccountPage() {
                 <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
               </div>
               {canServeClients && (
-                <p className="mt-4 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
-                  To hand a client their own trip, open it in the{" "}
-                  <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
-                  and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
-                  Before that, offer them a{" "}
-                  <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">proposal</Link>{" "}
-                  to compare and approve — options, hotels and a price they see and answer before the trip is confirmed.
-                  Save the hotels, activities and contacts you use often to your{" "}
-                  <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">content library</Link>{" "}
-                  and a proposal is built from what's already there instead of retyped each time.
-                  Need a passport number or an emergency contact first? Send a{" "}
-                  <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">client form</Link>{" "}
-                  — answers come back to you alone, never onto the itinerary itself.
-                  See every client trip and where it stands in your{" "}
-                  <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">trip pipeline</Link>.
-                  Set a trip's balance, split it across families, and collect{" "}
-                  <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">payments</Link>{" "}
-                  straight into your own connected Stripe account.
-                </p>
+                <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+                  <p className="text-sm leading-6 text-stone-600">
+                    Your client tools — also under the account icon above:
+                  </p>
+                  <ul className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                    <li>
+                      <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Proposals</Link>
+                      <span className="text-stone-600"> — options and price a client approves before the trip is confirmed</span>
+                    </li>
+                    <li>
+                      <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Content library</Link>
+                      <span className="text-stone-600"> — hotels, activities and contacts you use often</span>
+                    </li>
+                    <li>
+                      <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Client forms</Link>
+                      <span className="text-stone-600"> — passport numbers and emergency contacts, sent to you alone</span>
+                    </li>
+                    <li>
+                      <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Trip pipeline</Link>
+                      <span className="text-stone-600"> — every client trip and where it stands</span>
+                    </li>
+                    <li>
+                      <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Payments</Link>
+                      <span className="text-stone-600"> — set a balance and collect it into your own Stripe account</span>
+                    </li>
+                  </ul>
+                  <p className="mt-3 text-sm leading-6 text-stone-600">
+                    To hand a client their own trip, open it in the{" "}
+                    <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
+                    and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> — it opens only that one itinerary on the client&apos;s phone.
+                  </p>
+                </div>
               )}
               <CompanionSettings />
             </div>

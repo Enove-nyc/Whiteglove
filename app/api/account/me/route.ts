@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { accountCookieName, getCurrentAccountData, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { planOf } from "@/lib/account-plans";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,10 @@ export async function GET() {
       sessionEmail,
       account: summary,
       data: account?.data ?? null,
+      // The advisor-tool links in AccountMenu need this to know which ones to
+      // show — piggybacked here rather than a second round-trip, since this
+      // route already reads the full record to build `account` above.
+      plan: planOf(account?.record),
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } },
   );

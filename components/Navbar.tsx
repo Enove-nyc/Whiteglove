@@ -11,7 +11,8 @@ import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
 import { brandForHost } from "@/lib/site-brand-core";
-import AccountMenu, { ACCOUNT_PLACES } from "@/components/AccountMenu";
+import AccountMenu, { ACCOUNT_PLACES, advisorPlacesFor } from "@/components/AccountMenu";
+import type { AccountPlan } from "@/lib/account-plans";
 import { useOpenSignIn } from "@/components/SignInGate";
 import { signInHref } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
@@ -73,6 +74,7 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState(false);
+  const [plan, setPlan] = useState<AccountPlan | undefined>(undefined);
   // Closing every dropdown on navigation is a reset triggered by a changed
   // prop (the route), not a side effect — done during render, per React's own
   // guidance, rather than in a useEffect that would cause an extra render.
@@ -112,7 +114,9 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
     fetch("/api/account/me", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
-        if (active) setSignedIn(Boolean(data?.signedIn));
+        if (!active) return;
+        setSignedIn(Boolean(data?.signedIn));
+        setPlan(data?.plan);
       })
       .catch(() => undefined);
     return () => {
@@ -363,7 +367,7 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
                   their trips used to land on their own name and scroll. Signed
                   out it opens the sign-in dialog instead of leaving the page. */}
               {signedIn ? (
-                <AccountMenu />
+                <AccountMenu plan={plan} />
               ) : (
                 <IconLink icon="account" label="Sign in" href={signInHref()} onClick={() => openSignIn()} />
               )}
@@ -446,12 +450,12 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
             </ul>
             <div className="flex items-center justify-between gap-3 border-t border-[var(--gold-light)] px-5 py-4 sm:px-8">
               {signedIn ? (
-                <>
-                  {/* The same four the header icon offers. Named here too,
+                <div className="flex w-full flex-col gap-3">
+                  {/* The same places the header icon offers. Named here too,
                       because this menu is the navigation below xl and one
-                      "Account" link hides three of them. */}
+                      "Account" link hides them. */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {ACCOUNT_PLACES.map((place) => (
+                    {[...ACCOUNT_PLACES, ...advisorPlacesFor(plan)].map((place) => (
                       <Link
                         key={place.href}
                         onClick={() => setMobileOpen(false)}
@@ -462,10 +466,10 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
                       </Link>
                     ))}
                   </div>
-                  <button type="button" onClick={() => { setMobileOpen(false); signOut(); }} className="text-sm font-semibold text-stone-600 hover:text-[var(--navy)]">
+                  <button type="button" onClick={() => { setMobileOpen(false); signOut(); }} className="self-start text-sm font-semibold text-stone-600 hover:text-[var(--navy)]">
                     Sign out
                   </button>
-                </>
+                </div>
               ) : (
                 <Link onClick={() => setMobileOpen(false)} href={signInHref()} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
                   {SIGN_IN.label}
