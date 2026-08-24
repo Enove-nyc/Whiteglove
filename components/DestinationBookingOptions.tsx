@@ -1,4 +1,5 @@
 import BookingLink, { AffiliateDisclosure } from "@/components/BookingLink";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import { resolveLink, type TravelProduct } from "@/lib/affiliate/partners";
 import { readDestinationPlacements } from "@/lib/growth-settings-store";
@@ -107,7 +108,7 @@ export default async function DestinationBookingOptions({
                   <span className="inline-flex flex-col items-start gap-1.5">
                     <Link
                       href={staySearchHref({ destination: destinationName })}
-                      className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                      className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
                     >
                       {option.label}
                     </Link>

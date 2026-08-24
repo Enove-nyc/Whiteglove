@@ -37,8 +37,12 @@ export async function addApartmentAction(_prev: ActionResult | null, formData: F
   const problem = apartmentProblem(input);
   if (problem) return { ok: false, message: problem };
 
-  if (!(await addStoredApartment(apartmentFromInput(input)))) return { ok: false, message: "That could not be saved." };
-  return { ok: true, message: `Added ${input.name}. It is on the Where to stay page now.` };
+  // Editing keeps the entry's own id, so a change is an update in place.
+  const id = str(formData, "id");
+  const listing = apartmentFromInput(input);
+  if (id) listing.id = id;
+  if (!(await addStoredApartment(listing))) return { ok: false, message: "That could not be saved." };
+  return { ok: true, message: id ? `Saved ${input.name}.` : `Added ${input.name}. It is on the Where to stay page now.` };
 }
 
 export async function removeApartmentAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {

@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ACCOUNT_PLANS, type AccountPlan } from "@/lib/account-plans";
 import { type LimitOverrides, UNLIMITED } from "@/lib/account-limits";
 import { saveLimitOverrides } from "@/lib/account-limits-store";
 import { currentAdmin } from "@/lib/admin-current";
 import { mayUse } from "@/lib/admin-permissions";
+import { PAID_PLANS } from "@/lib/plan-billing";
 
 export type ActionResult = { ok: boolean; message: string };
 
@@ -31,8 +31,12 @@ export async function saveLimitsAction(_prev: ActionResult | null, form: FormDat
   if (!identity) return { ok: false, message: "Please sign in." };
   if (!mayUse(areas, "access")) return { ok: false, message: "Your sign-in does not cover settings." };
 
+  // "free" is deliberately left out — it is a locked, planless account, never
+  // an admin-entered override (see BUILT_IN_LIMITS in lib/account-limits.ts).
+  // A blank field for a plan the form never shows would otherwise read as
+  // "no limit" and silently unlock it on the next save.
   const next: LimitOverrides = {};
-  for (const plan of ACCOUNT_PLANS as readonly AccountPlan[]) {
+  for (const plan of PAID_PLANS) {
     next[plan] = {
       trips: readLimit(form, `${plan}-trips`),
       printsPerWeek: readLimit(form, `${plan}-prints`),

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -11,9 +10,10 @@ import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
 import { brandForHost } from "@/lib/site-brand-core";
-import AccountMenu, { ACCOUNT_PLACES } from "@/components/AccountMenu";
+import AccountMenu, { ACCOUNT_PLACES, advisorPlacesFor } from "@/components/AccountMenu";
+import type { AccountPlan } from "@/lib/account-plans";
 import { useOpenSignIn } from "@/components/SignInGate";
-import { signInHref } from "@/lib/use-signed-in";
+import { signInHref, useViewer } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
 /**
@@ -25,9 +25,16 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * open. Escape closes and returns focus to its trigger, a press outside
  * closes, and only one is open at a time. See the note above the handlers for
  * why opening on hover made the buttons look dead.
+ *
+ * MINIMAL DROPS THE FOUR CATEGORIES. An advisor working the trip pipeline or
+ * building a proposal saw the exact same Destinations/Travel/Kosher/Book bar
+ * a first-time visitor sees — the header gave no sign this was a business
+ * tool rather than the public site. The six advisor-tool pages pass
+ * `minimal`, which leaves the logo, the account menu (with its own advisor
+ * tools) and sign-out in place and drops only the four public categories.
  */
 
-export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "kosher" | "itineraries" } = {}) {
+export default function Navbar({ brand: brandProp = "kosher", minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
   // A page that knows its brand server-side passes it (the itineraries home);
   // everywhere else Navbar renders with the default and settles from the
   // hostname after mount — one frame on the itineraries domain, nothing on the
@@ -73,6 +80,7 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState(false);
+  const [plan, setPlan] = useState<AccountPlan | undefined>(undefined);
   // Closing every dropdown on navigation is a reset triggered by a changed
   // prop (the route), not a side effect — done during render, per React's own
   // guidance, rather than in a useEffect that would cause an extra render.
@@ -88,6 +96,10 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
     setSearchOpen(false);
   }
   const [scrolled, setScrolled] = useState(false);
+  // On a paid tier, the hand in the logo is gold. Read from the same viewer the
+  // sign-in control uses; undefined until it resolves, so the hand starts navy.
+  const viewer = useViewer();
+  const paid = Boolean(viewer?.paid);
   const navRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -97,22 +109,27 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
   // lib/booking-access.ts and lib/navigation.ts's bookCategoryFor.
   const booking = useBookingLink();
   // Four categories; Travel's booking links resolve through the owner's lock.
-  const categories: NavCategory[] = categoriesForBrand(brand).map((category) =>
-    isItineraries
-      ? category.label === "Book"
-        ? itinerariesBookingCategoryFor(booking)
-        : category
-      : category.label === "Travel"
-        ? travelCategoryFor(booking)
-        : category,
-  );
+  // Minimal drops them entirely — see the note above the component.
+  const categories: NavCategory[] = minimal
+    ? []
+    : categoriesForBrand(brand).map((category) =>
+        isItineraries
+          ? category.label === "Book"
+            ? itinerariesBookingCategoryFor(booking)
+            : category
+          : category.label === "Travel"
+            ? travelCategoryFor(booking)
+            : category,
+      );
 
   useEffect(() => {
     let active = true;
     fetch("/api/account/me", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
-        if (active) setSignedIn(Boolean(data?.signedIn));
+        if (!active) return;
+        setSignedIn(Boolean(data?.signedIn));
+        setPlan(data?.plan);
       })
       .catch(() => undefined);
     return () => {
@@ -223,13 +240,11 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
       >
         <div className={`mx-auto flex max-w-7xl items-center gap-2 px-5 transition-[min-height] sm:px-8 ${scrolled ? "min-h-16" : "min-h-20"}`}>
           <Link href="/" className="relative z-10 mr-2 flex shrink-0 items-center gap-2.5 sm:mr-4" aria-label={isItineraries ? "White Glove Itineraries home" : "White Glove Kosher Travel home"}>
-            <Image
-              src="/logo-hand-navy.png"
-              alt=""
-              width={355}
-              height={460}
-              className={`w-auto max-w-none object-contain transition-[height] ${scrolled ? "h-8" : "h-9 sm:h-11"}`}
-              priority
+            {/* The hand, drawn from the logo's alpha so its colour is CSS: navy
+                for everyone, gold for a paid member (see .header-glove). */}
+            <span
+              aria-hidden="true"
+              className={`header-glove transition-[height] ${scrolled ? "h-8" : "h-9 sm:h-11"} ${paid ? "is-gold" : ""}`}
             />
             {/* Shown from 360px: a 390px phone is the common case, and hiding
                 the site's own name there left the header as a bare mark. */}
@@ -363,7 +378,7 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
                   their trips used to land on their own name and scroll. Signed
                   out it opens the sign-in dialog instead of leaving the page. */}
               {signedIn ? (
-                <AccountMenu />
+                <AccountMenu plan={plan} />
               ) : (
                 <IconLink icon="account" label="Sign in" href={signInHref()} onClick={() => openSignIn()} />
               )}
@@ -446,12 +461,12 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
             </ul>
             <div className="flex items-center justify-between gap-3 border-t border-[var(--gold-light)] px-5 py-4 sm:px-8">
               {signedIn ? (
-                <>
-                  {/* The same four the header icon offers. Named here too,
+                <div className="flex w-full flex-col gap-3">
+                  {/* The same places the header icon offers. Named here too,
                       because this menu is the navigation below xl and one
-                      "Account" link hides three of them. */}
+                      "Account" link hides them. */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {ACCOUNT_PLACES.map((place) => (
+                    {[...ACCOUNT_PLACES, ...advisorPlacesFor(plan)].map((place) => (
                       <Link
                         key={place.href}
                         onClick={() => setMobileOpen(false)}
@@ -462,10 +477,10 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
                       </Link>
                     ))}
                   </div>
-                  <button type="button" onClick={() => { setMobileOpen(false); signOut(); }} className="text-sm font-semibold text-stone-600 hover:text-[var(--navy)]">
+                  <button type="button" onClick={() => { setMobileOpen(false); signOut(); }} className="self-start text-sm font-semibold text-stone-600 hover:text-[var(--navy)]">
                     Sign out
                   </button>
-                </>
+                </div>
               ) : (
                 <Link onClick={() => setMobileOpen(false)} href={signInHref()} className="rounded-md border border-[var(--gold-light)] px-4 py-2 text-sm font-semibold text-[var(--navy)] hover:bg-[var(--cream-deep)]">
                   {SIGN_IN.label}

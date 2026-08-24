@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { mayServeCompanionClients } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { effectiveMediaLimit, isAllowedMediaType, mediaStoreAvailable, putMedia } from "@/lib/media";
@@ -10,8 +11,8 @@ export const dynamic = "force-dynamic";
 
 /**
  * A photo for one proposal option or component, or a saved library item —
- * a hotel, a view, a tour. Shared by both: the same Business gate, the
- * same store, the same size and type limits either way.
+ * a hotel, a view, a tour. Shared by both: the same Advisor Starter and up
+ * gate, the same store, the same size and type limits either way.
  */
 const PHOTO_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX_PHOTO_BYTES = effectiveMediaLimit();
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
   if (!account) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!mayServeCompanionClients(await getPlan(account.email))) {
-    return NextResponse.json({ error: "Building a proposal is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ error: `Building a proposal is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
   if (!mediaStoreAvailable()) {
     return NextResponse.json({ error: "Pictures cannot be stored just now." }, { status: 503 });

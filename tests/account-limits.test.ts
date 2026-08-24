@@ -30,63 +30,72 @@ import {
 const NOW = Date.parse("2026-08-09T12:00:00.000Z");
 const ago = (ms: number) => new Date(NOW - ms).toISOString();
 const print = (tripId: string, ms: number): PrintEvent => ({ tripId, at: ago(ms) });
-const TRAVELER = BUILT_IN_LIMITS.traveler;
+const ONE_TRIP = BUILT_IN_LIMITS.one_trip;
 
 describe("what was asked for", () => {
-  it("is two trips and one printable copy a week on a free account", () => {
-    assert.equal(TRAVELER.trips, 2);
-    assert.equal(TRAVELER.printsPerWeek, 1);
+  it("is nothing at all before a plan is chosen", () => {
+    // A "free" account exists so somebody can sign in and choose a plan, and
+    // nothing else — an invented number here would be a promise nobody made.
+    assert.equal(BUILT_IN_LIMITS.free.trips, 0);
+    assert.equal(BUILT_IN_LIMITS.free.printsPerWeek, 0);
   });
 
-  it("limits nothing on Pro or Business, because nothing was decided about them", () => {
-    // An invented number here would be a promise nobody made.
+  it("is exactly the one trip One Trip was paid for, with no print limit", () => {
+    assert.equal(BUILT_IN_LIMITS.one_trip.trips, 1);
+    assert.equal(BUILT_IN_LIMITS.one_trip.printsPerWeek, UNLIMITED);
+  });
+
+  it("limits nothing on Advisor Starter or Advisor Pro", () => {
+    assert.equal(BUILT_IN_LIMITS.starter.trips, UNLIMITED);
+    assert.equal(BUILT_IN_LIMITS.starter.printsPerWeek, UNLIMITED);
     assert.equal(BUILT_IN_LIMITS.pro.trips, UNLIMITED);
-    assert.equal(BUILT_IN_LIMITS.business.printsPerWeek, UNLIMITED);
+    assert.equal(BUILT_IN_LIMITS.pro.printsPerWeek, UNLIMITED);
   });
 });
 
 describe("the owner's own numbers", () => {
   it("uses his when he has set one", () => {
-    assert.equal(limitsFor("traveler", { traveler: { trips: 5 } }).trips, 5);
+    assert.equal(limitsFor("one_trip", { one_trip: { trips: 5 } }).trips, 5);
   });
 
   it("keeps the built-in one for anything he did not set", () => {
-    assert.equal(limitsFor("traveler", { traveler: { trips: 5 } }).printsPerWeek, 1);
+    assert.equal(limitsFor("one_trip", { one_trip: { trips: 5 } }).printsPerWeek, UNLIMITED);
   });
 
   it("takes a blank as no limit at all", () => {
-    assert.equal(limitsFor("traveler", { traveler: { trips: null } }).trips, UNLIMITED);
+    assert.equal(limitsFor("one_trip", { one_trip: { trips: null } }).trips, UNLIMITED);
   });
 
   it("REFUSES ZERO, which would be a locked account rather than a limit", () => {
-    assert.equal(limitsFor("traveler", { traveler: { trips: 0 } }).trips, 2);
-    assert.equal(limitsFor("traveler", { traveler: { printsPerWeek: -4 } }).printsPerWeek, 1);
+    assert.equal(limitsFor("one_trip", { one_trip: { trips: 0 } }).trips, 1);
   });
 
   it("falls back rather than throwing on nonsense", () => {
-    assert.equal(limitsFor("traveler", { traveler: { trips: "lots" as never } }).trips, 2);
-    assert.equal(limitsFor("traveler", null).trips, 2);
+    assert.equal(limitsFor("one_trip", { one_trip: { trips: "lots" as never } }).trips, 1);
+    assert.equal(limitsFor("one_trip", null).trips, 1);
   });
 });
 
 describe("starting a trip", () => {
-  it("allows the first and the second", () => {
-    assert.equal(newTripProblem("traveler", 0, TRAVELER), null);
-    assert.equal(newTripProblem("traveler", 1, TRAVELER), null);
+  it("says to choose a plan first, before any plan has been bought", () => {
+    assert.equal(newTripProblem("free", 0, BUILT_IN_LIMITS.free), "Choose a plan to start your first trip.");
   });
 
-  it("refuses the third, and says what to do about it", () => {
-    const said = newTripProblem("traveler", 2, TRAVELER);
-    assert.match(said!, /2 trips at a time/);
+  it("allows the first trip on One Trip", () => {
+    assert.equal(newTripProblem("one_trip", 0, ONE_TRIP), null);
+  });
+
+  it("refuses the second, and says what to do about it", () => {
+    const said = newTripProblem("one_trip", 1, ONE_TRIP);
+    assert.match(said!, /1 trip at a time/);
     assert.match(said!, /Delete one/);
-    assert.match(said!, /Pro/);
   });
 
   it("NEVER TAKES AWAY WHAT SOMEBODY ALREADY HAS", () => {
     // Somebody with five trips — made before there was a limit, or after it was
     // lowered — keeps five. Only a SIXTH is refused. Nothing here can close,
     // hide or delete a trip, and this is the test that says so.
-    const said = newTripProblem("traveler", 5, TRAVELER);
+    const said = newTripProblem("one_trip", 5, ONE_TRIP);
     assert.match(said!, /you have 5/);
     assert.doesNotMatch(said!, /delet(ed|ing) for you|removed|closed/i);
   });
@@ -96,9 +105,9 @@ describe("starting a trip", () => {
   });
 
   it("always has something to say about where they stand", () => {
-    assert.match(describeTrips(0, TRAVELER), /0 of 2/);
-    assert.match(describeTrips(1, TRAVELER), /One more/);
-    assert.match(describeTrips(2, TRAVELER), /Delete one/);
+    assert.match(describeTrips(0, ONE_TRIP), /0 of 1/);
+    assert.match(describeTrips(0, ONE_TRIP), /One more/);
+    assert.match(describeTrips(1, ONE_TRIP), /Delete one/);
     assert.match(describeTrips(9, BUILT_IN_LIMITS.pro), /9 trips/);
   });
 });
@@ -121,8 +130,13 @@ describe("counting the week", () => {
 });
 
 describe("taking a printable copy", () => {
+  // A plan's built-in printsPerWeek is unlimited everywhere now that "free"
+  // is a locked, planless account — so a limit of 1 is passed in by hand here
+  // to exercise the counting rules themselves, the same way the account page
+  // would if the owner set one from /admin/settings/limits.
+  const ONE_PRINT_A_WEEK = { trips: UNLIMITED, printsPerWeek: 1, staffSeats: 0 };
   const decide = (prints: PrintEvent[], tripId = "trip-1") =>
-    decidePrint({ plan: "traveler", limits: TRAVELER, prints, tripId, now: NOW });
+    decidePrint({ plan: "one_trip", limits: ONE_PRINT_A_WEEK, prints, tripId, now: NOW });
 
   it("allows the first one of the week, and counts it", () => {
     const d = decide([]);
@@ -175,10 +189,10 @@ describe("taking a printable copy", () => {
   it("counts to a higher limit properly when the owner raises it", () => {
     const limits = { trips: 2, printsPerWeek: 3, staffSeats: 0 };
     const two = [print("a", 1000), print("b", 2000)];
-    const d = decidePrint({ plan: "traveler", limits, prints: two, tripId: "c", now: NOW });
+    const d = decidePrint({ plan: "one_trip", limits, prints: two, tripId: "c", now: NOW });
     assert.equal(d.allowed, true);
     const three = [...two, print("c", 3000)];
-    assert.equal(decidePrint({ plan: "traveler", limits, prints: three, tripId: "d", now: NOW }).allowed, false);
+    assert.equal(decidePrint({ plan: "one_trip", limits, prints: three, tripId: "d", now: NOW }).allowed, false);
   });
 });
 
@@ -195,11 +209,16 @@ describe("how the wait is described", () => {
   });
 });
 
-describe("what a traveller is told before they meet any of it", () => {
+describe("what somebody is told before they meet any of it", () => {
+  // A synthetic limits object with both a trip and a print ceiling, to
+  // exercise describeLimits's own message-joining rather than any one plan's
+  // particular built-in numbers.
+  const BOTH_LIMITED = { trips: 2, printsPerWeek: 1, staffSeats: 0 };
+
   it("says both limits, and what is NOT limited", () => {
     // A list of restrictions with no floor under it reads as though the rest
     // might go next.
-    const said = describeLimits("traveler", TRAVELER);
+    const said = describeLimits("one_trip", BOTH_LIMITED);
     assert.match(said, /2 trips at a time/);
     assert.match(said, /1 printable copy a week/);
     assert.match(said, /every kever/i);
@@ -210,15 +229,19 @@ describe("what a traveller is told before they meet any of it", () => {
     assert.match(describeLimits("pro", BUILT_IN_LIMITS.pro), /no limits/);
   });
 
+  it("says a plan is needed before anything is chosen", () => {
+    assert.equal(describeLimits("free", BUILT_IN_LIMITS.free), "Choose a plan below to start planning a trip.");
+  });
+
   it("says how many copies are left", () => {
-    assert.match(describePrints([], TRAVELER, NOW), /1 of 1/);
-    assert.match(describePrints([print("a", 1000)], TRAVELER, NOW), /used this week/);
+    assert.match(describePrints([], BOTH_LIMITED, NOW), /1 of 1/);
+    assert.match(describePrints([print("a", 1000)], BOTH_LIMITED, NOW), /used this week/);
     assert.match(describePrints([], BUILT_IN_LIMITS.pro, NOW), /as many copies as you like/);
   });
 
   it("always says something", () => {
     for (const prints of [[], [print("a", 1000)], [print("a", WEEK_MS * 2)]]) {
-      assert.ok(describePrints(prints, TRAVELER, NOW).length > 20);
+      assert.ok(describePrints(prints, BOTH_LIMITED, NOW).length > 20);
     }
   });
 });

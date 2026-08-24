@@ -1,15 +1,43 @@
 import Link from "next/link";
-import ShulAdminForm from "@/components/ShulAdminForm";
-import ShulRemoveButton from "@/components/ShulRemoveButton";
+import FlatFileListEditor, { type FlatFileItem } from "@/components/FlatFileListEditor";
+import { addShulAction, removeShulAction } from "@/app/admin/shuls/actions";
 import { listPublishedShuls } from "@/lib/shuls";
 import { shulsStoreAvailable } from "@/lib/shuls-store";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
+const FIELDS = [
+  { name: "name", label: "Shul name", required: true, placeholder: "Bevis Marks Synagogue" },
+  { name: "sourceUrl", label: "Source link (https://…)", type: "url" as const, required: true, placeholder: "https://…" },
+  { name: "city", label: "City", required: true, placeholder: "London" },
+  { name: "country", label: "Country", required: true, placeholder: "United Kingdom" },
+  { name: "address", label: "Address (optional)", full: true, placeholder: "4 Heneage Lane, London EC3A 5DQ" },
+  { name: "website", label: "Website (optional)", type: "url" as const, placeholder: "https://…" },
+  { name: "phone", label: "Phone (optional)", placeholder: "+44 …" },
+  { name: "coordinates", label: "Coordinates (optional)", placeholder: "51.5144, -0.0792" },
+  { name: "notes", label: "Notes (optional)", full: true, placeholder: "Sephardi; the oldest in the UK." },
+];
+
 export default async function AdminShulsPage() {
   const [listings, storeReady] = await Promise.all([listPublishedShuls(), Promise.resolve(shulsStoreAvailable())]);
-  const added = listings.filter((s) => s.added);
+  const items: FlatFileItem[] = listings.map((s) => ({
+    id: s.id,
+    added: Boolean(s.added),
+    title: s.name,
+    subtitle: [`${s.city}, ${s.country}`, s.coordinates ? "on the map" : ""].filter(Boolean).join(" · "),
+    values: {
+      name: s.name,
+      city: s.city,
+      country: s.country,
+      address: s.address ?? "",
+      website: s.website ?? "",
+      phone: s.phone ?? "",
+      coordinates: s.coordinates ?? "",
+      notes: s.notes ?? "",
+      sourceUrl: s.sourceUrl,
+    },
+  }));
 
   return (
     <>
@@ -19,9 +47,6 @@ export default async function AdminShulsPage() {
           Shuls and minyanim for the public directory. Most come from the towns&rsquo; own write-ups and the built-in
           catalog; the ones you add here belong to no town on the site. Each needs a source, and coordinates put it on
           the map. Hours are not stored — a shul&rsquo;s zmanim change, so the link is how a reader gets them.
-        </p>
-        <p className="mt-3 text-sm text-stone-500">
-          {listings.length} listed · {added.length} added here · {listings.length - added.length} built in
         </p>
       </header>
 
@@ -40,36 +65,15 @@ export default async function AdminShulsPage() {
         </Link>
       </div>
 
-      <section className="mt-10">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Add a shul</h2>
-        <ShulAdminForm storeReady={storeReady} />
-      </section>
-
-      <section className="mt-12">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-          Added here {added.length ? `(${added.length})` : ""}
-        </h2>
-        {added.length === 0 ? (
-          <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-            Nothing added yet. Shuls you add appear here, alongside the built-in directory on the public page.
-          </p>
-        ) : (
-          <ul className="mt-4 divide-y divide-[var(--gold-light)] border-y border-[var(--gold-light)]">
-            {added.map((shul) => (
-              <li key={shul.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <span className="text-sm text-[var(--navy)]">
-                  <strong>{shul.name}</strong> — {shul.city}, {shul.country}
-                  {shul.coordinates ? <span className="text-stone-500"> · on the map</span> : null}{" "}
-                  <a href={shul.href} target="_blank" rel="noreferrer" className="text-stone-500 underline decoration-stone-300 underline-offset-4">
-                    link
-                  </a>
-                </span>
-                <ShulRemoveButton id={shul.id} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <FlatFileListEditor
+        items={items}
+        fields={FIELDS}
+        addLabel="Add a shul"
+        emptyLabel="Nothing added yet. Shuls you add appear here, alongside the built-in directory on the public page."
+        storeReady={storeReady}
+        saveAction={addShulAction}
+        removeAction={removeShulAction}
+      />
     </>
   );
 }

@@ -74,7 +74,7 @@ export default async function AdminSettingsPage() {
           />
           <Card
             href="/admin/settings/plans"
-            title="Gold and Business"
+            title="Paid plans"
             detail="Whether they are offered, and how."
             state={stats.configured ? undefined : "Needs the private store"}
           />

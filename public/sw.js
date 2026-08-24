@@ -78,3 +78,41 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+// A flight delay, a cancellation, a gate change — see lib/push-notify.ts for
+// what actually sends this and data/trip-alerts.ts for what earns one.
+// Never shown for anything the traveler did not ask to be told about: the
+// subscription this arrives on only exists because they turned it on inside
+// their own trip's app.
+self.addEventListener("push", (event) => {
+  let payload = { title: "Your trip", body: "Something changed on your trip." };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch {
+    // A payload that doesn't parse as JSON is not a reason to show nothing.
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: payload.url || "/" },
+    }),
+  );
+});
+
+// Focus an already-open tab on the trip rather than always opening a new
+// one — a traveler who taps a second delay notification should land back
+// where they were, not accumulate tabs.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if (client.url.includes(url) && "focus" in client) return client.focus();
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});

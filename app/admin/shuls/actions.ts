@@ -40,8 +40,17 @@ export async function addShulAction(_prev: ActionResult | null, formData: FormDa
   const problem = shulProblem(input);
   if (problem) return { ok: false, message: problem };
 
-  if (!(await addStoredShul(shulFromInput(input)))) return { ok: false, message: "That could not be saved." };
-  return { ok: true, message: `Added ${input.name}. It is on the shuls page now${input.coordinates ? ", and on the map" : ""}.` };
+  // Editing keeps the entry's own id, so a change is an update in place.
+  const id = str(formData, "id");
+  const listing = shulFromInput(input);
+  if (id) listing.id = id;
+  if (!(await addStoredShul(listing))) return { ok: false, message: "That could not be saved." };
+  return {
+    ok: true,
+    message: id
+      ? `Saved ${input.name}.`
+      : `Added ${input.name}. It is on the shuls page now${input.coordinates ? ", and on the map" : ""}.`,
+  };
 }
 
 export async function removeShulAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {

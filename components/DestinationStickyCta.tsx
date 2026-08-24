@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { staySearchHref } from "@/lib/stay-search";
 
 /**
@@ -64,7 +65,7 @@ export default function DestinationStickyCta({
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2">
         <Link
           href={staySearchHref({ destination })}
-          className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+          className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
         >
           See places to stay
         </Link>

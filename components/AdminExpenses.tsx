@@ -2,6 +2,7 @@
 
 import DateField from "@/components/DateField";
 import { useEffect, useMemo, useState } from "react";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import type { Expense } from "@/lib/expenses";
 
 type Totals = { byCurrency: Record<string, number>; byCategory: Record<string, number>; byMonth: Record<string, number> };
@@ -25,8 +26,10 @@ export default function AdminExpenses() {
   const [available, setAvailable] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [form, setForm] = useState({ date: today, description: "", amount: "", currency: "USD", category: "Other", notes: "" });
+  const dialogRef = useFocusTrap<HTMLDivElement>(open, () => setOpen(false));
 
   async function load() {
     const res = await fetch("/api/admin/expenses", { cache: "no-store" });
@@ -57,10 +60,12 @@ export default function AdminExpenses() {
       return;
     }
     setForm({ date: today, description: "", amount: "", currency: form.currency, category: form.category, notes: "" });
+    setOpen(false);
     load();
   }
 
-  async function remove(id: string) {
+  async function remove(id: string, description: string) {
+    if (typeof window !== "undefined" && !window.confirm(`Remove the expense “${description}”?`)) return;
     await fetch(`/api/admin/expenses?id=${encodeURIComponent(id)}`, { method: "DELETE" });
     load();
   }
@@ -126,22 +131,14 @@ export default function AdminExpenses() {
         </div>
       </div>
 
-      {/* Add form */}
-      <form onSubmit={add} className="mt-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Add an expense</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="block"><span className={caption}>Date</span><DateField value={form.date} onChange={(v) => setForm({ ...form, date: v })} className={inputClass} ariaLabel="Date" /></label>
-          <label className="block lg:col-span-2"><span className={caption}>Description *</span><input required className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What was it for?" /></label>
-          <label className="block"><span className={caption}>Amount *</span><input type="number" required step="0.01" min="0" className={inputClass} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></label>
-          <label className="block"><span className={caption}>Currency</span><input className={inputClass} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} maxLength={6} /></label>
-          <label className="block"><span className={caption}>Category</span><select className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
-          <label className="block lg:col-span-2"><span className={caption}>Notes</span><input className={inputClass} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label>
+      {/* Add */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <button type="button" onClick={() => { setError(null); setOpen(true); }} className="min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]">Add an expense</button>
+        <div className="flex items-center gap-3">
+          {!open && error && <span className="text-sm font-semibold text-red-700">{error}</span>}
+          <span className="text-sm text-stone-500">{items.length} recorded</span>
         </div>
-        <div className="mt-4 flex items-center gap-4">
-          <button type="submit" disabled={busy} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">{busy ? "Saving…" : "Add expense"}</button>
-          {error && <span className="text-sm font-semibold text-red-700">{error}</span>}
-        </div>
-      </form>
+      </div>
 
       {/* List */}
       <div className="mt-6 overflow-x-auto border border-[var(--gold-light)] bg-[#fcfaf6]">
@@ -168,12 +165,47 @@ export default function AdminExpenses() {
                     </label>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right"><button type="button" onClick={() => remove(e.id)} className="text-xs text-stone-400 hover:text-red-700">✕</button></td>
+                <td className="px-4 py-3 text-right"><button type="button" onClick={() => remove(e.id, e.description)} className="text-xs text-stone-400 hover:text-red-700" aria-label={`Remove ${e.description}`}>✕</button></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+          onClick={(event) => { if (event.target === event.currentTarget) setOpen(false); }}
+        >
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="expense-modal-title"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <h3 id="expense-modal-title" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Add an expense</h3>
+              <button type="button" onClick={() => setOpen(false)} className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]">Close</button>
+            </div>
+            <form onSubmit={add} className="mt-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block"><span className={caption}>Date</span><DateField value={form.date} onChange={(v) => setForm({ ...form, date: v })} className={inputClass} ariaLabel="Date" /></label>
+                <label className="block"><span className={caption}>Description *</span><input required className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What was it for?" /></label>
+                <label className="block"><span className={caption}>Amount *</span><input type="number" required step="0.01" min="0" className={inputClass} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></label>
+                <label className="block"><span className={caption}>Currency</span><input className={inputClass} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} maxLength={6} /></label>
+                <label className="block"><span className={caption}>Category</span><select className={inputClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
+                <label className="block"><span className={caption}>Notes</span><input className={inputClass} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label>
+              </div>
+              <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-[var(--gold-light)] pt-4">
+                <button type="submit" disabled={busy} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">{busy ? "Saving…" : "Add expense"}</button>
+                <button type="button" onClick={() => setOpen(false)} className="px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]">Cancel</button>
+                {error && <span className="text-sm font-semibold text-red-700">{error}</span>}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

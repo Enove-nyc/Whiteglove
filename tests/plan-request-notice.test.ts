@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 import { PLAN_LABELS } from "@/lib/account-plans";
 
 /**
- * Telling the owner that somebody asked about Pro or Business.
+ * Telling the owner that somebody asked about a paid plan.
  *
  * THIS EXISTS BECAUSE THE REQUEST ARRIVED IN COMPLETE SILENCE. It was written
  * to the store and shown on /admin/accounts, and nothing anywhere said it had
@@ -49,17 +49,17 @@ describe("the request reaches a person", () => {
     assert.ok(savedAt !== -1 && CALL_AT > savedAt, "the email is sent before the save is checked");
   });
 
-  it("says Pro, not pro — the label a person reads", () => {
+  it("says Advisor Pro, not pro — the label a person reads", () => {
     assert.match(ROUTE, /PLAN_LABELS\[/);
-    assert.equal(PLAN_LABELS.pro, "Gold");
-    assert.equal(PLAN_LABELS.business, "Business");
+    assert.equal(PLAN_LABELS.pro, "Advisor Pro");
+    assert.equal(PLAN_LABELS.starter, "Advisor Starter");
   });
 });
 
 describe("what the email says", () => {
   it("carries who asked, what for, and what they wrote", () => {
     const fn = EMAIL.slice(EMAIL.indexOf("export async function sendPlanRequestNotification"));
-    for (const field of ["Who", "Asked about", "On now", "Business", "They wrote"]) {
+    for (const field of ["Who", "Asked about", "On now", "They wrote"]) {
       assert.match(fn.slice(0, 1500), new RegExp(`"${field}"`), field);
     }
   });

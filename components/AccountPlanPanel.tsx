@@ -12,6 +12,7 @@ import {
   plansToAskAbout,
   whatYouGet,
 } from "@/lib/account-plans";
+import { TRIAL_DAYS } from "@/lib/plan-billing";
 
 /**
  * What kind of account this is, and how to come by a different one.
@@ -25,10 +26,10 @@ import {
  *
  * EVERY OTHER PART OF THE OLD RULE STANDS. On the other two settings — and
  * "soon" is what the offering is unless he changes it — this panel takes no
- * card and mentions no card. On "soon" it says plainly that neither account is
+ * card and mentions no card. On "soon" it says plainly that none of them are
  * open and offers to write when one is; on "ask" it does what it always did,
  * which is take a request a person answers. With the offering closed it says
- * nothing about Gold or Business at all.
+ * nothing about any of them at all.
  *
  * EVERY PLAN READS OUT WHAT IT DOES, AND NONE OF IT IS INVENTED. Each card —
  * the one the traveller is on and each one offered — shows the same two true
@@ -51,6 +52,10 @@ export type PlanOffer = {
   periods: Array<{ period: "monthly" | "yearly"; line: string }>;
   /** What this plan limits, in the traveller's words, so the card reads out everything it does. */
   limitsLine: string;
+  /** A single fee, not a subscription — see lib/plan-billing.ts's ONE_TIME_PLANS. */
+  oneTime: boolean;
+  /** Worked out on the server from trialEligible in lib/plan-billing.ts. */
+  trialEligible: boolean;
 };
 
 export default function AccountPlanPanel({
@@ -80,7 +85,6 @@ export default function AccountPlanPanel({
 }) {
   const router = useRouter();
   const [asking, setAsking] = useState<AccountPlan | null>(null);
-  const [businessName, setBusinessName] = useState("");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -155,7 +159,7 @@ export default function AccountPlanPanel({
     const response = await fetch("/api/account/plan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wanted: asking, businessName, note }),
+      body: JSON.stringify({ wanted: asking, note }),
     });
     const data = await response.json().catch(() => null);
     setSending(false);
@@ -164,7 +168,6 @@ export default function AccountPlanPanel({
       return;
     }
     setAsking(null);
-    setBusinessName("");
     setNote("");
     setMessage({
       ok: true,
@@ -185,8 +188,9 @@ export default function AccountPlanPanel({
 
       {/* Everything this plan does, said the same way for every plan: the
           limits line (which already ends "everything else on the site is the
-          same"), then the extras this plan unlocks. Traveler unlocks none, so
-          it is the limits line alone rather than an empty heading. */}
+          same"), then the extras this plan unlocks. An account with no plan
+          yet unlocks none, so it is the limits line alone rather than an
+          empty heading. */}
       <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">{limitsLine}</p>
       {included.length > 0 && (
         <ul className="mt-3 max-w-2xl space-y-1.5 text-sm leading-7 text-stone-600">
@@ -207,7 +211,7 @@ export default function AccountPlanPanel({
           a live card subscription: somebody the owner put on a plan by hand has
           no Stripe customer and the portal route answers them plainly (write in
           and we sort it out) rather than with an error. */}
-      {plan !== "traveler" && (
+      {plan !== "free" && (
         <div className="mt-6">
           <button
             type="button"
@@ -223,8 +227,7 @@ export default function AccountPlanPanel({
       {openRequest ? (
         <div className="mt-6 border-l-4 border-[var(--gold)] bg-white px-4 py-3">
           <p className="text-sm leading-7 text-stone-700">
-            You asked about <strong>{PLAN_LABELS[openRequest.wanted]}</strong>
-            {openRequest.businessName ? ` for ${openRequest.businessName}` : ""}.{" "}
+            You asked about <strong>{PLAN_LABELS[openRequest.wanted]}</strong>.{" "}
             {notOpenYet ? "We will write to you the day it opens." : "We will be in touch with the next steps."}
           </p>
         </div>
@@ -232,9 +235,9 @@ export default function AccountPlanPanel({
         <div className="mt-6">
           <p className="text-sm leading-7 text-stone-600">
             {takingCards
-              ? "There are two other kinds of account, if one of them fits how you travel."
+              ? "There are other kinds of account, if one of them fits how you travel."
               : notOpenYet
-                ? "Two other kinds of account open shortly. Say which one interests you and we will write to you the day it does."
+                ? "Other kinds of account open shortly. Say which one interests you and we will write to you the day it does."
                 : "Interested in a different account? Send a request and we will follow up with the available options."}
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -263,18 +266,33 @@ export default function AccountPlanPanel({
                   {entry?.line && <p className="mt-3 text-sm font-semibold text-[var(--navy)]">{entry.line}</p>}
 
                   {takingCards && entry ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {entry.periods.map((option) => (
-                        <button
-                          key={option.period}
-                          type="button"
-                          onClick={() => subscribe(choice, option.period)}
-                          disabled={sending}
-                          className="min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)] disabled:opacity-50"
-                        >
-                          {sending ? "One moment…" : entry.periods.length > 1 ? `${option.period === "yearly" ? "Yearly" : "Monthly"} — ${option.line}` : `Subscribe — ${option.line}`}
-                        </button>
-                      ))}
+                    <div className="mt-4">
+                      {entry.trialEligible && (
+                        <p className="mb-2 text-xs font-semibold text-[var(--gold-ink)]">
+                          Free for {TRIAL_DAYS} days, then billed — cancel any time before that and nothing is charged.
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {entry.periods.map((option) => (
+                          <button
+                            key={option.period}
+                            type="button"
+                            onClick={() => subscribe(choice, option.period)}
+                            disabled={sending}
+                            className="min-h-11 rounded-md border border-[var(--navy)] bg-[var(--navy)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:text-[var(--navy)] disabled:opacity-50"
+                          >
+                            {sending
+                              ? "One moment…"
+                              : entry.oneTime
+                                ? `Buy — ${option.line}`
+                                : entry.trialEligible
+                                  ? `Start free trial — then ${option.line}`
+                                  : entry.periods.length > 1
+                                    ? `${option.period === "yearly" ? "Yearly" : "Monthly"} — ${option.line}`
+                                    : `Subscribe — ${option.line}`}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <button
@@ -310,19 +328,6 @@ export default function AccountPlanPanel({
               <p className="text-sm leading-7 text-stone-600">
                 Asking about <strong className="text-[var(--navy)]">{PLAN_LABELS[asking]}</strong>.
               </p>
-              {asking === "business" && (
-                <label className="mt-4 block">
-                  <span className={captionClass}>Name of the business</span>
-                  <input
-                    className={inputClass}
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    placeholder="e.g. Hotel Sanz"
-                    maxLength={120}
-                    required
-                  />
-                </label>
-              )}
               <label className="mt-4 block">
                 <span className={captionClass}>Anything you want to say (optional)</span>
                 <textarea
@@ -383,20 +388,7 @@ export default function AccountPlanPanel({
                 </p>
 
                 <form onSubmit={send} className="mt-5">
-                  {asking === "business" && (
-                    <label className="block">
-                      <span className={captionClass}>Name of the business</span>
-                      <input
-                        className={inputClass}
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                        placeholder="e.g. Kesser Travel"
-                        maxLength={120}
-                        required
-                      />
-                    </label>
-                  )}
-                  <label className="mt-4 block">
+                  <label className="block">
                     <span className={captionClass}>What you are hoping for (optional)</span>
                     <textarea
                       className={`${inputClass} min-h-24`}

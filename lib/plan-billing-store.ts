@@ -17,14 +17,16 @@
  */
 
 import { updateTag } from "next/cache";
-import { type AccountPlan } from "@/lib/account-plans";
+import { isAccountPlan, type AccountPlan } from "@/lib/account-plans";
 import { cleanOffering, DEFAULT_OFFERING, type PlanOffering } from "@/lib/plan-billing";
 import { identityKey } from "@/lib/identity";
+import { statusIsPaid } from "@/lib/stripe";
 
 const OFFERING_KEY = "white-glove:plan-offering";
 const SUB_PREFIX = "white-glove:subscription:";
 const SUB_INDEX = "white-glove:subscription-index";
 const CUSTOMER_PREFIX = "white-glove:stripe-customer:";
+const ONE_TIME_PREFIX = "white-glove:one-time-purchase:";
 
 export const PLAN_OFFERING_TAG = "plan-offering";
 
@@ -117,6 +119,58 @@ export async function readSubscription(account: string): Promise<SubscriptionRec
   } catch {
     return null;
   }
+}
+
+/**
+ * One Trip pays once and never expires — see checkout.session.completed in
+ * app/api/billing/webhook/route.ts, which sets the plan directly and writes
+ * no SubscriptionRecord at all, because there is no subscription to record.
+ * That is exactly the gap ownEntitledPlan below has to close: a One Trip
+ * buyer whose plan is later overwritten (an agency invite, for instance)
+ * has nothing in SubscriptionRecord to restore from. This is that record —
+ * a permanent marker, not a status to watch, because the purchase itself
+ * never lapses.
+ */
+export async function writeOneTimePurchase(account: string, plan: AccountPlan): Promise<boolean> {
+  if (!account || !planBillingStoreAvailable()) return false;
+  const key = encodeURIComponent(`${ONE_TIME_PREFIX}${identityKey(account)}`);
+  return (await redis(`set/${key}`, JSON.stringify({ plan, purchasedAt: new Date().toISOString() }))) !== null;
+}
+
+export async function readOneTimePurchase(account: string): Promise<AccountPlan | null> {
+  if (!account || !planBillingStoreAvailable()) return null;
+  const raw = await redis<string>(`get/${encodeURIComponent(`${ONE_TIME_PREFIX}${identityKey(account)}`)}`);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { plan?: unknown };
+    return isAccountPlan(parsed.plan) ? parsed.plan : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * What this account is entitled to on its OWN purchase, independent of
+ * anything an agency granted it.
+ *
+ * WHY THIS EXISTS. Joining an agency sets a member's plan to pro by hand
+ * (app/api/account/agency/join/route.ts), the same way the webhook below
+ * sets it by hand when a card is charged. Leaving, being removed, or the
+ * agency's own Pro subscription lapsing all have to take that hand-set plan
+ * back — but "back" is not always free: somebody who was already paying for
+ * their own Advisor Starter before they ever joined an agency is still
+ * being charged for it, and somebody who bought One Trip still owns that
+ * one trip forever. Dropping either to free would keep taking the first
+ * one's money while showing them nothing for it, and would quietly undo a
+ * purchase that has no expiry at all for the second. A live subscription
+ * wins when there is one; a One Trip purchase (which never lapses) is
+ * checked next; free is what is left once neither is true.
+ */
+export async function ownEntitledPlan(account: string): Promise<AccountPlan> {
+  const sub = await readSubscription(account);
+  if (sub && statusIsPaid(sub.status)) return sub.plan;
+  const oneTime = await readOneTimePurchase(account);
+  return oneTime ?? "free";
 }
 
 export async function writeSubscription(record: SubscriptionRecord): Promise<boolean> {

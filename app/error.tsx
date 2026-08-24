@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 
 /**
  * When a page fails.
@@ -53,13 +54,13 @@ export default function Error({
           <button
             type="button"
             onClick={() => unstable_retry()}
-            className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+            className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
           >
             Try this page again
           </button>
           <Link
             href="/"
-            className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+            className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.secondary}`}
           >
             Back to the front page
           </Link>

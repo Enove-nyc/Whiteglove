@@ -20,9 +20,10 @@ import {
  * What kind of account somebody has.
  *
  * The rule underneath all of these: a plan never decides what anybody can do.
- * Nothing is behind one yet, nothing is charged for one, and the tests say so
- * out loud — so that wiring a gate to a plan trips a failing test rather than
- * quietly taking something away from a traveller who had it yesterday.
+ * Nothing is behind one that lib/account-limits.ts does not say out loud, and
+ * the tests here say so too — so that wiring a gate to a plan trips a failing
+ * test rather than quietly taking something away from somebody who had it
+ * yesterday.
  */
 
 const NOW = "2026-08-02T14:00:00.000Z";
@@ -33,41 +34,35 @@ function request(over: Partial<PlanRequest> = {}): PlanRequest {
 }
 
 describe("which plan an account is on", () => {
-  it("is Traveler when nobody has said otherwise", () => {
-    // Every account made before plans existed. Nothing about it changes.
-    assert.equal(planOf(undefined), "traveler");
-    assert.equal(planOf(null), "traveler");
-    assert.equal(planOf({}), "traveler");
-    assert.equal(DEFAULT_PLAN, "traveler");
+  it("has no plan when nobody has bought anything", () => {
+    // Every account before it chooses one. Nothing about it changes.
+    assert.equal(planOf(undefined), "free");
+    assert.equal(planOf(null), "free");
+    assert.equal(planOf({}), "free");
+    assert.equal(DEFAULT_PLAN, "free");
   });
 
   it("refuses a plan it does not know rather than taking it", () => {
-    assert.equal(planOf({ plan: "platinum" }), "traveler");
+    assert.equal(planOf({ plan: "platinum" }), "free");
     assert.equal(isAccountPlan("platinum"), false);
     assert.equal(isAccountPlan("pro"), true);
   });
 
   it("keeps a plan that was set", () => {
+    assert.equal(planOf({ plan: "one_trip" }), "one_trip");
+    assert.equal(planOf({ plan: "starter" }), "starter");
     assert.equal(planOf({ plan: "pro" }), "pro");
-    assert.equal(planOf({ plan: "business" }), "business");
   });
 });
 
 describe("what a plan gets you", () => {
-  it("IS NOTHING FOR TRAVELER, AND ONE THING FOR THE OTHERS", () => {
-    // This said "nothing, for every one of them", because whatever Pro
-    // included was the owner's to decide and writing it here would have put a
-    // promise on the website nobody had agreed to keep. He has now decided the
-    // first one: the assistant remembers a Pro conversation between visits.
-    //
-    // Traveler still gets an empty list, so the pages that read this must
-    // still cope with one — an empty list under a heading reads as something
-    // that failed to load, and they say it in a sentence instead.
-    assert.deepEqual(whatYouGet("traveler"), []);
-    for (const plan of ["pro", "business"] as const) {
+  it("IS NOTHING BEFORE A PLAN IS CHOSEN, AND ONE THING FOR EACH OF THE OTHERS", () => {
+    // An invented line here would be a promise nobody made.
+    assert.deepEqual(whatYouGet("free"), []);
+    for (const plan of ["one_trip", "starter", "pro"] as const) {
       assert.ok(whatYouGet(plan).length > 0, plan);
     }
-    // Every line is a plain promise to a traveler, not a feature name.
+    // Every line is a plain promise, not a feature name.
     for (const plan of ACCOUNT_PLANS) {
       for (const line of whatYouGet(plan)) {
         assert.ok(line.trim().length > 10, `${plan}: "${line}"`);
@@ -78,69 +73,62 @@ describe("what a plan gets you", () => {
 });
 
 describe("what you can ask about", () => {
-  it("offers Gold and Business to somebody on Traveler", () => {
-    assert.deepEqual(plansToAskAbout("traveler"), ["pro", "business"]);
+  it("offers all three to somebody with no plan yet", () => {
+    assert.deepEqual(plansToAskAbout("free"), ["one_trip", "starter", "pro"]);
   });
 
   it("does not offer somebody what they already have", () => {
     // Offering an "upgrade" to the plan you are on reads as the site not
     // knowing who you are.
+    assert.ok(!plansToAskAbout("one_trip").includes("one_trip"));
+    assert.ok(!plansToAskAbout("starter").includes("starter"));
     assert.ok(!plansToAskAbout("pro").includes("pro"));
-    assert.ok(!plansToAskAbout("business").includes("business"));
   });
 
-  it("still offers Business to somebody on Gold", () => {
-    // Business is not further up than Pro, it is a different thing — a hotel
-    // or a kitchen rather than a person who plans a lot of trips.
-    assert.deepEqual(plansToAskAbout("pro"), ["business"]);
+  it("only offers what is further up the ladder", () => {
+    assert.deepEqual(plansToAskAbout("one_trip"), ["starter", "pro"]);
+    assert.deepEqual(plansToAskAbout("starter"), ["pro"]);
+    assert.deepEqual(plansToAskAbout("pro"), []);
   });
 
-  it("never offers Traveler as something to move to", () => {
-    for (const plan of ACCOUNT_PLANS) assert.ok(!plansToAskAbout(plan).includes("traveler"), plan);
+  it("never offers no-plan-yet as something to move to", () => {
+    for (const plan of ACCOUNT_PLANS) assert.ok(!plansToAskAbout(plan).includes("free"), plan);
   });
 
   it("knows which way is up", () => {
-    assert.equal(isUpgrade("traveler", "pro"), true);
-    assert.equal(isUpgrade("pro", "traveler"), false);
+    assert.equal(isUpgrade("free", "one_trip"), true);
+    assert.equal(isUpgrade("one_trip", "free"), false);
     assert.equal(isUpgrade("pro", "pro"), false);
+    assert.equal(isUpgrade("starter", "one_trip"), false);
   });
 });
 
 describe("asking for one", () => {
-  it("takes a plain request for Gold", () => {
-    assert.equal(requestProblem({ current: "traveler", wanted: "pro" }), null);
+  it("takes a plain request for Advisor Pro", () => {
+    assert.equal(requestProblem({ current: "free", wanted: "pro" }), null);
   });
 
   it("will not take a plan it does not know", () => {
-    assert.equal(requestProblem({ current: "traveler", wanted: "platinum" }), "Choose which kind of account you want.");
-    assert.equal(requestProblem({ current: "traveler", wanted: undefined }), "Choose which kind of account you want.");
+    assert.equal(requestProblem({ current: "free", wanted: "platinum" }), "Choose which kind of account you want.");
+    assert.equal(requestProblem({ current: "free", wanted: undefined }), "Choose which kind of account you want.");
   });
 
   it("says so when you are already on it", () => {
-    assert.equal(requestProblem({ current: "pro", wanted: "pro" }), "You are already on Gold.");
+    assert.equal(requestProblem({ current: "pro", wanted: "pro" }), "You are already on Advisor Pro.");
   });
 
   it("will not take a downgrade through this door", () => {
     // Nothing here can take a plan away. Whatever that eventually looks like,
     // it is not a form a person fills in about themselves.
-    assert.equal(requestProblem({ current: "business", wanted: "pro" }), "That is not a change this can make.");
-  });
-
-  it("needs the name of the business for a Business account", () => {
-    // The whole point of one is that it belongs to a business somebody can
-    // find in the directory. A request that does not say which is a request
-    // nobody can act on.
-    assert.equal(requestProblem({ current: "traveler", wanted: "business" }), "Tell us the name of the business.");
-    assert.equal(requestProblem({ current: "traveler", wanted: "business", businessName: "  " }), "Tell us the name of the business.");
-    assert.equal(requestProblem({ current: "traveler", wanted: "business", businessName: "Hotel Sanz" }), null);
+    assert.equal(requestProblem({ current: "pro", wanted: "starter" }), "That is not a change this can make.");
   });
 
   it("does not need a note", () => {
-    assert.equal(requestProblem({ current: "traveler", wanted: "pro", note: "" }), null);
+    assert.equal(requestProblem({ current: "free", wanted: "pro", note: "" }), null);
   });
 
   it("refuses a note longer than it will keep", () => {
-    assert.match(String(requestProblem({ current: "traveler", wanted: "pro", note: "x".repeat(MAX_NOTE + 1) })), /under 600/);
+    assert.match(String(requestProblem({ current: "free", wanted: "pro", note: "x".repeat(MAX_NOTE + 1) })), /under 600/);
   });
 });
 
@@ -159,13 +147,13 @@ describe("how long it has been waiting", () => {
 
 describe("what the account page says", () => {
   it("names the plan", () => {
-    assert.equal(describePlan("traveler", null), "You are on Traveler.");
+    assert.equal(describePlan("free", null), "You are on No plan yet.");
   });
 
   it("says an open request is with a person", () => {
     // Somebody who asked and heard nothing needs to know the ask still exists.
-    const said = describePlan("traveler", request());
-    assert.match(said, /You asked about Gold/);
+    const said = describePlan("free", request());
+    assert.match(said, /You asked about Advisor Pro/);
     assert.match(said, /we will be in touch/);
   });
 

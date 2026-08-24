@@ -1,15 +1,13 @@
 import Footer from "@/components/Footer";
+import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import ProposalBuilder from "@/components/ProposalBuilder";
 import AdvisorWelcomeUploader from "@/components/AdvisorWelcomeUploader";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Card } from "@/components/ui/Card";
-import { LinkButton } from "@/components/ui/Button";
 import { requireSignedIn } from "@/lib/require-signed-in";
 import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
-import { PLAN_LABELS } from "@/lib/account-plans";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
 import { cookies } from "next/headers";
@@ -33,12 +31,12 @@ export default async function ProposalPage() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   // A staff login's plan gate is the business it's linked to, not its own.
-  const plan = account ? await getPlan(await resolveBusinessOwner(account.email)) : "traveler";
+  const plan = account ? await getPlan(await resolveBusinessOwner(account.email)) : "free";
   const allowed = mayServeCompanionClients(plan);
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
-      <Navbar />
+      <Navbar minimal />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
         <PageHeader
           eyebrow="Proposal"
@@ -60,16 +58,15 @@ export default async function ProposalPage() {
             </div>
           </div>
         ) : (
-          <Card className="mt-8 max-w-xl">
-            <p className="text-base leading-7 text-stone-600">
-              Proposals are part of a Business account. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.business} from
-              your account, and we will be in touch.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <LinkButton href="/account">Ask about {PLAN_LABELS.business}</LinkButton>
-              <LinkButton href="/itinerary" variant="secondary">Back to the planner</LinkButton>
-            </div>
-          </Card>
+          <LockedToolCard
+            toolLabel="Proposals"
+            plan={plan}
+            bullets={[
+              "Compare hotels, flights and activities side by side, with a price.",
+              "A client approves it with one tap — no back-and-forth over email.",
+              "Once approved, it becomes the itinerary automatically.",
+            ]}
+          />
         )}
       </section>
       <Footer />

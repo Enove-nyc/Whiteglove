@@ -104,9 +104,9 @@ export const CONNECTIONS: Connection[] = [
   },
   {
     vars: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
-    what: "Taking a subscription payment for Gold or Business.",
+    what: "Taking a subscription or one-time payment for a paid plan.",
     without:
-      "Gold and Business can still be offered and granted — somebody asks, you answer, and you put them on the plan yourself. What cannot happen is a card being charged: Settings → Gold and Business refuses to be switched to Stripe without both of these, so no subscribe button is ever drawn that would fail when pressed.",
+      "Paid plans can still be offered and granted — somebody asks, you answer, and you put them on the plan yourself. What cannot happen is a card being charged: Settings → Paid plans refuses to be switched to Stripe without both of these, so no subscribe button is ever drawn that would fail when pressed.",
     weight: "nicety",
     where:
       "Stripe. The secret key is under Developers → API keys. The webhook secret comes from adding an endpoint at /api/billing/webhook listening for checkout.session.completed, customer.subscription.updated and customer.subscription.deleted.",
@@ -121,7 +121,16 @@ export const CONNECTIONS: Connection[] = [
       "Stripe. The webhook secret is on the SAME platform account as STRIPE_SECRET_KEY above — a trip payment is a destination charge created with the platform's own key, sent to a planner's connected account. This needs its OWN webhook secret because it is its own endpoint: add one at /api/payments/webhook listening for payment_intent.succeeded and payment_intent.payment_failed. The publishable key is under Developers → API keys, next to the secret key — safe to expose in the browser, which is the only place it is ever used (Stripe Elements, the traveler's own card form).",
   },
   {
-    vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"],
+    vars: ["CRON_SECRET"],
+    what: "Sending an advisor's own automatic client reminders — \"leaving soon\", \"a balance is due\" — on a trip that turned them on.",
+    without:
+      "Nothing is ever wrong on the trip itself: the reminder toggle in the trip switcher still saves. It simply never fires, since Vercel's scheduled run to app/api/cron/trip-reminders refuses without this to prove the request is really Vercel's own and not anybody who found the address.",
+    weight: "feature",
+    where:
+      "Any value of your own choosing, at least twenty random characters. Vercel reads this same variable automatically and signs its own cron requests with it — set once here, nothing to configure on Vercel's side beyond the schedule already in vercel.json.",
+  },
+  {
+    vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL_ITINERARIES", "OWNER_EMAIL"],
     what: "Where messages to you are sent.",
     without: "Contact messages and suggestions are still kept in the admin — messages on Settings → Messages, and counted on the dashboard — but nothing lands in your inbox.",
     weight: "feature",
@@ -132,6 +141,14 @@ export const CONNECTIONS: Connection[] = [
     without: "The map does not draw, and every address has to be typed in full and correctly.",
     weight: "feature",
     where: "Google Cloud. This one is public by design — it is in the browser, and is restricted by domain rather than kept secret.",
+  },
+  {
+    vars: ["GOOGLE_PLACES_API_KEY"],
+    what: "The general hotel lookup in the itinerary builder — type a hotel's name anywhere in the world, get its address, phone and coordinates.",
+    without:
+      "Only the site's own researched lodging can be picked from a list; any other hotel has to be typed in by hand, with no address or coordinates filled in.",
+    weight: "feature",
+    where: "Google Cloud console, with the Places API (New) enabled. Server-side only — restrict it to that one API rather than by domain.",
   },
   {
     vars: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_MESSAGING_SERVICE_SID", "TWILIO_FROM_NUMBER"],
@@ -153,6 +170,14 @@ export const CONNECTIONS: Connection[] = [
     without: "A traveller typing a flight number gets nothing back and has to enter the times by hand.",
     weight: "nicety",
     where: "AeroDataBox, through RapidAPI. The free tier is small, so a busy minute can hit its limit.",
+  },
+  {
+    vars: ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "NEXT_PUBLIC_VAPID_PUBLIC_KEY"],
+    what: "Push notifications on a client's own trip — a flight delay, a cancellation, a gate change, sent straight to their phone.",
+    without: "The Changes screen still shows every alert; nothing is pushed until they open the app to look.",
+    weight: "nicety",
+    where:
+      "Generated once with the web-push package's own key generator, not fetched from a console — see lib/push-notify.ts. VAPID_PUBLIC_KEY and NEXT_PUBLIC_VAPID_PUBLIC_KEY are the same value; the public one is also needed under its NEXT_PUBLIC_ name because the browser reads that copy.",
   },
   {
     vars: ["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"],
@@ -363,7 +388,7 @@ const ANY_ONE_OF: Record<string, string[][]> = {
   TWILIO_ACCOUNT_SID: [["TWILIO_MESSAGING_SERVICE_SID", "TWILIO_FROM_NUMBER"]],
   ANTHROPIC_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"]],
   OPENAI_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"]],
-  OWNER_NOTIFICATION_EMAIL: [["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"]],
+  OWNER_NOTIFICATION_EMAIL: [["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL_ITINERARIES", "OWNER_EMAIL"]],
 };
 
 /** The same reading, with the either-or connections judged properly. */

@@ -12,11 +12,14 @@ import {
   renameTrip,
   resolveBusinessOwner,
   setTripAdvisor,
+  setTripAutoReminders,
   setTripClient,
+  setTripCommission,
   stopTripShare,
   switchTrip,
 } from "@/lib/account-store";
-import { mayBrandOwnItinerary, mayServeCompanionClients } from "@/lib/account-limits";
+import { mayServeCompanionClients, mayViewPipelineAnalytics } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { Itinerary } from "@/data/itinerary";
@@ -49,7 +52,17 @@ export async function POST(request: NextRequest) {
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: string; id?: string; name?: string; client?: string; advisor?: string; itinerary?: Itinerary }
+    | {
+        action?: string;
+        id?: string;
+        name?: string;
+        client?: string;
+        advisor?: string;
+        itinerary?: Itinerary;
+        commissionCents?: number | null;
+        commissionCurrency?: string;
+        autoReminders?: boolean;
+      }
     | null;
 
   switch (body?.action) {
@@ -75,14 +88,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "client": {
-      // Saying who a trip is for is part of a Business account — it exists for
-      // somebody planning on other people's behalf, and it is the name that
-      // goes on the document their client is handed. Checked here rather than
-      // only in the panel, because a hidden field is not a closed door.
+      // Naming who a trip is for is part of handing a trip to a client at
+      // all — Advisor Starter and up, the same door as the client-serving
+      // capability itself (AGENTS.md: "naming a client, sending it, and
+      // creating a client code all need Advisor Starter or Advisor Pro").
+      // Checked here rather than only in the panel, because a hidden field
+      // is not a closed door.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
-      if (!mayBrandOwnItinerary(await getPlan(email))) {
+      if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(
-          { ok: false, error: "Planning trips for named clients is part of a Business account." },
+          { ok: false, error: `Planning trips for named clients is part of ${PLAN_LABELS.starter} and up.` },
           { status: 403 },
         );
       }
@@ -91,29 +106,63 @@ export async function POST(request: NextRequest) {
     }
     case "advisor": {
       // The agent the client is dealing with — the name the trip carries, shown
-      // in the app. Same door as naming the client, and behind the same plan:
-      // it is only shown to somebody planning on another person's behalf.
+      // in the app. Same door as naming the client, above.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
-      if (!mayBrandOwnItinerary(await getPlan(email))) {
+      if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(
-          { ok: false, error: "Putting an advisor on a trip is part of a Business account." },
+          { ok: false, error: `Putting an advisor on a trip is part of ${PLAN_LABELS.starter} and up.` },
           { status: 403 },
         );
       }
       const result = await setTripAdvisor(email, body.id, body.advisor ?? "");
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
-    case "share":
-    case "unshare": {
-      // The client's per-trip code, locked to this one trip. Business only:
-      // handing a trip to a client is the Business capability
-      // (mayServeCompanionClients), even though the app it opens is now
-      // Gold-and-Business (companionApp). A Gold member uses the app for their
-      // own trips; only Business creates a code to send a client.
+    case "auto-reminders": {
+      // Automatic "you're leaving soon" / "a balance is still due" messages
+      // to the CLIENT — same door as naming one, above: this only exists on
+      // a trip that can be handed to a client at all.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
       if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(
-          { ok: false, error: "Handing a trip to a client is part of a Business account." },
+          { ok: false, error: `Automatic reminders are part of ${PLAN_LABELS.starter} and up.` },
+          { status: 403 },
+        );
+      }
+      const result = await setTripAutoReminders(email, body.id, Boolean(body.autoReminders));
+      return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "commission": {
+      // The advisor's own record of what a trip earned them — the same
+      // Pro-only door as the pipeline's business-at-a-glance numbers, since
+      // this is business bookkeeping rather than something a traveler
+      // planning their own trip has any reason to see.
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
+      if (!mayViewPipelineAnalytics(await getPlan(email))) {
+        return NextResponse.json(
+          { ok: false, error: `Recording commission is part of ${PLAN_LABELS.pro}.` },
+          { status: 403 },
+        );
+      }
+      // Both undefined (the field left off entirely) and null clear the
+      // amount — only an actual number is validated as one.
+      const cents = body.commissionCents ?? null;
+      if (cents !== null && (!Number.isFinite(cents) || cents < 0)) {
+        return NextResponse.json({ ok: false, error: "That doesn't look like an amount." }, { status: 400 });
+      }
+      const result = await setTripCommission(email, body.id, cents, body.commissionCurrency ?? "USD");
+      return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "share":
+    case "unshare": {
+      // The client's per-trip code, locked to this one trip. Advisor Starter
+      // and up: handing a trip to a client is the client-serving capability
+      // (mayServeCompanionClients), even though the app it opens is now every
+      // paid plan (companionApp). One Trip uses the app for its own trip;
+      // only Starter and up creates a code to send a client.
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
+      if (!mayServeCompanionClients(await getPlan(email))) {
+        return NextResponse.json(
+          { ok: false, error: `Handing a trip to a client is part of ${PLAN_LABELS.starter} and up.` },
           { status: 403 },
         );
       }

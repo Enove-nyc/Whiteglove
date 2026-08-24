@@ -1,8 +1,9 @@
 "use client";
 
 import AddressAndCoordinate from "@/components/AddressAndCoordinate";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import SuggestionReview from "@/components/SuggestionReview";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import type { AdminContentBundle, EditableAccommodation, EditableLocation, SiteSettings } from "@/lib/admin-content";
 import type { ReviewInput } from "@/lib/suggestions";
 
@@ -12,6 +13,40 @@ function statusClass(status: string) {
   if (status === "published") return "bg-emerald-50 text-emerald-800 border-emerald-200";
   if (status === "draft") return "bg-stone-50 text-stone-700 border-stone-200";
   return "bg-amber-50 text-amber-800 border-amber-200";
+}
+
+const cmAddButton =
+  "min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
+const cmList = "divide-y divide-[var(--gold-light)] rounded-lg border border-[var(--gold-light)] bg-white";
+const cmEmpty = "rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600";
+const cmRow = "flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]";
+
+// One record opened over its list, rather than a page-long stack of open forms.
+function ContentModal({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose);
+  return (
+    <div
+      className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]"
+        >
+          Close
+        </button>
+        {children}
+      </div>
+    </div>
+  );
 }
 
 const locationCsvTemplate = [
@@ -103,6 +138,10 @@ export default function AdminContentManager({ initialBundle, configured, initial
   const [missingOnly, setMissingOnly] = useState<"" | "address" | "coordinates" | "shomer">(initialMissing ?? "");
   const [accommodationQuery, setAccommodationQuery] = useState("");
   const [bulkCsv, setBulkCsv] = useState(locationCsvTemplate);
+  // Which record is open over its list. null = the list is closed and only the
+  // short rows show. "new" = the add form.
+  const [openLoc, setOpenLoc] = useState<EditableLocation | "new" | null>(null);
+  const [openAcc, setOpenAcc] = useState<EditableAccommodation | "new" | null>(null);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(bundle.settings);
   const [newLocation, setNewLocation] = useState<EditableLocation>({
     id: "",
@@ -198,9 +237,10 @@ export default function AdminContentManager({ initialBundle, configured, initial
   }
   const filteredAccommodations = bundle.accommodations.filter((item) => `${item.name} ${item.locationId} ${item.address}`.toLowerCase().includes(accommodationQuery.toLowerCase()));
 
-  function addLocation() {
+  async function addLocation() {
     const id = newLocation.id || `location-${Date.now()}`;
-    void save("location", { ...newLocation, id });
+    const reason = await save("location", { ...newLocation, id });
+    if (reason) return;
     setNewLocation({
       id: "",
       route: "",
@@ -216,6 +256,15 @@ export default function AdminContentManager({ initialBundle, configured, initial
       status: "draft",
       lastVerified: "",
     });
+    setOpenLoc(null);
+  }
+
+  async function addAccommodation() {
+    const id = newAccommodation.id || `accommodation-${Date.now()}`;
+    const reason = await save("accommodation", { ...newAccommodation, id });
+    if (reason) return;
+    setNewAccommodation((current) => ({ ...current, id: "", locationId: "", name: "", address: "", phone: "", whatsapp: "", email: "", website: "", bookingLink: "", amenities: "", kosherInfo: "", notes: "", lastVerified: "" }));
+    setOpenAcc(null);
   }
 
   async function importLocations() {
@@ -226,6 +275,74 @@ export default function AdminContentManager({ initialBundle, configured, initial
     }
     await save("locations-bulk", parsed);
   }
+
+  const locationAddForm = (
+    <div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <Field label="ID" value={newLocation.id} onChange={(value) => setNewLocation((current) => ({ ...current, id: value }))} />
+        <Field label="Route" value={newLocation.route} onChange={(value) => setNewLocation((current) => ({ ...current, route: value }))} />
+        <Field label="Title" value={newLocation.title} onChange={(value) => setNewLocation((current) => ({ ...current, title: value }))} />
+        <Field label="Yiddish title" value={newLocation.yiddishTitle} onChange={(value) => setNewLocation((current) => ({ ...current, yiddishTitle: value }))} />
+        <Field label="Country" value={newLocation.country} onChange={(value) => setNewLocation((current) => ({ ...current, country: value }))} />
+        <Field label="Shomer contact" value={newLocation.shomerContact} onChange={(value) => setNewLocation((current) => ({ ...current, shomerContact: value }))} />
+        <Field label="Source" value={newLocation.source} onChange={(value) => setNewLocation((current) => ({ ...current, source: value }))} />
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {/* Picked, not typed — and the coordinate beside it so a transposed digit shows up here rather than on a road. */}
+        <AddressAndCoordinate
+          address={newLocation.address}
+          coordinates={newLocation.coordinates}
+          onChange={({ address, coordinates }) => setNewLocation((current) => ({ ...current, address, coordinates }))}
+          captionClass={fieldCaptionClass}
+          inputClass={fieldInputClass}
+        />
+        <Field label="Notes" value={newLocation.notes} onChange={(value) => setNewLocation((current) => ({ ...current, notes: value }))} textarea />
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <select value={newLocation.category} onChange={(event) => setNewLocation((current) => ({ ...current, category: event.target.value as EditableLocation["category"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
+          <option value="destination">Destination</option>
+          <option value="city-guide">City guide</option>
+          <option value="cemetery">Cemetery</option>
+        </select>
+        <select value={newLocation.status} onChange={(event) => setNewLocation((current) => ({ ...current, status: event.target.value as EditableLocation["status"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
+          <option value="draft">Draft</option>
+          <option value="needs-review">Needs review</option>
+          <option value="published">Published</option>
+        </select>
+        <input value={newLocation.lastVerified} onChange={(event) => setNewLocation((current) => ({ ...current, lastVerified: event.target.value }))} placeholder="Last verified" className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm" />
+        <button type="button" disabled={savingKey === "location"} onClick={addLocation} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] disabled:opacity-60">Save location</button>
+      </div>
+    </div>
+  );
+
+  const accommodationAddForm = (
+    <div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <Field label="Location ID" value={newAccommodation.locationId} onChange={(value) => setNewAccommodation((current) => ({ ...current, locationId: value }))} />
+        <Field label="Name" value={newAccommodation.name} onChange={(value) => setNewAccommodation((current) => ({ ...current, name: value }))} />
+        <Field label="Address" value={newAccommodation.address} onChange={(value) => setNewAccommodation((current) => ({ ...current, address: value }))} />
+        <Field label="Phone" value={newAccommodation.phone} onChange={(value) => setNewAccommodation((current) => ({ ...current, phone: value }))} />
+        <Field label="WhatsApp" value={newAccommodation.whatsapp} onChange={(value) => setNewAccommodation((current) => ({ ...current, whatsapp: value }))} />
+        <Field label="Email" value={newAccommodation.email} onChange={(value) => setNewAccommodation((current) => ({ ...current, email: value }))} />
+        <Field label="Website" value={newAccommodation.website} onChange={(value) => setNewAccommodation((current) => ({ ...current, website: value }))} />
+        <Field label="Booking link" value={newAccommodation.bookingLink} onChange={(value) => setNewAccommodation((current) => ({ ...current, bookingLink: value }))} />
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <Field label="Amenities" value={newAccommodation.amenities} onChange={(value) => setNewAccommodation((current) => ({ ...current, amenities: value }))} textarea />
+        <Field label="Kosher info" value={newAccommodation.kosherInfo} onChange={(value) => setNewAccommodation((current) => ({ ...current, kosherInfo: value }))} textarea />
+      </div>
+      <Field label="Notes" value={newAccommodation.notes} onChange={(value) => setNewAccommodation((current) => ({ ...current, notes: value }))} textarea />
+      <div className="mt-4 flex flex-wrap gap-3">
+        <select value={newAccommodation.status} onChange={(event) => setNewAccommodation((current) => ({ ...current, status: event.target.value as EditableAccommodation["status"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
+          <option value="draft">Draft</option>
+          <option value="needs-review">Needs review</option>
+          <option value="published">Published</option>
+        </select>
+        <input value={newAccommodation.lastVerified} onChange={(event) => setNewAccommodation((current) => ({ ...current, lastVerified: event.target.value }))} placeholder="Last verified" className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm" />
+        <button type="button" disabled={savingKey === "accommodation"} onClick={addAccommodation} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] disabled:opacity-60">Save accommodation</button>
+      </div>
+    </div>
+  );
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
@@ -289,47 +406,30 @@ export default function AdminContentManager({ initialBundle, configured, initial
             </p>
           )}
           <input value={locationQuery} onChange={(event) => setLocationQuery(event.target.value)} placeholder="Search locations by name, route or country" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 text-sm outline-none" />
-          <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Add location</h3>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Field label="ID" value={newLocation.id} onChange={(value) => setNewLocation((current) => ({ ...current, id: value }))} />
-              <Field label="Route" value={newLocation.route} onChange={(value) => setNewLocation((current) => ({ ...current, route: value }))} />
-              <Field label="Title" value={newLocation.title} onChange={(value) => setNewLocation((current) => ({ ...current, title: value }))} />
-              <Field label="Yiddish title" value={newLocation.yiddishTitle} onChange={(value) => setNewLocation((current) => ({ ...current, yiddishTitle: value }))} />
-              <Field label="Country" value={newLocation.country} onChange={(value) => setNewLocation((current) => ({ ...current, country: value }))} />
-              <Field label="Shomer contact" value={newLocation.shomerContact} onChange={(value) => setNewLocation((current) => ({ ...current, shomerContact: value }))} />
-              <Field label="Source" value={newLocation.source} onChange={(value) => setNewLocation((current) => ({ ...current, source: value }))} />
-            </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {/* Picked, not typed — and the coordinate beside it so a
-                  transposed digit shows up here rather than on a road. */}
-              <AddressAndCoordinate
-                address={newLocation.address}
-                coordinates={newLocation.coordinates}
-                onChange={({ address, coordinates }) => setNewLocation((current) => ({ ...current, address, coordinates }))}
-                captionClass={fieldCaptionClass}
-                inputClass={fieldInputClass}
-              />
-              <Field label="Notes" value={newLocation.notes} onChange={(value) => setNewLocation((current) => ({ ...current, notes: value }))} textarea />
-            </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <select value={newLocation.category} onChange={(event) => setNewLocation((current) => ({ ...current, category: event.target.value as EditableLocation["category"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
-                <option value="destination">Destination</option>
-                <option value="city-guide">City guide</option>
-                <option value="cemetery">Cemetery</option>
-              </select>
-              <select value={newLocation.status} onChange={(event) => setNewLocation((current) => ({ ...current, status: event.target.value as EditableLocation["status"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
-                <option value="draft">Draft</option>
-                <option value="needs-review">Needs review</option>
-                <option value="published">Published</option>
-              </select>
-              <input value={newLocation.lastVerified} onChange={(event) => setNewLocation((current) => ({ ...current, lastVerified: event.target.value }))} placeholder="Last verified" className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm" />
-              <button type="button" onClick={addLocation} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Save location</button>
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button type="button" onClick={() => setOpenLoc("new")} className={cmAddButton}>Add location</button>
+            <span className="text-sm text-stone-500">{filteredLocations.length}{filteredLocations.length !== bundle.locations.length ? ` of ${bundle.locations.length}` : ""} shown</span>
           </div>
-          {filteredLocations.map((item) => (
-            <LocationEditor key={item.id} item={item} onSave={(next) => save("location", next)} saving={savingKey === "location"} />
-          ))}
+          {filteredLocations.length === 0 ? (
+            <p className={cmEmpty}>No locations match. Press &ldquo;Add location&rdquo; to add one, or widen the search.</p>
+          ) : (
+            <ul className={cmList}>
+              {filteredLocations.map((item) => (
+                <li key={item.id}>
+                  <button type="button" onClick={() => setOpenLoc(item)} className={cmRow}>
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-[var(--navy)]">{item.title || "Untitled"}</span>
+                      <span className="mt-0.5 block truncate text-xs text-stone-500">{[item.category, item.route, item.country].filter(Boolean).join(" · ")}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-3">
+                      <span className={`border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] ${statusClass(item.status)}`}>{item.status}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">Edit</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -352,36 +452,30 @@ export default function AdminContentManager({ initialBundle, configured, initial
       {tab === "accommodations" && (
         <div className="mt-6 space-y-4">
           <input value={accommodationQuery} onChange={(event) => setAccommodationQuery(event.target.value)} placeholder="Search accommodations" className="w-full border border-[var(--gold-light)] bg-white px-4 py-3 text-sm outline-none" />
-          <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
-            <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Add accommodation</h3>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Field label="Location ID" value={newAccommodation.locationId} onChange={(value) => setNewAccommodation((current) => ({ ...current, locationId: value }))} />
-              <Field label="Name" value={newAccommodation.name} onChange={(value) => setNewAccommodation((current) => ({ ...current, name: value }))} />
-              <Field label="Address" value={newAccommodation.address} onChange={(value) => setNewAccommodation((current) => ({ ...current, address: value }))} />
-              <Field label="Phone" value={newAccommodation.phone} onChange={(value) => setNewAccommodation((current) => ({ ...current, phone: value }))} />
-              <Field label="WhatsApp" value={newAccommodation.whatsapp} onChange={(value) => setNewAccommodation((current) => ({ ...current, whatsapp: value }))} />
-              <Field label="Email" value={newAccommodation.email} onChange={(value) => setNewAccommodation((current) => ({ ...current, email: value }))} />
-              <Field label="Website" value={newAccommodation.website} onChange={(value) => setNewAccommodation((current) => ({ ...current, website: value }))} />
-              <Field label="Booking link" value={newAccommodation.bookingLink} onChange={(value) => setNewAccommodation((current) => ({ ...current, bookingLink: value }))} />
-            </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Field label="Amenities" value={newAccommodation.amenities} onChange={(value) => setNewAccommodation((current) => ({ ...current, amenities: value }))} textarea />
-              <Field label="Kosher info" value={newAccommodation.kosherInfo} onChange={(value) => setNewAccommodation((current) => ({ ...current, kosherInfo: value }))} textarea />
-            </div>
-            <Field label="Notes" value={newAccommodation.notes} onChange={(value) => setNewAccommodation((current) => ({ ...current, notes: value }))} textarea />
-            <div className="mt-4 flex flex-wrap gap-3">
-              <select value={newAccommodation.status} onChange={(event) => setNewAccommodation((current) => ({ ...current, status: event.target.value as EditableAccommodation["status"] }))} className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm">
-                <option value="draft">Draft</option>
-                <option value="needs-review">Needs review</option>
-                <option value="published">Published</option>
-              </select>
-              <input value={newAccommodation.lastVerified} onChange={(event) => setNewAccommodation((current) => ({ ...current, lastVerified: event.target.value }))} placeholder="Last verified" className="border border-[var(--gold-light)] bg-white px-3 py-3 text-sm" />
-              <button type="button" onClick={() => { const id = newAccommodation.id || `accommodation-${Date.now()}`; void save("accommodation", { ...newAccommodation, id }); setNewAccommodation((current) => ({ ...current, id: "", locationId: "", name: "", address: "", phone: "", whatsapp: "", email: "", website: "", bookingLink: "", amenities: "", kosherInfo: "", notes: "", lastVerified: "" })); }} className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Save accommodation</button>
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button type="button" onClick={() => setOpenAcc("new")} className={cmAddButton}>Add accommodation</button>
+            <span className="text-sm text-stone-500">{filteredAccommodations.length}{filteredAccommodations.length !== bundle.accommodations.length ? ` of ${bundle.accommodations.length}` : ""} shown</span>
           </div>
-          {filteredAccommodations.map((item) => (
-            <AccommodationEditor key={item.id} item={item} onSave={(next) => save("accommodation", next)} saving={savingKey === "accommodation"} />
-          ))}
+          {filteredAccommodations.length === 0 ? (
+            <p className={cmEmpty}>No accommodations match. Press &ldquo;Add accommodation&rdquo; to add one, or widen the search.</p>
+          ) : (
+            <ul className={cmList}>
+              {filteredAccommodations.map((item) => (
+                <li key={item.id}>
+                  <button type="button" onClick={() => setOpenAcc(item)} className={cmRow}>
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-[var(--navy)]">{item.name || "Accommodation"}</span>
+                      <span className="mt-0.5 block truncate text-xs text-stone-500">{[item.locationId, item.address].filter(Boolean).join(" · ")}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-3">
+                      <span className={`border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] ${statusClass(item.status)}`}>{item.status}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">Edit</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -395,6 +489,36 @@ export default function AdminContentManager({ initialBundle, configured, initial
             Advertisements have their own section now — go to <strong>Advertisements</strong> in the menu.
           </p>
         </div>
+      )}
+
+      {openLoc && (
+        <ContentModal label={openLoc === "new" ? "Add location" : openLoc.title || "Edit location"} onClose={() => setOpenLoc(null)}>
+          {openLoc === "new" ? (
+            locationAddForm
+          ) : (
+            <LocationEditor
+              key={openLoc.id}
+              item={openLoc}
+              onSave={async (next) => { const reason = await save("location", next); if (!reason) setOpenLoc(null); }}
+              saving={savingKey === "location"}
+            />
+          )}
+        </ContentModal>
+      )}
+
+      {openAcc && (
+        <ContentModal label={openAcc === "new" ? "Add accommodation" : openAcc.name || "Edit accommodation"} onClose={() => setOpenAcc(null)}>
+          {openAcc === "new" ? (
+            accommodationAddForm
+          ) : (
+            <AccommodationEditor
+              key={openAcc.id}
+              item={openAcc}
+              onSave={async (next) => { const reason = await save("accommodation", next); if (!reason) setOpenAcc(null); }}
+              saving={savingKey === "accommodation"}
+            />
+          )}
+        </ContentModal>
       )}
     </section>
   );

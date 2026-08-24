@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import type { CaseStudy } from "@/data/case-studies";
 import { caseStudyCompleteness, caseStudyIsPublic } from "@/data/case-studies";
 import {
@@ -11,8 +12,23 @@ import {
   unpublishCaseStudyAction,
 } from "@/app/admin/settings/proof/actions";
 
+/**
+ * Case studies as a LIST and a POP-UP — not one long form left open above them.
+ *
+ * The eleven-field editor used to sit open at the top of the page whether you
+ * were adding one or only glancing at the list, so the page was a form you
+ * scrolled past to reach anything. It is now the list of studies by name;
+ * "Add a case study" and pressing a study both open the same form in a pop-up,
+ * and it closes itself the moment a save goes through. The publish, order and
+ * delete controls stay on the row, where they act on that one study.
+ *
+ * Genuine case studies only. Nothing is seeded. Incomplete / unpermitted /
+ * unapproved records never reach the public site.
+ */
+
 const input =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
+const cap = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
 
 type Draft = {
   id: string;
@@ -66,10 +82,6 @@ function fromStudy(study: CaseStudy): Draft {
   };
 }
 
-/**
- * Genuine case studies only. Nothing is seeded. Incomplete / unpermitted /
- * unapproved records never reach the public site.
- */
 export default function CaseStudiesForm({
   studies,
   storeReady,
@@ -82,10 +94,17 @@ export default function CaseStudiesForm({
   const [publishState, publish, publishing] = useActionState(publishCaseStudyAction, null);
   const [unpublishState, unpublish, unpublishing] = useActionState(unpublishCaseStudyAction, null);
   const [reorderState, reorder, reordering] = useActionState(reorderCaseStudyAction, null);
-  const [draft, setDraft] = useState(emptyDraft());
+  const [editing, setEditing] = useState<Draft | null>(null);
 
-  const completeness = caseStudyCompleteness(draft);
+  const completeness = editing ? caseStudyCompleteness(editing) : null;
   const listBusy = deleting || publishing || unpublishing || reordering;
+  const dialogRef = useFocusTrap<HTMLDivElement>(Boolean(editing), () => setEditing(null));
+
+  // A save that went through closes the pop-up; the list below refreshes on its
+  // own from the server action's revalidate.
+  useEffect(() => {
+    if (saveState?.ok) setEditing(null);
+  }, [saveState]);
 
   if (!storeReady) {
     return (
@@ -96,266 +115,289 @@ export default function CaseStudiesForm({
   }
 
   return (
-    <div className="mt-8 space-y-10">
-      <section className="border border-[var(--gold-light)] bg-white p-6">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-          {draft.id ? "Edit case study" : "Add a case study"}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          Only publish what a real client permitted. This is not the sample itinerary — that page is an illustrative
-          deliverable; these are genuine trip outcomes. Approval is refused until request, what you solved, outcome, and
-          permission are all filled in.
-        </p>
-
-        <form action={save} className="mt-6 space-y-4">
-          <input type="hidden" name="id" value={draft.id} />
-          <input type="hidden" name="sortOrder" value={String(draft.sortOrder)} />
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Attribution</span>
-            <input
-              name="attribution"
-              className={input}
-              value={draft.attribution}
-              onChange={(e) => setDraft((d) => ({ ...d, attribution: e.target.value }))}
-              placeholder="Name they agreed to, or “A family from Manchester”"
-            />
-          </label>
-          <label className="flex items-center gap-2 text-sm text-stone-700">
-            <input
-              type="checkbox"
-              name="anonymised"
-              checked={draft.anonymised}
-              onChange={(e) => setDraft((d) => ({ ...d, anonymised: e.target.checked }))}
-            />
-            Anonymised (name withheld on the public page)
-          </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Location (optional)</span>
-              <input
-                name="location"
-                className={input}
-                value={draft.location}
-                onChange={(e) => setDraft((d) => ({ ...d, location: e.target.value }))}
-                placeholder="Rome · Italy"
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Trip type (optional)</span>
-              <input
-                name="tripType"
-                className={input}
-                value={draft.tripType}
-                onChange={(e) => setDraft((d) => ({ ...d, tripType: e.target.value }))}
-                placeholder="Family city break"
-              />
-            </label>
-          </div>
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Quote (optional)</span>
-            <textarea
-              name="quote"
-              rows={2}
-              className={input}
-              value={draft.quote}
-              onChange={(e) => setDraft((d) => ({ ...d, quote: e.target.value }))}
-              placeholder="A short line in their words, only if they agreed"
-            />
-          </label>
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Original request</span>
-            <textarea
-              name="tripRequest"
-              rows={3}
-              className={input}
-              value={draft.tripRequest}
-              onChange={(e) => setDraft((d) => ({ ...d, tripRequest: e.target.value }))}
-            />
-          </label>
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">What White Glove solved</span>
-            <textarea
-              name="whatSolved"
-              rows={3}
-              className={input}
-              value={draft.whatSolved}
-              onChange={(e) => setDraft((d) => ({ ...d, whatSolved: e.target.value }))}
-            />
-          </label>
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">Result / outcome</span>
-            <textarea
-              name="outcome"
-              rows={3}
-              className={input}
-              value={draft.outcome}
-              onChange={(e) => setDraft((d) => ({ ...d, outcome: e.target.value }))}
-            />
-          </label>
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
-              Itinerary link (optional)
-            </span>
-            <input
-              name="itineraryHref"
-              className={input}
-              value={draft.itineraryHref}
-              onChange={(e) => setDraft((d) => ({ ...d, itineraryHref: e.target.value }))}
-              placeholder="/destinations/rome — path on this site only"
-            />
-          </label>
-          <label className="flex items-center gap-2 text-sm text-stone-700">
-            <input
-              type="checkbox"
-              name="permissionRecorded"
-              checked={draft.permissionRecorded}
-              onChange={(e) =>
-                setDraft((d) => ({
-                  ...d,
-                  permissionRecorded: e.target.checked,
-                  approved: e.target.checked ? d.approved : false,
-                }))
-              }
-            />
-            I have permission to publish this
-          </label>
-          <label className="flex items-center gap-2 text-sm text-stone-700">
-            <input
-              type="checkbox"
-              name="approved"
-              checked={draft.approved}
-              onChange={(e) => setDraft((d) => ({ ...d, approved: e.target.checked }))}
-              disabled={Boolean(completeness)}
-            />
-            Approve for the public site
-            {completeness && <span className="text-xs text-stone-500">— {completeness}</span>}
-          </label>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="submit"
-              disabled={saving}
-              className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50"
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-            {draft.id && (
-              <button
-                type="button"
-                className="text-xs font-semibold text-stone-600 underline"
-                onClick={() => setDraft(emptyDraft())}
-              >
-                Clear form
-              </button>
-            )}
-            {saveState && (
-              <span className={`text-sm font-semibold ${saveState.ok ? "text-emerald-700" : "text-red-700"}`}>
-                {saveState.message}
-              </span>
-            )}
-          </div>
-        </form>
-      </section>
-
-      <section>
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Saved studies</h2>
-        {studies.length === 0 ? (
-          <p className="mt-3 text-sm text-stone-600">None yet — and that is correct. Do not invent any.</p>
-        ) : (
-          <ul className="mt-4 space-y-4">
-            {studies.map((study, index) => {
-              const publicReady = caseStudyIsPublic(study);
-              return (
-                <li key={study.id} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-semibold text-[var(--navy)]">{study.attribution}</p>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
-                      {publicReady ? "Public" : "Draft — not public"}
-                    </p>
-                  </div>
-                  <p className="mt-2 text-sm text-stone-600 line-clamp-2">{study.tripRequest}</p>
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      className="text-xs font-semibold text-[var(--navy)] underline"
-                      onClick={() => setDraft(fromStudy(study))}
-                    >
-                      Edit
-                    </button>
-                    <form action={reorder}>
-                      <input type="hidden" name="id" value={study.id} />
-                      <input type="hidden" name="direction" value="up" />
-                      <button
-                        type="submit"
-                        disabled={listBusy || index === 0}
-                        className="text-xs font-semibold text-stone-600 underline disabled:opacity-40"
-                      >
-                        Move up
-                      </button>
-                    </form>
-                    <form action={reorder}>
-                      <input type="hidden" name="id" value={study.id} />
-                      <input type="hidden" name="direction" value="down" />
-                      <button
-                        type="submit"
-                        disabled={listBusy || index === studies.length - 1}
-                        className="text-xs font-semibold text-stone-600 underline disabled:opacity-40"
-                      >
-                        Move down
-                      </button>
-                    </form>
-                    {publicReady ? (
-                      <form action={unpublish}>
-                        <input type="hidden" name="id" value={study.id} />
-                        <button
-                          type="submit"
-                          disabled={listBusy}
-                          className="text-xs font-semibold text-amber-800 underline disabled:opacity-50"
-                        >
-                          Unpublish
-                        </button>
-                      </form>
-                    ) : (
-                      <form action={publish}>
-                        <input type="hidden" name="id" value={study.id} />
-                        <button
-                          type="submit"
-                          disabled={listBusy || Boolean(caseStudyCompleteness(study))}
-                          className="text-xs font-semibold text-emerald-800 underline disabled:opacity-50"
-                          title={caseStudyCompleteness(study) ?? undefined}
-                        >
-                          Publish
-                        </button>
-                      </form>
-                    )}
-                    <form action={del}>
-                      <input type="hidden" name="id" value={study.id} />
-                      <button
-                        type="submit"
-                        disabled={listBusy}
-                        className="text-xs font-semibold text-red-700 underline disabled:opacity-50"
-                      >
-                        Delete
-                      </button>
-                    </form>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+    <div className="mt-8">
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setEditing(emptyDraft())}
+          className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+        >
+          Add a case study
+        </button>
         {(deleteState || publishState || unpublishState || reorderState) && (
-          <p
-            className={`mt-3 text-sm font-semibold ${
-              (deleteState ?? publishState ?? unpublishState ?? reorderState)?.ok
-                ? "text-emerald-700"
-                : "text-red-700"
+          <span
+            className={`text-sm font-semibold ${
+              (deleteState ?? publishState ?? unpublishState ?? reorderState)?.ok ? "text-emerald-700" : "text-red-700"
             }`}
+            role="status"
           >
             {(deleteState ?? publishState ?? unpublishState ?? reorderState)?.message}
-          </p>
+          </span>
         )}
-      </section>
+      </div>
+
+      {/* The list: a study per row, pressable to edit. The eleven fields live in
+          the pop-up, not stacked down the page. */}
+      {studies.length === 0 ? (
+        <p className="mt-6 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600">
+          None yet — and that is correct. Do not invent any. Press <strong className="text-[var(--navy)]">Add a case
+          study</strong> when a real client has permitted one.
+        </p>
+      ) : (
+        <ul className="mt-5 divide-y divide-[var(--gold-light)] rounded-lg border border-[var(--gold-light)]">
+          {studies.map((study, index) => {
+            const publicReady = caseStudyIsPublic(study);
+            return (
+              <li key={study.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
+                <button
+                  type="button"
+                  onClick={() => setEditing(fromStudy(study))}
+                  className="min-w-0 flex-1 text-left"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="truncate font-semibold text-[var(--navy)] underline decoration-[var(--gold-light)] decoration-2 underline-offset-4">
+                      {study.attribution || "Untitled study"}
+                    </span>
+                    <span
+                      className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] ${
+                        publicReady
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                          : "border-stone-300 bg-stone-50 text-stone-600"
+                      }`}
+                    >
+                      {publicReady ? "Public" : "Draft"}
+                    </span>
+                  </span>
+                  {study.tripRequest && (
+                    <span className="mt-1 block max-w-2xl truncate text-xs text-stone-500">{study.tripRequest}</span>
+                  )}
+                </button>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <form action={reorder}>
+                    <input type="hidden" name="id" value={study.id} />
+                    <input type="hidden" name="direction" value="up" />
+                    <button type="submit" disabled={listBusy || index === 0} className="text-xs font-semibold text-stone-600 underline disabled:opacity-40">
+                      Move up
+                    </button>
+                  </form>
+                  <form action={reorder}>
+                    <input type="hidden" name="id" value={study.id} />
+                    <input type="hidden" name="direction" value="down" />
+                    <button type="submit" disabled={listBusy || index === studies.length - 1} className="text-xs font-semibold text-stone-600 underline disabled:opacity-40">
+                      Move down
+                    </button>
+                  </form>
+                  {publicReady ? (
+                    <form action={unpublish}>
+                      <input type="hidden" name="id" value={study.id} />
+                      <button type="submit" disabled={listBusy} className="text-xs font-semibold text-amber-800 underline disabled:opacity-50">
+                        Unpublish
+                      </button>
+                    </form>
+                  ) : (
+                    <form action={publish}>
+                      <input type="hidden" name="id" value={study.id} />
+                      <button
+                        type="submit"
+                        disabled={listBusy || Boolean(caseStudyCompleteness(study))}
+                        className="text-xs font-semibold text-emerald-800 underline disabled:opacity-50"
+                        title={caseStudyCompleteness(study) ?? undefined}
+                      >
+                        Publish
+                      </button>
+                    </form>
+                  )}
+                  <form action={del}>
+                    <input type="hidden" name="id" value={study.id} />
+                    <button type="submit" disabled={listBusy} className="text-xs font-semibold text-red-700 underline disabled:opacity-50">
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {/* The pop-up — the same form for adding and for editing. */}
+      {editing && (
+        <div
+          className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setEditing(null);
+          }}
+        >
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="case-study-modal-title"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <h2 id="case-study-modal-title" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+                {editing.id ? "Edit case study" : "Add a case study"}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]"
+              >
+                Close
+              </button>
+            </div>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+              Only publish what a real client permitted. This is not the sample itinerary — that page is an illustrative
+              deliverable; these are genuine trip outcomes. Approval is refused until request, what you solved, outcome, and
+              permission are all filled in.
+            </p>
+
+            <form action={save} className="mt-5 space-y-4">
+              <input type="hidden" name="id" value={editing.id} />
+              <input type="hidden" name="sortOrder" value={String(editing.sortOrder)} />
+              <label className="block">
+                <span className={cap}>Attribution</span>
+                <input
+                  name="attribution"
+                  className={input}
+                  value={editing.attribution}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, attribution: e.target.value } : d))}
+                  placeholder="Name they agreed to, or “A family from Manchester”"
+                  autoFocus
+                />
+              </label>
+              <label className="flex items-center gap-2 text-sm text-stone-700">
+                <input
+                  type="checkbox"
+                  name="anonymised"
+                  checked={editing.anonymised}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, anonymised: e.target.checked } : d))}
+                />
+                Anonymised (name withheld on the public page)
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className={cap}>Location (optional)</span>
+                  <input
+                    name="location"
+                    className={input}
+                    value={editing.location}
+                    onChange={(e) => setEditing((d) => (d ? { ...d, location: e.target.value } : d))}
+                    placeholder="Rome · Italy"
+                  />
+                </label>
+                <label className="block">
+                  <span className={cap}>Trip type (optional)</span>
+                  <input
+                    name="tripType"
+                    className={input}
+                    value={editing.tripType}
+                    onChange={(e) => setEditing((d) => (d ? { ...d, tripType: e.target.value } : d))}
+                    placeholder="Family city break"
+                  />
+                </label>
+              </div>
+              <label className="block">
+                <span className={cap}>Quote (optional)</span>
+                <textarea
+                  name="quote"
+                  rows={2}
+                  className={input}
+                  value={editing.quote}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, quote: e.target.value } : d))}
+                  placeholder="A short line in their words, only if they agreed"
+                />
+              </label>
+              <label className="block">
+                <span className={cap}>Original request</span>
+                <textarea
+                  name="tripRequest"
+                  rows={3}
+                  className={input}
+                  value={editing.tripRequest}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, tripRequest: e.target.value } : d))}
+                />
+              </label>
+              <label className="block">
+                <span className={cap}>What White Glove solved</span>
+                <textarea
+                  name="whatSolved"
+                  rows={3}
+                  className={input}
+                  value={editing.whatSolved}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, whatSolved: e.target.value } : d))}
+                />
+              </label>
+              <label className="block">
+                <span className={cap}>Result / outcome</span>
+                <textarea
+                  name="outcome"
+                  rows={3}
+                  className={input}
+                  value={editing.outcome}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, outcome: e.target.value } : d))}
+                />
+              </label>
+              <label className="block">
+                <span className={cap}>Itinerary link (optional)</span>
+                <input
+                  name="itineraryHref"
+                  className={input}
+                  value={editing.itineraryHref}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, itineraryHref: e.target.value } : d))}
+                  placeholder="/destinations/rome — path on this site only"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-sm text-stone-700">
+                <input
+                  type="checkbox"
+                  name="permissionRecorded"
+                  checked={editing.permissionRecorded}
+                  onChange={(e) =>
+                    setEditing((d) =>
+                      d ? { ...d, permissionRecorded: e.target.checked, approved: e.target.checked ? d.approved : false } : d,
+                    )
+                  }
+                />
+                I have permission to publish this
+              </label>
+              <label className="flex items-center gap-2 text-sm text-stone-700">
+                <input
+                  type="checkbox"
+                  name="approved"
+                  checked={editing.approved}
+                  onChange={(e) => setEditing((d) => (d ? { ...d, approved: e.target.checked } : d))}
+                  disabled={Boolean(completeness)}
+                />
+                Approve for the public site
+                {completeness && <span className="text-xs text-stone-500">— {completeness}</span>}
+              </label>
+
+              <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-[var(--gold-light)] pt-5">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:opacity-50"
+                >
+                  {saving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditing(null)}
+                  className="px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]"
+                >
+                  Cancel
+                </button>
+                {saveState && !saveState.ok && (
+                  <span className="text-sm font-semibold text-red-700">{saveState.message}</span>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

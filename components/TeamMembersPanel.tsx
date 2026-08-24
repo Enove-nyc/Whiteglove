@@ -36,9 +36,28 @@ export default function TeamMembersPanel() {
     }
   }, []);
 
+  // The first read does its own guarded fetch rather than calling load()
+  // straight out of the effect body — setState synchronously in an effect
+  // cascades renders. `load` stays for the refresh after invite/remove.
   useEffect(() => {
-    void load();
-  }, [load]);
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/account/team", { cache: "no-store" });
+        const data = await res.json().catch(() => null);
+        if (!active) return;
+        if (res.ok && data) {
+          setTeam(Array.isArray(data.team) ? data.team : []);
+          setSeats(data.staffSeats ?? null);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function invite() {
     const value = email.trim();

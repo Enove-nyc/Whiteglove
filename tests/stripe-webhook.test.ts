@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { describe, it } from "node:test";
-import { customerIdOf, describePrice, statusIsPaid, verifyWebhook } from "@/lib/stripe";
+import { readFileSync } from "node:fs";
+import { afterEach, describe, it } from "node:test";
+import { createCheckoutSession, customerIdOf, describePrice, setSubscriptionSeatQuantity, statusIsPaid, verifyWebhook } from "@/lib/stripe";
 
 /**
  * The webhook signature, which is the only thing standing between the internet
- * and a free Business account.
+ * and a free paid account.
  *
  * The endpoint's whole job is to put accounts onto paid plans. If this check
  * can be got past — by a missing header, an empty secret, a replayed capture, a
@@ -121,5 +122,160 @@ describe("saying what a price is", () => {
 
   it("says the money without a period when nothing renews", () => {
     assert.equal(describePrice({ id: "p", unit_amount: 5000, currency: "usd" }), "$50");
+  });
+});
+
+describe("starting a checkout", () => {
+  const originalFetch = globalThis.fetch;
+  const originalKey = process.env.STRIPE_SECRET_KEY;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = originalKey;
+  });
+
+  /** Stubs Stripe's response and hands back whatever body this call sent it. */
+  function captureBody(): { body: string } {
+    process.env.STRIPE_SECRET_KEY = "sk_test_x";
+    const captured = { body: "" };
+    globalThis.fetch = (async (_input, init) => {
+      captured.body = String(init?.body ?? "");
+      return new Response(JSON.stringify({ id: "cs_1", url: "https://checkout.stripe.com/x" }), { status: 200 });
+    }) as typeof fetch;
+    return captured;
+  }
+
+  const base = {
+    priceId: "price_1",
+    account: "a@b.com",
+    successUrl: "https://x/success",
+    cancelUrl: "https://x/cancel",
+  };
+
+  it("ATTACHES A TRIAL TO THE SUBSCRIPTION, WHEN GIVEN ONE", async () => {
+    // trial_period_days belongs on subscription_data, not the top-level body —
+    // Stripe rejects it anywhere else.
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "starter", trialDays: 14 });
+    assert.match(captured.body, /subscription_data%5Btrial_period_days%5D=14/);
+  });
+
+  it("NEVER ATTACHES A TRIAL TO A ONE-TIME PURCHASE", async () => {
+    // Stripe rejects trial_period_days outright in payment mode — this is not
+    // just a copy decision, sending it here would fail the checkout entirely.
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "one_trip", mode: "payment", trialDays: 14 });
+    assert.doesNotMatch(captured.body, /trial_period_days/);
+    assert.doesNotMatch(captured.body, /subscription_data/);
+  });
+
+  it("says nothing about a trial when none was asked for", async () => {
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "starter" });
+    assert.doesNotMatch(captured.body, /trial_period_days/);
+  });
+
+  it("pins a one-time purchase to cards only, and leaves a subscription's methods alone", async () => {
+    // A card settles the moment checkout completes; several other methods
+    // Stripe offers (ACH debit, and others by country) settle days later, so
+    // "completed" and "actually paid" would stop meaning the same moment for
+    // this flow — and there is no subscription behind a one-time purchase to
+    // later correct a charge that fails. See the webhook's own payment_status
+    // guard, below, for the belt-and-braces half of this.
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "one_trip", mode: "payment" });
+    assert.match(captured.body, /payment_method_types%5B0%5D=card/);
+
+    const subCaptured = captureBody();
+    await createCheckoutSession({ ...base, plan: "starter" });
+    assert.doesNotMatch(subCaptured.body, /payment_method_types/);
+  });
+});
+
+describe("granting a one-time purchase only once it is actually paid for", () => {
+  const WEBHOOK = readFileSync("app/api/billing/webhook/route.ts", "utf8");
+
+  it("never grants a completed checkout that has not actually settled yet", () => {
+    // "completed" is a checkout-page event, not a money-moved event — some
+    // payment methods settle days later, where payment_status is still
+    // "unpaid" the moment this event fires.
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('object.mode === "payment"'), WEBHOOK.indexOf("async_payment_succeeded"));
+    assert.match(branch, /object\.payment_status !== "paid"/);
+  });
+
+  it("grants it later, the one time it is granted for this path, once the delayed payment actually clears", () => {
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('"checkout.session.async_payment_succeeded"'), WEBHOOK.indexOf('"customer.subscription.updated"'));
+    assert.match(branch, /grantOneTimePurchase/);
+  });
+
+  it("NEVER grants a one-time purchase for a SUBSCRIPTION that happens to settle asynchronously", () => {
+    // A subscription's first invoice can also be paid by a delayed method —
+    // the async branch has to tell the two apart the same way the completed
+    // branch above already does, or a Starter/Pro subscription that settles
+    // this way would get a PERMANENT one-time-purchase record that outlives
+    // the subscription ending.
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('"checkout.session.async_payment_succeeded"'), WEBHOOK.indexOf('"customer.subscription.updated"'));
+    assert.match(branch, /object\.mode === "payment" \|\| isOneTimePlan\(plan\)/);
+    assert.ok(
+      branch.indexOf('object.mode === "payment" || isOneTimePlan(plan)') < branch.indexOf("grantOneTimePurchase"),
+      "the plan-shape check has to run before granting, not after",
+    );
+  });
+});
+
+describe("changing an agency's seats on a live subscription", () => {
+  const originalFetch = globalThis.fetch;
+  const originalKey = process.env.STRIPE_SECRET_KEY;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = originalKey;
+  });
+
+  /** Every subscription read returns this fixed item list; every write is captured. */
+  function mockSubscription(items: Array<{ id: string; price: { id: string } }>) {
+    process.env.STRIPE_SECRET_KEY = "sk_test_x";
+    const calls: Array<{ method: string; body: string }> = [];
+    globalThis.fetch = (async (_input, init) => {
+      calls.push({ method: init?.method ?? "GET", body: String(init?.body ?? "") });
+      return new Response(JSON.stringify({ id: "sub_1", status: "active", customer: "cus_1", items: { data: items } }), { status: 200 });
+    }) as typeof fetch;
+    return calls;
+  }
+
+  it("READS FIRST, so it targets the item's own id rather than adding a duplicate", async () => {
+    const calls = mockSubscription([
+      { id: "si_pro", price: { id: "price_pro" } },
+      { id: "si_seat", price: { id: "price_seat" } },
+    ]);
+    await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 5 });
+    assert.equal(calls[0].method, "GET");
+    assert.match(calls[1].body, /items%5B0%5D%5Bid%5D=si_seat/);
+    assert.match(calls[1].body, /items%5B0%5D%5Bquantity%5D=5/);
+    assert.doesNotMatch(calls[1].body, /items%5B0%5D%5Bprice%5D/);
+  });
+
+  it("adds a new item when this seat price isn't on the subscription yet", async () => {
+    const calls = mockSubscription([{ id: "si_pro", price: { id: "price_pro" } }]);
+    await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 3 });
+    assert.match(calls[1].body, /items%5B0%5D%5Bprice%5D=price_seat/);
+    assert.match(calls[1].body, /items%5B0%5D%5Bquantity%5D=3/);
+    assert.doesNotMatch(calls[1].body, /items%5B0%5D%5Bid%5D/);
+  });
+
+  it("DELETES THE ITEM OUTRIGHT AT ZERO, rather than leaving a zero-quantity line on the invoice", async () => {
+    const calls = mockSubscription([{ id: "si_seat", price: { id: "price_seat" } }]);
+    await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 0 });
+    assert.match(calls[1].body, /items%5B0%5D%5Bid%5D=si_seat/);
+    assert.match(calls[1].body, /items%5B0%5D%5Bdeleted%5D=true/);
+  });
+
+  it("does nothing at all — no second call — when there is no seat item to remove", async () => {
+    const calls = mockSubscription([{ id: "si_pro", price: { id: "price_pro" } }]);
+    const result = await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 0 });
+    assert.equal(calls.length, 1);
+    assert.equal(result.ok, true);
   });
 });

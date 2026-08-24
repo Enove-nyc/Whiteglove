@@ -36,6 +36,7 @@ export type IconName =
   | "star-filled"
   | "lightbulb"
   | "plane"
+  | "bed"
   | "check"
   | "sparkle"
   | "camera"
@@ -164,6 +165,15 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M10.5 13.5 3.5 11l1.2-1.2 5.6.7 4.5-4.5a1.6 1.6 0 0 1 2.3 2.3l-4.5 4.5.7 5.6L12 19.6l-2.5-7" />
       <path d="M4.5 19.5 8 16" />
+    </>
+  ),
+  bed: (
+    <>
+      <path d="M3 19v-7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7" />
+      <path d="M3 19v1.5" />
+      <path d="M21 19v1.5" />
+      <path d="M3 15h18" />
+      <rect x="5" y="10" width="5" height="4" rx="1.3" />
     </>
   ),
   check: <path d="M5 12.5 9.5 17 19 7" />,

@@ -4,8 +4,8 @@ import { describe, it } from "node:test";
 import { MAX_TRIP_CLIENT } from "@/lib/account-store";
 
 /**
- * The two things a Business account does in the planner: say who a trip is
- * for, and send the finished thing to them.
+ * The two things an Advisor Pro account does in the planner: say who a trip
+ * is for, and send the finished thing to them.
  *
  * BOTH ARE GATED ON THE SERVER, AND THAT IS WHAT MOST OF THIS FILE CHECKS. The
  * panel not being drawn is a courtesy; the route is the door. The send route in
@@ -23,11 +23,14 @@ const SEND_ROUTE = readFileSync("app/api/account/itinerary/send/route.ts", "utf8
 
 describe("saying who a trip is for", () => {
   it("checks the plan on the server, not just in the panel", () => {
+    // Advisor Starter and up — the same door as handing a trip to a client
+    // at all (AGENTS.md: "naming a client, sending it, and creating a client
+    // code all need Advisor Starter or Advisor Pro"), not Pro-only branding.
     const branch = TRIPS_ROUTE.slice(TRIPS_ROUTE.indexOf('case "client"'), TRIPS_ROUTE.indexOf('case "duplicate"'));
-    assert.match(branch, /mayBrandOwnItinerary/);
+    assert.match(branch, /mayServeCompanionClients/);
     assert.match(branch, /403/);
     // And the refusal is before the write, not after it.
-    assert.ok(branch.indexOf("mayBrandOwnItinerary") < branch.indexOf("setTripClient"));
+    assert.ok(branch.indexOf("mayServeCompanionClients") < branch.indexOf("setTripClient"));
   });
 
   it("keeps the name short enough to sit on a cover", () => {
@@ -44,8 +47,25 @@ describe("saying who a trip is for", () => {
   });
 });
 
+describe("recording what a trip earned", () => {
+  it("is Advisor Pro only, checked on the server before the write", () => {
+    // The same door as the business-at-a-glance strip itself — bookkeeping
+    // a traveler planning their own trip has no reason to see.
+    const branch = TRIPS_ROUTE.slice(TRIPS_ROUTE.indexOf('case "commission"'), TRIPS_ROUTE.indexOf('case "share"'));
+    assert.match(branch, /mayViewPipelineAnalytics/);
+    assert.match(branch, /403/);
+    assert.ok(branch.indexOf("mayViewPipelineAnalytics") < branch.indexOf("setTripCommission"));
+  });
+
+  it("refuses a negative or nonsense amount rather than storing it", () => {
+    const branch = TRIPS_ROUTE.slice(TRIPS_ROUTE.indexOf('case "commission"'), TRIPS_ROUTE.indexOf('case "share"'));
+    assert.match(branch, /cents < 0/);
+    assert.match(branch, /Number\.isFinite\(cents\)/);
+  });
+});
+
 describe("sending an itinerary to a client", () => {
-  it("is Business only, and says so before anything else happens", () => {
+  it("is Advisor Pro only, and says so before anything else happens", () => {
     assert.match(SEND_ROUTE, /mayBrandOwnItinerary/);
     assert.ok(SEND_ROUTE.indexOf("mayBrandOwnItinerary") < SEND_ROUTE.indexOf("sendItineraryToClient"));
   });
@@ -107,13 +127,13 @@ describe("what the client's email says", () => {
   });
 });
 
-describe("what Business is said to be for", () => {
+describe("what Advisor Pro is said to be for", () => {
   it("describes planning for other people, not being in the directory", () => {
     const plans = readFileSync("lib/account-plans.ts", "utf8");
-    // PLAN_LABELS holds a `business:` line too, and it comes first — so the
+    // PLAN_LABELS holds a `pro:` line too, and it comes first — so the
     // blurb is read from inside PLAN_BLURB rather than from the first match.
     const table = plans.slice(plans.indexOf("PLAN_BLURB"));
-    const blurb = /business: "([^"]+)"/.exec(table)?.[1] ?? "";
-    assert.match(blurb, /plans? trips for other people|agency/i);
+    const blurb = /pro: "([^"]+)"/.exec(table)?.[1] ?? "";
+    assert.match(blurb, /advisor|clients?|agency/i);
   });
 });

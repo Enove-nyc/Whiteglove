@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons/Icon";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import { applyLibraryPack, emptyLibraryItem, emptyLibraryPack, itemsInPack, type LibraryItem, type LibraryPack } from "@/data/library";
 import { emptyItinerary } from "@/data/itinerary";
 import { PROPOSAL_COMPONENT_LABEL, type ProposalComponentKind } from "@/data/proposal";
@@ -189,6 +190,7 @@ export default function LibraryManager() {
   const [expandedPack, setExpandedPack] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [startingPack, setStartingPack] = useState<string | null>(null);
+  const dialogRef = useFocusTrap<HTMLDivElement>(Boolean(editing), () => setEditing(null));
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -274,16 +276,12 @@ export default function LibraryManager() {
       <section>
         <div className="flex items-center justify-between">
           <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Saved content</h2>
-          {!editing && (
-            <button type="button" onClick={() => setEditing(emptyLibraryItem())} className={smallButton}>
-              + Add an item
-            </button>
-          )}
+          <button type="button" onClick={() => setEditing(emptyLibraryItem())} className={smallButton}>
+            + Add an item
+          </button>
         </div>
 
-        {editing && <div className="mt-4"><ItemEditor item={editing} onSave={(i) => void saveItem(i)} onCancel={() => setEditing(null)} /></div>}
-
-        {items.length === 0 && !editing && <p className="mt-4 text-sm text-stone-500">Nothing saved yet — hotels, activities and contacts you add here are ready to drop into any proposal.</p>}
+        {items.length === 0 && <p className="mt-4 text-sm text-stone-500">Nothing saved yet — hotels, activities and contacts you add here are ready to drop into any proposal.</p>}
 
         <div className="mt-4 space-y-6">
           {[...grouped.entries()].map(([destination, group]) => (
@@ -399,6 +397,17 @@ export default function LibraryManager() {
       </section>
 
       {error && <p className="text-xs font-semibold text-red-700">{error}</p>}
+
+      {editing && (
+        <div
+          className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+          onClick={(event) => { if (event.target === event.currentTarget) setEditing(null); }}
+        >
+          <div ref={dialogRef} role="dialog" aria-modal="true" className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto">
+            <ItemEditor item={editing} onSave={(i) => void saveItem(i)} onCancel={() => setEditing(null)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

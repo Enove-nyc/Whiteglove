@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
  * A traveler's own door into the trip app — for a family or group trip where
  * one person (or one family, sharing a `family` label — data/itinerary.ts)
  * gets a link scoped to just them, rather than the one trip-wide link every
- * traveler would otherwise be handed alike. Business-only, same door as
- * handing the whole trip to a client at all.
+ * traveler would otherwise be handed alike. Advisor Starter and up, same door
+ * as handing the whole trip to a client at all.
  */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) {

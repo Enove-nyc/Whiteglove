@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { BRAND_ORIGIN, brandForHost } from "@/lib/site-brand-core";
 import {
   ACCESSIBILITY_NEEDS,
@@ -251,7 +252,9 @@ export default function TripStartFlow({
           <fieldset className="mt-8">
             <legend className="sr-only">The kind of trip</legend>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {TRIP_KINDS.map((kind) => {
+              {/* Heritage (kevarim, batei hachaim) is Kosher Travel's own
+                  journey type — Itineraries has nothing to do with kosher. */}
+              {TRIP_KINDS.filter((kind) => !itineraries || kind.value !== "heritage").map((kind) => {
                 const on = answers.kind === kind.value;
                 return (
                   <button
@@ -433,7 +436,7 @@ export default function TripStartFlow({
               <button
                 type="button"
                 onClick={() => goToStep(3)}
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
               >
                 Continue
               </button>
@@ -517,33 +520,45 @@ export default function TripStartFlow({
                   </div>
                 </fieldset>
 
-                <Toggles legend="Interests" options={INTERESTS} chosen={answers.interests} onToggle={(v) => toggle("interests", v)} />
-
-                <div>
-                  <Toggles
-                    legend="Kosher standards"
-                    hint="Choose as many as apply."
-                    options={KOSHER_REQUIREMENTS}
-                    chosen={answers.kosher}
-                    onToggle={(v) => toggle("kosher", v)}
-                  />
-                  <label className="mt-5 block">
-                    <span className={label}>Anything else about food</span>
-                    <input
-                      className={field}
-                      value={answers.kosherNotes}
-                      placeholder="Allergies, a hechsher you rely on, a child who eats nothing but pasta…"
-                      onChange={(event) => update({ kosherNotes: event.target.value })}
-                    />
-                  </label>
-                </div>
-
                 <Toggles
-                  legend="Shabbos requirements"
-                  options={SHABBOS_REQUIREMENTS}
-                  chosen={answers.shabbos}
-                  onToggle={(v) => toggle("shabbos", v)}
+                  legend="Interests"
+                  options={itineraries ? INTERESTS.filter((i) => i !== "Jewish heritage") : INTERESTS}
+                  chosen={answers.interests}
+                  onToggle={(v) => toggle("interests", v)}
                 />
+
+                {/* Kosher standards, food notes and Shabbos requirements are
+                    Kosher Travel's own questions — Itineraries has nothing to
+                    do with kosher. */}
+                {!itineraries && (
+                  <div>
+                    <Toggles
+                      legend="Kosher standards"
+                      hint="Choose as many as apply."
+                      options={KOSHER_REQUIREMENTS}
+                      chosen={answers.kosher}
+                      onToggle={(v) => toggle("kosher", v)}
+                    />
+                    <label className="mt-5 block">
+                      <span className={label}>Anything else about food</span>
+                      <input
+                        className={field}
+                        value={answers.kosherNotes}
+                        placeholder="Allergies, a hechsher you rely on, a child who eats nothing but pasta…"
+                        onChange={(event) => update({ kosherNotes: event.target.value })}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {!itineraries && (
+                  <Toggles
+                    legend="Shabbos requirements"
+                    options={SHABBOS_REQUIREMENTS}
+                    chosen={answers.shabbos}
+                    onToggle={(v) => toggle("shabbos", v)}
+                  />
+                )}
 
                 <Toggles
                   legend="Accessibility needs"

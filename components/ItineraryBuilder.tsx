@@ -29,6 +29,7 @@ import TripSwitcher from "@/components/TripSwitcher";
 import type { AttractionResult } from "@/lib/attraction-search";
 import type { KeverResult } from "@/lib/kever-search";
 import type { LodgingResult } from "@/lib/lodging-search";
+import type { PlaceLodgingResult } from "@/lib/hotel-places";
 import { directionsBetweenUrl, placeDirectionsUrl } from "@/data/route-utils";
 import { moveStop, planRoute } from "@/lib/route-plan";
 import { applyTemplate, type TripTemplate } from "@/lib/trip-setup";
@@ -77,7 +78,7 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 type Tab = "flight" | "hotel" | "activity" | "import" | null;
 type ItineraryView = "days" | "calendar";
 
-export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [] }: {
+export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false }: {
   /** What is known about the borders this trip crosses. Read on the server. */
   crossings?: Crossing[];
   /**
@@ -95,6 +96,12 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
    * say three different things about the same day.
    */
   assume?: PlannerAssumptions;
+  /**
+   * True on the White Glove Itineraries brand. That product is not kosher or
+   * Jewish travel — it never offers zmanim, the kever directory, or kosher
+   * food nearby, whatever a trip's own data happens to hold.
+   */
+  itineraries?: boolean;
 }) {
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
@@ -122,6 +129,43 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   }, [editingFlightId, editingLodgingId]);
   const [view, setView] = useState<ItineraryView>("days");
   const requireSignIn = useRequireSignIn();
+
+  // The planner is a CRM now, not one long stacked page: with more than one
+  // itinerary you land on the LIST of them (mode "list"), press one to edit it
+  // (mode "edit"), and a "back to all itineraries" button returns you. With one
+  // or none you open straight into it — a list of one is not a list. `mode` is
+  // null until the first trips read decides, so the editor does not flash up
+  // before the list for somebody who has several.
+  //
+  // ?list asks for the list whatever the count. That is how the account's
+  // "All itineraries" button arrives: somebody who pressed it wants the list —
+  // where a trip is renamed, a new one started and a client code read off —
+  // and opening their only itinerary's editor instead would ignore what they
+  // pressed.
+  const askedForList = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("list");
+  const [mode, setMode] = useState<"list" | "edit" | null>(null);
+  const [tripCount, setTripCount] = useState(0);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/account/trips", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!active) return;
+        if (!d?.trips) {
+          // Signed out or no store — behave as the single-editor it always was.
+          setMode((m) => m ?? "edit");
+          return;
+        }
+        setTripCount(d.trips.length);
+        setMode((m) => (m === null ? (askedForList || d.trips.length >= 2 ? "list" : "edit") : m));
+      })
+      .catch(() => {
+        if (active) setMode((m) => m ?? "edit");
+      });
+    return () => {
+      active = false;
+    };
+  }, [reloadKey, askedForList]);
 
   // Load: the account, and nothing else.
   //
@@ -272,7 +316,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     [days],
   );
   useEffect(() => {
-    if (!itin.showZmanim || !days.length) return;
+    if (itineraries || !itin.showZmanim || !days.length) return;
     let current = true;
     fetchTripZmanim(days).then((result) => {
       if (current) setZmanim({ key: zmanimKey, days: result });
@@ -284,10 +328,11 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     // times, so the fetch follows that instead.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itin.showZmanim, zmanimKey]);
-  const zmanimForToday = itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
+  const zmanimForToday = !itineraries && itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
-  // Who is buried at each beis hachaim on the trip, looked up by slug.
-  const burials = useKeverBurials(itin.activities);
+  // Who is buried at each beis hachaim on the trip, looked up by slug. Never
+  // looked up on Itineraries — that brand has no kever directory to look up.
+  const burials = useKeverBurials(itineraries ? [] : itin.activities);
   const hasDates = Boolean(itin.startDate && itin.endDate);
   // Every distinct family/solo unit on the trip. Only worth asking "who is
   // this for" once there is more than one — an ordinary solo or
@@ -372,8 +417,37 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const moveStopBy = (id: string, direction: -1 | 1) => persist(moveStop(itin, id, direction));
   const scheduleStop = (id: string, date: string) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === id ? { ...a, date, order: undefined } : a)) });
 
+  // Until the first trips read lands, show nothing rather than flashing the
+  // editor at somebody who is about to see the list.
+  if (mode === null) {
+    return <p className="py-10 text-sm text-stone-500">Loading your itineraries…</p>;
+  }
+
+  // The index: the list of itineraries by name. Pressing one drills into it.
+  if (mode === "list") {
+    return (
+      <TripSwitcher
+        onSwitched={() => setReloadKey((k) => k + 1)}
+        onOpen={() => {
+          setMode("edit");
+          setReloadKey((k) => k + 1);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-5">
+      {/* Back to the index — the planner is a CRM now, one itinerary at a time.
+          Always here in edit mode: even with a single itinerary it is the way
+          to the list, where a new one is started and the others are managed. */}
+      <button
+        type="button"
+        onClick={() => setMode("list")}
+        className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+      >
+        ← Back to all itineraries
+      </button>
       {/* How long until it, and once it starts, where in it you are. Above
           everything else, because on the third morning in Kraków it is the
           only part of this page anybody needs. */}
@@ -484,7 +558,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             onCancel={() => { setTab(null); setEditingLodgingId(null); }}
           />
         )}
-        {tab === "activity" && <ActivityForm startDate={itin.startDate} units={units} onAdd={(a) => { addActivity(a); setTab(null); }} />}
+        {tab === "activity" && <ActivityForm startDate={itin.startDate} units={units} onAdd={(a) => { addActivity(a); setTab(null); }} itineraries={itineraries} />}
         {tab === "import" && <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />}
         </div>
       </section>
@@ -528,8 +602,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         </details>
       </div>
 
-      <TripSwitcher onSwitched={() => setReloadKey((k) => k + 1)} />
-
       <BookFlightsPanel itin={itin} />
 
       {/* Bookings summary + print */}
@@ -569,19 +641,22 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <div className="ml-auto flex flex-wrap items-center gap-3">
               {/* Off until asked for. Somebody keeping the times wants them on
                   every day of the trip and on whichever phone they open it on,
-                  so the answer is saved with the trip rather than the browser. */}
-              <button
-                type="button"
-                onClick={() => set({ showZmanim: !itin.showZmanim })}
-                aria-pressed={Boolean(itin.showZmanim)}
-                className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(23,45,82,.08)] transition ${
-                  itin.showZmanim
-                    ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
-                    : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
-                }`}
-              >
-                {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
-              </button>
+                  so the answer is saved with the trip rather than the browser.
+                  Not offered on Itineraries — no zmanim on that brand. */}
+              {!itineraries && (
+                <button
+                  type="button"
+                  onClick={() => set({ showZmanim: !itin.showZmanim })}
+                  aria-pressed={Boolean(itin.showZmanim)}
+                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(23,45,82,.08)] transition ${
+                    itin.showZmanim
+                      ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
+                      : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
+                  }`}
+                >
+                  {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
+                </button>
+              )}
               <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
                 <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${view === "calendar" ? "translate-x-full" : "translate-x-0"}`} />
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
@@ -648,6 +723,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   // — then the day they are on does, and day one is history.
                   defaultOpen={todayInTrip ? day.date === todayInTrip : day.index === 0}
                   burials={burials}
+                  itineraries={itineraries}
                   onMove={moveStopBy}
                   onUpdate={updateActivity}
                   onSetAttachments={setActivityAttachments}
@@ -738,7 +814,7 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates, units }: {
+function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, itineraries = false, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates, units }: {
   day: ReturnType<typeof buildDays>[number];
   /** Today, on the traveler's own device. Marked, and opened. */
   isToday?: boolean;
@@ -752,6 +828,8 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
   /** Boarding passes need an account; without one there is nowhere to put them. */
   signedIn: boolean;
   burials: Record<string, string[]>;
+  /** True on the White Glove Itineraries brand — no kosher tools here. */
+  itineraries?: boolean;
   onMove: (id: string, direction: -1 | 1) => void;
   onUpdate: (a: ItinActivity) => void;
   /**
@@ -990,7 +1068,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
         )}
         {/* Who you are going to daven by. The reason for the stop belongs
             on the stop, not one click away on the cemetery page. */}
-        {a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
+        {!itineraries && a.keverSlug && (burials[a.keverSlug]?.length ?? 0) > 0 && (
           <details className="mt-3 rounded-lg bg-[var(--cream)] px-3 py-2 text-sm text-stone-700">
             <summary className="cursor-pointer font-semibold text-[var(--gold-ink)]">Who is buried here ({burials[a.keverSlug].length})</summary>
             <p className="mt-1 break-words leading-6">{burials[a.keverSlug].join(" · ")}</p>
@@ -1187,6 +1265,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
             onAddStop({ ...a, date: a.date || day.date });
             setAdding(null);
           }}
+          itineraries={itineraries}
         />
       )}
       {adding === "hotel" && (
@@ -1287,7 +1366,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
           </div>
         </div>
       )}
-      {anchor?.coordinates && (
+      {!itineraries && anchor?.coordinates && (
         <details className="group/food mt-4 rounded-xl border border-[var(--gold-light)] bg-white">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-[var(--navy)] marker:content-none">
             Kosher food near this day
@@ -1762,6 +1841,13 @@ function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
     setL((prev) => ({ ...prev, name: g.name, address: g.address ?? prev.address, phone: g.phone ?? prev.phone, notes: prev.notes || g.notes }));
   }
 
+  // From the general hotel lookup (any hotel, anywhere) — unlike the
+  // researched list above, this one carries the hotel's own coordinates, so
+  // picking it also fills the map pin and the drive times.
+  function pickPlace(p: PlaceLodgingResult) {
+    setL((prev) => ({ ...prev, name: p.name, address: p.address ?? prev.address, coordinates: p.coordinates ?? prev.coordinates, phone: p.phone ?? prev.phone }));
+  }
+
   // A stay is a number of nights, so check-out is the next day at the
   // earliest — "exclusive" in lib/date-range.
   const checkIn = l.checkIn ?? startDate;
@@ -1801,6 +1887,8 @@ function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
         <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
           <span className={caption}>Pick from our listed lodging</span>
           <LodgingPicker onPick={pickLodging} />
+          <span className={`${caption} mt-3 block`}>…or search any hotel</span>
+          <HotelPlacePicker onPick={pickPlace} />
           <p className="mt-2 text-[11px] text-stone-500">Confirm rates and availability directly, or type your own below.</p>
         </div>
       )}
@@ -1887,11 +1975,81 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
   );
 }
 
-function ActivityForm({ startDate, units, onAdd }: {
+// Search-and-pick any hotel, worldwide — the general lookup, not the site's
+// own researched list. See lib/hotel-places.ts.
+function HotelPlacePicker({ onPick }: { onPick: (p: PlaceLodgingResult) => void }) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<PlaceLodgingResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const query = q.trim();
+    if (query.length < 3) { setResults([]); setLoading(false); return; }
+    let active = true;
+    setLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/lodging/places-search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (active) setResults(data.results ?? []);
+      } catch {
+        if (active) setResults([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }, 350);
+    return () => { active = false; clearTimeout(timer); };
+  }, [q]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  return (
+    <div ref={boxRef} className="relative mt-1">
+      <input
+        className={inputClass}
+        value={q}
+        onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="Search any hotel by name — e.g. Marriott Vienna…"
+        autoComplete="off"
+      />
+      {open && loading && q.trim().length >= 3 && (
+        <p className="absolute left-0 right-0 top-full z-30 border border-[var(--gold-light)] bg-[#fcfaf6] px-3 py-2 text-xs text-stone-500 shadow-[0_16px_36px_rgba(23,45,82,.14)]">
+          Searching…
+        </p>
+      )}
+      {open && !loading && results.length > 0 && (
+        <ul className="absolute left-0 right-0 top-full z-30 max-h-72 overflow-auto border border-[var(--gold)] bg-[#fcfaf6] shadow-[0_16px_36px_rgba(23,45,82,.14)]">
+          {results.map((p, i) => (
+            <li key={`${p.name}-${i}`}>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); onPick(p); setQ(""); setResults([]); setOpen(false); }}
+                className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
+              >
+                <span className="text-sm font-semibold text-[var(--navy)]">{p.name}</span>
+                {p.address && <span className="block text-xs text-stone-500">{p.address}</span>}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ActivityForm({ startDate, units, onAdd, itineraries = false }: {
   startDate: string;
   /** On a trip with more than one unit, who this stop is for. */
   units?: Array<{ unitKey: string; label: string }>;
   onAdd: (a: ItinActivity) => void;
+  itineraries?: boolean;
 }) {
   const [a, setA] = useState<Partial<ItinActivity>>({ date: startDate });
 
@@ -1932,17 +2090,23 @@ function ActivityForm({ startDate, units, onAdd }: {
   return (
     <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false, unitKey: a.unitKey || undefined }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
-        <span className={caption}>Add a kever from our list</span>
-        <KeverPicker onPick={pickKever} />
-        <span className={`${caption} mt-3 block`}>…or any place: a sight, a kosher restaurant, a shul, a mikvah</span>
+        {!itineraries && (
+          <>
+            <span className={caption}>Add a kever from our list</span>
+            <KeverPicker onPick={pickKever} />
+          </>
+        )}
+        <span className={`${caption} mt-3 block`}>
+          {itineraries ? "Search a place — a sight, a restaurant, a museum…" : "…or any place: a sight, a kosher restaurant, a shul, a mikvah"}
+        </span>
         <AttractionPicker onPick={pickAttraction} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}.</p>}
       </div>
-      <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder="Kever, museum, meal…" /></Field>
+      <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder={itineraries ? "Museum, meal, activity…" : "Kever, museum, meal…"} /></Field>
       <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
       <Field label="Phone"><input type="tel" className={inputClass} value={a.phone ?? ""} onChange={(e) => setA({ ...a, phone: e.target.value })} placeholder="Contact number for this stop" /></Field>
-      <Field label="Link"><input type="url" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ ...a, href: e.target.value })} placeholder="https://… (map, booking, our kever page)" /></Field>
+      <Field label="Link"><input type="url" className={inputClass} value={a.href ?? ""} onChange={(e) => setA({ ...a, href: e.target.value })} placeholder={itineraries ? "https://… (map, booking, website)" : "https://… (map, booking, our kever page)"} /></Field>
       <Field label="Date (leave empty to let the planner place it)"><DateField ariaLabel="Stop date" className={inputClass} value={a.date ?? ""} onChange={(date) => setA({ ...a, date })} /></Field>
       <Field label="Time"><input type="time" className={inputClass} value={a.startTime ?? ""} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
       <Field label="Duration (min)"><input type="number" min={0} className={inputClass} value={a.durationMins ?? ""} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>

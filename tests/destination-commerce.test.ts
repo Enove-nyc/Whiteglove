@@ -74,8 +74,12 @@ describe("the action that follows the page", () => {
   });
 
   it("HAS ONE PRIMARY ACTION IN THE BAR, not three equal ones", () => {
-    // Three buttons is no primary action at all.
-    const filled = STICKY.match(/bg-\[var\(--navy\)\]/g) ?? [];
+    // Three buttons is no primary action at all. The filled look now comes
+    // from the shared ACTION_BUTTON_CLASS.primary (lib/action-button.ts)
+    // rather than a literal bg-[var(--navy)] in this file, so the count is
+    // "how many places call it", not a substring match against this source.
+    assert.match(STICKY, /import \{ ACTION_BUTTON_CLASS \} from "@\/lib\/action-button"/);
+    const filled = STICKY.match(/ACTION_BUTTON_CLASS\.primary/g) ?? [];
     assert.equal(filled.length, 1, `${filled.length} filled buttons in the sticky bar`);
     assert.match(STICKY, /See places to stay/);
     assert.match(STICKY, />\s*Flights\s*</);

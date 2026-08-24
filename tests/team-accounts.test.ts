@@ -98,13 +98,14 @@ describe("describing seat usage", () => {
 });
 
 describe("staff seats are wired into the plan limits every plan already has", () => {
-  it("traveler and pro have zero seats — neither may serve clients at all", () => {
-    assert.equal(BUILT_IN_LIMITS.traveler.staffSeats, 0);
-    assert.equal(BUILT_IN_LIMITS.pro.staffSeats, 0);
+  it("the plans that cannot serve clients have zero seats — nobody to add a teammate for", () => {
+    assert.equal(BUILT_IN_LIMITS.free.staffSeats, 0);
+    assert.equal(BUILT_IN_LIMITS.one_trip.staffSeats, 0);
   });
 
-  it("only business starts with any seats to invite into", () => {
-    assert.ok((BUILT_IN_LIMITS.business.staffSeats ?? 0) > 0);
+  it("the client-serving plans start with seats to invite into", () => {
+    assert.ok((BUILT_IN_LIMITS.starter.staffSeats ?? 0) > 0);
+    assert.ok((BUILT_IN_LIMITS.pro.staffSeats ?? 0) > 0);
   });
 });
 

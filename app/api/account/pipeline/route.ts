@@ -2,12 +2,16 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getAccountData, getCurrentAccountData, resolveBusinessOwner, savePipelineStage, withTrips } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { mayServeCompanionClients } from "@/lib/account-limits";
+import { mayServeCompanionClients, mayViewPipelineAnalytics } from "@/lib/account-limits";
 import { readChat, readMarkers } from "@/lib/companion-chat-store";
 import { needsAttention, tripStage, type ManualTripStage, type TripStage } from "@/data/trip-pipeline";
 import { hasBalance, outstandingCents } from "@/data/trip-payments";
 import { tripReminders, type TripReminder } from "@/data/trip-reminders";
 import { sameOrigin } from "@/lib/secure-access";
+import { allCrossings } from "@/lib/border-store";
+import { borderCostForLegs } from "@/lib/border-legs";
+import { readAssumptions } from "@/lib/planner-settings-store";
+import { travelDaysFor, type TravelDay } from "@/lib/trip-travel-days";
 
 export const dynamic = "force-dynamic";
 
@@ -23,13 +27,29 @@ export type PipelineRow = {
   shareId?: string;
   /** True when the client's last word in the thread hasn't been read yet. */
   unread: boolean;
-  /** Absent when no balance has been set up. Zero once it's fully paid. */
+  /** What this trip still owes, when a balance has actually been set up.
+   *  Absent when there is none; zero once it's fully paid. */
   outstandingCents?: number;
   currency?: string;
   /** What needs a planner's attention on this trip — worked out fresh each
    *  time, never stored. See data/trip-reminders.ts. */
   reminders: TripReminder[];
   updatedAt: string;
+  /**
+   * Only present for a trip in the "traveling" stage — the day-by-day shape
+   * needed to say where this client is right now, on the advisor's own
+   * screen. Left off every other row: computing it costs a driving-time
+   * pass over the whole itinerary, and a trip that has not started yet has
+   * nothing to say about "now".
+   */
+  travelDays?: TravelDay[];
+  /**
+   * What the advisor recorded earning on this trip — Advisor Pro only, the
+   * same door as the business-at-a-glance strip itself. Left off the
+   * response entirely for Starter rather than merely hidden client-side.
+   */
+  commissionCents?: number;
+  commissionCurrency?: string;
 };
 
 /**
@@ -39,9 +59,9 @@ export type PipelineRow = {
  * chat thread's read marker (lib/companion-chat-store.ts, the same one the
  * advisor inbox already reads), and its own payment balance
  * (data/trip-payments.ts) — the same balance /payments shows, not a second
- * number kept alongside it. BUSINESS-ONLY, same door as the client inbox and
- * the proposal/library/form pages — a Gold account has the app for its own
- * trips and no clients to run a pipeline of.
+ * number kept alongside it. ADVISOR STARTER AND UP, same door as the client
+ * inbox and the proposal/library/form pages — One Trip has the app for its
+ * own one trip and no clients to run a pipeline of.
  */
 export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
@@ -49,15 +69,26 @@ export async function GET() {
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   // A staff login works against the business it's linked to, not its own
   // (otherwise empty) account — see lib/account-store.ts's resolveBusinessOwner.
-  // An account with no team just resolves to itself, same as always.
+  // An account with no team just resolves to itself, same as always. The
+  // plan read from that owner is also what gates the analytics strip below.
   const owner = await resolveBusinessOwner(account.email);
-  if (!mayServeCompanionClients(await getPlan(owner))) {
-    return NextResponse.json({ error: "The trip pipeline is part of a Business account." }, { status: 403 });
+  const plan = await getPlan(owner);
+  if (!mayServeCompanionClients(plan)) {
+    return NextResponse.json({ error: "The trip pipeline is part of Advisor Starter and up." }, { status: 403 });
   }
+  // The business-at-a-glance numbers strip is Advisor Pro only — everything
+  // else on this response (the rows themselves) is the same for Starter.
+  const showAnalytics = mayViewPipelineAnalytics(plan);
 
   const data = await getAccountData(owner);
   const { trips } = withTrips(data);
   const today = new Date().toISOString().slice(0, 10);
+
+  // Read once, not once per traveling trip — border settings are the
+  // business's own, not one trip's. See app/i/[shareId]/page.tsx, which
+  // reads the same two things for the same reason.
+  const [crossings, assume] = await Promise.all([allCrossings(), readAssumptions()]);
+  const borderCost = borderCostForLegs(crossings, today, assume.borderAllowanceMins);
 
   const rows: PipelineRow[] = await Promise.all(
     trips.map(async (t) => {
@@ -97,11 +128,16 @@ export async function GET() {
           today,
         ),
         updatedAt: t.updatedAt,
+        ...(t.balance && hasBalance(t.balance) ? { outstandingCents: outstandingCents(t.balance), currency: t.balance.currency } : {}),
+        ...(stage === "traveling" && t.itinerary ? { travelDays: travelDaysFor(t.itinerary, borderCost, assume) } : {}),
+        ...(showAnalytics && t.commissionCents !== undefined
+          ? { commissionCents: t.commissionCents, commissionCurrency: t.commissionCurrency ?? "USD" }
+          : {}),
       };
     }),
   );
 
-  return NextResponse.json({ rows, today });
+  return NextResponse.json({ rows, today, showAnalytics });
 }
 
 /** Move a trip between "Inquiry" and "Planning" — the only stage a planner sets by hand. */
@@ -114,7 +150,7 @@ export async function POST(request: NextRequest) {
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const owner = await resolveBusinessOwner(account.email);
   if (!mayServeCompanionClients(await getPlan(owner))) {
-    return NextResponse.json({ error: "The trip pipeline is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ error: "The trip pipeline is part of Advisor Starter and up." }, { status: 403 });
   }
 
   const body = (await request.json().catch(() => null)) as { tripId?: string; stage?: string } | null;

@@ -2,7 +2,8 @@
 
 import FormDateField from "@/components/FormDateField";
 import PhotoManager from "@/components/PhotoManager";
-import { useActionState, useEffect, useState } from "react";
+import { type ReactNode, useActionState, useEffect, useState } from "react";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import { useFormDraft } from "@/components/useFormDraft";
 import { describeDraft, draftKey, worthOffering } from "@/lib/drafts";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -155,6 +156,7 @@ function ActionForm({
   submitLabel,
   hidden,
   draftName,
+  onSaved,
   children,
 }: {
   action: (prev: ActionResult | null, formData: FormData) => Promise<ActionResult>;
@@ -162,6 +164,8 @@ function ActionForm({
   hidden: Record<string, string>;
   /** Names this form's draft. Omit and nothing is kept. */
   draftName?: string;
+  /** Called once the save goes through — the pop-up uses it to close itself. */
+  onSaved?: () => void;
   children?: React.ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
@@ -175,8 +179,11 @@ function ActionForm({
   // Saved means there is nothing left to rescue. Writing to storage is
   // updating an outside system, which is what an effect is for.
   useEffect(() => {
-    if (state?.ok) forget();
-  }, [state, forget]);
+    if (state?.ok) {
+      forget();
+      onSaved?.();
+    }
+  }, [state, forget, onSaved]);
 
   // Leaving with something unsaved should not be silent — the same warning
   // the page editor already gives.
@@ -248,13 +255,19 @@ function DeleteForm({
   hidden,
   label,
   name,
+  onDone,
 }: {
   action: (prev: ActionResult | null, formData: FormData) => Promise<ActionResult>;
   hidden: Record<string, string>;
   label: string;
   name?: string;
+  /** Called once the delete goes through — the pop-up uses it to close. */
+  onDone?: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
+  useEffect(() => {
+    if (state?.ok) onDone?.();
+  }, [state, onDone]);
   return (
     <form
       action={formAction}
@@ -277,31 +290,65 @@ function DeleteForm({
 
 /* ---- cards ------------------------------------------------------------ */
 
-// A wrapper giving each editable item a header + a body, cleanly separated.
-function Card({
-  title,
-  badge,
-  children,
-  footer,
-  accent = false,
-}: {
-  title: string;
-  badge?: string;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-  accent?: boolean;
-}) {
+// One record, opened over the list rather than sitting open beneath it. The
+// list stays short and scannable; the form appears only for the row you press.
+function RecordModal({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose);
   return (
-    <div className={`overflow-hidden rounded-lg border bg-white shadow-sm ${accent ? "border-dashed border-[var(--gold)]" : "border-[var(--gold-light)]"}`}>
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-3">
-        <h4 className="font-[family-name:var(--font-display)] text-xl leading-none text-[var(--navy)]">{title}</h4>
-        {badge && <span className="rounded-full bg-[var(--gold-light)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">{badge}</span>}
+    <div
+      className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+      >
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{label}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]"
+          >
+            Close
+          </button>
+        </div>
+        {children}
       </div>
-      <div className="px-5 py-5">{children}</div>
-      {footer && <div className="flex items-center justify-end border-t border-[var(--gold-light)] px-5 py-3">{footer}</div>}
     </div>
   );
 }
+
+// A pressable row in a section list — name, a small line under it, and Edit.
+function EditRow({ title, subtitle, badge, onClick }: { title: string; subtitle?: string; badge?: string; onClick: () => void }) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]"
+      >
+        <span className="min-w-0">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold text-[var(--navy)]">{title}</span>
+            {badge && <span className="rounded-full bg-[var(--gold-light)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">{badge}</span>}
+          </span>
+          {subtitle && <span className="mt-0.5 block truncate text-xs text-stone-500">{subtitle}</span>}
+        </span>
+        <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">Edit</span>
+      </button>
+    </li>
+  );
+}
+
+const addButtonClass =
+  "min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
+const emptyListClass =
+  "mt-4 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600";
+const listClass = "mt-4 divide-y divide-[var(--gold-light)] rounded-lg border border-[var(--gold-light)] bg-white";
 
 function SectionHeader({ eyebrow, title, hint }: { eyebrow: string; title: string; hint?: string; count?: number }) {
   return (
@@ -432,6 +479,16 @@ export default function DestinationEditor({
   const slug = destination.slug;
   const base = { slug, destinationId: destination.id };
 
+  // Which record is open over its list, if any. null in every slot = the
+  // lists are all closed and only the short rows show.
+  const [open, setOpen] = useState<
+    | { kind: "contact"; item: Contact | null }
+    | { kind: "link"; item: DestinationLink | null }
+    | { kind: "place"; item: EditorPlace | null }
+    | null
+  >(null);
+  const close = () => setOpen(null);
+
   return (
     <div className="space-y-12">
       {/* Core destination details */}
@@ -457,29 +514,25 @@ export default function DestinationEditor({
       {/* Shomer / access contacts */}
       <section>
         <SectionHeader eyebrow="Contacts" title="Shomer & access numbers" hint="The people a visitor can call about access to the kever." count={destination.contacts.length} />
-        <div className="space-y-4">
-          {destination.contacts.map((contact) => (
-            <Card
-              key={contact.id}
-              title={contact.label || "Contact"}
-              badge="Contact"
-              footer={<DeleteForm action={deleteContactAction} hidden={{ slug, contactId: contact.id }} label="Delete contact" name={contact.label || "this contact"} />}
-            >
-              <ActionForm action={saveContactAction} submitLabel="Save contact" hidden={{ ...base, contactId: contact.id }} draftName="contact">
-                <ContactFields contact={contact} />
-              </ActionForm>
-            </Card>
-          ))}
-          {/* The one most worth keeping: a contact being typed for the first
-              time has nothing in the database to fall back on. Its key has no
-              contact id in it, which is exactly right — there is no contact
-              yet, and it cannot collide with a saved one. */}
-          <Card title="Add a contact" accent>
-            <ActionForm action={saveContactAction} submitLabel="Add contact" hidden={base} draftName="new-contact">
-              <ContactFields />
-            </ActionForm>
-          </Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button type="button" onClick={() => setOpen({ kind: "contact", item: null })} className={addButtonClass}>Add a contact</button>
+          <span className="text-sm text-stone-500">{destination.contacts.length} listed</span>
         </div>
+        {destination.contacts.length === 0 ? (
+          <p className={emptyListClass}>No contacts yet. Press &ldquo;Add a contact&rdquo; to add the first.</p>
+        ) : (
+          <ul className={listClass}>
+            {destination.contacts.map((contact) => (
+              <EditRow
+                key={contact.id}
+                title={contact.label || "Contact"}
+                subtitle={contact.phone || contact.email || undefined}
+                badge="Contact"
+                onClick={() => setOpen({ kind: "contact", item: contact })}
+              />
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* Somewhere else worth reading about this town — umaninfo.com for
@@ -492,25 +545,25 @@ export default function DestinationEditor({
           hint="Sites that know more about this town than we do. They open in a new tab, and the page says where each one goes."
           count={links.length}
         />
-        <div className="space-y-4">
-          {links.map((link) => (
-            <Card
-              key={link.id}
-              title={link.label || "Link"}
-              badge="Link"
-              footer={<DeleteForm action={deleteLinkAction} hidden={{ slug, linkId: link.id }} label="Delete link" name={link.label || "this link"} />}
-            >
-              <ActionForm action={saveLinkAction} submitLabel="Save link" hidden={{ ...base, linkId: link.id }} draftName="link">
-                <LinkFields link={link} />
-              </ActionForm>
-            </Card>
-          ))}
-          <Card title="Add a link" accent>
-            <ActionForm action={saveLinkAction} submitLabel="Add link" hidden={base} draftName="new-link">
-              <LinkFields />
-            </ActionForm>
-          </Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button type="button" onClick={() => setOpen({ kind: "link", item: null })} className={addButtonClass}>Add a link</button>
+          <span className="text-sm text-stone-500">{links.length} listed</span>
         </div>
+        {links.length === 0 ? (
+          <p className={emptyListClass}>No links yet. Press &ldquo;Add a link&rdquo; to add one.</p>
+        ) : (
+          <ul className={listClass}>
+            {links.map((link) => (
+              <EditRow
+                key={link.id}
+                title={link.label || "Link"}
+                subtitle={link.url || undefined}
+                badge="Link"
+                onClick={() => setOpen({ kind: "link", item: link })}
+              />
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* Pictures of the town itself. Pictures of one hotel or one shul go on
@@ -531,38 +584,100 @@ export default function DestinationEditor({
           hint="Everything practical around the visit. Only Published listings appear to visitors."
           count={destination.places.length}
         />
-        <div className="space-y-4">
-          {destination.places.map((place) => (
-            <Card
-              key={place.id}
-              title={place.name || "Listing"}
-              badge={sectionLabel(place.category)}
-              footer={<DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: place.id }} label={`Delete ${place.name || "listing"}`} name={place.name || "this listing"} />}
-            >
-              <ActionForm action={savePlaceAction} submitLabel="Save listing" hidden={{ ...base, placeId: place.id }} draftName="listing">
-                <PlaceFields place={place} />
-              </ActionForm>
-              {/* Pictures of this one listing. Below the fields rather than
-                  among them, because it is its own form — a picture saves on
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button type="button" onClick={() => setOpen({ kind: "place", item: null })} className={addButtonClass}>Add a listing</button>
+          <span className="text-sm text-stone-500">{destination.places.length} listed</span>
+        </div>
+        {destination.places.length === 0 ? (
+          <p className={emptyListClass}>No listings yet. Press &ldquo;Add a listing&rdquo; to add the first.</p>
+        ) : (
+          <ul className={listClass}>
+            {destination.places.map((place) => (
+              <EditRow
+                key={place.id}
+                title={place.name || "Listing"}
+                subtitle={[place.status !== "PUBLISHED" ? place.status.replace(/_/g, " ").toLowerCase() : "", place.address ?? ""].filter(Boolean).join(" · ") || undefined}
+                badge={sectionLabel(place.category)}
+                onClick={() => setOpen({ kind: "place", item: place })}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* One record at a time, over its list. */}
+      {open?.kind === "contact" && (
+        <RecordModal label={open.item ? open.item.label || "Edit contact" : "Add a contact"} onClose={close}>
+          <ActionForm
+            key={open.item?.id ?? "new-contact"}
+            action={saveContactAction}
+            submitLabel={open.item ? "Save contact" : "Add contact"}
+            hidden={open.item ? { ...base, contactId: open.item.id } : base}
+            draftName={open.item ? "contact" : "new-contact"}
+            onSaved={close}
+          >
+            <ContactFields contact={open.item ?? undefined} />
+          </ActionForm>
+          {open.item && (
+            <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+              <DeleteForm action={deleteContactAction} hidden={{ slug, contactId: open.item.id }} label="Delete contact" name={open.item.label || "this contact"} onDone={close} />
+            </div>
+          )}
+        </RecordModal>
+      )}
+
+      {open?.kind === "link" && (
+        <RecordModal label={open.item ? open.item.label || "Edit link" : "Add a link"} onClose={close}>
+          <ActionForm
+            key={open.item?.id ?? "new-link"}
+            action={saveLinkAction}
+            submitLabel={open.item ? "Save link" : "Add link"}
+            hidden={open.item ? { ...base, linkId: open.item.id } : base}
+            draftName={open.item ? "link" : "new-link"}
+            onSaved={close}
+          >
+            <LinkFields link={open.item ?? undefined} />
+          </ActionForm>
+          {open.item && (
+            <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+              <DeleteForm action={deleteLinkAction} hidden={{ slug, linkId: open.item.id }} label="Delete link" name={open.item.label || "this link"} onDone={close} />
+            </div>
+          )}
+        </RecordModal>
+      )}
+
+      {open?.kind === "place" && (
+        <RecordModal label={open.item ? open.item.name || "Edit listing" : "Add a listing"} onClose={close}>
+          <ActionForm
+            key={open.item?.id ?? "new-listing"}
+            action={savePlaceAction}
+            submitLabel={open.item ? "Save listing" : "Add listing"}
+            hidden={open.item ? { ...base, placeId: open.item.id } : base}
+            draftName={open.item ? "listing" : "new-listing"}
+            onSaved={close}
+          >
+            <PlaceFields place={open.item ?? undefined} />
+          </ActionForm>
+          {open.item && (
+            <>
+              {/* Pictures of this one listing. Its own form — a picture saves on
                   its own and must not be lost when the listing is saved. */}
               <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
                 <PhotoManager
-                  target={{ kind: "place", ref: place.id }}
+                  target={{ kind: "place", ref: open.item.id }}
                   slug={slug}
-                  photos={place.photos}
-                  heading={`Pictures of ${place.name || "this listing"}`}
+                  photos={open.item.photos}
+                  heading={`Pictures of ${open.item.name || "this listing"}`}
                   compact
                 />
               </div>
-            </Card>
-          ))}
-          <Card title="Add a listing" accent>
-            <ActionForm action={savePlaceAction} submitLabel="Add listing" hidden={base} draftName="new-listing">
-              <PlaceFields />
-            </ActionForm>
-          </Card>
-        </div>
-      </section>
+              <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+                <DeleteForm action={deletePlaceAction} hidden={{ slug, placeId: open.item.id }} label={`Delete ${open.item.name || "listing"}`} name={open.item.name || "this listing"} onDone={close} />
+              </div>
+            </>
+          )}
+        </RecordModal>
+      )}
     </div>
   );
 }

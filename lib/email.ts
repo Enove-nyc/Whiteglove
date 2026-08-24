@@ -30,18 +30,30 @@ function resendConfig() {
 // corrections under the enquiries.
 //
 //   edit suggestions, submitted entries, business listings → edits@
-//   contact-form messages                                  → contact@
+//   contact-form messages                                  → contact@, per brand
 //
-// OWNER_NOTIFICATION_EMAIL and CONTACT_NOTIFICATION_EMAIL override each side.
+// EDITS ARE ONE INBOX FOR THE WHOLE DEPLOYMENT — correcting a kever or a
+// hechsher is a Kosher Travel content job regardless of which domain the
+// report came in from, so OWNER_NOTIFICATION_EMAIL is not brand-split.
+//
+// CONTACT IS SPLIT, ON PURPOSE. The two brands are two companies, so someone
+// writing in through whitegloveitineraries.com must land in that company's
+// own inbox, never Kosher Travel's — CONTACT_NOTIFICATION_EMAIL overrides the
+// kosher default and CONTACT_NOTIFICATION_EMAIL_ITINERARIES overrides the
+// itineraries one; each is independent of the other.
 const DEFAULT_EDITS_INBOX = "edits@whiteglovekoshertravel.com";
-const DEFAULT_CONTACT_INBOX = "contact@whiteglovekoshertravel.com";
+const DEFAULT_CONTACT_INBOX: Record<SiteBrand, string> = {
+  kosher: "contact@whiteglovekoshertravel.com",
+  itineraries: "contact@whitegloveitineraries.com",
+};
 
 function editsInbox() {
   return process.env.OWNER_NOTIFICATION_EMAIL?.trim() || DEFAULT_EDITS_INBOX;
 }
 
-function contactInbox() {
-  return process.env.CONTACT_NOTIFICATION_EMAIL?.trim() || DEFAULT_CONTACT_INBOX;
+function contactInbox(brand: SiteBrand) {
+  const override = brand === "itineraries" ? process.env.CONTACT_NOTIFICATION_EMAIL_ITINERARIES : process.env.CONTACT_NOTIFICATION_EMAIL;
+  return override?.trim() || DEFAULT_CONTACT_INBOX[brand];
 }
 
 const escapeHtml = (v: string) =>
@@ -121,16 +133,21 @@ async function postResend(payload: Record<string, unknown>, to: string, kind = "
 export async function emailConfigStatus() {
   const apiKeySet = Boolean(process.env.RESEND_API_KEY);
   const from = process.env.RESEND_FROM_EMAIL?.trim() || TEST_SENDER;
+  const edits = editsInbox();
+  const contactKosher = contactInbox("kosher");
+  const contactItineraries = contactInbox("itineraries");
   return {
     apiKeySet,
     from,
     usingTestSender: from === TEST_SENDER,
-    editsInbox: editsInbox(),
-    contactInbox: contactInbox(),
-    /** True in the normal case: the two queues stay apart. */
-    inboxesSplit: contactInbox() !== editsInbox(),
+    editsInbox: edits,
+    contactInboxKosher: contactKosher,
+    contactInboxItineraries: contactItineraries,
+    /** True in the normal case: every queue stays apart from the others. */
+    inboxesSplit: new Set([edits, contactKosher, contactItineraries]).size === 3,
     editsInboxFromEnv: Boolean(process.env.OWNER_NOTIFICATION_EMAIL?.trim()),
-    contactInboxFromEnv: Boolean(process.env.CONTACT_NOTIFICATION_EMAIL?.trim()),
+    contactInboxKosherFromEnv: Boolean(process.env.CONTACT_NOTIFICATION_EMAIL?.trim()),
+    contactInboxItinerariesFromEnv: Boolean(process.env.CONTACT_NOTIFICATION_EMAIL_ITINERARIES?.trim()),
     lastFailure,
     /** Real sends from every route, not just this instance's tests. */
     log: await readEmailLog(),
@@ -139,8 +156,8 @@ export async function emailConfigStatus() {
 }
 
 /** Send a test message to one of the owner inboxes and report the outcome. */
-export async function sendTestEmail(which: "edits" | "contact"): Promise<SendResult & { to: string }> {
-  const to = which === "contact" ? contactInbox() : editsInbox();
+export async function sendTestEmail(which: "edits" | "contact-kosher" | "contact-itineraries"): Promise<SendResult & { to: string }> {
+  const to = which === "edits" ? editsInbox() : contactInbox(which === "contact-itineraries" ? "itineraries" : "kosher");
   const when = new Date().toISOString();
   const result = await postResend(
     {
@@ -233,10 +250,9 @@ export async function sendSubmissionNotification(sub: SubmissionNotification): P
 export type PlanRequestNotification = {
   /** What they sign in with — an email address or a phone number. */
   account: string;
-  /** "Gold" or "Business", already spelled for a person. */
+  /** "Advisor Starter" or "Advisor Pro", already spelled for a person. */
   wanted: string;
   currentPlan: string;
-  businessName?: string;
   note?: string;
 };
 
@@ -245,7 +261,6 @@ export async function sendPlanRequestNotification(request: PlanRequestNotificati
     ["Who", request.account],
     ["Asked about", request.wanted],
     ["On now", request.currentPlan],
-    ["Business", request.businessName],
     ["They wrote", request.note],
   ]);
   const to = editsInbox();
@@ -287,9 +302,18 @@ export type ContactMessage = {
   phone?: string;
   subject?: string;
   message: string;
+  /** Which company's form this came in through — decides which contact@ it lands in. */
+  siteBrand?: SiteBrand;
 };
 
-/** Delivers a public contact-form message to the contact inbox. Never throws. */
+/**
+ * Delivers a public contact-form message to that brand's own contact inbox.
+ * Never throws.
+ *
+ * `siteBrand` decides the inbox, not just the wording — see contactInbox
+ * above. Somebody writing in through whitegloveitineraries.com must never
+ * land in Kosher Travel's mailbox; the two are separate companies.
+ */
 export async function sendContactMessage(msg: ContactMessage): Promise<boolean> {
   const { html, text } = table([
     ["From", `${msg.name} <${msg.email}>`],
@@ -297,13 +321,15 @@ export async function sendContactMessage(msg: ContactMessage): Promise<boolean> 
     ["Subject", msg.subject],
     ["Message", msg.message],
   ]);
-  const to = contactInbox();
+  const brand = msg.siteBrand ?? "kosher";
+  const siteName = BRAND_NAME[brand];
+  const to = contactInbox(brand);
   const result = await postResend(
     {
       to,
       reply_to: msg.email,
-      subject: `White Glove contact${msg.subject ? `: ${msg.subject}` : " form message"}`,
-      html: `<h2 style="font-family:Georgia,serif;color:#1e2a44;">New message from the White Glove contact form</h2>${html}<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Reply directly to this email to respond to ${escapeHtml(msg.name)}.</p>`,
+      subject: `${siteName} contact${msg.subject ? `: ${msg.subject}` : " form message"}`,
+      html: `<h2 style="font-family:Georgia,serif;color:#1e2a44;">New message from the ${siteName} contact form</h2>${html}<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Reply directly to this email to respond to ${escapeHtml(msg.name)}.</p>`,
       text,
     },
     to,
@@ -339,6 +365,38 @@ export async function sendItineraryShareEmail(
     },
     to,
     "itinerary share",
+  );
+  return result.ok;
+}
+
+/**
+ * "So-and-so invited you to their agency."
+ *
+ * NOTHING ABOUT MONEY IS IN THIS EMAIL. The invited advisor is not the one
+ * paying — the owner's card is — so there is nothing here to reassure them
+ * about a charge, unlike sendPlanRequestNotification. What they need is who
+ * asked and a link that says plainly what accepting does.
+ */
+export async function sendAgencyInviteEmail(
+  to: string,
+  opts: { ownerName: string; url: string; siteBrand?: SiteBrand },
+): Promise<boolean> {
+  const who = escapeHtml(opts.ownerName || "A colleague");
+  const url = escapeHtml(opts.url);
+  const siteName = BRAND_NAME[opts.siteBrand ?? "kosher"];
+  const result = await postResend(
+    {
+      to,
+      subject: `${opts.ownerName || "Somebody"} invited you to their agency on ${siteName}`,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} invited you to their agency</h2>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">Accepting puts you on Advisor Pro, sharing ${who}&rsquo;s subscription and letterhead. Your own trips stay your own.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">See the invitation →</a></p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Or open this link: ${url}</p>`,
+      text: `${opts.ownerName || "Somebody"} invited you to their agency on ${siteName}.\n\nAccepting puts you on Advisor Pro, sharing their subscription and letterhead. Your own trips stay your own.\n\nSee the invitation: ${opts.url}`,
+    },
+    to,
+    "agency invite",
   );
   return result.ok;
 }
@@ -410,7 +468,7 @@ export async function sendPasswordResetEmail(email: string, code: string) {
 export type SubscriptionNotification = {
   /** What they sign in with. */
   account: string;
-  /** "Gold" or "Business", already spelled for a person. */
+  /** "One Trip", "Advisor Starter" or "Advisor Pro", already spelled for a person. */
   plan: string;
   event: "started" | "ended";
 };
@@ -420,7 +478,7 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
   const { html, text } = table([
     ["Who", note.account],
     ["Plan", note.plan],
-    ["What happened", started ? "Subscription started" : "Subscription ended — the account is back on Traveler"],
+    ["What happened", started ? "Subscription started" : "Subscription ended — the account is back with no plan"],
   ]);
   const to = editsInbox();
   const result = await postResend(
@@ -428,7 +486,7 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
       to,
       ...(note.account.includes("@") ? { reply_to: note.account } : {}),
       subject: started
-        ? `White Glove: ${note.account} subscribed to ${note.plan}`
+        ? `White Glove: ${note.account} is now on ${note.plan}`
         : `White Glove: ${note.account}'s ${note.plan} subscription ended`,
       html:
         `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${started ? "New subscription" : "Subscription ended"}</h2>${html}` +

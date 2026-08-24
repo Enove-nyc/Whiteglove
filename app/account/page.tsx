@@ -18,8 +18,8 @@ import { getPlan, openRequestFor } from "@/lib/account-plan-store";
 import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
-import { offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
-import { readPlanOffering } from "@/lib/plan-billing-store";
+import { isOneTimePlan, offerablePlans, offerLine, periodsFor, priceIdFor, trialEligible } from "@/lib/plan-billing";
+import { readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
 import { describePrice, readPrice } from "@/lib/stripe";
 import { getLimitOverrides, usageLineFor } from "@/lib/account-limits-store";
 import { getTrips } from "@/lib/account-store";
@@ -87,6 +87,10 @@ export default async function AccountPage() {
   const offering = await readPlanOffering();
   const offerChoices: PlanOffer[] = [];
   if (offering.open) {
+    // One read, reused for every card — whether this account has EVER had a
+    // subscription (any plan, even one now cancelled) is what trialEligible
+    // in lib/plan-billing.ts asks, not which plan it is looking at today.
+    const hasSubscribedBefore = Boolean(await readSubscription(who));
     for (const paid of offerablePlans(offering)) {
       const periods = await Promise.all(
         periodsFor(offering, paid).map(async (period) => ({
@@ -107,6 +111,8 @@ export default async function AccountPage() {
         line: offerLine(offering, paid, usable[0]?.line),
         periods: usable,
         limitsLine: describeLimits(paid, limitsFor(paid, overrides)),
+        oneTime: isOneTimePlan(paid),
+        trialEligible: offering.how === "stripe" && trialEligible(paid, hasSubscribedBefore),
       });
     }
   }
@@ -176,6 +182,15 @@ export default async function AccountPage() {
             offer={offer}
           />
           {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} siteBrand={siteBrand} />}
+          {canBrand && (
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
+              Working with other advisors?{" "}
+              <Link href="/agency" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+                Turn this into an agency
+              </Link>{" "}
+              — one subscription, one letterhead, a login for each of you.
+            </p>
+          )}
           {canUseApp && (
             <div className="mt-6 rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -193,9 +208,7 @@ export default async function AccountPage() {
                     </p>
                   )}
                   <p className="text-sm leading-6 text-stone-600">
-                    To hand a client their own trip, open it in the planner and use{" "}
-                    <span className="font-semibold text-[var(--navy)]">Create a client app link</span> — each link opens
-                    only that one itinerary on the client&apos;s phone.
+                    Your client tools — also under the account icon above:
                   </p>
                   <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                     {[
@@ -221,6 +234,11 @@ export default async function AccountPage() {
                       </li>
                     ))}
                   </ul>
+                  <p className="mt-3 text-sm leading-6 text-stone-600">
+                    To hand a client their own trip, open it in the{" "}
+                    <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
+                    and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> — it opens only that one itinerary on the client&apos;s phone.
+                  </p>
                   {!isTeamMember && (
                     <div className="mt-6 border-t border-[var(--gold-light)] pt-4">
                       <TeamMembersPanel />

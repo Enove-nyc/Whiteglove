@@ -1,117 +1,135 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-import { tripReminders } from "@/data/trip-reminders";
-import { emptyProposal } from "@/data/proposal";
 import { emptyTripBalance } from "@/data/trip-payments";
-import { emptyAddonItem } from "@/data/trip-addons";
+import {
+  balanceDueReminderDue,
+  balanceDueReminderText,
+  departureReminderDue,
+  departureReminderText,
+  DEPARTURE_REMINDER_DAYS,
+  type ReminderTrip,
+} from "@/lib/trip-reminders";
 
-const TODAY = "2026-06-01";
+const TODAY = "2026-06-10";
 
-describe("a stale, unanswered proposal", () => {
-  it("is quiet the day it's sent", () => {
-    const proposal = { ...emptyProposal(), status: "sent" as const, sentAt: `${TODAY}T00:00:00Z` };
-    assert.deepEqual(tripReminders({ stage: "awaiting_approval", proposal }, TODAY), []);
+function trip(over: Partial<ReminderTrip> = {}): ReminderTrip {
+  return { name: "Poland trip", startDate: "2026-06-13", shareId: "abc123", autoReminders: true, ...over };
+}
+
+describe("the 'leaving soon' reminder", () => {
+  it("is due exactly 3 days out", () => {
+    assert.equal(DEPARTURE_REMINDER_DAYS, 3);
+    assert.equal(departureReminderDue(trip({ startDate: "2026-06-13" }), TODAY), true);
+    assert.equal(departureReminderDue(trip({ startDate: "2026-06-14" }), TODAY), false);
+    assert.equal(departureReminderDue(trip({ startDate: "2026-06-12" }), TODAY), false);
   });
 
-  it("flags a follow-up once it's gone unanswered for a few days", () => {
-    const proposal = { ...emptyProposal(), status: "viewed" as const, sentAt: "2026-05-27T00:00:00Z" };
-    const out = tripReminders({ stage: "awaiting_approval", proposal }, TODAY);
-    assert.equal(out.length, 1);
-    assert.equal(out[0].reason, "proposal_stale");
+  it("never fires on a trip that never turned reminders on", () => {
+    assert.equal(departureReminderDue(trip({ autoReminders: false }), TODAY), false);
+    assert.equal(departureReminderDue(trip({ autoReminders: undefined }), TODAY), false);
   });
 
-  it("stays quiet once the client has answered", () => {
-    const proposal = { ...emptyProposal(), status: "approved" as const, sentAt: "2026-05-01T00:00:00Z" };
-    assert.deepEqual(tripReminders({ stage: "confirmed", proposal }, TODAY), []);
+  it("never fires with nowhere to send it", () => {
+    assert.equal(departureReminderDue(trip({ shareId: undefined }), TODAY), false);
+  });
+
+  it("fires once — never again once it has already gone out", () => {
+    assert.equal(departureReminderDue(trip({ remindersSent: { departure: "2026-06-09" } }), TODAY), false);
+  });
+
+  it("says the trip leaves in 3 days and names the client when there is one", () => {
+    assert.match(departureReminderText(trip({ client: "The Cohen family" })), /Hi The Cohen family/);
+    assert.match(departureReminderText(trip({ client: "The Cohen family" })), /3 days/);
+    assert.match(departureReminderText(trip({ client: undefined })), /^Your trip/);
   });
 });
 
-describe("a proposal about to expire", () => {
-  it("flags one expiring within a couple of days", () => {
-    const proposal = { ...emptyProposal(), status: "sent" as const, sentAt: `${TODAY}T00:00:00Z`, expiresAt: "2026-06-02" };
-    const out = tripReminders({ stage: "awaiting_approval", proposal }, TODAY);
-    assert.ok(out.some((r) => r.reason === "proposal_expiring"));
-  });
-
-  it("stays quiet for one expiring well in the future", () => {
-    const proposal = { ...emptyProposal(), status: "sent" as const, sentAt: `${TODAY}T00:00:00Z`, expiresAt: "2026-07-01" };
-    const out = tripReminders({ stage: "awaiting_approval", proposal }, TODAY);
-    assert.ok(!out.some((r) => r.reason === "proposal_expiring"));
-  });
-});
-
-describe("a payment due soon", () => {
-  it("flags a schedule line due within a week, while something is still owed", () => {
-    const balance = {
+describe("the 'balance still due' reminder", () => {
+  function withBalance(totalCents: number, paidCents = 0) {
+    return {
       ...emptyTripBalance(),
-      totalCents: 10000,
-      assignments: [{ unitKey: "open", label: "Open balance", amountCents: 10000 }],
-      schedule: [{ id: "s1", label: "Deposit", amountCents: 10000, dueDate: "2026-06-03" }],
+      totalCents,
+      assignments: [{ unitKey: "open", label: "Open balance", amountCents: totalCents }],
+      payments:
+        paidCents > 0
+          ? [
+              {
+                id: "p1",
+                unitKey: "open",
+                amountCents: paidCents,
+                currency: "USD",
+                status: "succeeded" as const,
+                stripePaymentIntentId: "pi_test",
+                receiptNumber: "1001",
+                createdAt: "2026-01-01T00:00:00Z",
+              },
+            ]
+          : [],
     };
-    const out = tripReminders({ stage: "confirmed", balance }, TODAY);
-    assert.equal(out.length, 1);
-    assert.equal(out[0].reason, "payment_due_soon");
+  }
+
+  it("is due once something is actually owed within the window, before departure", () => {
+    assert.equal(balanceDueReminderDue(trip({ startDate: "2026-06-20", balance: withBalance(50000) }), TODAY), true);
+    // 30 days out — outside the window
+    assert.equal(balanceDueReminderDue(trip({ startDate: "2026-07-10", balance: withBalance(50000) }), TODAY), false);
+    // already departed
+    assert.equal(balanceDueReminderDue(trip({ startDate: "2026-06-01", balance: withBalance(50000) }), TODAY), false);
   });
 
-  it("stays quiet once the balance is fully paid off", () => {
-    const balance = {
-      ...emptyTripBalance(),
-      totalCents: 10000,
-      assignments: [{ unitKey: "open", label: "Open balance", amountCents: 10000 }],
-      schedule: [{ id: "s1", label: "Deposit", amountCents: 10000, dueDate: "2026-06-03" }],
-      payments: [{ id: "p1", unitKey: "open", amountCents: 10000, currency: "USD", status: "succeeded" as const, stripePaymentIntentId: "pi_1", receiptNumber: "1", createdAt: TODAY }],
-    };
-    assert.deepEqual(tripReminders({ stage: "confirmed", balance }, TODAY), []);
-  });
-});
-
-describe("add-ons still waiting on an answer", () => {
-  it("flags them once they've sat unanswered a few days", () => {
-    const addons = [{ ...emptyAddonItem(), id: "a1", createdAt: "2026-05-25T00:00:00Z" }];
-    const out = tripReminders({ stage: "confirmed", addons }, TODAY);
-    assert.equal(out.length, 1);
-    assert.equal(out[0].reason, "addon_pending");
+  it("never fires once the balance is fully paid off", () => {
+    assert.equal(balanceDueReminderDue(trip({ startDate: "2026-06-20", balance: withBalance(50000, 50000) }), TODAY), false);
   });
 
-  it("stays quiet for a fresh offer", () => {
-    const addons = [{ ...emptyAddonItem(), id: "a1", createdAt: `${TODAY}T00:00:00Z` }];
-    assert.deepEqual(tripReminders({ stage: "confirmed", addons }, TODAY), []);
-  });
-});
-
-describe("a trip starting soon with nothing confirmed", () => {
-  it("flags one starting within two weeks while still in planning", () => {
-    const out = tripReminders({ stage: "planning", startDate: "2026-06-10" }, TODAY);
-    assert.equal(out.length, 1);
-    assert.equal(out[0].reason, "trip_soon_unconfirmed");
+  it("never fires on a trip with no balance set up at all", () => {
+    assert.equal(balanceDueReminderDue(trip({ startDate: "2026-06-20", balance: undefined }), TODAY), false);
   });
 
-  it("stays quiet once the trip is confirmed", () => {
-    assert.deepEqual(tripReminders({ stage: "confirmed", startDate: "2026-06-10" }, TODAY), []);
+  it("fires once — never again once it has already gone out", () => {
+    assert.equal(
+      balanceDueReminderDue(trip({ startDate: "2026-06-20", balance: withBalance(50000), remindersSent: { balanceDue: "2026-06-05" } }), TODAY),
+      false,
+    );
   });
 
-  it("stays quiet for a trip far in the future", () => {
-    assert.deepEqual(tripReminders({ stage: "planning", startDate: "2026-12-01" }, TODAY), []);
+  it("names the amount actually owed", () => {
+    const text = balanceDueReminderText(trip({ balance: withBalance(50000) }));
+    assert.match(text, /\$500\.00/);
   });
 });
 
-describe("a completed trip with no rating request sent", () => {
-  it("flags it once the trip has ended", () => {
-    const out = tripReminders({ stage: "completed", endDate: "2026-05-20" }, TODAY);
-    assert.equal(out.length, 1);
-    assert.equal(out[0].reason, "trip_completed_no_rating_sent");
+describe("automatic reminders stay behind the same fences as the rest of the client tools", () => {
+  const TRIPS_ROUTE = readFileSync("app/api/account/trips/route.ts", "utf8");
+  const CRON_ROUTE = readFileSync("app/api/cron/trip-reminders/route.ts", "utf8");
+
+  it("turning them on or off is gated the same as naming a client at all", () => {
+    const branch = TRIPS_ROUTE.slice(TRIPS_ROUTE.indexOf('case "auto-reminders"'), TRIPS_ROUTE.indexOf('case "commission"'));
+    assert.match(branch, /mayServeCompanionClients/);
   });
 
-  it("stays quiet once a request has already been sent", () => {
-    assert.deepEqual(tripReminders({ stage: "completed", endDate: "2026-05-20", ratingRequestSentAt: "2026-05-21T00:00:00Z" }, TODAY), []);
+  it("the cron route refuses to run without its own secret, fails closed if unset, and checks the header", () => {
+    assert.match(CRON_ROUTE, /process\.env\.CRON_SECRET/);
+    assert.match(CRON_ROUTE, /Not configured/);
+    assert.match(CRON_ROUTE, /authorization.*!==.*Bearer \$\{secret\}/);
   });
 
-  it("stays quiet for a trip that ended too long ago to bother nudging", () => {
-    assert.deepEqual(tripReminders({ stage: "completed", endDate: "2025-01-01" }, TODAY), []);
+  it("re-checks the plan fresh per account, not just the scan's own snapshot", () => {
+    assert.match(CRON_ROUTE, /mayServeCompanionClients\(await getPlan\(account\.email\)\)/);
   });
 
-  it("stays quiet for a trip that isn't over yet", () => {
-    assert.deepEqual(tripReminders({ stage: "traveling", endDate: "2026-06-05" }, TODAY), []);
+  it("never marks a reminder sent without confirming the message actually saved", () => {
+    // These are one-shot — remindersSent means "never fire this again". A
+    // mark written after a chat-store write that silently failed (the store
+    // is down, the network blips) would mean the client never sees the
+    // message AND it never retries, forever. appendChat itself no-ops and
+    // returns [] on failure rather than throwing, so the return value has to
+    // be checked, not just awaited.
+    assert.match(CRON_ROUTE, /function wasDelivered/);
+    assert.match(CRON_ROUTE, /if \(await wasDelivered\(trip\.shareId, message\)\)/g);
+    assert.ok(
+      CRON_ROUTE.match(/if \(await wasDelivered\(trip\.shareId, message\)\)/g)?.length === 2,
+      "both the departure and balance-due sends should check delivery before marking sent",
+    );
   });
 });

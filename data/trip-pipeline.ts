@@ -69,3 +69,68 @@ export function tripStage(
 export function needsAttention(proposal?: Proposal): boolean {
   return proposal?.status === "changes_requested";
 }
+
+/** Just what the business-at-a-glance strip needs from one pipeline row. */
+export type PipelineStatsRow = {
+  stage: TripStage;
+  startDate: string;
+  outstandingCents?: number;
+  currency?: string;
+  /** What the advisor recorded earning on this trip — theirs to type in, not derived from the booking. */
+  commissionCents?: number;
+  commissionCurrency?: string;
+};
+
+export type PipelineStats = {
+  /** Every trip not yet completed. */
+  activeCount: number;
+  /** Trips confirmed and leaving within the next 30 days. */
+  departingSoon: number;
+  /**
+   * What clients still owe, summed per currency rather than into one number
+   * — a business billing some clients in USD and others in EUR has two real
+   * totals, not one wrong one. Only currencies with something outstanding.
+   */
+  outstandingByCurrency: Array<[currency: string, cents: number]>;
+  /**
+   * What the advisor has recorded earning, summed per currency. Same
+   * per-currency discipline as outstandingByCurrency, and the same honesty
+   * about where the number comes from: this is the advisor's own ledger
+   * entry per trip, not a percentage worked out from a booking.
+   */
+  commissionByCurrency: Array<[currency: string, cents: number]>;
+};
+
+/**
+ * The business, at a glance — the roll-up above the row-by-row board.
+ *
+ * `today` is caller-supplied, the same reason tripStage takes it: this stays
+ * a pure function a test can call at any date, not one that reads the clock.
+ */
+export function pipelineStats(rows: readonly PipelineStatsRow[], today: string): PipelineStats {
+  const activeCount = rows.filter((r) => r.stage !== "completed").length;
+
+  const cutoff = today ? new Date(Date.parse(`${today}T00:00:00Z`) + 30 * 86_400_000).toISOString().slice(0, 10) : "";
+  const departingSoon = today
+    ? rows.filter((r) => r.stage === "confirmed" && r.startDate >= today && r.startDate <= cutoff).length
+    : 0;
+
+  const byCurrency = new Map<string, number>();
+  for (const r of rows) {
+    if (!r.outstandingCents || !r.currency) continue;
+    byCurrency.set(r.currency, (byCurrency.get(r.currency) ?? 0) + r.outstandingCents);
+  }
+
+  const commissionByCurrency = new Map<string, number>();
+  for (const r of rows) {
+    if (!r.commissionCents || !r.commissionCurrency) continue;
+    commissionByCurrency.set(r.commissionCurrency, (commissionByCurrency.get(r.commissionCurrency) ?? 0) + r.commissionCents);
+  }
+
+  return {
+    activeCount,
+    departingSoon,
+    outstandingByCurrency: [...byCurrency.entries()].filter(([, cents]) => cents > 0),
+    commissionByCurrency: [...commissionByCurrency.entries()].filter(([, cents]) => cents > 0),
+  };
+}

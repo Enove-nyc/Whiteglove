@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { mayBrandOwnItinerary } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { brandProblem, cleanBrand, describeBrand, emptyBrand, printBrandFor } from "@/lib/business-brand";
@@ -10,18 +11,18 @@ import { effectiveMediaLimit, isAllowedMediaType, mediaStoreAvailable, putMedia 
 export const dynamic = "force-dynamic";
 
 /**
- * A Business account's own letterhead.
+ * An Advisor Pro account's own letterhead.
  *
  * GET is what the print pages ask before they draw, so it answers for anybody
  * signed in and simply says `brand: null` when there is nothing to use — a
- * traveller, a Pro account, a Business account that has not turned it on. The
- * print page then renders the White Glove document, which is what it did before
- * any of this existed.
+ * traveller, a Starter account, an Advisor Pro account that has not turned it
+ * on. The print page then renders the White Glove document, which is what it
+ * did before any of this existed.
  *
  * POST is the only way in, and it checks the plan every single time. The panel
  * on the account page is hidden for anybody who cannot use this, but a hidden
- * form is not a closed door — somebody whose Business subscription lapsed still
- * has the address of this route in their history.
+ * form is not a closed door — somebody whose Advisor Pro subscription lapsed
+ * still has the address of this route in their history.
  *
  * A LOGO IS NOT DELETED WHEN A PLAN LAPSES. The record stays exactly as it is
  * and `printBrandFor` refuses to use it. If they come back, their letterhead is
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
   if (!who) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!who.allowed) {
     return NextResponse.json(
-      { error: "Putting your own name on an itinerary is part of a Business account." },
+      { error: `Putting your own name on an itinerary is part of ${PLAN_LABELS.pro}.` },
       { status: 403 },
     );
   }

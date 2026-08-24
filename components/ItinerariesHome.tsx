@@ -84,10 +84,13 @@ export default function ItinerariesHome() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 pb-16 sm:px-8">
-        <StartingPoints heading="Planning your own trip?" />
+        {/* Build the trip yourself and search booking partners lead; get
+            recommendations still earns revenue and stays reachable, just
+            without competing for the same attention. */}
+        <StartingPoints heading="Planning your own trip?" deemphasize={["/plan"]} />
       </section>
 
-      <Footer />
+      <Footer brand="itineraries" />
     </main>
   );
 }

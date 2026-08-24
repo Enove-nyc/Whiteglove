@@ -1,3 +1,10 @@
+// NOT lib/trip-reminders.ts. That one decides whether an automatic reminder
+// is due to be SENT TO A CLIENT (departure, balance owed) and is driven by a
+// cron; this one derives what needs the PLANNER's own attention and sends
+// nothing at all. Same word, two audiences — the tests are split the same
+// way: tests/trip-reminders.test.ts covers that module, tests/
+// pipeline-nudges.test.ts covers this one.
+//
 // Automated workflows — what needs a planner's attention on a trip, worked
 // out fresh from what the trip already carries. THE SAME "DERIVED, NOT
 // STORED" DISCIPLINE data/trip-pipeline.ts already keeps for a trip's stage:

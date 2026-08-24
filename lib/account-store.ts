@@ -29,6 +29,10 @@ import { type Collaborator, type TripRole, may, readCollaborators, roleOf } from
 import { passwordProblem } from "@/lib/password-rules";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
+import { templateFromTrip, tripFromTemplate } from "@/lib/trip-templates";
+import { readTemplatesStore, writeTemplatesStore, type SavedTemplate } from "@/lib/trip-templates-store";
+import type { PushSubscriptionRecord } from "@/data/push-subscriptions";
+import { sendPushToSubscriptions } from "@/lib/push-notify";
 
 type RedisResult<T> = { result?: T };
 
@@ -196,6 +200,18 @@ export type SavedTrip = {
    */
   pipelineStage?: ManualTripStage;
   /**
+   * Whether this trip sends its client automatic reminders — see
+   * lib/trip-reminders.ts for what and when. OFF by default on every trip:
+   * nothing is ever sent to a client the advisor did not choose this for.
+   */
+  autoReminders?: boolean;
+  /**
+   * When each automatic reminder last went out, ISO date — so a reminder
+   * fires once, ever, per trip rather than every day a window holds true.
+   * See lib/trip-reminders.ts.
+   */
+  remindersSent?: { departure?: string; balanceDue?: string };
+  /**
    * This trip's payment balance — total, split across families/travelers,
    * any deposit/installment schedule, and the ledger of what has actually
    * been paid. Absent until the planner sets one up. See data/trip-payments.ts.
@@ -256,6 +272,22 @@ export type SavedTrip = {
    */
   advisorWelcome?: AdvisorWelcome;
   /**
+   * What the advisor recorded earning on this trip — typed in by hand, not
+   * worked out from a percentage or read off a booking. Bookings on this
+   * site can come from more than one supplier with different commission
+   * terms, so a formula here would be a guess dressed up as a fact; a
+   * number the advisor typed in themselves is at least honestly theirs.
+   * Absent until they enter one. Whole cents, the same convention as
+   * TripBalance — see formatCents in data/trip-payments.ts.
+   *
+   * THE QUICK NUMBER, ALONGSIDE THE FULL LEDGER. `commissions` above is the
+   * per-supplier breakdown (data/trip-commission.ts); this is the one figure
+   * an advisor types straight onto the trip without itemising. Neither is
+   * derived from the other — an advisor may use either, or both.
+   */
+  commissionCents?: number;
+  commissionCurrency?: string;
+  /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
    * lib/flight-status.ts and checkTripFlightStatus below.
@@ -267,6 +299,13 @@ export type SavedTrip = {
    * status reading becomes one of these; see data/trip-alerts.ts.
    */
   alerts?: TripAlert[];
+  /**
+   * Devices asking to be pushed a notification when one of the alerts above
+   * is created — a client's own phone, subscribed from inside the app they
+   * were sent (see components/companion/CompanionApp.tsx). Absent until
+   * somebody actually opts in; never set on their behalf.
+   */
+  pushSubscriptions?: PushSubscriptionRecord[];
   createdAt: string;
   updatedAt: string;
 };
@@ -305,6 +344,13 @@ export type AccountData = {
    * fresh rather than keeping a copy.
    */
   clients?: Record<string, ClientProfile>;
+  /**
+   * The advisor's own saved trip shapes, from before templates got their own
+   * store (lib/trip-templates-store.ts) — read once, by getTemplates below,
+   * to carry an account's existing templates into the new store. Nothing
+   * writes here any more.
+   */
+  templates?: SavedTemplate[];
   updatedAt?: string;
 };
 
@@ -897,6 +943,8 @@ export type TripSummary = {
   /** The public token when shared, so a screen can build the link to it. */
   shareId?: string;
   updatedAt: string;
+  /** Whether this trip's client gets automatic reminders — see lib/trip-reminders.ts. */
+  autoReminders: boolean;
 };
 
 /** How many days the trip covers, from its dates. Zero until both are set. */
@@ -922,6 +970,7 @@ function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
     shared: Boolean(t.shareId),
     shareId: t.shareId,
     updatedAt: t.updatedAt,
+    autoReminders: Boolean(t.autoReminders),
   }));
 }
 
@@ -988,6 +1037,73 @@ export async function setTripAdvisor(email: string, id: string, advisor: string)
   if (!trip) return { ok: false as const, error: "That trip is gone." };
   const clean = advisor.trim().slice(0, MAX_TRIP_ADVISOR);
   const next = trips.map((t) => (t.id === id ? { ...t, advisor: clean || undefined, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not save that." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+/**
+ * Turn a trip's automatic client reminders on or off.
+ *
+ * NOT GATED HERE, same reasoning as setTripClient — the route is the door.
+ * Turning this off does not clear `remindersSent`: turning it back on later
+ * must not re-fire a reminder that already went out once.
+ */
+export async function setTripAutoReminders(email: string, id: string, on: boolean) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return { ok: false as const, error: "That trip is gone." };
+  const next = trips.map((t) => (t.id === id ? { ...t, autoReminders: on, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not save that." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+/**
+ * Mark one automatic reminder as sent, so it never fires twice. Called only
+ * from the cron route (app/api/cron/trip-reminders/route.ts), across
+ * whichever account actually owns the trip — not a signed-in caller, so
+ * there is no route gate to point to here; the cron route's own auth is the
+ * only door.
+ */
+export async function markReminderSent(email: string, id: string, kind: "departure" | "balanceDue", when: string) {
+  if (!hasAccountStorage()) return false;
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return false;
+  const next = trips.map((t) =>
+    t.id === id ? { ...t, remindersSent: { ...t.remindersSent, [kind]: when }, updatedAt: new Date().toISOString() } : t,
+  );
+  return writeTrips(email, next, activeId);
+}
+
+/**
+ * Record what the advisor earned on this trip, or clear it.
+ *
+ * Not gated here — the route is the door, same as setTripClient. `cents`
+ * null clears the field entirely rather than storing a zero, so "nothing
+ * recorded yet" and "recorded as nothing" stay two different things.
+ */
+export async function setTripCommission(email: string, id: string, cents: number | null, currency: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return { ok: false as const, error: "That trip is gone." };
+  const clean = currency.trim().slice(0, 3).toUpperCase() || "USD";
+  const next = trips.map((t) =>
+    t.id === id
+      ? {
+          ...t,
+          commissionCents: cents === null ? undefined : cents,
+          commissionCurrency: cents === null ? undefined : clean,
+          updatedAt: new Date().toISOString(),
+        }
+      : t,
+  );
   const saved = await writeTrips(email, next, activeId);
   if (!saved) return { ok: false as const, error: "Could not save that." };
   return { ok: true as const, trips: saved, activeId };
@@ -1178,6 +1294,121 @@ export async function deleteTrip(email: string, id: string) {
   const saved = await writeTrips(normalized, remaining, nextActive);
   if (!saved) return { ok: false as const, error: "Could not delete the trip." };
   return { ok: true as const, trips: saved, activeId: nextActive };
+}
+
+// ---- Templates -----------------------------------------------------------
+
+/**
+ * The account's templates, carrying an older account's inline ones into the
+ * shared store (lib/trip-templates-store.ts) the first time they are read.
+ *
+ * Nothing is written here for an account whose store is already populated —
+ * this only fires once, for a template saved before the store existed, and
+ * writes the carried-over copy back so the next read finds it in the store
+ * directly rather than repeating the migration.
+ */
+async function currentTemplates(email: string): Promise<SavedTemplate[]> {
+  const fromStore = await readTemplatesStore(email);
+  if (fromStore.length) return fromStore;
+  const data = await getAccountData(email);
+  const legacy = data.templates?.filter((t) => t && t.id) ?? [];
+  if (legacy.length) await writeTemplatesStore(email, legacy);
+  return legacy;
+}
+
+export async function getTemplates(email: string): Promise<SavedTemplate[]> {
+  const templates = await currentTemplates(email);
+  return templates.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/** How long a template's name may be — a label on a list, not a document. */
+export const MAX_TEMPLATE_NAME = 80;
+const MAX_TEMPLATES = 25;
+
+/**
+ * Save one of the account's own trips as a reusable shape.
+ *
+ * See lib/trip-templates.ts for exactly what survives — the places, the
+ * order, the pacing, where to sleep — and what does not: no traveler names,
+ * no flights, no booking references or attachments, nothing that belonged to
+ * the one client this trip was actually built for.
+ */
+export async function saveTripAsTemplate(email: string, id: string, name: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const clean = name.trim().slice(0, MAX_TEMPLATE_NAME);
+  if (!clean) return { ok: false as const, error: "Give the template a name." };
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return { ok: false as const, error: "That trip is gone." };
+  const templates = await currentTemplates(email);
+  if (templates.length >= MAX_TEMPLATES) {
+    return { ok: false as const, error: `That is ${MAX_TEMPLATES} templates already. Delete one first.` };
+  }
+  const template: SavedTemplate = {
+    id: tripId(),
+    name: clean,
+    itinerary: templateFromTrip(trip.itinerary, clean, tripId),
+    createdAt: new Date().toISOString(),
+  };
+  const next = [...templates, template];
+  const saved = await writeTemplatesStore(email, next);
+  if (!saved) return { ok: false as const, error: "Could not save the template." };
+  return { ok: true as const, templates: next };
+}
+
+export async function renameTemplate(email: string, id: string, name: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const clean = name.trim().slice(0, MAX_TEMPLATE_NAME);
+  if (!clean) return { ok: false as const, error: "Give the template a name." };
+  const templates = await currentTemplates(email);
+  if (!templates.some((t) => t.id === id)) return { ok: false as const, error: "That template is gone." };
+  const next = templates.map((t) => (t.id === id ? { ...t, name: clean, itinerary: { ...t.itinerary, title: clean } } : t));
+  const saved = await writeTemplatesStore(email, next);
+  if (!saved) return { ok: false as const, error: "Could not rename the template." };
+  return { ok: true as const, templates: next };
+}
+
+export async function deleteTemplate(email: string, id: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const templates = await currentTemplates(email);
+  if (!templates.some((t) => t.id === id)) return { ok: false as const, error: "That template is already gone." };
+  const next = templates.filter((t) => t.id !== id);
+  const saved = await writeTemplatesStore(email, next);
+  if (!saved) return { ok: false as const, error: "Could not delete the template." };
+  return { ok: true as const, templates: next };
+}
+
+/**
+ * A saved template, brought back as a real trip on the dates a new client
+ * actually needs — opened straight away, the same way a shared trip is
+ * (importTrip above): adding one is how somebody says they want to look at
+ * it, and the trip already open stays untouched in the switcher.
+ */
+export async function startTripFromTemplate(email: string, templateId: string, name: string, startDate: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const template = (await currentTemplates(email)).find((t) => t.id === templateId);
+  if (!template) return { ok: false as const, error: "That template is gone." };
+  const { trips } = withTrips(data);
+  const refused = await cannotAddTrip(email, trips.length);
+  if (refused) return { ok: false as const, error: refused };
+
+  const now = new Date().toISOString();
+  const clean = (name.trim() || template.name).slice(0, 80);
+  const itinerary = tripFromTemplate(template.itinerary, clean, startDate, tripId);
+  const trip: SavedTrip = {
+    id: tripId(),
+    name: clean,
+    itinerary: { ...itinerary, updatedAt: now },
+    route: [],
+    collaborators: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const saved = await writeTrips(email, [...trips, trip], trip.id);
+  if (!saved) return { ok: false as const, error: "Could not start the trip." };
+  return { ok: true as const, trips: saved, activeId: trip.id };
 }
 
 /** Save an itinerary into one trip, or into the open one. */
@@ -1875,7 +2106,47 @@ export async function checkTripFlightStatus(email: string, tripId: string): Prom
       : t,
   );
   await writeTrips(normalized, nextTrips, activeId);
+
+  // Told, not just recorded — a device subscribed to this trip (see
+  // savePushSubscription) is pushed the moment there is something worth
+  // knowing, rather than only finding out the next time the app happens to
+  // be opened. Best-effort: nothing here is allowed to fail the check itself.
+  if (newAlerts.length && trip.pushSubscriptions?.length) {
+    await notifySubscribers(normalized, tripId, trip.pushSubscriptions, trip.shareId, newAlerts).catch((error) =>
+      console.error("[account-store] push notify failed:", error),
+    );
+  }
+
   return newAlerts;
+}
+
+/** One push, summarizing however many alerts a single check turned up. */
+async function notifySubscribers(
+  ownerEmail: string,
+  tripId: string,
+  subscriptions: PushSubscriptionRecord[],
+  shareId: string | undefined,
+  alerts: TripAlert[],
+): Promise<void> {
+  const payload =
+    alerts.length === 1
+      ? { title: alerts[0].title, body: alerts[0].note }
+      : { title: `${alerts.length} changes on your trip`, body: alerts.map((a) => a.title).join(" · ") };
+  const { expired } = await sendPushToSubscriptions(subscriptions, {
+    ...payload,
+    ...(shareId ? { url: `/i/${shareId}/app` } : {}),
+  });
+  if (!expired.length) return;
+
+  // Endpoints the push service itself says are gone — pruned in their own
+  // write so a slow or failed send never risks the alerts just recorded.
+  const data = await getAccountData(ownerEmail);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip?.pushSubscriptions?.length) return;
+  const kept = trip.pushSubscriptions.filter((s) => !expired.includes(s.endpoint));
+  const nextTrips = trips.map((t) => (t.id === tripId ? { ...t, pushSubscriptions: kept } : t));
+  await writeTrips(ownerEmail, nextTrips, activeId);
 }
 
 /** Every alert recorded on this trip so far, oldest first — read fresh after checkTripFlightStatus so a just-created alert is included. */
@@ -2120,6 +2391,58 @@ export async function resolveCompanionShare(shareId: string): Promise<{ ownerEma
   const traveler = await getSharedTraveler(shareId);
   if (traveler?.internalChatKey) return { ownerEmail: traveler.ownerEmail, chatKey: traveler.internalChatKey };
   return null;
+}
+
+// ---- Push notifications ----------------------------------------------------
+//
+// Kept per trip, not per account — a client has no account, only the link
+// they were sent, and either kind of link (the whole-trip one or a single
+// traveler's own) resolves to the same trip's subscriptions, because a
+// flight delay is news to everyone on the trip alike.
+
+/** Either shape of client link, resolved down to the one trip it opens. */
+async function resolveShareToTrip(shareId: string): Promise<{ ownerEmail: string; tripId: string } | null> {
+  const ownerEmail = await getShareOwnerEmail(shareId);
+  if (ownerEmail) {
+    const trip = withTrips(await getAccountData(ownerEmail)).trips.find((t) => t.shareId === shareId);
+    if (trip) return { ownerEmail, tripId: trip.id };
+  }
+  const traveler = await getSharedTraveler(shareId);
+  if (traveler) return { ownerEmail: traveler.ownerEmail, tripId: traveler.tripId };
+  return null;
+}
+
+const MAX_PUSH_SUBSCRIPTIONS = 12;
+
+/** A device asking to be told about this trip's alerts — added from inside the app itself, never on anyone's behalf. */
+export async function savePushSubscription(shareId: string, subscription: PushSubscriptionRecord): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const resolved = await resolveShareToTrip(shareId);
+  if (!resolved) return false;
+  const data = await getAccountData(resolved.ownerEmail);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === resolved.tripId);
+  if (!trip) return false;
+  const existing = (trip.pushSubscriptions ?? []).filter((s) => s.endpoint !== subscription.endpoint);
+  // A phone re-subscribing (a fresh key after clearing site data) replaces
+  // its old entry rather than piling up a duplicate under the same endpoint.
+  const next = [...existing, subscription].slice(-MAX_PUSH_SUBSCRIPTIONS);
+  const nextTrips = trips.map((t) => (t.id === resolved.tripId ? { ...t, pushSubscriptions: next, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(resolved.ownerEmail, nextTrips, activeId));
+}
+
+/** Turning notifications back off on one device. */
+export async function removePushSubscription(shareId: string, endpoint: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const resolved = await resolveShareToTrip(shareId);
+  if (!resolved) return false;
+  const data = await getAccountData(resolved.ownerEmail);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === resolved.tripId);
+  if (!trip?.pushSubscriptions?.length) return true; // nothing to remove is not a failure
+  const next = trip.pushSubscriptions.filter((s) => s.endpoint !== endpoint);
+  const nextTrips = trips.map((t) => (t.id === resolved.tripId ? { ...t, pushSubscriptions: next, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(resolved.ownerEmail, nextTrips, activeId));
 }
 
 // ---- Client forms ---------------------------------------------------------
@@ -2394,8 +2717,14 @@ export async function stopTripShare(email: string, tripId: string): Promise<bool
   for (const collaborator of readCollaborators(trip.collaborators)) {
     await removeFromSharedWith(collaborator.person, normalized);
   }
+  // Push subscriptions go with it too — a device that opted in while the
+  // link was live has no business still getting trip-change notifications
+  // once the advisor has revoked that link. Left in place, notifySubscribers
+  // (called whenever a flight-status check finds something new) would keep
+  // sending to it regardless: it reads pushSubscriptions off the trip, not
+  // the share token, and never itself checks whether shareId is still set.
   const next = trips.map((t) =>
-    t.id === tripId ? { ...t, shareId: undefined, collaborators: [], updatedAt: new Date().toISOString() } : t,
+    t.id === tripId ? { ...t, shareId: undefined, collaborators: [], pushSubscriptions: [], updatedAt: new Date().toISOString() } : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));
 }

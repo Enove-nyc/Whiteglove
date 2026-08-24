@@ -57,3 +57,19 @@ describe("a traveler-scoped link can never hand out the trip's own unredacted to
     assert.match(REPORT_ROUTE, /appendReport\(chatKey/);
   });
 });
+
+describe("revoking a client's link takes their push subscription with it", () => {
+  const STORE = readFileSync("lib/account-store.ts", "utf8");
+
+  it("stopTripShare clears pushSubscriptions, not just shareId and collaborators", () => {
+    // A device that opted into push while the link was live has no business
+    // still getting trip-change notifications once the advisor has revoked
+    // it. notifySubscribers is called whenever a flight-status check finds
+    // something new and reads pushSubscriptions straight off the trip — it
+    // never itself checks whether shareId is still set — so leaving the old
+    // subscription in place would mean it keeps receiving delay/cancel/gate
+    // copy for a trip the client can no longer even open.
+    const fn = STORE.slice(STORE.indexOf("export async function stopTripShare"), STORE.indexOf("async function upsertSharedWith"));
+    assert.match(fn, /pushSubscriptions: \[\]/);
+  });
+});
