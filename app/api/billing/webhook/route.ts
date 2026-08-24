@@ -158,15 +158,24 @@ export async function POST(request: NextRequest) {
 
     if (event.type === "checkout.session.async_payment_succeeded") {
       // The other half of the guard above: a delayed payment method that
-      // completed the checkout page unpaid has now actually cleared. Grant
-      // it now, the only place it is granted for this path.
+      // completed the checkout page unpaid has now actually cleared.
       const account = await accountFor(object);
       const plan = planFrom(object);
       if (!account || !plan) {
         console.error("[billing] async payment succeeded with no account or plan on it:", { account, plan });
         return NextResponse.json({ received: true });
       }
-      await grantOneTimePurchase(account, plan);
+      // ONLY for the one-time path — the branch above only skipped granting
+      // for a one-time purchase, never for a subscription. A subscription
+      // whose first invoice settles asynchronously is not this branch's to
+      // grant: its own status arrives on customer.subscription.updated the
+      // same as an immediately-paid subscription, and granting unconditionally
+      // here would have written a PERMANENT one-time-purchase record for a
+      // Starter/Pro subscription — one that would outlive the subscription
+      // itself ending.
+      if (object.mode === "payment" || isOneTimePlan(plan)) {
+        await grantOneTimePurchase(account, plan);
+      }
       return NextResponse.json({ received: true });
     }
 

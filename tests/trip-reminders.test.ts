@@ -117,4 +117,19 @@ describe("automatic reminders stay behind the same fences as the rest of the cli
   it("re-checks the plan fresh per account, not just the scan's own snapshot", () => {
     assert.match(CRON_ROUTE, /mayServeCompanionClients\(await getPlan\(account\.email\)\)/);
   });
+
+  it("never marks a reminder sent without confirming the message actually saved", () => {
+    // These are one-shot — remindersSent means "never fire this again". A
+    // mark written after a chat-store write that silently failed (the store
+    // is down, the network blips) would mean the client never sees the
+    // message AND it never retries, forever. appendChat itself no-ops and
+    // returns [] on failure rather than throwing, so the return value has to
+    // be checked, not just awaited.
+    assert.match(CRON_ROUTE, /function wasDelivered/);
+    assert.match(CRON_ROUTE, /if \(await wasDelivered\(trip\.shareId, message\)\)/g);
+    assert.ok(
+      CRON_ROUTE.match(/if \(await wasDelivered\(trip\.shareId, message\)\)/g)?.length === 2,
+      "both the departure and balance-due sends should check delivery before marking sent",
+    );
+  });
 });

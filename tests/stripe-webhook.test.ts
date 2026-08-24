@@ -208,6 +208,20 @@ describe("granting a one-time purchase only once it is actually paid for", () =>
     const branch = WEBHOOK.slice(WEBHOOK.indexOf('"checkout.session.async_payment_succeeded"'), WEBHOOK.indexOf('"customer.subscription.updated"'));
     assert.match(branch, /grantOneTimePurchase/);
   });
+
+  it("NEVER grants a one-time purchase for a SUBSCRIPTION that happens to settle asynchronously", () => {
+    // A subscription's first invoice can also be paid by a delayed method —
+    // the async branch has to tell the two apart the same way the completed
+    // branch above already does, or a Starter/Pro subscription that settles
+    // this way would get a PERMANENT one-time-purchase record that outlives
+    // the subscription ending.
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('"checkout.session.async_payment_succeeded"'), WEBHOOK.indexOf('"customer.subscription.updated"'));
+    assert.match(branch, /object\.mode === "payment" \|\| isOneTimePlan\(plan\)/);
+    assert.ok(
+      branch.indexOf('object.mode === "payment" || isOneTimePlan(plan)') < branch.indexOf("grantOneTimePurchase"),
+      "the plan-shape check has to run before granting, not after",
+    );
+  });
 });
 
 describe("changing an agency's seats on a live subscription", () => {

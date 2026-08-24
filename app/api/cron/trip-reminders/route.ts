@@ -13,6 +13,21 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
+ * Whether `message` actually landed in the thread — `appendChat` no-ops and
+ * returns `[]` when the chat store is unreachable, but a caller that never
+ * checked its result would go on to markReminderSent anyway, and these
+ * reminders are ONE-SHOT: a "sent" mark that was never really sent means a
+ * client silently never sees it, forever, with no retry. `at` is stamped by
+ * this route just above and is unique per message, so finding it in the
+ * thread that comes back is the same proof appendChat's own callers already
+ * rely on (see findRawIndex in lib/companion-chat-store.ts).
+ */
+async function wasDelivered(shareId: string, message: CompanionChatMessage): Promise<boolean> {
+  const thread = await appendChat(shareId, message);
+  return thread.some((m) => m.from === message.from && m.at === message.at);
+}
+
+/**
  * Sends the automatic client reminders lib/trip-reminders.ts decides are
  * due — "you're leaving soon", "a balance is still due" — into each trip's
  * own chat thread, the same one the advisor and client already talk in.
@@ -61,15 +76,21 @@ export async function GET(request: NextRequest) {
 
       if (departureReminderDue(reminderTrip, today)) {
         const message: CompanionChatMessage = { from: "advisor", kind: "text", text: departureReminderText(reminderTrip), at: new Date().toISOString() };
-        await appendChat(trip.shareId, message);
-        await markReminderSent(account.email, trip.id, "departure", today);
-        sent += 1;
+        if (await wasDelivered(trip.shareId, message)) {
+          await markReminderSent(account.email, trip.id, "departure", today);
+          sent += 1;
+        } else {
+          console.error("[cron] trip-reminders: departure reminder did not save, will retry next run", { account: account.email, tripId: trip.id });
+        }
       }
       if (balanceDueReminderDue(reminderTrip, today)) {
         const message: CompanionChatMessage = { from: "advisor", kind: "text", text: balanceDueReminderText(reminderTrip), at: new Date().toISOString() };
-        await appendChat(trip.shareId, message);
-        await markReminderSent(account.email, trip.id, "balanceDue", today);
-        sent += 1;
+        if (await wasDelivered(trip.shareId, message)) {
+          await markReminderSent(account.email, trip.id, "balanceDue", today);
+          sent += 1;
+        } else {
+          console.error("[cron] trip-reminders: balance-due reminder did not save, will retry next run", { account: account.email, tripId: trip.id });
+        }
       }
     }
   }
