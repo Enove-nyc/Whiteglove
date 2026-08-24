@@ -35,7 +35,25 @@ import type { CemeteryListItem } from "@/lib/cemeteries-view";
 type Order = "city" | "country" | "tzaddik" | "kevarim";
 
 /** A Nesiya Tova located ground — a place with a source, not a full guide. */
-export type HeritageEntry = { slug: string; city: string; country: string };
+export type HeritageEntry = { slug: string; city: string; country: string; address?: string };
+
+/**
+ * A town name reduced to what two records have to agree on to be the same
+ * town: no diacritics, no alias in brackets, no punctuation. "Aleksandrów
+ * Łódzki (Aleksander)" and "Aleksandrów Łódzki" are one place.
+ */
+function townKey(city: string, country: string): string {
+  const flatten = (value: string) =>
+    value
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\(.*?\)/g, "")
+      .toLowerCase()
+      .replace(/[^a-z ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  return `${flatten(city)}|${flatten(country)}`;
+}
 
 export default function CemeteryDirectory({
   cemeteries,
@@ -91,14 +109,26 @@ export default function CemeteryDirectory({
   // The located set joins in only once the list is narrowed — otherwise nearly
   // two thousand location-only entries would swamp the guides on first sight.
   const narrowed = Boolean(country || query.trim());
+  // Every town White Glove has its own guide for. A located ground in one of
+  // those towns is dropped below: the guide is the same place said properly —
+  // who is buried there, how to get in, the shomer's number — and listing the
+  // town again underneath it as a bare "Location" was the doubling this page
+  // showed. Matched on a flattened town name, so "Aleksandrów Łódzki
+  // (Aleksander)" and "Aleksandrów Łódzki" count as one town.
+  const guideTowns = useMemo(
+    () => new Set(cemeteries.map((c) => townKey(c.city, c.country))),
+    [cemeteries],
+  );
+
   const heritageShown = useMemo(() => {
     if (!narrowed) return [];
     return heritage
       .filter((h) => (!country || h.country === country) && listMatches([h.city, h.country, extraSpellings([h.slug, h.city])].join(" "), query))
+      .filter((h) => !guideTowns.has(townKey(h.city, h.country)))
       .sort((a, b) =>
         order === "country" ? a.country.localeCompare(b.country) || a.city.localeCompare(b.city) : a.city.localeCompare(b.city),
       );
-  }, [heritage, country, query, order, narrowed]);
+  }, [heritage, country, query, order, narrowed, guideTowns]);
 
   // ONE list, not two. The guides and the located grounds are merged and shown
   // in a single grid, so a town's guide and its located ground sit next to each
@@ -172,6 +202,13 @@ export default function CemeteryDirectory({
             >
               <div className="min-w-0">
                 <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-3xl">{result.h.city}</h2>
+                {/* The street, because a town can hold two of these and the
+                    town name alone made them look like the same card twice.
+                    Kalisz has one ground on Nowy Świat and another on
+                    Podmiejska; this is what tells them apart. */}
+                {result.h.address && (
+                  <p className="mt-2 break-words text-sm leading-6 text-stone-600">{result.h.address}</p>
+                )}
                 <p className="mt-3 break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{result.h.country}</p>
               </div>
               <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">Location</p>

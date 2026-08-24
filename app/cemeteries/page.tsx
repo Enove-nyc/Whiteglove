@@ -28,7 +28,7 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
   const initialCountry = cemeteries.some((entry) => entry.country === country) ? (country as string) : "";
   // The Nesiya Tova located set, trimmed to what the one directory needs — the
   // detail page carries the rest (directions, the forward to Nesiya Tova).
-  const heritage = heritageCemeteries.map((h) => ({ slug: h.slug, city: h.city, country: h.country }));
+  const heritage = heritageCemeteries.map((h) => ({ slug: h.slug, city: h.city, country: h.country, address: h.address }));
   const page = await resolvePage("cemeteries");
   return (
     <main className="min-h-screen bg-[var(--cream)]">
