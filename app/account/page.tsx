@@ -207,6 +207,7 @@ export default async function AccountPage() {
                       { href: "/clients", label: "Clients", description: "Everyone you've planned for, and what's noted about them" },
                       { href: "/payments", label: "Payments", description: "Balances, splits, and collection" },
                       { href: "/commissions", label: "Commissions", description: "What suppliers owe the agency, across every trip" },
+                      { href: "/suppliers", label: "Suppliers", description: "Every supplier you've logged a booking with" },
                       { href: "/activity", label: "Trip activity", description: "What actually happened on a trip, logged automatically" },
                     ].map((item) => (
                       <li key={item.href}>
