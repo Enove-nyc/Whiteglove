@@ -274,6 +274,22 @@ input::placeholder, textarea::placeholder { color: #78716c; }
   background: url("/logo-hand-navy.png") no-repeat center / contain;
 }
 
+/* The hand in the header, drawn from the logo's own alpha so its colour is a
+   CSS property rather than baked into the image. Navy for everyone; gold for a
+   member on a paid tier (a quiet mark of a paid account, in their own view).
+   Width follows the height from the artwork's aspect ratio. */
+.header-glove {
+  display: inline-block;
+  aspect-ratio: 355 / 460;
+  background-color: var(--navy);
+  -webkit-mask: url("/logo-hand-navy.png") no-repeat center / contain;
+  mask: url("/logo-hand-navy.png") no-repeat center / contain;
+  transition: background-color 0.3s ease;
+}
+.header-glove.is-gold {
+  background-color: var(--gold);
+}
+
 .glove-list { list-style: none; padding-left: 0; }
 .glove-list > li { position: relative; padding-left: 2rem; }
 .glove-list > li::before {

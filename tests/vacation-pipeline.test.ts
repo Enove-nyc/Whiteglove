@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 import { attractions } from "@/data/attractions";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { kosherAreas, kosherStays } from "@/data/kosher-stays";
-import { TRIP_THEMES, vacationDestinations } from "@/data/vacation-destinations";
+import { TRIP_THEMES, vacationDestinations, YOM_TOV_THEMES } from "@/data/vacation-destinations";
 import { NEW_THEME_THRESHOLD, PIPELINE, PIPELINE_GROUPS, candidatesIn } from "@/data/vacation-pipeline";
 import { backlog, missingByCheck, readinessOf, readinessOfAll } from "@/lib/destination-readiness";
 import type { VacationSources } from "@/lib/vacation-ideas";
@@ -186,9 +186,12 @@ describe("new categories", () => {
   });
 
   it("keeps every existing category non-empty", () => {
-    // The hub does not render a filter with nothing behind it, but a category
-    // that is empty in the data is still a promise somebody wrote down.
+    // The hub does not render a filter with nothing behind it, but a STORED
+    // category that is empty in the data is still a promise somebody wrote down.
+    // The Yom Tov themes are derived from bestFor and floor-gated, so they are
+    // allowed to be empty and simply not offered — exempt here.
     for (const theme of TRIP_THEMES) {
+      if ((YOM_TOV_THEMES as readonly string[]).includes(theme.value)) continue;
       const count = vacationDestinations.filter((destination) => destination.themes.includes(theme.value)).length;
       assert.ok(count > 0, `${theme.label} has no destinations at all`);
     }

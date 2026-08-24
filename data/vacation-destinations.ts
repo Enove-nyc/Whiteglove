@@ -84,6 +84,19 @@ export const TRIP_THEMES: ReadonlyArray<{ value: TripTheme; label: string; blurb
 ] as const;
 
 /**
+ * The Yom Tov themes — the DERIVED class, and the one exception to "every theme
+ * has destinations behind it".
+ *
+ * These three are read off a destination's own `bestFor` text
+ * (deriveYomTovThemes), never stored on `themes`, and are allowed to be empty:
+ * themeOptions floor-gates them, so a Yom Tov theme with nothing behind it is
+ * simply not offered as a filter rather than shown as an empty promise. Every
+ * other theme is a stored, always-populated category. The tests read this to
+ * exempt the derived themes from the non-empty rule the stored ones keep.
+ */
+export const YOM_TOV_THEMES = ["pesach", "sukkos", "yeshiva-week"] as const satisfies readonly TripTheme[];
+
+/**
  * Yom Tov themes a destination answers to, read off its own `bestFor` tags —
  * never invented. Matches are intentionally loose text (a record that says
  * "Pesach programme" or "Yeshiva week crowd" should count) but never inferred

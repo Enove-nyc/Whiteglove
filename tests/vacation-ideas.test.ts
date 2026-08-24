@@ -8,8 +8,14 @@ import {
   TRIP_THEMES,
   SEASONS,
   vacationDestinations,
+  YOM_TOV_THEMES,
   type VacationDestination,
 } from "@/data/vacation-destinations";
+
+// The Yom Tov themes are derived from bestFor and floor-gated, so they are
+// allowed to be empty and simply not offered — exempt from the "every theme has
+// destinations behind it" rule the stored themes keep.
+const isStoredTheme = (value: string) => !(YOM_TOV_THEMES as readonly string[]).includes(value);
 import {
   addToTripHref,
   cardModel,
@@ -124,8 +130,11 @@ describe("the destination list itself", () => {
   });
 
   it("offers every theme and season it advertises", () => {
-    // A filter chip with nothing behind it is a promise the site cannot keep.
+    // A filter chip with nothing behind it is a promise the site cannot keep —
+    // for the STORED themes. The Yom Tov themes are derived and floor-gated, so
+    // an empty one is not offered rather than shown, and is exempt here.
     for (const theme of TRIP_THEMES) {
+      if (!isStoredTheme(theme.value)) continue;
       assert.ok(
         vacationDestinations.some((d) => d.themes.includes(theme.value)),
         `${theme.value} is offered as a category with no destinations in it`,
@@ -286,6 +295,10 @@ describe("filtering", () => {
     const options = new Map(themeOptions(DIRECTORY, TRIP_THEMES).map((option) => [option.value, option]));
     for (const theme of TRIP_THEMES) {
       const option = options.get(theme.value);
+      // A derived Yom Tov theme with nothing behind it is correctly absent from
+      // the advertised options — skip it rather than demand a count it has none
+      // of. Every stored theme must still be advertised with an exact count.
+      if (!option && !isStoredTheme(theme.value)) continue;
       assert.ok(option, `${theme.value} is shown without a destination count`);
       assert.equal(vacationBrowseHref({ theme: theme.value, season: "" }), `/destinations?kind=${theme.value}`);
       assert.equal(filterVacations(DIRECTORY, { ...NO_VACATION_FILTERS, theme: theme.value }).length, option.count);

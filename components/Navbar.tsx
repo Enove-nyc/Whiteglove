@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -14,7 +13,7 @@ import { brandForHost } from "@/lib/site-brand-core";
 import AccountMenu, { ACCOUNT_PLACES, advisorPlacesFor } from "@/components/AccountMenu";
 import type { AccountPlan } from "@/lib/account-plans";
 import { useOpenSignIn } from "@/components/SignInGate";
-import { signInHref } from "@/lib/use-signed-in";
+import { signInHref, useViewer } from "@/lib/use-signed-in";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
 /**
@@ -97,6 +96,10 @@ export default function Navbar({ brand: brandProp = "kosher", minimal = false }:
     setSearchOpen(false);
   }
   const [scrolled, setScrolled] = useState(false);
+  // On a paid tier, the hand in the logo is gold. Read from the same viewer the
+  // sign-in control uses; undefined until it resolves, so the hand starts navy.
+  const viewer = useViewer();
+  const paid = Boolean(viewer?.paid);
   const navRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -237,13 +240,11 @@ export default function Navbar({ brand: brandProp = "kosher", minimal = false }:
       >
         <div className={`mx-auto flex max-w-7xl items-center gap-2 px-5 transition-[min-height] sm:px-8 ${scrolled ? "min-h-16" : "min-h-20"}`}>
           <Link href="/" className="relative z-10 mr-2 flex shrink-0 items-center gap-2.5 sm:mr-4" aria-label={isItineraries ? "White Glove Itineraries home" : "White Glove Kosher Travel home"}>
-            <Image
-              src="/logo-hand-navy.png"
-              alt=""
-              width={355}
-              height={460}
-              className={`w-auto max-w-none object-contain transition-[height] ${scrolled ? "h-8" : "h-9 sm:h-11"}`}
-              priority
+            {/* The hand, drawn from the logo's alpha so its colour is CSS: navy
+                for everyone, gold for a paid member (see .header-glove). */}
+            <span
+              aria-hidden="true"
+              className={`header-glove transition-[height] ${scrolled ? "h-8" : "h-9 sm:h-11"} ${paid ? "is-gold" : ""}`}
             />
             {/* Shown from 360px: a 390px phone is the common case, and hiding
                 the site's own name there left the header as a bare mark. */}

@@ -21,6 +21,8 @@ export type Viewer = {
   name?: string;
   /** What they sign in with — an email address or a phone number. */
   id?: string;
+  /** On any paid plan. The header turns the logo hand gold. */
+  paid?: boolean;
 };
 
 const SIGNED_OUT: Viewer = { signedIn: false };
@@ -31,7 +33,7 @@ const listeners = new Set<(value: Viewer) => void>();
 function ask(): Promise<Viewer> {
   cached ??= fetch("/api/account/me", { cache: "no-store" })
     .then((r) => (r.ok ? r.json() : null))
-    .then((d): Viewer => (d?.signedIn ? { signedIn: true, name: d.account?.name, id: d.sessionEmail } : SIGNED_OUT))
+    .then((d): Viewer => (d?.signedIn ? { signedIn: true, name: d.account?.name, id: d.sessionEmail, paid: Boolean(d.paid) } : SIGNED_OUT))
     .catch(() => SIGNED_OUT);
   return cached;
 }
