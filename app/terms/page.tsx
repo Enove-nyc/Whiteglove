@@ -69,13 +69,14 @@ export default async function TermsOfUsePage() {
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
-          These Terms of Use govern your access to and use of {siteName} at {siteDomain} (the &ldquo;Service&rdquo;).
-          By using the Service, you agree to these terms. If you do not agree, please do not use the Service.
+          {siteName} at {siteDomain} (the &ldquo;Service&rdquo;) is operated by White Glove Travel, LLC, doing business as{" "}
+          {siteName}. These Terms of Use govern your access to and use of the Service. By using the Service, you agree
+          to these terms. If you do not agree, please do not use the Service.
         </p>
 
         <Section title="The Service">
           {itineraries ? (
-            <p>White Glove Itineraries provides trip-planning tools — a day-by-day itinerary builder, saved routes, and flight and hotel search. The Service is provided for personal use, and, for a Business account, for planning travel on behalf of clients.</p>
+            <p>White Glove Itineraries provides trip-planning tools — a day-by-day itinerary builder, saved routes, and flight and hotel search. The Service is provided for personal use, and, on a paid advisor plan, for planning travel on behalf of clients.</p>
           ) : (
             <p>White Glove provides informational travel guides and planning tools for kosher travel and Jewish heritage journeys, including destination guides, cemetery and access information, saved routes, and flight and hotel search. The Service is provided for personal, non-commercial use.</p>
           )}

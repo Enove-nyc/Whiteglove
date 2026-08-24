@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { ACCOUNT_PLACES } from "@/components/AccountMenu";
+import { ACCOUNT_PLACES, advisorPlacesFor } from "@/components/AccountMenu";
 
 /**
  * The four places an account has.
@@ -64,13 +64,46 @@ describe("how the menu behaves", () => {
 
 describe("signed out, there is a door rather than a menu", () => {
   it("OPENS THE SIGN-IN DIALOG INSTEAD OF OFFERING FOUR CLOSED ROOMS", () => {
-    assert.match(NAV, /\{signedIn \? \(\s*\n\s*<AccountMenu \/>/);
+    assert.match(NAV, /\{signedIn \? \(\s*\n\s*<AccountMenu plan=\{plan\} \/>/);
     assert.match(NAV, /<IconLink icon="account" label="Sign in"[\s\S]{0,120}onClick=\{\(\) => openSignIn\(\)\}/);
   });
 
-  it("names the same four in the menu that IS the navigation on a phone", () => {
+  it("names the same places in the menu that IS the navigation on a phone", () => {
     // Below xl the header collapses, and one "Account" link there would hide
-    // three of the four.
-    assert.match(NAV, /ACCOUNT_PLACES\.map\(\(place\) => \(/);
+    // the rest — the four personal places and, for an advisor plan, the tool
+    // links too.
+    assert.match(NAV, /\[\.\.\.ACCOUNT_PLACES, \.\.\.advisorPlacesFor\(plan\)\]\.map\(\(place\) => \(/);
+  });
+});
+
+describe("the advisor tools have a home in the menu too", () => {
+  it("offers nothing for a signed-in account with no plan yet", () => {
+    assert.deepEqual(advisorPlacesFor("free"), []);
+    assert.deepEqual(advisorPlacesFor(undefined), []);
+  });
+
+  it("offers nothing for one trip — it never serves a client", () => {
+    assert.deepEqual(advisorPlacesFor("one_trip"), []);
+  });
+
+  it("gives Starter the client tools but not Agency, which needs Pro's own brand", () => {
+    const labels = advisorPlacesFor("starter").map((place) => place.label);
+    assert.ok(labels.includes("Trip pipeline"));
+    assert.ok(labels.includes("Proposals"));
+    assert.ok(labels.includes("Content library"));
+    assert.ok(labels.includes("Client forms"));
+    assert.ok(labels.includes("Payments"));
+    assert.ok(!labels.includes("Agency"));
+  });
+
+  it("gives Pro everything, Agency included", () => {
+    const labels = advisorPlacesFor("pro").map((place) => place.label);
+    assert.ok(labels.includes("Agency"));
+    assert.equal(labels.length, 6);
+  });
+
+  it("only shows the extra section, with a caption, once there is something to show", () => {
+    assert.match(MENU, /Advisor tools/);
+    assert.match(MENU, /advisorPlaces\.length > 0/);
   });
 });

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getCurrentAccountData, getTripItinerary, getBalance, saveBalance } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import { getConnectAccount, saveConnectAccount } from "@/lib/stripe-connect-store";
@@ -19,8 +20,8 @@ async function signedInEmail() {
 
 /**
  * The planner's own side of Payments: connecting a Stripe account, and
- * setting up one trip's balance and split. BUSINESS ONLY, the same gate as
- * every other client-facing feature — a trip balance exists to be paid by
+ * setting up one trip's balance and split. ADVISOR STARTER AND UP, the same
+ * gate as every other client-facing feature — a trip balance exists to be paid by
  * somebody else. The public side a traveler actually pays from is a separate
  * route (app/api/pay/[shareId]/route.ts) and never reads a planner's own
  * connected-account details beyond the one destination id it needs.
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
   const email = await signedInEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   if (!mayServeCompanionClients(await getPlan(email))) {
-    return NextResponse.json({ ok: false, error: "Taking payment on a trip is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ ok: false, error: `Taking payment on a trip is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
 
   const body = (await request.json().catch(() => null)) as

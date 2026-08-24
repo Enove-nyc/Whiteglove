@@ -21,7 +21,7 @@ export type Viewer = {
   name?: string;
   /** What they sign in with — an email address or a phone number. */
   id?: string;
-  /** On a paid tier (Gold or Business). The header turns the logo hand gold. */
+  /** On any paid plan. The header turns the logo hand gold. */
   paid?: boolean;
 };
 

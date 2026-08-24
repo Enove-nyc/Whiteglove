@@ -9,10 +9,11 @@
  * had yesterday now costs money." This is that one place, and the words on the
  * account page changed with it.
  *
- * TWO LIMITS, both asked for: a Traveler may plan two trips, and may print one
- * a week. Everything else is untouched — every kever, every guide, the whole
- * planner, sharing, the map. The limits are on how much of it one free account
- * can carry, not on what the site is.
+ * NOBODY PLANS A TRIP FOR NOTHING ANY MORE. An account with no plan yet
+ * ("free" — see lib/account-plans.ts) has a trip limit of zero: it exists so
+ * an account can be signed into and a plan chosen, and nothing else. One Trip
+ * asks a single small fee for exactly one trip, ever, on that account. Advisor
+ * Starter and Advisor Pro are subscriptions with no trip ceiling at all.
  *
  * NOTHING ALREADY MADE IS EVER TAKEN AWAY. The trip limit refuses a NEW trip;
  * it does not hide, lock or delete one that exists. Somebody who already has
@@ -45,65 +46,80 @@ export type PlanLimits = {
  * a limit even though it is a yes/no rather than a number: it is a plan
  * deciding what somebody may do. Putting it in a second module would be the
  * exact drift this file exists to prevent, where nobody can answer "what does
- * Pro actually get you" without grepping.
+ * Advisor Pro actually get you" without grepping.
  *
- * WHERE THE LINE FALLS NOW. Gold and Business both get the White Glove app for
- * their OWN trips (companionApp) — that is the step up from a free account.
- * Business is still the plan for planning on somebody else's behalf, and keeps
- * what that needs: its own name on the itinerary (ownBranding) and the app
- * handed to clients — a link, a chat, an inbox (companionClients). Gold has the
- * app; only Business hands it to other people.
+ * WHERE THE LINE FALLS NOW. One Trip gets the White Glove app for that one
+ * trip (companionApp) — nothing about serving a client. Advisor Starter is
+ * where the app is handed to CLIENTS (companionClients) — a link, a chat, an
+ * inbox — because that is what an advisor's first subscription is actually
+ * for. Advisor Pro has everything Starter does, plus its own name on the
+ * itinerary and the client app (ownBranding), saved trip templates
+ * (templates), and the business-at-a-glance numbers on the pipeline
+ * (analytics) — the tools for somebody doing this often enough that the
+ * shape of a trip and the shape of the business are both worth reusing.
  *
  * NOTHING ELSE IS INVENTED HERE. Each entitlement in this table was asked for,
  * and the account page changed in the same commit that added it.
  */
 export type PlanFeatures = {
   /**
-   * Put their own logo and business name on the printed itinerary, in place of
-   * the White Glove crest. The small credit line in the footer stays either
-   * way — see components/PrintableItinerary.tsx, which is where that decision
-   * is written down and enforced.
+   * Put their own logo and business name on the printed itinerary and on the
+   * client app, in place of the White Glove crest. The small credit line in
+   * the footer stays either way — see components/PrintableItinerary.tsx,
+   * which is where that decision is written down and enforced.
    */
   ownBranding: boolean;
   /**
    * Whether the assistant's conversation is kept between visits.
    *
    * The answers are the same on every plan — a traveler asking about Antwerp
-   * gets exactly what a Pro asks gets. What Pro buys is that the thread is
-   * still there tomorrow instead of starting again. That is a fair thing to
-   * charge for and a poor thing to withhold an answer over, so the gate is on
-   * the keeping and never on the asking.
+   * gets exactly what a Pro asks gets. What a paid plan buys is that the
+   * thread is still there tomorrow instead of starting again. That is a fair
+   * thing to charge for and a poor thing to withhold an answer over, so the
+   * gate is on the keeping and never on the asking.
    */
   assistantHistory: boolean;
   /**
    * The White Glove app for your OWN trips — a trip in your pocket, at /app.
    *
-   * Gold and Business. A day at a time, the wallet kept on the phone with no
-   * signal, the guide, the map. This is the app used for the trips the account
-   * itself is taking; it says nothing about anybody else. app/app/page.tsx is
-   * the door that reads this.
+   * Every paid plan. A day at a time, the wallet kept on the phone with no
+   * signal, the guide, the map. This is the app used for the trips the
+   * account itself is taking; it says nothing about anybody else.
+   * app/app/page.tsx is the door that reads this.
    */
   companionApp: boolean;
   /**
-   * The app for OTHER PEOPLE — the client-facing half. Business only.
+   * The app for OTHER PEOPLE — the client-facing half. Starter and Pro.
    *
    * A link that opens one trip as the app on a client's phone, the chat with
-   * that client, and the advisor's inbox of all of them. This is the "planning
-   * on somebody else's behalf" that Business is for; Gold has the app for its
-   * own trips and none of this. Read by the share and chat routes and by the
+   * that client, and the advisor's inbox of all of them. One Trip has the app
+   * for the one trip it is, and none of this — it is not for planning on
+   * somebody else's behalf. Read by the share and chat routes and by the
    * advisor inbox — never by app/app/page.tsx, which only asks companionApp.
    */
   companionClients: boolean;
+  /**
+   * Save a trip as a reusable template, and start a new trip from one. Pro
+   * only — see lib/trip-templates.ts and components/TripSwitcher.tsx.
+   */
+  templates: boolean;
+  /**
+   * The business-at-a-glance numbers strip above the trip pipeline's board —
+   * active trips, departures soon, what is outstanding. Pro only — see
+   * pipelineStats in data/trip-pipeline.ts.
+   */
+  analytics: boolean;
 };
 
 export const PLAN_FEATURES: Record<AccountPlan, PlanFeatures> = {
-  traveler: { ownBranding: false, assistantHistory: false, companionApp: false, companionClients: false },
-  pro: { ownBranding: false, assistantHistory: true, companionApp: true, companionClients: false },
-  business: { ownBranding: true, assistantHistory: true, companionApp: true, companionClients: true },
+  free: { ownBranding: false, assistantHistory: false, companionApp: false, companionClients: false, templates: false, analytics: false },
+  one_trip: { ownBranding: false, assistantHistory: true, companionApp: true, companionClients: false, templates: false, analytics: false },
+  starter: { ownBranding: false, assistantHistory: true, companionApp: true, companionClients: true, templates: false, analytics: false },
+  pro: { ownBranding: true, assistantHistory: true, companionApp: true, companionClients: true, templates: true, analytics: true },
 };
 
 export function featuresFor(plan: AccountPlan): PlanFeatures {
-  return PLAN_FEATURES[plan] ?? PLAN_FEATURES.traveler;
+  return PLAN_FEATURES[plan] ?? PLAN_FEATURES.free;
 }
 
 /** Whether the assistant remembers this plan's conversation. Named once. */
@@ -111,7 +127,7 @@ export function keepsAssistantHistory(plan: AccountPlan): boolean {
   return featuresFor(plan).assistantHistory;
 }
 
-/** Whether this plan may brand its own itineraries. The one gate, named once. */
+/** Whether this plan may brand its own itineraries and client app. The one gate, named once. */
 export function mayBrandOwnItinerary(plan: AccountPlan): boolean {
   return featuresFor(plan).ownBranding;
 }
@@ -124,6 +140,16 @@ export function mayUseCompanionApp(plan: AccountPlan): boolean {
 /** Whether this plan may hand the app to clients — links, chat, the inbox. */
 export function mayServeCompanionClients(plan: AccountPlan): boolean {
   return featuresFor(plan).companionClients;
+}
+
+/** Whether this plan may save and start trips from templates. */
+export function mayUseTripTemplates(plan: AccountPlan): boolean {
+  return featuresFor(plan).templates;
+}
+
+/** Whether this plan sees the business-at-a-glance numbers on the pipeline. */
+export function mayViewPipelineAnalytics(plan: AccountPlan): boolean {
+  return featuresFor(plan).analytics;
 }
 
 export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -141,11 +167,15 @@ export const SAME_PRINT_GRACE_MS = 30 * 60 * 1000;
 
 /** What each plan gets, before the owner changes anything. */
 export const BUILT_IN_LIMITS: Record<AccountPlan, PlanLimits> = {
-  traveler: { trips: 2, printsPerWeek: 1 },
+  // Nothing bought yet — signed in, and able to choose a plan, and nothing
+  // else. Not a locked account by accident; this is the whole point of it.
+  free: { trips: 0, printsPerWeek: 0 },
+  // Exactly the one trip the fee was for.
+  one_trip: { trips: 1, printsPerWeek: UNLIMITED },
   // Nothing has been decided about these, so nothing is limited. An invented
   // number here would be a promise nobody made.
+  starter: { trips: UNLIMITED, printsPerWeek: UNLIMITED },
   pro: { trips: UNLIMITED, printsPerWeek: UNLIMITED },
-  business: { trips: UNLIMITED, printsPerWeek: UNLIMITED },
 };
 
 export type LimitOverrides = Partial<Record<AccountPlan, Partial<PlanLimits>>>;
@@ -156,12 +186,14 @@ function cleanLimit(value: unknown, fallback: Limit): Limit {
   if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
   const whole = Math.floor(value);
   // Zero would mean "cannot make a single trip", which is not a limit, it is a
-  // locked account. Anybody who wants that should close the account.
+  // locked account. Anybody who wants that should close the account. The one
+  // deliberate exception, `free`, is not read through this function at all —
+  // it is a BUILT_IN_LIMITS constant, never an admin-entered override.
   return whole < 1 ? fallback : whole;
 }
 
 export function limitsFor(plan: AccountPlan, overrides?: LimitOverrides | null): PlanLimits {
-  const built = BUILT_IN_LIMITS[plan] ?? BUILT_IN_LIMITS.traveler;
+  const built = BUILT_IN_LIMITS[plan] ?? BUILT_IN_LIMITS.free;
   const over = overrides?.[plan];
   if (!over) return built;
   return {
@@ -182,10 +214,11 @@ export function limitsFor(plan: AccountPlan, overrides?: LimitOverrides | null):
 export function newTripProblem(plan: AccountPlan, existing: number, limits: PlanLimits): string | null {
   if (limits.trips === UNLIMITED) return null;
   if (existing < limits.trips) return null;
+  if (plan === "free") return "Choose a plan to start your first trip.";
   const n = limits.trips;
   return (
-    `A ${PLAN_LABELS[plan]} account can have ${n} ${n === 1 ? "trip" : "trips"} at a time, and you have ${existing}. ` +
-    "Delete one you have finished with, or ask about Pro."
+    `${PLAN_LABELS[plan]} can have ${n} ${n === 1 ? "trip" : "trips"} at a time, and you have ${existing}. ` +
+    "Delete one you have finished with, or choose a plan with more room."
   );
 }
 
@@ -267,7 +300,7 @@ export function decidePrint(input: {
     allowed: false,
     nextAt,
     message:
-      `A ${PLAN_LABELS[plan]} account can print ${n} ${n === 1 ? "copy" : "copies"} a week, and ${n === 1 ? "this week's has been used" : "this week's have been used"}. ` +
+      `${PLAN_LABELS[plan]} can print ${n} ${n === 1 ? "copy" : "copies"} a week, and ${n === 1 ? "this week's has been used" : "this week's have been used"}. ` +
       `The next one is available ${whenIsThat(nextAt, now)}. Your trip is still here, and you can still look at it on screen and share it.`,
   };
 }
@@ -309,6 +342,7 @@ export function describePrints(prints: PrintEvent[], limits: PlanLimits, now: nu
  * restrictions with no floor under it reads as though the rest might go next.
  */
 export function describeLimits(plan: AccountPlan, limits: PlanLimits): string {
+  if (plan === "free") return "Choose a plan below to start planning a trip.";
   const parts: string[] = [];
   if (limits.trips !== UNLIMITED) parts.push(`${limits.trips} ${limits.trips === 1 ? "trip" : "trips"} at a time`);
   if (limits.printsPerWeek !== UNLIMITED) {

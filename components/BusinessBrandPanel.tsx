@@ -6,13 +6,13 @@ import { type BusinessBrand, MAX_BRAND_LINE, MAX_BRAND_NAME } from "@/lib/busine
 import { BRAND_DOMAIN, BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core";
 
 /**
- * A Business account putting its own name on the itineraries it prints.
+ * An Advisor Pro account putting its own name on the itineraries it prints.
  *
- * ONLY DRAWN FOR AN ACCOUNT THAT CAN USE IT. Somebody on Traveler or Pro does
- * not see a locked version of this with an upgrade button on it — a panel whose
+ * ONLY DRAWN FOR AN ACCOUNT THAT CAN USE IT. Somebody on a lower plan does not
+ * see a locked version of this with an upgrade button on it — a panel whose
  * only purpose is to advertise something is an advertisement, and this is a
  * person's own account page. What they get instead is the sentence in the plan
- * panel above, which says what a Business account is for.
+ * panel above, which says what Advisor Pro is for.
  *
  * THE PREVIEW IS OF THE REAL THING. What this shows — logo, name, the line
  * under it — is exactly what PrintableItinerary puts on the cover, including
@@ -102,7 +102,7 @@ export default function BusinessBrandPanel({ brand, siteBrand }: { brand: Busine
 
   return (
     <section className="mt-10 border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Business account</p>
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Advisor Pro</p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Your name on the itinerary</h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
         Plan the trip here and hand your client a document with your logo on the cover and your name in the header of

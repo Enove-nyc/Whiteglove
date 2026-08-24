@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { currentAdmin } from "@/lib/admin-current";
 import { mayUse } from "@/lib/admin-permissions";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { cleanOffering, offeringProblem, PAID_PLANS, type PlanOffering, readOfferingHow } from "@/lib/plan-billing";
 import { writePlanOffering } from "@/lib/plan-billing-store";
 import { stripeReadiness } from "@/lib/stripe";
@@ -43,6 +44,11 @@ export async function savePlanOfferingAction(
         },
       ]),
     ),
+    agencySeat: {
+      askingLine: String(form.get("agencySeat-asking") ?? ""),
+      monthlyPriceId: String(form.get("agencySeat-monthly") ?? ""),
+      yearlyPriceId: String(form.get("agencySeat-yearly") ?? ""),
+    },
   }) as PlanOffering;
 
   const problem = offeringProblem(next, stripeReadiness());
@@ -57,6 +63,6 @@ export async function savePlanOfferingAction(
     ok: true,
     message: next.open
       ? "Saved. This is live on the account page now."
-      : "Saved. Nothing about Gold or Business is shown to anybody.",
+      : `Saved. Nothing about ${PAID_PLANS.map((p) => PLAN_LABELS[p]).join(", ")} is shown to anybody.`,
   };
 }

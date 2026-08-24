@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { type AccountPlan, PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan, setPlan } from "@/lib/account-plan-store";
+import { agencyIdFor, deleteInvite, listOpenInvites, readAgency, setAccountAgency, writeAgency } from "@/lib/agency-store";
+import { isOwner as isAgencyOwner } from "@/lib/agency";
 import { sendSubscriptionNotification } from "@/lib/email";
-import { isPaidPlan } from "@/lib/plan-billing";
+import { identityKey } from "@/lib/identity";
+import { isOneTimePlan, isPaidPlan } from "@/lib/plan-billing";
 import {
   accountForCustomer,
+  ownEntitledPlan,
   readSubscription,
   rememberCustomer,
   type SubscriptionRecord,
+  writeOneTimePurchase,
   writeSubscription,
 } from "@/lib/plan-billing-store";
-import { customerIdOf, statusIsPaid, stripeWebhookSecret, verifyWebhook } from "@/lib/stripe";
+import { customerIdOf, readSubscriptionFromStripe, statusIsPaid, stripeWebhookSecret, verifyWebhook } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +25,7 @@ export const dynamic = "force-dynamic";
  *
  * SO IT VERIFIES FIRST AND DOES NOTHING ELSE UNTIL IT HAS. The raw body is
  * signed with the endpoint secret; anything that does not match is a 400 with
- * no detail. Without that check this URL would hand out Business accounts to
+ * no detail. Without that check this URL would hand out paid accounts to
  * anybody who could POST to it.
  *
  * IT ALWAYS ANSWERS 200 ONCE THE EVENT IS REAL. Stripe retries anything else
@@ -34,6 +39,20 @@ export const dynamic = "force-dynamic";
  * the owner put on Business by hand, who separately tried a Pro subscription
  * and cancelled it, keeps what the owner gave them.
  */
+
+/** Grant a One Trip purchase — the one thing common to it settling immediately
+ *  (a card, at checkout) and settling days later (an async payment method). */
+async function grantOneTimePurchase(account: string, plan: AccountPlan): Promise<void> {
+  if (!(await setPlan(account, plan, "Stripe one-time purchase"))) {
+    console.error("[billing] paid but the plan could not be set:", { account, plan });
+  }
+  // Recorded permanently, separate from the plan field itself — see
+  // ownEntitledPlan in lib/plan-billing-store.ts for why: the plan field
+  // gets overwritten the moment this account joins an agency, and this
+  // purchase has to survive that.
+  await writeOneTimePurchase(account, plan);
+  await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "started" });
+}
 
 async function accountFor(object: Record<string, unknown>): Promise<string> {
   const metadata = (object.metadata ?? {}) as Record<string, string>;
@@ -78,21 +97,51 @@ export async function POST(request: NextRequest) {
       const account = await accountFor(object);
       const plan = planFrom(object);
       const customerId = customerIdOf(object.customer);
-      const subscriptionId = typeof object.subscription === "string" ? object.subscription : customerIdOf(object.subscription);
       if (!account || !plan) {
         console.error("[billing] checkout completed with no account or plan on it:", { account, plan, customerId });
         return NextResponse.json({ received: true });
       }
       if (customerId) await rememberCustomer(customerId, account);
 
+      // One Trip pays once — no subscription object exists for it at all, so
+      // there is nothing to record beyond the plan itself, and nothing that
+      // could ever end it from underneath somebody the way a cancelled
+      // subscription can. See lib/plan-billing.ts's ONE_TIME_PLANS.
+      if (object.mode === "payment" || isOneTimePlan(plan)) {
+        // "Completed" is a checkout-page event, not a money-moved event. A
+        // card pays immediately and payment_status is already "paid" here —
+        // but Stripe also offers payment methods (ACH debit and others) that
+        // settle DAYS later, where this event fires the moment the SESSION
+        // finishes and payment_status is still "unpaid". Granting here on
+        // those would mint a permanent entitlement for a charge that has not
+        // happened yet and might still fail — and with no subscription
+        // behind a one-time purchase, nothing would ever take it back.
+        // createCheckoutSession pins this flow to cards only (lib/stripe.ts)
+        // so this should always already be "paid"; the check stays as the
+        // real guarantee rather than trusting that configuration alone.
+        if (object.payment_status !== "paid") {
+          console.log("[billing] one-time checkout completed but not yet paid — waiting on async settlement:", { account, plan });
+          return NextResponse.json({ received: true });
+        }
+        await grantOneTimePurchase(account, plan);
+        return NextResponse.json({ received: true });
+      }
+
+      const subscriptionId = typeof object.subscription === "string" ? object.subscription : customerIdOf(object.subscription);
       const now = new Date().toISOString();
       const existing = await readSubscription(account);
+      // Read back from Stripe rather than assuming "active" — a first
+      // subscription with a trial attached (see lib/plan-billing.ts's
+      // TRIAL_DAYS) is "trialing" from the moment this event fires, and the
+      // next event that would otherwise correct it may not arrive for the
+      // whole length of the trial.
+      const stripeSub = subscriptionId ? await readSubscriptionFromStripe(subscriptionId) : null;
       const record: SubscriptionRecord = {
         account,
         plan,
         customerId,
         subscriptionId,
-        status: "active",
+        status: stripeSub?.status || "active",
         startedAt: existing?.startedAt || now,
         updatedAt: now,
       };
@@ -106,6 +155,33 @@ export async function POST(request: NextRequest) {
       await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "started" });
       return NextResponse.json({ received: true });
     }
+
+    if (event.type === "checkout.session.async_payment_succeeded") {
+      // The other half of the guard above: a delayed payment method that
+      // completed the checkout page unpaid has now actually cleared.
+      const account = await accountFor(object);
+      const plan = planFrom(object);
+      if (!account || !plan) {
+        console.error("[billing] async payment succeeded with no account or plan on it:", { account, plan });
+        return NextResponse.json({ received: true });
+      }
+      // ONLY for the one-time path — the branch above only skipped granting
+      // for a one-time purchase, never for a subscription. A subscription
+      // whose first invoice settles asynchronously is not this branch's to
+      // grant: its own status arrives on customer.subscription.updated the
+      // same as an immediately-paid subscription, and granting unconditionally
+      // here would have written a PERMANENT one-time-purchase record for a
+      // Starter/Pro subscription — one that would outlive the subscription
+      // itself ending.
+      if (object.mode === "payment" || isOneTimePlan(plan)) {
+        await grantOneTimePurchase(account, plan);
+      }
+      return NextResponse.json({ received: true });
+    }
+
+    // async_payment_failed needs no branch: checkout.session.completed above
+    // never granted anything for an unpaid session, so there is nothing to
+    // take back.
 
     if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
       const account = await accountFor(object);
@@ -138,8 +214,73 @@ export async function POST(request: NextRequest) {
         // owner granted by hand is his to take away, not Stripe's.
         const current = await getPlan(account);
         if (current === plan) {
-          await setPlan(account, "traveler", "Stripe subscription ended");
+          await setPlan(account, "free", "Stripe subscription ended");
           await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "ended" });
+        }
+
+        // The Advisor Pro subscription that was paying for a whole agency
+        // just ended. Every OTHER member was promoted to pro by hand when
+        // they joined (app/api/account/agency/join/route.ts), with no
+        // subscription of Stripe's own behind it — nothing else will ever
+        // demote them, and left alone they would keep Advisor Pro for free,
+        // indefinitely.
+        //
+        // TAKEN OFF THE AGENCY ENTIRELY, not just demoted — the same as the
+        // owner removing them by hand (remove-member below). A seat nobody
+        // is paying for is not a seat that is still theirs to keep warm: if
+        // it stayed on the roster with agencyId still pointing at this
+        // agency, the owner resubscribing later would find seats that
+        // LOOK filled but promote nobody back (nothing re-checks a former
+        // member automatically), which is worse than an honest empty
+        // roster the owner re-invites onto. Each account is set back to
+        // whatever THEIR OWN subscription or one-time purchase, if any,
+        // actually entitles them to (ownEntitledPlan) rather than a blanket
+        // free — the same rule leaving or being removed already follows.
+        if (plan === "pro") {
+          const agencyId = await agencyIdFor(account);
+          const agency = agencyId ? await readAgency(agencyId) : null;
+          if (agencyId && !agency) {
+            // A transient read failure, not "no agency" — agencyId says
+            // there should be one. Silently skipping the cleanup below would
+            // leave every other member on unpaid Pro with nothing ever
+            // trying again: Stripe does not retry this event once it is
+            // acknowledged 200, and nothing else on the site re-checks a
+            // former subscriber's agency on its own.
+            console.error(`[agency] could not read agency ${agencyId} for ${account} after its Pro subscription ended — roster cleanup skipped`);
+          }
+          if (agency && isAgencyOwner(agency, account)) {
+            const others = agency.members.filter((m) => identityKey(m.account) !== identityKey(account));
+            for (const member of others) {
+              await setAccountAgency(member.account, undefined);
+              await setPlan(member.account, await ownEntitledPlan(member.account), "The agency's Advisor Pro subscription ended");
+            }
+            // Always written, even when `others` is empty: seatsPurchased
+            // resets to the base seat (the owner alone) because nothing is
+            // paying for extra seats once the subscription that bought them
+            // has ended. Left at the old count, a resubscribed owner could
+            // invite straight back up to capacity Stripe was never asked to
+            // charge for again — buy-seats sets a fresh count the next time
+            // seats are actually bought.
+            const cleared = {
+              ...agency,
+              members: agency.members.filter((m) => identityKey(m.account) === identityKey(account)),
+              seatsPurchased: 1,
+              updatedAt: new Date().toISOString(),
+            };
+            if (!(await writeAgency(cleared))) {
+              console.error(`[agency] could not clear the roster for ${agencyId} after its Pro subscription ended`);
+            }
+            // Any invite still open would otherwise keep working, whether or
+            // not anybody had accepted one yet — used days later, it mints a
+            // fresh unpaid Pro account the same way the members just removed
+            // above got theirs. The invite route itself now also refuses
+            // once the owner's plan has lapsed (see "invite" in
+            // app/api/account/agency/route.ts), but a stale link already in
+            // somebody's inbox does not care about that check until it is
+            // used, so it is cleared here too rather than left to expire on
+            // its own in up to 14 days.
+            for (const invite of await listOpenInvites(agency.id)) await deleteInvite(invite);
+          }
         }
       }
       return NextResponse.json({ received: true });

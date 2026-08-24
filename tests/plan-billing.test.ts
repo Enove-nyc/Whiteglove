@@ -1,18 +1,26 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import {
+  agencySeatOfferable,
+  agencySeatPriceId,
   cleanOffering,
   DEFAULT_OFFERING,
   describeOffering,
+  isOneTimePlan,
   offerablePlans,
   offeringProblem,
   offerLine,
   PAID_PLANS,
+  type PaidPlan,
   periodsFor,
   planIsOfferable,
+  type PlanPricing,
   priceIdFor,
   readOfferingHow,
+  TRIAL_DAYS,
+  trialEligible,
   type PlanOffering,
 } from "@/lib/plan-billing";
 
@@ -30,14 +38,23 @@ import {
 const READY = { secretKey: true, webhookSecret: true };
 const NOT_READY = { secretKey: false, webhookSecret: false };
 
-function offering(over: Partial<PlanOffering> = {}): PlanOffering {
+// Any test only needs to name the one or two plans it cares about — cleanOffering
+// fills in the rest of PAID_PLANS at runtime the same way a half-written stored
+// record would, so the test helper's type should not force every literal to
+// spell out all three.
+type OfferingOverride = Partial<Omit<PlanOffering, "pricing" | "agencySeat">> & {
+  pricing?: Partial<Record<PaidPlan, Partial<PlanPricing>>>;
+  agencySeat?: Partial<PlanPricing>;
+};
+
+function offering(over: OfferingOverride = {}): PlanOffering {
   return cleanOffering({ ...DEFAULT_OFFERING, ...over });
 }
 
 describe("what the site is offering", () => {
-  it("names the two accounts and opens neither, out of the box", () => {
-    // The owner's decision while the prices were being settled: both may be
-    // shown, nobody may sign up for either. "soon" promises nothing and cannot
+  it("names the three accounts and opens none of them, out of the box", () => {
+    // The owner's decision while the prices were being settled: all three may
+    // be shown, nobody may sign up for any. "soon" promises nothing and cannot
     // charge anybody, which is why it is the safe thing to default to.
     assert.equal(DEFAULT_OFFERING.open, true);
     assert.equal(DEFAULT_OFFERING.how, "soon");
@@ -67,15 +84,14 @@ describe("what the site is offering", () => {
     assert.equal(cleanOffering({ how: "asking" }).how, "soon");
   });
 
-  it("shows both accounts while neither is open, and says nothing about money", () => {
+  it("shows all three accounts while none is open, and says nothing about money", () => {
     const soon = offering({
       how: "soon",
       pricing: {
         pro: { askingLine: "$4.99 a month", monthlyPriceId: "price_m", yearlyPriceId: "" },
-        business: { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" },
       },
     });
-    assert.deepEqual(offerablePlans(soon), ["pro", "business"]);
+    assert.deepEqual(offerablePlans(soon), ["one_trip", "starter", "pro"]);
     // No renewal to offer, because nothing is being charged...
     assert.deepEqual(periodsFor(soon, "pro"), []);
     // ...and no price either, even though one is typed in and a Stripe price
@@ -99,8 +115,74 @@ describe("what the site is offering", () => {
   });
 
   it("offers only the plans that are ticked", () => {
-    const only = offering({ plans: { pro: true, business: false } });
+    const only = offering({ plans: { one_trip: false, starter: false, pro: true } });
     assert.deepEqual(offerablePlans(only), ["pro"]);
+  });
+});
+
+describe("one-time vs. subscription", () => {
+  it("is one-time for One Trip alone", () => {
+    assert.equal(isOneTimePlan("one_trip"), true);
+    assert.equal(isOneTimePlan("starter"), false);
+    assert.equal(isOneTimePlan("pro"), false);
+    assert.equal(isOneTimePlan("free"), false);
+  });
+});
+
+describe("the free trial", () => {
+  it("is offered on a first subscription", () => {
+    assert.equal(trialEligible("starter", false), true);
+    assert.equal(trialEligible("pro", false), true);
+  });
+
+  it("is NEVER offered on One Trip, first time or not — it is a single payment", () => {
+    assert.equal(trialEligible("one_trip", false), false);
+    assert.equal(trialEligible("one_trip", true), false);
+  });
+
+  it("is refused to somebody who has already had a subscription", () => {
+    // Upgrading Starter to Pro, or resubscribing after cancelling, is still
+    // "has subscribed before" — a second trial on a different plan would be
+    // the same free ride under a new name.
+    assert.equal(trialEligible("starter", true), false);
+    assert.equal(trialEligible("pro", true), false);
+  });
+
+  it("is a real number of days, not zero or something silly", () => {
+    assert.ok(TRIAL_DAYS >= 7 && TRIAL_DAYS <= 30);
+  });
+});
+
+describe("agency seats", () => {
+  it("is never offerable outside Stripe mode, however it is priced", () => {
+    const asking = offering({ how: "ask", agencySeat: { askingLine: "$25 a month", monthlyPriceId: "price_seat", yearlyPriceId: "" } });
+    assert.equal(agencySeatOfferable(asking, "monthly"), false);
+    const soon = offering({ how: "soon", agencySeat: { monthlyPriceId: "price_seat" } });
+    assert.equal(agencySeatOfferable(soon, "monthly"), false);
+  });
+
+  it("needs an actual price for the period being asked about", () => {
+    const cards = offering({ how: "stripe", agencySeat: { monthlyPriceId: "price_seat_m", yearlyPriceId: "" } });
+    assert.equal(agencySeatOfferable(cards, "monthly"), true);
+    assert.equal(agencySeatOfferable(cards, "yearly"), false);
+    assert.equal(agencySeatPriceId(cards, "monthly"), "price_seat_m");
+    assert.equal(agencySeatPriceId(cards, "yearly"), "");
+  });
+
+  it("is closed along with everything else", () => {
+    const closed = offering({ open: false, how: "stripe", agencySeat: { monthlyPriceId: "price_seat" } });
+    assert.equal(agencySeatOfferable(closed, "monthly"), false);
+  });
+
+  it("defaults to nothing configured, out of the box", () => {
+    assert.equal(DEFAULT_OFFERING.agencySeat.monthlyPriceId, "");
+    assert.equal(DEFAULT_OFFERING.agencySeat.yearlyPriceId, "");
+    assert.equal(DEFAULT_OFFERING.agencySeat.askingLine, "");
+  });
+
+  it("tidies an unreadable seat record into empty rather than throwing", () => {
+    const cleaned = cleanOffering({ agencySeat: "nonsense" });
+    assert.deepEqual(cleaned.agencySeat, { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" });
   });
 });
 
@@ -164,14 +246,14 @@ describe("what a plan may be offered on", () => {
     const cards = offering({
       how: "stripe",
       pricing: {
-        pro: { askingLine: "", monthlyPriceId: "price_m", yearlyPriceId: "" },
-        business: { askingLine: "", monthlyPriceId: "price_bm", yearlyPriceId: "price_by" },
+        starter: { askingLine: "", monthlyPriceId: "price_m", yearlyPriceId: "" },
+        pro: { askingLine: "", monthlyPriceId: "price_pm", yearlyPriceId: "price_py" },
       },
     });
-    assert.deepEqual(periodsFor(cards, "pro"), ["monthly"]);
-    assert.deepEqual(periodsFor(cards, "business"), ["monthly", "yearly"]);
-    assert.equal(priceIdFor(cards, "business", "yearly"), "price_by");
-    assert.equal(priceIdFor(cards, "pro", "yearly"), "");
+    assert.deepEqual(periodsFor(cards, "starter"), ["monthly"]);
+    assert.deepEqual(periodsFor(cards, "pro"), ["monthly", "yearly"]);
+    assert.equal(priceIdFor(cards, "pro", "yearly"), "price_py");
+    assert.equal(priceIdFor(cards, "starter", "yearly"), "");
   });
 });
 
@@ -182,7 +264,7 @@ describe("what may be saved", () => {
   });
 
   it("refuses an offering with nothing in it", () => {
-    const empty = offering({ plans: { pro: false, business: false } });
+    const empty = offering({ plans: { one_trip: false, starter: false, pro: false } });
     assert.match(offeringProblem(empty, READY) ?? "", /at least one/i);
   });
 
@@ -195,17 +277,16 @@ describe("what may be saved", () => {
   it("refuses Stripe with keys but no price", () => {
     const cards = offering({ how: "stripe" });
     const problem = offeringProblem(cards, READY) ?? "";
-    assert.match(problem, /Gold and Business/);
+    assert.match(problem, new RegExp(PAID_PLANS.map((p) => PLAN_LABELS[p]).join(" and ")));
     assert.match(problem, /price/i);
   });
 
   it("allows Stripe once a plan really can be charged", () => {
     const cards = offering({
       how: "stripe",
-      plans: { pro: true, business: false },
+      plans: { one_trip: false, starter: false, pro: true },
       pricing: {
         pro: { askingLine: "", monthlyPriceId: "price_m", yearlyPriceId: "" },
-        business: { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" },
       },
     });
     assert.equal(offeringProblem(cards, READY), null);
@@ -222,7 +303,6 @@ describe("what a traveller is told it costs", () => {
       how: "ask",
       pricing: {
         pro: { askingLine: "$12 a month", monthlyPriceId: "", yearlyPriceId: "" },
-        business: { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" },
       },
     });
     assert.equal(offerLine(asking, "pro"), "$12 a month");
@@ -236,7 +316,6 @@ describe("what a traveller is told it costs", () => {
       how: "stripe",
       pricing: {
         pro: { askingLine: "$4 a month", monthlyPriceId: "price_m", yearlyPriceId: "" },
-        business: { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" },
       },
     });
     assert.equal(offerLine(cards, "pro", "$18 a month"), "$18 a month");

@@ -15,8 +15,8 @@ import { getPlan, openRequestFor } from "@/lib/account-plan-store";
 import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
-import { offerablePlans, offerLine, periodsFor, priceIdFor } from "@/lib/plan-billing";
-import { readPlanOffering } from "@/lib/plan-billing-store";
+import { isOneTimePlan, offerablePlans, offerLine, periodsFor, priceIdFor, trialEligible } from "@/lib/plan-billing";
+import { readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
 import { describePrice, readPrice } from "@/lib/stripe";
 import { getLimitOverrides, usageLineFor } from "@/lib/account-limits-store";
 import { getTrips } from "@/lib/account-store";
@@ -76,6 +76,10 @@ export default async function AccountPage() {
   const offering = await readPlanOffering();
   const offerChoices: PlanOffer[] = [];
   if (offering.open) {
+    // One read, reused for every card — whether this account has EVER had a
+    // subscription (any plan, even one now cancelled) is what trialEligible
+    // in lib/plan-billing.ts asks, not which plan it is looking at today.
+    const hasSubscribedBefore = Boolean(await readSubscription(who));
     for (const paid of offerablePlans(offering)) {
       const periods = await Promise.all(
         periodsFor(offering, paid).map(async (period) => ({
@@ -96,6 +100,8 @@ export default async function AccountPage() {
         line: offerLine(offering, paid, usable[0]?.line),
         periods: usable,
         limitsLine: describeLimits(paid, limitsFor(paid, overrides)),
+        oneTime: isOneTimePlan(paid),
+        trialEligible: offering.how === "stripe" && trialEligible(paid, hasSubscribedBefore),
       });
     }
   }
@@ -155,6 +161,15 @@ export default async function AccountPage() {
             offer={offer}
           />
           {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} siteBrand={siteBrand} />}
+          {canBrand && (
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
+              Working with other advisors?{" "}
+              <Link href="/agency" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+                Turn this into an agency
+              </Link>{" "}
+              — one subscription, one letterhead, a login for each of you.
+            </p>
+          )}
           {canUseApp && (
             <div className="mt-6 rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -165,25 +180,38 @@ export default async function AccountPage() {
                 <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
               </div>
               {canServeClients && (
-                <p className="mt-4 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
-                  To hand a client their own trip, open it in the{" "}
-                  <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
-                  and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
-                  Before that, offer them a{" "}
-                  <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">proposal</Link>{" "}
-                  to compare and approve — options, hotels and a price they see and answer before the trip is confirmed.
-                  Save the hotels, activities and contacts you use often to your{" "}
-                  <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">content library</Link>{" "}
-                  and a proposal is built from what's already there instead of retyped each time.
-                  Need a passport number or an emergency contact first? Send a{" "}
-                  <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">client form</Link>{" "}
-                  — answers come back to you alone, never onto the itinerary itself.
-                  See every client trip and where it stands in your{" "}
-                  <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">trip pipeline</Link>.
-                  Set a trip's balance, split it across families, and collect{" "}
-                  <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">payments</Link>{" "}
-                  straight into your own connected Stripe account.
-                </p>
+                <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+                  <p className="text-sm leading-6 text-stone-600">
+                    Your client tools — also under the account icon above:
+                  </p>
+                  <ul className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                    <li>
+                      <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Proposals</Link>
+                      <span className="text-stone-600"> — options and price a client approves before the trip is confirmed</span>
+                    </li>
+                    <li>
+                      <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Content library</Link>
+                      <span className="text-stone-600"> — hotels, activities and contacts you use often</span>
+                    </li>
+                    <li>
+                      <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Client forms</Link>
+                      <span className="text-stone-600"> — passport numbers and emergency contacts, sent to you alone</span>
+                    </li>
+                    <li>
+                      <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Trip pipeline</Link>
+                      <span className="text-stone-600"> — every client trip and where it stands</span>
+                    </li>
+                    <li>
+                      <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Payments</Link>
+                      <span className="text-stone-600"> — set a balance and collect it into your own Stripe account</span>
+                    </li>
+                  </ul>
+                  <p className="mt-3 text-sm leading-6 text-stone-600">
+                    To hand a client their own trip, open it in the{" "}
+                    <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
+                    and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> — it opens only that one itinerary on the client&apos;s phone.
+                  </p>
+                </div>
               )}
               <CompanionSettings />
             </div>

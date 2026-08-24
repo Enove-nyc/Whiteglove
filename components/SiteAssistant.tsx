@@ -331,11 +331,11 @@ export default function SiteAssistant() {
               {/* THREE STATES, AND EACH ONE SAID PLAINLY. Somebody asking where
                   their family is going in August is entitled to know whether it
                   is being written down, and "signed in" alone no longer answers
-                  that — keeping the thread is a Pro feature. */}
+                  that — keeping the thread comes with a plan. */}
               {thread.kept
                 ? "Saved to your account, so it is here next time."
                 : thread.signedIn
-                  ? "Not saved — keeping the conversation between visits comes with Pro."
+                  ? "Not saved — keeping the conversation between visits comes with a plan."
                   : "Not signed in — this conversation is not saved anywhere."}
             </p>
           </form>

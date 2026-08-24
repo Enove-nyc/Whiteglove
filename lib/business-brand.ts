@@ -1,5 +1,5 @@
 /**
- * A Business account's own name and logo on the itineraries it produces.
+ * An Advisor Pro account's own name and logo on the itineraries it produces.
  *
  * WHAT THIS IS FOR. Somebody who plans trips for other people — an agent, a
  * hotel concierge, an office that sends groups — builds the trip in the same
@@ -103,7 +103,7 @@ export function printBrandFor(brand: BusinessBrand | null | undefined, allowed: 
 /** What the account page says about the brand as it stands. Never empty. */
 export function describeBrand(brand: BusinessBrand | null, allowed: boolean): string {
   if (!allowed) {
-    return "Itineraries you print carry the White Glove cover. Business accounts can put their own name and logo on them instead.";
+    return "Itineraries you print carry the White Glove cover. Advisor Pro can put its own name and logo on them instead.";
   }
   if (!brand?.enabled || !brand.name.trim()) {
     return "Your itineraries carry the White Glove cover. Turn this on to put your own name and logo on them instead.";

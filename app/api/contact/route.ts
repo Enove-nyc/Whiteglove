@@ -6,6 +6,7 @@ import { cardIfWanted } from "@/lib/trello-store";
 import { readReason } from "@/lib/contact-reasons";
 import { fileFaultIssue } from "@/lib/github-issues";
 import { siteOrigin } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
 export const dynamic = "force-dynamic";
 
@@ -39,18 +40,20 @@ export async function POST(request: NextRequest) {
   const read = readMessage(body ?? {});
   if ("problem" in read) return NextResponse.json({ error: read.problem }, { status: 400 });
   const fields = read.fields;
+  // Which company's contact@ this lands in — see sendContactMessage.
+  const withBrand = { ...fields, siteBrand: await currentBrand() };
 
   const saved = await saveContactMessage(fields);
   if (saved) {
     // Not awaited: it is already safe. A failure here is logged by lib/email
     // and shows on the connections screen, and the message is answered from
     // the admin either way.
-    void sendContactMessage(fields).catch(() => {});
+    void sendContactMessage(withBrand).catch(() => {});
   } else {
     // No private store, or it could not be reached. The email is the only copy
     // there will ever be of this message, so it is waited for and its failure
     // is the visitor's.
-    const sent = await sendContactMessage(fields);
+    const sent = await sendContactMessage(withBrand);
     if (!sent) {
       return NextResponse.json(
         { error: "We couldn't send your message just now. Please email us directly or try again shortly." },

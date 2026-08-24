@@ -10,6 +10,7 @@ import {
   saveLibraryPack,
 } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -20,8 +21,8 @@ export const dynamic = "force-dynamic";
  * A planner's own content library — hotels, activities, tours, contacts,
  * and the destination packs built from them.
  *
- * BUSINESS ONLY, the same gate as a proposal — this exists to speed up
- * building something for a client, which is exactly what that entitlement
+ * ADVISOR STARTER AND UP, the same gate as a proposal — this exists to speed
+ * up building something for a client, which is exactly what that entitlement
  * already means. Nothing here is ever reached by a client's own link;
  * it's the planner's private working set.
  */
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
   const email = await signedInEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   if (!mayServeCompanionClients(await getPlan(email))) {
-    return NextResponse.json({ error: "A content library is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ error: `A content library is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
 
   const body = (await request.json().catch(() => null)) as

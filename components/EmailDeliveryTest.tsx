@@ -8,10 +8,12 @@ type Config = {
   from?: string;
   usingTestSender?: boolean;
   editsInbox?: string;
-  contactInbox?: string;
+  contactInboxKosher?: string;
+  contactInboxItineraries?: string;
   inboxesSplit?: boolean;
   editsInboxFromEnv?: boolean;
-  contactInboxFromEnv?: boolean;
+  contactInboxKosherFromEnv?: boolean;
+  contactInboxItinerariesFromEnv?: boolean;
   lastFailure?: { at: string; to: string; error?: string; status?: number } | null;
   log?: LogEntry[];
   logAvailable?: boolean;
@@ -32,7 +34,7 @@ export default function EmailDeliveryTest() {
       .catch(() => undefined);
   }, []);
 
-  async function test(inbox: "contact" | "edits") {
+  async function test(inbox: "contact-kosher" | "contact-itineraries" | "edits") {
     setBusy(inbox);
     setResult(null);
     try {
@@ -71,10 +73,17 @@ export default function EmailDeliveryTest() {
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact form messages</dt>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact form — Kosher Travel</dt>
             <dd className="text-stone-700">
-              {config.contactInbox}
+              {config.contactInboxKosher}
               <span className="ml-2 text-xs text-stone-500">somebody writing in — these need an answer</span>
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Contact form — Itineraries</dt>
+            <dd className="text-stone-700">
+              {config.contactInboxItineraries}
+              <span className="ml-2 text-xs text-stone-500">its own company, its own inbox</span>
             </dd>
           </div>
           <div>
@@ -86,7 +95,7 @@ export default function EmailDeliveryTest() {
           </div>
           {!config.inboxesSplit && (
             <div className="sm:col-span-2 text-xs text-amber-800">
-              Both are pointing at the same mailbox. Corrections will sit in with the enquiries.
+              Two or more of these are pointing at the same mailbox. Different jobs will sit mixed together.
             </div>
           )}
         </dl>
@@ -96,7 +105,7 @@ export default function EmailDeliveryTest() {
         <div className="mt-5 border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
           <strong>This is very likely why your mail isn&apos;t arriving.</strong> You&apos;re sending from Resend&apos;s shared sandbox address
           (<code className={code}>onboarding@resend.dev</code>), which is only allowed to deliver to the email address that owns the Resend
-          account — messages to <code className={code}>{config.contactInbox}</code> get rejected. To fix it: verify
+          account — messages to <code className={code}>{config.contactInboxKosher}</code> get rejected. To fix it: verify
           <strong> whiteglovekoshertravel.com</strong> in Resend (add the DNS records it gives you), then set
           <code className={code}>RESEND_FROM_EMAIL</code> to something like
           <code className={code}>White Glove Kosher Travel &lt;no-reply@whiteglovekoshertravel.com&gt;</code> and redeploy.
@@ -104,8 +113,11 @@ export default function EmailDeliveryTest() {
       )}
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={() => test("contact")} disabled={Boolean(busy)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">
-          {busy === "contact" ? "Sending…" : "Test the contact inbox"}
+        <button type="button" onClick={() => test("contact-kosher")} disabled={Boolean(busy)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">
+          {busy === "contact-kosher" ? "Sending…" : "Test Kosher Travel's contact inbox"}
+        </button>
+        <button type="button" onClick={() => test("contact-itineraries")} disabled={Boolean(busy)} className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">
+          {busy === "contact-itineraries" ? "Sending…" : "Test Itineraries' contact inbox"}
         </button>
         <button type="button" onClick={() => test("edits")} disabled={Boolean(busy)} className="border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-60">
           {busy === "edits" ? "Sending…" : "Test the edits inbox"}

@@ -10,6 +10,7 @@ import {
   saveProposal,
 } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { Proposal } from "@/data/proposal";
@@ -20,7 +21,7 @@ export const dynamic = "force-dynamic";
  * The planner's own side of a proposal — reading and editing it, sending it,
  * and converting the approved option into the trip's real itinerary.
  *
- * BUSINESS ONLY, the same gate as handing a trip to a client at all
+ * ADVISOR STARTER AND UP, the same gate as handing a trip to a client at all
  * (mayServeCompanionClients) — a proposal exists to be sent to somebody
  * else, which is exactly what that entitlement already means. The public
  * side a client actually opens is a separate route, and reads nothing here.
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
 
   if (!mayServeCompanionClients(await getPlan(email))) {
     return NextResponse.json(
-      { ok: false, error: "Sending a proposal to a client is part of a Business account." },
+      { ok: false, error: `Sending a proposal to a client is part of ${PLAN_LABELS.starter} and up.` },
       { status: 403 },
     );
   }
