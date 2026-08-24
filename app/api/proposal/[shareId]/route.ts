@@ -4,6 +4,7 @@ import { sendTripNoteEmail } from "@/lib/email";
 import { isPhoneIdentity } from "@/lib/identity";
 import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
+import { siteOrigin } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,11 @@ async function notifyOwner(ownerEmail: string, tripName: string, action: Proposa
       fromName: "Your client",
       tripTitle: tripName || "the trip",
       note,
-      url: new URL("/pipeline", request.nextUrl.origin).toString(),
+      // siteOrigin() first, never the request's own Host alone: sameOrigin()
+      // lets through a request with no Origin header, so a non-browser client
+      // holding the share id could otherwise put its own host into mail the
+      // advisor reads as first-party.
+      url: new URL("/pipeline", siteOrigin()?.origin || request.nextUrl.origin).toString(),
     });
   } catch {
     // The proposal action is saved. That is the part that mattered.
