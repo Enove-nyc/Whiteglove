@@ -267,11 +267,20 @@ export async function POST(request: NextRequest) {
       // Not always free: somebody who was already paying for their own plan
       // before they joined keeps it — see ownEntitledPlan in plan-billing-store.ts.
       await setPlan(target, await ownEntitledPlan(target), `Removed from ${email}'s agency`);
-      await writeAgency({
-        ...agency,
-        members: agency.members.filter((m) => identityKey(m.account) !== identityKey(target)),
-        updatedAt: new Date().toISOString(),
-      });
+      // Checked, not fire-and-forget: a failed write here leaves them off the
+      // agency (setAccountAgency above already ran) but still ON the roster —
+      // a seat that looks filled, promotes nobody, and nobody else can be
+      // invited into.
+      if (
+        !(await writeAgency({
+          ...agency,
+          members: agency.members.filter((m) => identityKey(m.account) !== identityKey(target)),
+          updatedAt: new Date().toISOString(),
+        }))
+      ) {
+        console.error(`[agency] removed ${target} but could not update ${agency.id}'s roster`);
+        return NextResponse.json({ error: "That could not be saved. Try again." }, { status: 503 });
+      }
       return NextResponse.json({ ok: true });
     }
 
@@ -281,11 +290,16 @@ export async function POST(request: NextRequest) {
       if (problem) return NextResponse.json({ error: problem }, { status: 400 });
       await setAccountAgency(email, undefined);
       await setPlan(email, await ownEntitledPlan(email), "Left the agency");
-      await writeAgency({
-        ...agency,
-        members: agency.members.filter((m) => identityKey(m.account) !== identityKey(email)),
-        updatedAt: new Date().toISOString(),
-      });
+      if (
+        !(await writeAgency({
+          ...agency,
+          members: agency.members.filter((m) => identityKey(m.account) !== identityKey(email)),
+          updatedAt: new Date().toISOString(),
+        }))
+      ) {
+        console.error(`[agency] ${email} left but ${agency.id}'s roster could not be updated`);
+        return NextResponse.json({ error: "That could not be saved. Try again." }, { status: 503 });
+      }
       return NextResponse.json({ ok: true });
     }
 

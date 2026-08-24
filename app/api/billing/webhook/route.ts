@@ -239,6 +239,15 @@ export async function POST(request: NextRequest) {
         if (plan === "pro") {
           const agencyId = await agencyIdFor(account);
           const agency = agencyId ? await readAgency(agencyId) : null;
+          if (agencyId && !agency) {
+            // A transient read failure, not "no agency" — agencyId says
+            // there should be one. Silently skipping the cleanup below would
+            // leave every other member on unpaid Pro with nothing ever
+            // trying again: Stripe does not retry this event once it is
+            // acknowledged 200, and nothing else on the site re-checks a
+            // former subscriber's agency on its own.
+            console.error(`[agency] could not read agency ${agencyId} for ${account} after its Pro subscription ended — roster cleanup skipped`);
+          }
           if (agency && isAgencyOwner(agency, account)) {
             const others = agency.members.filter((m) => identityKey(m.account) !== identityKey(account));
             for (const member of others) {

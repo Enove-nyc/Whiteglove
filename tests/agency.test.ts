@@ -235,6 +235,58 @@ describe("what happens when the Pro subscription that pays for it all lapses", (
     assert.match(branch, /plan !== "pro"/);
     assert.match(branch, /403/);
   });
+
+  it("logs rather than silently skipping the cleanup when the agency itself cannot be read", () => {
+    // agencyId says there SHOULD be an agency — a null read here is a
+    // transient failure, not "nothing to clean up", and Stripe never
+    // retries an event this endpoint already acknowledged 200.
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('if (plan === "pro")'));
+    assert.match(branch, /if \(agencyId && !agency\)/);
+    assert.match(branch, /console\.error/);
+  });
+});
+
+describe("joining an agency actually finishes the job", () => {
+  const JOIN_ROUTE = readFileSync("app/api/account/agency/join/route.ts", "utf8");
+
+  it("refuses to join once the owner's own Pro has lapsed, even with a still-valid-looking invite", () => {
+    // inviteProblem refuses a NEW invite once the owner's plan has lapsed,
+    // and the billing webhook clears open invites the moment it does — but
+    // a token issued before either of those ran is still a real invite
+    // until something checks the owner's plan at the moment it is used.
+    assert.match(JOIN_ROUTE, /await getPlan\(agency\.owner\)\) !== "pro"/);
+  });
+
+  it("checks that linking the account and granting the plan actually worked", () => {
+    const fn = JOIN_ROUTE.slice(JOIN_ROUTE.indexOf("async function ensureMembership"));
+    assert.match(fn, /if \(!linked \|\| !planned\)/);
+    assert.match(fn, /console\.error/);
+  });
+
+  it("re-runs the membership setters on a retry, not just on the roster write itself", () => {
+    // The roster write is what reserves the seat — if linking the account or
+    // granting the plan fails AFTER that, a second click has to be the thing
+    // that finishes the job, since it now takes the "already a member" path
+    // rather than the roster-write path.
+    const calls = JOIN_ROUTE.match(/ensureMembership\(account\.email, agency\.id, invite\.invitedBy\)/g);
+    assert.equal(calls?.length, 3, "both 'already a member' fast paths and the roster-write path should all call it");
+  });
+});
+
+describe("removing somebody, or leaving, actually saves", () => {
+  const AGENCY_ROUTE_FULL = readFileSync("app/api/account/agency/route.ts", "utf8");
+
+  it("remove-member checks the roster write before saying it worked", () => {
+    const branch = AGENCY_ROUTE_FULL.slice(AGENCY_ROUTE_FULL.indexOf('case "remove-member"'), AGENCY_ROUTE_FULL.indexOf('case "leave"'));
+    assert.match(branch, /if \(\s*!\(await writeAgency/);
+    assert.match(branch, /503/);
+  });
+
+  it("leave checks the roster write before saying it worked", () => {
+    const branch = AGENCY_ROUTE_FULL.slice(AGENCY_ROUTE_FULL.indexOf('case "leave"'), AGENCY_ROUTE_FULL.indexOf("default:"));
+    assert.match(branch, /if \(\s*!\(await writeAgency/);
+    assert.match(branch, /503/);
+  });
 });
 
 describe("who is traveling, agency-wide — the owner's view", () => {

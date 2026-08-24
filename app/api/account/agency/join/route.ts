@@ -1,12 +1,31 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
-import { setPlan } from "@/lib/account-plan-store";
+import { getPlan, setPlan } from "@/lib/account-plan-store";
 import { agencyIdFor, deleteInvite, readAgency, readInvite, setAccountAgency, writeAgency } from "@/lib/agency-store";
 import { identityKey } from "@/lib/identity";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Link this account to the agency and grant it Pro — the two things being on
+ * the roster is supposed to mean. Called both the first time somebody joins
+ * AND every time an already-member hits this route again (the invite arrived
+ * twice, or was clicked twice): the roster write is what actually reserves
+ * the seat, so a retry after THIS step failed would otherwise take the
+ * "already a member" fast path and never come back to finish the job. Both
+ * setters are themselves idempotent, so re-running them on somebody already
+ * fully set up changes nothing.
+ */
+async function ensureMembership(accountEmail: string, agencyId: string, invitedBy: string): Promise<boolean> {
+  const linked = await setAccountAgency(accountEmail, agencyId);
+  const planned = await setPlan(accountEmail, "pro", `Joined via agency invite from ${invitedBy}`);
+  if (!linked || !planned) {
+    console.error(`[agency] ${accountEmail} is on ${agencyId}'s roster but not fully set up (linked=${linked}, plan=${planned})`);
+  }
+  return linked && planned;
+}
 
 /**
  * Accepting an agency invite.
@@ -47,6 +66,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That agency could not be found." }, { status: 404 });
   }
 
+  // The owner's own Advisor Pro is what this agency runs on. inviteProblem
+  // (app/api/account/agency/route.ts) already refuses a NEW invite once that
+  // has lapsed, and the billing webhook clears open invites the moment it
+  // does — but a token issued before either of those ran, or one cleanup
+  // simply hasn't reached yet, is still a valid-looking invite. Checked
+  // fresh here rather than trusted from either of those, since accepting one
+  // is the one place that would actually mint an unpaid Pro account.
+  if ((await getPlan(agency.owner)) !== "pro") {
+    return NextResponse.json(
+      { error: "This agency's Advisor Pro subscription has ended — the owner needs to resubscribe before anybody can join." },
+      { status: 403 },
+    );
+  }
+
   const existingAgencyId = await agencyIdFor(account.email);
   if (existingAgencyId && existingAgencyId !== agency.id) {
     return NextResponse.json({ error: "You already belong to a different agency. Leave it first." }, { status: 409 });
@@ -54,8 +87,11 @@ export async function POST(request: NextRequest) {
 
   if (existingAgencyId === agency.id) {
     // Already a member — the invite arrived twice, or was accepted already
-    // and clicked again. Consuming it quietly is the honest answer: nothing
-    // is wrong, there is simply nothing left to do.
+    // and clicked again. Re-run the membership setters rather than trusting
+    // they succeeded the first time: if THIS is the retry after they failed
+    // partway, this fast path is the only place left that would ever finish
+    // the job.
+    await ensureMembership(account.email, agency.id, invite.invitedBy);
     await deleteInvite(invite);
     return NextResponse.json({ ok: true });
   }
@@ -74,6 +110,7 @@ export async function POST(request: NextRequest) {
   const fresh = await readAgency(agency.id);
   if (!fresh) return NextResponse.json({ error: "That agency could not be found." }, { status: 404 });
   if (fresh.members.some((m) => identityKey(m.account) === identityKey(account.email))) {
+    await ensureMembership(account.email, agency.id, invite.invitedBy);
     await deleteInvite(invite);
     return NextResponse.json({ ok: true });
   }
@@ -89,8 +126,12 @@ export async function POST(request: NextRequest) {
   if (!(await writeAgency(next))) {
     return NextResponse.json({ error: "That could not be saved. Try again." }, { status: 503 });
   }
-  await setAccountAgency(account.email, agency.id);
-  await setPlan(account.email, "pro", `Joined via agency invite from ${invite.invitedBy}`);
+  // The roster write above is what actually reserves the seat, so from here
+  // on the invite is spent either way: leaving it live would let a second
+  // click reserve a SECOND seat for the same person. If linking the account
+  // or granting the plan below fails, ensureMembership logs it — the "already
+  // a member" fast path above is what finishes the job on a retry.
+  await ensureMembership(account.email, agency.id, invite.invitedBy);
   await deleteInvite(invite);
 
   return NextResponse.json({ ok: true });
