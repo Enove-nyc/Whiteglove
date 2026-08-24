@@ -5,6 +5,7 @@ import PageBlocks from "@/components/PageBlocks";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
 import SeasonalFeaturedRow from "@/components/SeasonalFeaturedRow";
 import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
@@ -110,13 +111,13 @@ export default async function VacationIdeasPage({
           <div className="flex flex-wrap gap-3">
             <Link
               href="/plan"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
             >
               Get recommendations
             </Link>
             <Link
               href="/contact"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
+              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.secondary}`}
             >
               Ask about a destination
             </Link>

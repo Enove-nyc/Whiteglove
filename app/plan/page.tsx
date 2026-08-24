@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import StartingPoints from "@/components/StartingPoints";
 import TripStartFlow from "@/components/TripStartFlow";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { getVacationDestinationBySlug } from "@/lib/vacation-destinations-view";
 import { pageMetadata } from "@/lib/seo";
 import { TRIP_KINDS, type TripKind } from "@/lib/trip-plan";
@@ -80,13 +81,13 @@ export default async function PlanPage({
           <div className="flex flex-wrap gap-3">
             <Link
               href="/destinations"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
             >
               Browse vacation ideas
             </Link>
             <Link
               href="/heritage"
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)]"
+              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.secondary}`}
             >
               Planning a heritage journey
             </Link>

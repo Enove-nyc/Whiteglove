@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { BRAND_ORIGIN, brandForHost } from "@/lib/site-brand-core";
 import {
   ACCESSIBILITY_NEEDS,
@@ -435,7 +436,7 @@ export default function TripStartFlow({
               <button
                 type="button"
                 onClick={() => goToStep(3)}
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
               >
                 Continue
               </button>

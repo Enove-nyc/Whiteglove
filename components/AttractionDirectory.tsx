@@ -7,6 +7,7 @@ import RateExperienceLink from "@/components/RateExperienceLink";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { staySearchHref } from "@/lib/stay-search";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { useListUrl } from "@/components/useListUrl";
@@ -229,7 +230,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
           <button
             type="button"
             onClick={() => setLimit((current) => current + PAGE)}
-            className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+            className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
           >
             Show more
           </button>
