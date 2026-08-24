@@ -135,6 +135,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // or none you open straight into it — a list of one is not a list. `mode` is
   // null until the first trips read decides, so the editor does not flash up
   // before the list for somebody who has several.
+  //
+  // ?list asks for the list whatever the count. That is how the account's
+  // "All itineraries" button arrives: somebody who pressed it wants the list —
+  // where a trip is renamed, a new one started and a client code read off —
+  // and opening their only itinerary's editor instead would ignore what they
+  // pressed.
+  const askedForList = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("list");
   const [mode, setMode] = useState<"list" | "edit" | null>(null);
   const [tripCount, setTripCount] = useState(0);
   useEffect(() => {
@@ -149,7 +156,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           return;
         }
         setTripCount(d.trips.length);
-        setMode((m) => (m === null ? (d.trips.length >= 2 ? "list" : "edit") : m));
+        setMode((m) => (m === null ? (askedForList || d.trips.length >= 2 ? "list" : "edit") : m));
       })
       .catch(() => {
         if (active) setMode((m) => m ?? "edit");
@@ -157,7 +164,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     return () => {
       active = false;
     };
-  }, [reloadKey]);
+  }, [reloadKey, askedForList]);
 
   // Load: the account, and nothing else.
   //

@@ -131,14 +131,26 @@ export default function AccountRoutePanel() {
         id="account-itineraries"
         title="Itineraries"
         action={
-          <button
-            type="button"
-            onClick={newTrip}
-            disabled={opening !== null}
-            className="min-h-11 shrink-0 border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-50"
-          >
-            {opening === "new" ? "Starting…" : "New itinerary"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* The way through to the planner's own list of itineraries, where
+                a trip is renamed, deleted, or handed to a client as a code.
+                ?list asks for the list even when there is only one — pressing
+                "All itineraries" and landing in an editor ignores the press. */}
+            <Link
+              href="/itinerary?list=1"
+              className="flex min-h-11 shrink-0 items-center border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+            >
+              All itineraries
+            </Link>
+            <button
+              type="button"
+              onClick={newTrip}
+              disabled={opening !== null}
+              className="min-h-11 shrink-0 border border-[var(--gold)] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white disabled:opacity-50"
+            >
+              {opening === "new" ? "Starting…" : "New itinerary"}
+            </button>
+          </div>
         }
       >
         {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
