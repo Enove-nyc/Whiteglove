@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import { useActionState } from "react";
 import { addFlightItineraryAction } from "@/app/admin/flight-itineraries/actions";
 
@@ -73,6 +74,36 @@ function emptyForm(): FormState {
 }
 
 const DRAFT_KEY = "white-glove:flight-itinerary-draft";
+
+
+/** One flight's fields, over the list rather than stacked in it. */
+function LegDialog({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose);
+  return (
+    <div
+      className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Flight details"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-5 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-6"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** What a flight says on its row, without being opened. */
+function legSummary(leg: LegDraft): string {
+  const route = [leg.from, leg.to].filter((v) => v.trim()).join(" → ");
+  const flight = [leg.airline, leg.flightNumber].filter((v) => v.trim()).join(" ");
+  const when = [leg.departDate, leg.departTime].filter((v) => v.trim()).join(" ");
+  return [flight, route, when].filter(Boolean).join(" · ");
+}
 
 /** A leg as it is stored and sent — the client-only key left off. */
 function legForSaving(leg: LegDraft) {
@@ -149,6 +180,10 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
   const [state, act, busy] = useActionState(addFlightItineraryAction, null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [nextKey, setNextKey] = useState(1);
+  // Which flight is open for editing. A leg has twelve fields, so a return
+  // trip with a connection each way was some fifty boxes stacked down the
+  // page; the flights are a list now and one opens at a time.
+  const [openLeg, setOpenLeg] = useState<{ list: ListName; key: string } | null>(null);
   // False until the mount effect has had its chance to restore a draft. It
   // stops the autosave effect from writing the empty first render over a draft
   // before that restore runs.
@@ -202,8 +237,12 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
   }
 
   function addLeg(listName: ListName) {
-    setForm((current) => ({ ...current, [listName]: [...current[listName], blankLeg(`k-${nextKey}`)] }));
+    const key = `k-${nextKey}`;
+    setForm((current) => ({ ...current, [listName]: [...current[listName], blankLeg(key)] }));
     setNextKey((value) => value + 1);
+    // Opened straight away, so a flight just added is filled in rather than
+    // landing at the bottom of the list as an empty row to find again.
+    setOpenLeg({ list: listName, key });
   }
 
   function removeLeg(listName: ListName, key: string) {
@@ -214,6 +253,7 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
       if (listName === "outbound" && next.length === 0) return current;
       return { ...current, [listName]: next };
     });
+    setOpenLeg((open) => (open && open.list === listName && open.key === key ? null : open));
   }
 
   function update(listName: ListName, key: string, part: Partial<LegDraft>) {
@@ -366,7 +406,28 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
           </p>
         </div>
 
-        {form.outbound.map((leg, index) => legFieldset("outbound", leg, index, form.outbound.length))}
+        <ul className="divide-y divide-[var(--gold-light)] rounded-xl border border-[var(--gold-light)] bg-white">
+          {form.outbound.map((leg, index) => (
+            <li key={leg.key}>
+              <button
+                type="button"
+                onClick={() => setOpenLeg({ list: "outbound", key: leg.key })}
+                disabled={busy}
+                className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6] disabled:opacity-50"
+              >
+                <span className="min-w-0">
+                  <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
+                    Flight {index + 1}
+                  </span>
+                  <span className="mt-0.5 block truncate text-sm text-[var(--navy)]">
+                    {legSummary(leg) || <span className="text-stone-400">Nothing filled in yet — press to add it</span>}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">Edit</span>
+              </button>
+            </li>
+          ))}
+        </ul>
 
         <div>
           <button type="button" onClick={() => addLeg("outbound")} disabled={busy} className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--gold-light)] disabled:opacity-50">
@@ -388,7 +449,30 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
           </p>
         </div>
 
-        {form.returnLegs.map((leg, index) => legFieldset("returnLegs", leg, index, form.returnLegs.length))}
+        {form.returnLegs.length > 0 && (
+        <ul className="divide-y divide-[var(--gold-light)] rounded-xl border border-[var(--gold-light)] bg-white">
+            {form.returnLegs.map((leg, index) => (
+              <li key={leg.key}>
+                <button
+                  type="button"
+                  onClick={() => setOpenLeg({ list: "returnLegs", key: leg.key })}
+                  disabled={busy}
+                  className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6] disabled:opacity-50"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
+                      Flight {index + 1}
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm text-[var(--navy)]">
+                      {legSummary(leg) || <span className="text-stone-400">Nothing filled in yet — press to add it</span>}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">Edit</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <div>
           <button type="button" onClick={() => addLeg("returnLegs")} disabled={busy} className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--gold-light)] disabled:opacity-50">
@@ -396,6 +480,29 @@ export default function FlightItineraryBuilder({ storeReady }: { storeReady: boo
           </button>
         </div>
       </section>
+
+      {/* One flight at a time, over the list. The fields are unchanged — this
+          is the same fieldset, opened rather than stacked. */}
+      {openLeg && (() => {
+        const list = form[openLeg.list];
+        const index = list.findIndex((l) => l.key === openLeg.key);
+        if (index < 0) return null;
+        return (
+          <LegDialog onClose={() => setOpenLeg(null)}>
+            {legFieldset(openLeg.list, list[index], index, list.length)}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setOpenLeg(null)}
+                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              >
+                Done
+              </button>
+              <span className="text-xs text-stone-500">Saved with the itinerary — this only puts the flight away.</span>
+            </div>
+          </LegDialog>
+        );
+      })()}
 
       <label className="block">
         <span className={label}>Closing note for the customer (optional)</span>
