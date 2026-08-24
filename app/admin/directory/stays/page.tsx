@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminCatalogList from "@/components/AdminCatalogList";
 import { listAdminCatalog } from "@/lib/admin-listing-catalog";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +10,7 @@ export default async function AdminDirectoryStaysPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin · directory</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Where to stay</h1>
+        <PageHeader eyebrow="White Glove admin · directory" title="Where to stay" />
         <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
           Places to stay already on the site. Ordinary lodging is fine when it suits the trip; a kosher hotel is better
           when there is one. Add another from Add.

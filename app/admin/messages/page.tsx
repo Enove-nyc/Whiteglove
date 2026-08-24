@@ -2,6 +2,7 @@ import Link from "next/link";
 import ContactMessages from "@/components/ContactMessages";
 import { contactStoreAvailable, listContactMessages } from "@/lib/contact-store";
 import { emailConfigStatus } from "@/lib/email";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +27,7 @@ export default async function AdminMessagesPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Messages
-            </h1>
+            <PageHeader eyebrow="White Glove admin" title="Messages" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               What people write on the contact page, the trip enquiry and the flight booking request. They are kept
               here whether or not the email arrives, so nothing anybody writes is lost to a mail service being away.

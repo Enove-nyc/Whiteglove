@@ -2,6 +2,7 @@ import Link from "next/link";
 import AdminMembershipForm from "@/components/AdminMembershipForm";
 import { membershipPublicLabel } from "@/lib/growth-settings";
 import { growthSettingsStoreAvailable, readMembershipSettings } from "@/lib/growth-settings-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,7 @@ export default async function MembershipSettingsPage() {
       <header>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Planned product</p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">White Glove Plus</h1>
+            <PageHeader eyebrow="Planned product" title="White Glove Plus" />
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
               Foundation stub only. Nothing is priced, advertised or sold until you approve a real launch. The free site
               — itinerary planner, recommendations, kosher food finder, booking search — stays useful either way.

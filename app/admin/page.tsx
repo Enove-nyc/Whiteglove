@@ -17,6 +17,7 @@ import { getImportReviewQueue } from "@/lib/import-review-queue";
 import { listExperienceRatings } from "@/lib/experience-ratings-store";
 import { listReportedPlaceReviews } from "@/lib/place-review-store";
 import { getDashboardStats } from "@/lib/site-analytics";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -226,10 +227,7 @@ export default async function AdminHome() {
     <div className="pb-12">
       <header className="flex flex-wrap items-start justify-between gap-5 border-b border-[var(--gold-light)] pb-7">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Admin overview</p>
-          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Dashboard
-          </h1>
+          <PageHeader eyebrow="Admin overview" title="Dashboard" />
         </div>
         <div className="text-right">
           {/* Who is actually signed in. Before this the answer was "somebody

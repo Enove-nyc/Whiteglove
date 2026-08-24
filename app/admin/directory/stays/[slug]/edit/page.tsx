@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import KosherStayEditor from "@/components/KosherStayEditor";
 import { getKosherStayForAdmin, isDbEnabled } from "@/lib/content-admin";
 import type { Confirmed, KosherStay } from "@/data/kosher-stays";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -53,10 +54,7 @@ export default async function EditKosherStayPage({ params }: { params: Promise<{
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin · directory</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-          Edit a place to stay
-        </h1>
+        <PageHeader eyebrow="White Glove admin · directory" title="Edit a place to stay" />
         <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
           Every box already holds what the page says now. Change what needs correcting and save — the change is on the
           site within a minute.

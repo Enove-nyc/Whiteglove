@@ -12,6 +12,7 @@ import { readProviderStages } from "@/lib/travel/registry-store";
 import { healthRows, readTravelHealth } from "@/lib/travel/telemetry";
 import { CATEGORY_LABELS, PROVIDER_LABELS, type ProviderId, type TravelCategory } from "@/lib/travel/types";
 import { fingerprint, looksMasked } from "@/lib/travel/fingerprint";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -115,10 +116,7 @@ export default async function AdminTravelProvidersPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-          Travel providers
-        </h1>
+        <PageHeader eyebrow="White Glove admin" title="Travel providers" />
         <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
           Who supplies flights, hotels and cars underneath White Glove. Nothing here is on the public site unless its
           row says <strong className="font-semibold text-[var(--navy)]">Live for visitors</strong>. Testing means this

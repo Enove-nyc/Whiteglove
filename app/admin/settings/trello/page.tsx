@@ -1,6 +1,7 @@
 import Link from "next/link";
 import TrelloForm from "@/components/TrelloForm";
 import { readTrelloFresh, trelloStoreAvailable } from "@/lib/trello-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +13,7 @@ export default async function TrelloSettings() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Trello
-            </h1>
+            <PageHeader eyebrow="White Glove admin" title="Trello" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               When somebody sends in a picture, asks to be listed, reports something wrong or asks about a Pro account,
               a card can appear on your board with a link back to the screen that handles it — so your team can pick

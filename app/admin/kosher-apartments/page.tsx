@@ -3,6 +3,7 @@ import KosherApartmentAdminForm from "@/components/KosherApartmentAdminForm";
 import KosherApartmentRemoveButton from "@/components/KosherApartmentRemoveButton";
 import { listAllApartmentProviders } from "@/lib/kosher-apartments";
 import { apartmentsStoreAvailable } from "@/lib/kosher-apartments-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,7 @@ export default async function AdminKosherApartmentsPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Kosher apartments</h1>
+        <PageHeader eyebrow="White Glove admin" title="Kosher apartments" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           The sites, agencies and hosts that rent kosher-equipped apartments and vacation flats — for the Where to stay
           page. These are where a traveller goes to <em>find</em> an apartment, not a booking we take. Each needs at least

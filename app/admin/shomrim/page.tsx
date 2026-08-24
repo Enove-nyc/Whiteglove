@@ -1,6 +1,7 @@
 import ShomerEditor, { type ShomerCemetery } from "@/components/ShomerEditor";
 import { cemeteries } from "@/data/cemeteries";
 import { isDbEnabled, listCemeteryContacts } from "@/lib/content-admin";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -36,8 +37,7 @@ export default async function AdminShomrimPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Shomrim</h1>
+            <PageHeader eyebrow="White Glove admin" title="Shomrim" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Access contacts for each beis hachaim.
             </p>

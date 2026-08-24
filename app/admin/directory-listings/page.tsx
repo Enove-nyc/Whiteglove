@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminDirectoryManager from "@/components/AdminDirectoryManager";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +10,7 @@ export default function AdminDirectoryListingsPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Listings</h1>
+            <PageHeader eyebrow="White Glove admin" title="Listings" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">Add the drivers, tour operators, planners, and agencies people can call — with phone numbers and services. Saved to your connected store and shown on <code className="rounded bg-[var(--cream)] px-1">/directory</code> right away.</p>
           </div>
           <div className="flex flex-wrap gap-3">
