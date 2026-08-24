@@ -6,6 +6,7 @@ import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
 import type { PaymentRecord, TripBalance } from "@/data/trip-payments";
 import type { CommissionRecord } from "@/data/trip-commission";
+import type { AddonItem } from "@/data/trip-addons";
 import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -198,6 +199,17 @@ export type SavedTrip = {
    * logs a booking. See data/trip-commission.ts.
    */
   commissions?: CommissionRecord[];
+  /**
+   * Optional extras offered on top of this trip — travel insurance, an
+   * airport transfer, a private tour — each accepted or declined by the
+   * client through its own public link. Absent until the planner offers
+   * one. See data/trip-addons.ts.
+   */
+  addons?: AddonItem[];
+  /** Public read-only token for the add-ons list above — separate from
+   *  `shareId` and `proposalShareId`, the same reason those two are kept
+   *  apart from each other. */
+  addonsShareId?: string;
   /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
@@ -1311,6 +1323,114 @@ export async function listCommissionSummaries(email: string): Promise<
   return trips
     .filter((t) => (t.commissions?.length ?? 0) > 0)
     .map((t) => ({ tripId: t.id, tripName: t.name, client: t.client?.trim() ?? "", records: t.commissions ?? [] }));
+}
+
+// ---- Add-ons ---------------------------------------------------------------
+//
+// Optional extras offered on top of a confirmed trip — see data/trip-addons.ts
+// for why this is kept separate from a proposal's components. Shared the
+// same way a proposal is: its own public link, its own reverse-index key, a
+// client answering through that link and nothing else.
+
+function addonId() {
+  return randomBytes(6).toString("base64url");
+}
+
+function addonsShareKey(shareId: string) {
+  return `white-glove:addons-share:${shareId}`;
+}
+
+/** Every add-on offered on this trip. */
+export async function getAddons(email: string, tripId: string): Promise<AddonItem[]> {
+  const data = await getAccountData(email);
+  return withTrips(data).trips.find((t) => t.id === tripId)?.addons ?? [];
+}
+
+/** Add or update one add-on. */
+export async function saveAddonItem(email: string, tripId: string, item: AddonItem): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const now = new Date().toISOString();
+  const existing = trip.addons ?? [];
+  const stamped: AddonItem = { ...item, id: item.id || addonId(), createdAt: item.createdAt || now, updatedAt: now };
+  const nextItems = existing.some((i) => i.id === stamped.id)
+    ? existing.map((i) => (i.id === stamped.id ? stamped : i))
+    : [...existing, stamped];
+  const next = trips.map((t) => (t.id === tripId ? { ...t, addons: nextItems, updatedAt: now } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** Remove one add-on. */
+export async function deleteAddonItem(email: string, tripId: string, id: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const nextItems = (trip.addons ?? []).filter((i) => i.id !== id);
+  const next = trips.map((t) => (t.id === tripId ? { ...t, addons: nextItems, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** The add-ons list's public link — created once, reused after. */
+export async function ensureAddonsShare(email: string, tripId: string): Promise<string | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+  if (trip.addonsShareId) {
+    await writeJson(addonsShareKey(trip.addonsShareId), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+    return trip.addonsShareId;
+  }
+  const token = shareToken();
+  const wrote = await writeJson(addonsShareKey(token), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+  if (!wrote) return null;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, addonsShareId: token, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(normalized, next, activeId);
+  return saved ? token : null;
+}
+
+/** An add-ons list by its public token. */
+export async function getSharedAddons(shareId: string) {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(addonsShareKey(shareId));
+  if (!rec) return null;
+  const data = await getAccountData(rec.ownerEmail);
+  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  if (!trip) return null;
+  const record = await getAccountRecord(rec.ownerEmail);
+  return { items: trip.addons ?? [], tripName: trip.client || trip.name, ownerName: record?.name, advisor: trip.advisor };
+}
+
+/**
+ * What a client may do with an add-on from its public link — accept or
+ * decline one, never more. Answering one that isn't on the list, or one
+ * already answered, is refused rather than silently overwritten.
+ */
+export async function applyAddonClientAction(
+  shareId: string,
+  itemId: string,
+  accepted: boolean,
+): Promise<{ items: AddonItem[]; ownerEmail: string; tripName: string; addon: AddonItem } | null> {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(addonsShareKey(shareId));
+  if (!rec) return null;
+  const data = await getAccountData(rec.ownerEmail);
+  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  if (!trip) return null;
+  const existing = trip.addons ?? [];
+  const found = existing.find((i) => i.id === itemId);
+  if (!found || found.status !== "offered") return null;
+  const now = new Date().toISOString();
+  const answered: AddonItem = { ...found, status: accepted ? "accepted" : "declined", respondedAt: now, updatedAt: now };
+  const items = existing.map((i) => (i.id === itemId ? answered : i));
+  const ok = await saveAddonItem(rec.ownerEmail, rec.tripId, answered);
+  return ok ? { items, ownerEmail: rec.ownerEmail, tripName: trip.client || trip.name, addon: answered } : null;
 }
 
 // ---- Live travel information ----------------------------------------------
