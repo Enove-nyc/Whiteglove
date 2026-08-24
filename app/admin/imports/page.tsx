@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ContentImportReview from "@/components/ContentImportReview";
 import { getContentImportDashboard } from "@/lib/content-imports";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +11,7 @@ export default async function AdminImportsPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin · directory</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Bulk imports</h1>
+        <PageHeader eyebrow="White Glove admin · directory" title="Bulk imports" />
         <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600">
           Bring source-backed candidates into a private queue, review each one, then publish individual listings only when their public details are complete.
         </p>

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { pipelineStats, TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
 import { formatCents } from "@/data/trip-payments";
+import { clientKey } from "@/data/clients";
+import type { TripReminder } from "@/data/trip-reminders";
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { followAlong, tripProgress, type FollowStop } from "@/lib/trip-progress";
 
@@ -21,10 +23,11 @@ type Row = {
   needsAttention: boolean;
   shareId?: string;
   unread: boolean;
-  updatedAt: string;
   /** What this trip still owes, when a balance has actually been set up. */
   outstandingCents?: number;
   currency?: string;
+  reminders: TripReminder[];
+  updatedAt: string;
   /** Only present for a trip in the "traveling" stage — see travelDaysFor server-side. */
   travelDays?: TravelDay[];
   /** What the advisor recorded earning on this trip — Advisor Pro only. */
@@ -32,7 +35,7 @@ type Row = {
   commissionCurrency?: string;
 };
 
-type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread";
+type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread" | "payment_due" | "nudge";
 
 const VIEWS: Array<{ id: View; label: string }> = [
   { id: "board", label: "Board" },
@@ -41,6 +44,8 @@ const VIEWS: Array<{ id: View; label: string }> = [
   { id: "awaiting_approval", label: "Awaiting approval" },
   { id: "attention", label: "Changes requiring attention" },
   { id: "unread", label: "Unread messages" },
+  { id: "payment_due", label: "Payment due" },
+  { id: "nudge", label: "Needs a nudge" },
 ];
 
 const cardBase = "rounded-xl border border-[var(--gold-light)] bg-white p-4 text-sm";
@@ -57,9 +62,72 @@ function rowsFor(view: View, rows: Row[], today: string): Row[] {
       return rows.filter((r) => r.needsAttention);
     case "unread":
       return rows.filter((r) => r.unread);
+    case "payment_due":
+      return rows.filter((r) => (r.outstandingCents ?? 0) > 0);
+    case "nudge":
+      return rows.filter((r) => r.reminders.length > 0);
     default:
       return rows;
   }
+}
+
+/**
+ * Post-trip automation's action: the pipeline flags a completed trip with
+ * no rating request sent yet (data/trip-reminders.ts); this is how the
+ * planner actually sends one. The client's email isn't kept on the trip
+ * (nothing else stores it either — see SavedTrip.client, a display name,
+ * not an address), so it's asked for here, once, at the moment it's used.
+ */
+function RatingRequestAction({ tripId }: { tripId: string }) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  if (sent) return <p className="mt-1 text-xs font-semibold text-emerald-700">Rating request sent.</p>;
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+        Send rating request
+      </button>
+    );
+  }
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-2">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="client@email.com"
+        className="min-h-8 w-48 rounded-lg border border-[var(--gold-light)] px-2 text-xs"
+      />
+      <button
+        type="button"
+        disabled={sending || !email.trim()}
+        onClick={async () => {
+          setSending(true);
+          setError("");
+          try {
+            const res = await fetch("/api/account/rating-request", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tripId, clientEmail: email }),
+            });
+            const data = await res.json().catch(() => null);
+            if (res.ok) setSent(true);
+            else setError(data?.error || "Could not send that.");
+          } finally {
+            setSending(false);
+          }
+        }}
+        className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-3 py-1 text-[11px] font-bold text-white disabled:opacity-60"
+      >
+        {sending ? "Sending…" : "Send"}
+      </button>
+      {error && <span className="text-xs font-semibold text-red-700">{error}</span>}
+    </div>
+  );
 }
 
 /**
@@ -159,6 +227,11 @@ function RowCard({
               Unread
             </span>
           )}
+          {(row.outstandingCents ?? 0) > 0 && (
+            <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">
+              {formatCents(row.outstandingCents!, row.currency)} due
+            </span>
+          )}
         </div>
       </div>
       {(row.startDate || row.endDate) && (
@@ -166,12 +239,30 @@ function RowCard({
           {row.startDate} {row.endDate ? `→ ${row.endDate}` : ""}
         </p>
       )}
+      {row.reminders.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-1">
+          {row.reminders.map((r) => (
+            <li key={r.reason} className="text-xs font-semibold text-[var(--gold-ink)]">
+              ⚑ {r.message}
+              {r.reason === "trip_completed_no_rating_sent" && <RatingRequestAction tripId={row.id} />}
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="mt-3 flex flex-wrap gap-3">
         <button type="button" onClick={() => onOpen("/itinerary")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Open itinerary
         </button>
         <button type="button" onClick={() => onOpen("/proposal")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Proposal
+        </button>
+        {row.client && (
+          <a href={`/clients/${encodeURIComponent(clientKey(row.client))}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+            Client
+          </a>
+        )}
+        <button type="button" onClick={() => onOpen("/payments")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          Payments
         </button>
         {row.shareId && (
           <a href={`/app?trip=${row.id}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">

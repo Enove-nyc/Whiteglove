@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminDuffelTools from "@/components/AdminDuffelTools";
 import { duffelTokenHelp, inspectConfiguredDuffelToken } from "@/lib/duffel-token";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 /**
  * The Duffel flight (and stay) tools, in the admin and nowhere else.
@@ -21,10 +22,7 @@ export default function AdminDuffelPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-      <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Money · Duffel</p>
-      <h1 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)]">
-        Search and book through Duffel
-      </h1>
+      <PageHeader eyebrow="Money · Duffel" title="Search and book through Duffel" />
       <p className="mt-4 max-w-2xl leading-7 text-stone-600">
         This is the only place on the site that can issue a ticket. Visitors search through the partner links on{" "}
         <Link href="/book" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">

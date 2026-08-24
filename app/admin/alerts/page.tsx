@@ -4,6 +4,7 @@ import { ALERT_TOPIC_LABELS, type AlertTopic } from "@/lib/email-alerts";
 import { alertsStoreAvailable, listAlertSignups } from "@/lib/email-alerts-store";
 import { emailConfigStatus } from "@/lib/email";
 import { getAlertSignupTotal, getAlertTopicCounts } from "@/lib/site-analytics";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +26,7 @@ export default async function AdminAlertsPage() {
   return (
     <div className="pb-12">
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Customer updates</p>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Alerts</h1>
+        <PageHeader eyebrow="Customer updates" title="Alerts" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           People who asked to be told about new destinations, listings, seasonal programmes or a specific place. Consent
           is required at signup. This screen is the list itself — who asked and for what. Writing to them is its own

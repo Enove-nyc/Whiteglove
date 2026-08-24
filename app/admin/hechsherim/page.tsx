@@ -1,6 +1,7 @@
 import HechsherEditor, { type ConfirmedRow } from "@/components/HechsherEditor";
 import { allHechsherim } from "@/data/hechsherim";
 import { hechsherStoreAvailable, listAgencies, listHechsherim } from "@/lib/hechsher-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function AdminHechsherimPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Hechsherim</h1>
+        <PageHeader eyebrow="White Glove admin" title="Hechsherim" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Record supervision for White Glove&apos;s curated kosher listings. A badge appears only when you save a
           source-backed status. Nothing here is filled in automatically: a hechsher is a claim about kashrus, and the

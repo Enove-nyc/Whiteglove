@@ -4,6 +4,7 @@ import { currentAdmin } from "@/lib/admin-current";
 import { mayUse } from "@/lib/admin-permissions";
 import { CHANGE_AREA, CHANGE_KINDS, type ChangeKind } from "@/lib/changes";
 import { changeLogAvailable, listChanges, onlyChangeKinds } from "@/lib/changes-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function AdminHistoryPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">History</h1>
+        <PageHeader eyebrow="White Glove admin" title="History" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Edits from the last 30 days. Put any of them back.
         </p>

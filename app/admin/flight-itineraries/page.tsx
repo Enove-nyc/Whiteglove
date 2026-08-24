@@ -5,6 +5,7 @@ import FlightItineraryRemoveButton from "@/components/FlightItineraryRemoveButto
 import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
 import { flightItineraryLabel, formatFlightDate, splitByDirection } from "@/lib/flight-itinerary";
 import { flightItineraryStoreAvailable, listFlightItineraries } from "@/lib/flight-itinerary-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,7 @@ export default async function AdminFlightItinerariesPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Flight itineraries</h1>
+        <PageHeader eyebrow="White Glove admin" title="Flight itineraries" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Write up the flights you sell privately as one clean page to send a customer. Save it, then send the link or
           print it to PDF. Nothing here is public — each page opens only for someone who has its link.

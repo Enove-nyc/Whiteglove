@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ForgetSearchButton from "@/components/ForgetSearchButton";
 import { buildDemandReport } from "@/lib/demand-data";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function AdminReportsPage() {
   return (
     <div className="pb-12">
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Reports</h1>
+        <PageHeader eyebrow="White Glove admin" title="Reports" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{report.says}</p>
         <p className="mt-2 max-w-2xl text-xs leading-5 text-stone-500">
           Counted since the private store was connected, not this month. Nothing here identifies anybody — it is page

@@ -7,10 +7,13 @@ import CompanionSettings from "@/components/companion/CompanionSettings";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { LinkButton } from "@/components/ui/Button";
 import LogoutButton from "@/components/LogoutButton";
 import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
-import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountSummary, readSessionEmail, resolveBusinessOwner } from "@/lib/account-store";
+import TeamMembersPanel from "@/components/TeamMembersPanel";
 import { getPlan, openRequestFor } from "@/lib/account-plan-store";
 import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
@@ -62,6 +65,14 @@ export default async function AccountPage() {
   const canAdmin = await isAdminAccount(account?.email || sessionEmail);
   const who = account?.email || sessionEmail || "";
   const [plan, openRequest] = await Promise.all([getPlan(who), openRequestFor(who)]);
+  // Whether this login is staff on somebody else's Business account, and
+  // whose — see lib/account-store.ts's resolveBusinessOwner. Everything about
+  // SERVING CLIENTS (the app, branding, the team itself) reads the business's
+  // plan; everything about THIS PERSON's own subscription (below) still
+  // reads their own.
+  const businessOwnerEmail = await resolveBusinessOwner(who);
+  const isTeamMember = businessOwnerEmail !== who;
+  const businessPlan = isTeamMember ? await getPlan(businessOwnerEmail) : plan;
   // What this plan limits, and where they stand against it. Worked out here
   // rather than in the panel: saying when the next printable copy is due means
   // reading the clock, and a component may not do that while it renders.
@@ -110,13 +121,15 @@ export default async function AccountPage() {
   // A Business account's own letterhead. Read for nobody else — the panel is
   // not drawn for them, and a locked panel advertising an upgrade has no place
   // on somebody's own account page.
-  const canBrand = mayBrandOwnItinerary(plan);
-  const brand = canBrand ? await readBrand(who) : null;
+  const canBrand = mayBrandOwnItinerary(businessPlan);
+  const brand = canBrand ? await readBrand(businessOwnerEmail) : null;
   // The White Glove app (lib/account-limits.ts). Gold and Business both get the
   // app for their own trips, so both see the door here. Only Business hands a
   // trip to a client, so only Business sees the client-link line inside it.
-  const canUseApp = mayUseCompanionApp(plan);
-  const canServeClients = mayServeCompanionClients(plan);
+  // A staff login reads the business's plan for both — the app and the client
+  // tools they use are the business's, not their own dormant personal plan.
+  const canUseApp = mayUseCompanionApp(businessPlan);
+  const canServeClients = mayServeCompanionClients(businessPlan);
   // A phone account has no "@" to cut a name out of, so fall back to the
   // number spelled readably rather than to a blank greeting.
   const identity = account?.email ?? sessionEmail ?? "";
@@ -127,19 +140,27 @@ export default async function AccountPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="mx-auto max-w-5xl px-5 py-14 sm:px-8 sm:py-20">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Your account</p>
-            <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Welcome, {displayName}.</h1>
-            <p className="mt-4 text-sm leading-6 text-stone-600">
-              Signed in as {describeIdentity(who)}.{account && !account.verifiedAt ? " Still waiting for its verification code." : ""}
-            </p>
-          </div>
-          {canAdmin && <OpenAdminButton />}
-        </div>
+        <PageHeader
+          eyebrow="Your account"
+          title={`Welcome, ${displayName}.`}
+          description={`Signed in as ${describeIdentity(who)}.${account && !account.verifiedAt ? " Still waiting for its verification code." : ""}`}
+          action={canAdmin ? <OpenAdminButton /> : undefined}
+        />
 
         {/* Itineraries, Route, Favorites. */}
         <AccountRoutePanel />
+
+        <section aria-labelledby="account-packing" className="mt-8">
+          <h2 id="account-packing" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Packing list</h2>
+          <p className="mt-2 text-sm leading-6 text-stone-600">
+            An AI-suggested checklist for the trip in your planner right now — destinations, dates and planned stops.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <LinkButton href="/packing">Open packing list</LinkButton>
+            <LinkButton href="/optimize" variant="secondary">Review your itinerary</LinkButton>
+            <LinkButton href="/translate" variant="secondary">Translate your itinerary</LinkButton>
+          </div>
+        </section>
 
         <section aria-labelledby="account-details" className="mt-8">
           <h2 id="account-details" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Details</h2>
@@ -177,40 +198,52 @@ export default async function AccountPage() {
                   <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The White Glove app</span>
                   <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal. Add it to your home screen.</span>
                 </div>
-                <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
+                <LinkButton href="/app">Open the app</LinkButton>
               </div>
               {canServeClients && (
                 <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+                  {isTeamMember && (
+                    <p className="mb-4 text-sm font-semibold text-[var(--gold-ink)]">
+                      You&apos;re staff on {describeIdentity(businessOwnerEmail)}&apos;s account.
+                    </p>
+                  )}
                   <p className="text-sm leading-6 text-stone-600">
                     Your client tools — also under the account icon above:
                   </p>
-                  <ul className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-                    <li>
-                      <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Proposals</Link>
-                      <span className="text-stone-600"> — options and price a client approves before the trip is confirmed</span>
-                    </li>
-                    <li>
-                      <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Content library</Link>
-                      <span className="text-stone-600"> — hotels, activities and contacts you use often</span>
-                    </li>
-                    <li>
-                      <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Client forms</Link>
-                      <span className="text-stone-600"> — passport numbers and emergency contacts, sent to you alone</span>
-                    </li>
-                    <li>
-                      <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Trip pipeline</Link>
-                      <span className="text-stone-600"> — every client trip and where it stands</span>
-                    </li>
-                    <li>
-                      <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Payments</Link>
-                      <span className="text-stone-600"> — set a balance and collect it into your own Stripe account</span>
-                    </li>
+                  <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {[
+                      { href: "/proposal", label: "Proposal", description: "Offer options to compare and approve" },
+                      { href: "/library", label: "Content library", description: "Your saved hotels, activities and contacts" },
+                      { href: "/forms", label: "Client form", description: "Collect a passport number or emergency contact" },
+                      { href: "/pipeline", label: "Trip pipeline", description: "Every client trip and where it stands" },
+                      { href: "/addons", label: "Trip add-ons", description: "Optional extras your client accepts or declines" },
+                      { href: "/clients", label: "Clients", description: "Everyone you've planned for, and what's noted about them" },
+                      { href: "/payments", label: "Payments", description: "Balances, splits, and collection" },
+                      { href: "/commissions", label: "Commissions", description: "What suppliers owe the agency, across every trip" },
+                      { href: "/suppliers", label: "Suppliers", description: "Every supplier you've logged a booking with" },
+                      { href: "/activity", label: "Trip activity", description: "What actually happened on a trip, logged automatically" },
+                    ].map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="flex flex-col rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 transition hover:border-[var(--gold)]"
+                        >
+                          <span className="font-semibold text-[var(--navy)]">{item.label}</span>
+                          <span className="text-sm text-stone-600">{item.description}</span>
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                   <p className="mt-3 text-sm leading-6 text-stone-600">
                     To hand a client their own trip, open it in the{" "}
                     <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
                     and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> — it opens only that one itinerary on the client&apos;s phone.
                   </p>
+                  {!isTeamMember && (
+                    <div className="mt-6 border-t border-[var(--gold-light)] pt-4">
+                      <TeamMembersPanel />
+                    </div>
+                  )}
                 </div>
               )}
               <CompanionSettings />

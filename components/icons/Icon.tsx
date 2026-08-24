@@ -46,7 +46,9 @@ export type IconName =
   | "more"
   | "reply"
   | "check-check"
-  | "trash";
+  | "trash"
+  | "pin"
+  | "pin-filled";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -236,6 +238,20 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M7 7l.8 12a2 2 0 0 0 2 1.9h4.4a2 2 0 0 0 2-1.9L17 7" />
       <path d="M10 11v6" />
       <path d="M14 11v6" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 3v6.2" />
+      <path d="M8 9.2h8l1.4 4.4H6.6Z" />
+      <path d="M12 13.6V21" />
+    </>
+  ),
+  "pin-filled": (
+    <>
+      <path d="M8 9.2h8l1.4 4.4H6.6Z" fill="currentColor" stroke="none" />
+      <path d="M12 3v6.2" />
+      <path d="M12 13.6V21" />
     </>
   ),
 };

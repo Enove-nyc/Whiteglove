@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, ensureTravelerShare, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, ensureTravelerShare, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { PLAN_LABELS } from "@/lib/account-plans";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -22,8 +21,9 @@ export async function POST(request: NextRequest) {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  if (!mayServeCompanionClients(await getPlan(account.email))) {
-    return NextResponse.json({ error: `Handing a trip to a client is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
+  const owner = await resolveBusinessOwner(account.email);
+  if (!mayServeCompanionClients(await getPlan(owner))) {
+    return NextResponse.json({ error: "Handing a trip to a client is part of a Business account." }, { status: 403 });
   }
 
   const body = (await request.json().catch(() => null)) as { tripId?: string; travelerId?: string } | null;
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const travelerId = body?.travelerId?.trim();
   if (!tripId || !travelerId) return NextResponse.json({ error: "Which trip, and which traveler?" }, { status: 400 });
 
-  const shareId = await ensureTravelerShare(account.email, tripId, travelerId);
+  const shareId = await ensureTravelerShare(owner, tripId, travelerId);
   if (!shareId) return NextResponse.json({ error: "Could not create that link." }, { status: 503 });
   return NextResponse.json({ shareId });
 }

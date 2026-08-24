@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, acknowledgeAlert, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, acknowledgeAlert, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
   const alertId = body?.alertId?.trim();
   if (!tripId || !alertId) return NextResponse.json({ error: "Which trip, and which alert?" }, { status: 400 });
 
-  const ok = await acknowledgeAlert(account.email, tripId, alertId);
+  const owner = await resolveBusinessOwner(account.email);
+  const ok = await acknowledgeAlert(owner, tripId, alertId);
   if (!ok) return NextResponse.json({ error: "Could not dismiss that." }, { status: 503 });
   return NextResponse.json({ ok: true });
 }

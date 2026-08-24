@@ -17,6 +17,15 @@ function readLimit(form: FormData, name: string): number | null {
   return Number.isFinite(n) && n >= 1 ? Math.floor(n) : UNLIMITED;
 }
 
+/** Same as readLimit, except zero is a real value — no staff seats at all,
+ *  not "no limit". See PlanLimits.staffSeats in lib/account-limits.ts. */
+function readSeatLimit(form: FormData, name: string): number | null {
+  const raw = String(form.get(name) ?? "").trim();
+  if (!raw) return UNLIMITED;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : UNLIMITED;
+}
+
 export async function saveLimitsAction(_prev: ActionResult | null, form: FormData): Promise<ActionResult> {
   const { identity, areas } = await currentAdmin();
   if (!identity) return { ok: false, message: "Please sign in." };
@@ -31,6 +40,7 @@ export async function saveLimitsAction(_prev: ActionResult | null, form: FormDat
     next[plan] = {
       trips: readLimit(form, `${plan}-trips`),
       printsPerWeek: readLimit(form, `${plan}-prints`),
+      staffSeats: readSeatLimit(form, `${plan}-seats`),
     };
   }
 

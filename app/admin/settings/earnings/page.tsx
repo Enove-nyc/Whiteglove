@@ -14,6 +14,7 @@ import { partnerFor } from "@/lib/travel-partners";
 import { describeLinks } from "@/lib/travelpayouts";
 import { readTravelpayoutsFresh, travelpayoutsStoreAvailable } from "@/lib/travelpayouts-store";
 import { readTravelEssentialsFresh, travelEssentialsStoreAvailable } from "@/lib/travel-essentials-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -41,10 +42,7 @@ export default async function EarningsSettings() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Earnings
-            </h1>
+            <PageHeader eyebrow="White Glove admin" title="Earnings" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Partner searches, page cards, and anything else you link to.
             </p>

@@ -3,6 +3,7 @@ import FlatFileListEditor, { type FlatFileItem } from "@/components/FlatFileList
 import { addEruvAction, removeEruvAction } from "@/app/admin/eruvin/actions";
 import { listAllEruvin } from "@/lib/eruvin";
 import { eruvinStoreAvailable } from "@/lib/eruvin-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -35,8 +36,7 @@ export default async function AdminEruvinPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Eruvin</h1>
+        <PageHeader eyebrow="White Glove admin" title="Eruvin" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Community eruvin for the public page. Each listing says the community maintains an eruv and links a source that
           establishes it — never a claim that the eruv is up — so the source link is the one field that must be a working

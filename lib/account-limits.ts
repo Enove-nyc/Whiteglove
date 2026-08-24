@@ -34,6 +34,15 @@ export type PlanLimits = {
   trips: Limit;
   /** How many printable copies in any seven days. */
   printsPerWeek: Limit;
+  /**
+   * How many OTHER logins may be linked to this account as staff — see
+   * data/team.ts. The owner's own sign-in is never counted against this
+   * number; staffSeats: 0 means "just the owner," not "the account is
+   * locked." Only Business ever has more than zero — inviting staff at all
+   * is gated the same as everything else about planning on somebody else's
+   * behalf (mayServeCompanionClients).
+   */
+  staffSeats: Limit;
 };
 
 /* ---- what a plan can DO, as opposed to how much of it ------------------- */
@@ -169,13 +178,15 @@ export const SAME_PRINT_GRACE_MS = 30 * 60 * 1000;
 export const BUILT_IN_LIMITS: Record<AccountPlan, PlanLimits> = {
   // Nothing bought yet — signed in, and able to choose a plan, and nothing
   // else. Not a locked account by accident; this is the whole point of it.
-  free: { trips: 0, printsPerWeek: 0 },
+  free: { trips: 0, printsPerWeek: 0, staffSeats: 0 },
   // Exactly the one trip the fee was for.
-  one_trip: { trips: 1, printsPerWeek: UNLIMITED },
-  // Nothing has been decided about these, so nothing is limited. An invented
-  // number here would be a promise nobody made.
-  starter: { trips: UNLIMITED, printsPerWeek: UNLIMITED },
-  pro: { trips: UNLIMITED, printsPerWeek: UNLIMITED },
+  one_trip: { trips: 1, printsPerWeek: UNLIMITED, staffSeats: 0 },
+  // Nothing has been decided about trips or printing for these, so neither is
+  // limited — an invented number would be a promise nobody made. Staff seats
+  // are different: a plan that cannot serve clients at all (companionClients
+  // above) has nobody to add a teammate for, so seats follow that gate.
+  starter: { trips: UNLIMITED, printsPerWeek: UNLIMITED, staffSeats: 2 },
+  pro: { trips: UNLIMITED, printsPerWeek: UNLIMITED, staffSeats: 2 },
 };
 
 export type LimitOverrides = Partial<Record<AccountPlan, Partial<PlanLimits>>>;
@@ -192,6 +203,18 @@ function cleanLimit(value: unknown, fallback: Limit): Limit {
   return whole < 1 ? fallback : whole;
 }
 
+/**
+ * The same cleaning as cleanLimit, except zero is a real, valid value here —
+ * "no staff seats on this plan" is an ordinary state (every plan below
+ * Business), not a locked account the way zero trips would be.
+ */
+function cleanSeatLimit(value: unknown, fallback: Limit): Limit {
+  if (value === null) return UNLIMITED;
+  if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
+  const whole = Math.floor(value);
+  return whole < 0 ? fallback : whole;
+}
+
 export function limitsFor(plan: AccountPlan, overrides?: LimitOverrides | null): PlanLimits {
   const built = BUILT_IN_LIMITS[plan] ?? BUILT_IN_LIMITS.free;
   const over = overrides?.[plan];
@@ -199,6 +222,7 @@ export function limitsFor(plan: AccountPlan, overrides?: LimitOverrides | null):
   return {
     trips: "trips" in over ? cleanLimit(over.trips, built.trips) : built.trips,
     printsPerWeek: "printsPerWeek" in over ? cleanLimit(over.printsPerWeek, built.printsPerWeek) : built.printsPerWeek,
+    staffSeats: "staffSeats" in over ? cleanSeatLimit(over.staffSeats, built.staffSeats) : built.staffSeats,
   };
 }
 

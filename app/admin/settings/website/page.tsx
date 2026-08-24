@@ -6,6 +6,7 @@ import SiteLockControl from "@/components/SiteLockControl";
 import { betaStoreAvailable, getBetaNoticeFresh } from "@/lib/beta-notice-store";
 import { getDashboardStats, getLockedPaths } from "@/lib/site-analytics";
 import { readSignIns, signInLogAvailable } from "@/lib/signin-log";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function WebsiteAccessSettings() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Website access</h1>
+        <PageHeader eyebrow="White Glove admin" title="Website access" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Close the whole website while you are working on it, or close just a few parts. There are three ways in, and
           you choose which one each person gets.

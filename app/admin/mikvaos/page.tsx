@@ -3,6 +3,7 @@ import MikvaosEditor, { type MikvahRow } from "@/components/MikvaosEditor";
 import { saveMikvahAction, deleteMikvahAction } from "@/app/admin/mikvaos/actions";
 import { isDbEnabled } from "@/lib/content-admin";
 import { listMikvaosForAdmin } from "@/lib/mikvaos";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function AdminMikvaosPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Mikvaos</h1>
+        <PageHeader eyebrow="White Glove admin" title="Mikvaos" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Every mikvah listing across the site. Press one to fix its details in place — hours, phone, address, source,
           and whether it is published. The few that live in the built-in catalog open in their town instead. A listing

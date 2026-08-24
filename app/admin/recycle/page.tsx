@@ -3,6 +3,7 @@ import { currentAdmin } from "@/lib/admin-current";
 import { mayUse } from "@/lib/admin-permissions";
 import { KIND_AREA, RECYCLE_KINDS, type RecycleKind } from "@/lib/recycle";
 import { listDeleted, onlyKinds, recycleStoreAvailable } from "@/lib/recycle-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function AdminRecyclePage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Deleted</h1>
+        <PageHeader eyebrow="White Glove admin" title="Deleted" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Removed in the last 30 days. Put anything back as it was.
         </p>

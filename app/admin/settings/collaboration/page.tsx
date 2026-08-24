@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminCollaborationForm from "@/components/AdminCollaborationForm";
 import { growthSettingsStoreAvailable, readCollaborationSettings } from "@/lib/growth-settings-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +16,7 @@ export default async function CollaborationSettingsPage() {
       <header>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Itinerary planner</p>
-            <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Collaboration</h1>
+            <PageHeader eyebrow="Itinerary planner" title="Collaboration" />
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
               Voting, shared favorites and room groupings for families planning together. Private trip contents are not
               listed here — only whether each tool is available.

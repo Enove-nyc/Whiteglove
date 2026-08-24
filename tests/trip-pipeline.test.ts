@@ -157,9 +157,18 @@ describe("the pipeline route keeps the same fences everything else does", () => 
     assert.match(post, /stage !== "inquiry" && stage !== "planning"/);
   });
 
-  it("reads the account's own trips, never a trip id off the request", () => {
+  it("reads the account's own (or the business it's staff on) trips, never a trip id off the request", () => {
     assert.doesNotMatch(ROUTE, /getAccountData\(request/);
-    assert.match(ROUTE, /getAccountData\(account\.email\)/);
+    assert.match(ROUTE, /getAccountData\(owner\)/);
+  });
+
+  it("reads outstanding payments from the trip's own balance, not a second number kept alongside it", () => {
+    assert.match(ROUTE, /hasBalance\(t\.balance\)/);
+    assert.match(ROUTE, /outstandingCents\(t\.balance\)/);
+  });
+
+  it("outstanding is absent, not zero, when no balance has been set up at all", () => {
+    assert.match(ROUTE, /t\.balance && hasBalance\(t\.balance\) \? outstandingCents\(t\.balance\) : undefined/);
   });
 
   it("KEEPS A RECORDED ZERO COMMISSION, rather than treating it the same as none recorded", () => {
