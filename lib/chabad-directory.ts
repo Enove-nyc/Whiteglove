@@ -1,15 +1,16 @@
 /**
- * Read-side helpers for the Chabad Travel Directory — Europe (/chabad-europe).
+ * Read-side helpers for the Chabad House Finder (/chabad-directory).
  *
- * A thin layer over data/chabad-europe.ts: nothing here reaches a database,
- * because this directory has no admin editor yet — see that file's header
- * for why (chabad.org's locator is unreachable by this project's fetch
- * tools) and for the rule an entry has to meet before it is added.
+ * A thin layer over data/chabad-directory.ts: nothing here reaches a
+ * database, because this directory has no admin editor yet — see that
+ * file's header for why (chabad.org's locator is unreachable by this
+ * project's fetch tools) and for the rule an entry has to meet before it is
+ * added.
  */
 
-import { chabadEuropeListings, type ChabadEuropeListing, type ChabadFeatureStatus } from "@/data/chabad-europe";
+import { chabadListings, type ChabadListing, type ChabadFeatureStatus } from "@/data/chabad-directory";
 
-export type { ChabadEuropeListing, ChabadFeatureStatus };
+export type { ChabadListing, ChabadFeatureStatus };
 
 export const CHABAD_FEATURE_KEYS = ["minyan", "mikveh", "kosher_food", "shabbat_hospitality"] as const;
 export type ChabadFeatureKey = (typeof CHABAD_FEATURE_KEYS)[number];
@@ -29,7 +30,7 @@ export const CHABAD_STATUS_LABELS: Record<ChabadFeatureStatus, string> = {
   contact_to_confirm: "Contact to confirm",
 };
 
-function statusOf(listing: ChabadEuropeListing, feature: ChabadFeatureKey): ChabadFeatureStatus {
+function statusOf(listing: ChabadListing, feature: ChabadFeatureKey): ChabadFeatureStatus {
   switch (feature) {
     case "minyan":
       return listing.minyan_status;
@@ -42,7 +43,7 @@ function statusOf(listing: ChabadEuropeListing, feature: ChabadFeatureKey): Chab
   }
 }
 
-function notesOf(listing: ChabadEuropeListing, feature: ChabadFeatureKey): string | null {
+function notesOf(listing: ChabadListing, feature: ChabadFeatureKey): string | null {
   switch (feature) {
     case "minyan":
       return listing.minyan_notes;
@@ -65,7 +66,7 @@ export type ChabadFeatureView = {
 };
 
 /** Every feature on a listing, paired with its status, notes and citation. */
-export function featuresOf(listing: ChabadEuropeListing): ChabadFeatureView[] {
+export function featuresOf(listing: ChabadListing): ChabadFeatureView[] {
   return CHABAD_FEATURE_KEYS.map((key) => ({
     key,
     label: CHABAD_FEATURE_LABELS[key],
@@ -77,18 +78,18 @@ export function featuresOf(listing: ChabadEuropeListing): ChabadFeatureView[] {
 }
 
 /** Only the features a listing's own source actually confirms — what a card shows. */
-export function confirmedFeaturesOf(listing: ChabadEuropeListing): ChabadFeatureView[] {
+export function confirmedFeaturesOf(listing: ChabadListing): ChabadFeatureView[] {
   return featuresOf(listing).filter((feature) => feature.status === "confirmed");
 }
 
 /** All published entries, sorted by country then city then name. */
-export function listChabadEuropeListings(): ChabadEuropeListing[] {
-  return [...chabadEuropeListings].sort(
+export function listChabadListings(): ChabadListing[] {
+  return [...chabadListings].sort(
     (a, b) => a.country.localeCompare(b.country) || a.city.localeCompare(b.city) || a.name.localeCompare(b.name),
   );
 }
 
 /** Every country represented, for the filter control. */
-export function chabadEuropeCountries(listings: readonly ChabadEuropeListing[]): string[] {
+export function chabadCountries(listings: readonly ChabadListing[]): string[] {
   return [...new Set(listings.map((listing) => listing.country))].sort((a, b) => a.localeCompare(b));
 }

@@ -93,6 +93,11 @@ const nextConfig: NextConfig = {
       // /cemeteries/heritage/<slug> are unaffected: this matches the index path
       // alone, not its children.
       { source: "/cemeteries/heritage", destination: "/cemeteries", permanent: true },
+      // The Chabad directory shipped scoped to Europe first, then went
+      // worldwide at the owner's word — same page, same data, wider scope.
+      // /chabad-europe was live and indexed under that name, so it redirects
+      // rather than 404ing.
+      { source: "/chabad-europe", destination: "/chabad-directory", permanent: true },
       // The same story, for the same reason. /book and /booking were two
       // travel-booking pages: different headings ("Book with cash, or with
       // miles" and "Flights & hotels"), different search components, two

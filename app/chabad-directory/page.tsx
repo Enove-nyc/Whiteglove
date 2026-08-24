@@ -1,30 +1,30 @@
-import ChabadEuropeDirectory from "@/components/ChabadEuropeDirectory";
+import ChabadDirectory from "@/components/ChabadDirectory";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SectionHeading from "@/components/SectionHeading";
 import StructuredData from "@/components/StructuredData";
-import { listChabadEuropeListings } from "@/lib/chabad-directory";
+import { listChabadListings } from "@/lib/chabad-directory";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
-  title: "Chabad Travel Directory — Europe | White Glove Kosher Travel",
+  title: "Chabad House Finder | White Glove Kosher Travel",
   description:
-    "Chabad Houses across Europe with a minyan, mikveh, kosher food, or Shabbat hospitality confirmed on their own official page — each with its source and the date it was checked.",
-  path: "/chabad-europe",
+    "Chabad Houses worldwide with a minyan, mikveh, kosher food, or Shabbat hospitality confirmed on their own official page — each with its source and the date it was checked.",
+  path: "/chabad-directory",
 });
 
 /**
- * Chabad Travel Directory — Europe.
+ * Chabad House Finder — worldwide.
  *
  * A traveler-facing directory, not a community listing: schools, camps and
- * general programming are deliberately left out (see data/chabad-europe.ts).
+ * general programming are deliberately left out (see data/chabad-directory.ts).
  * Every card shows only what that institution's own official page confirms —
  * a Chabad House on Chabad.org's locator is not, by itself, evidence of a
  * minyan, mikveh, kosher food or Shabbat hospitality.
  */
-export default function ChabadEuropePage() {
-  const listings = listChabadEuropeListings();
+export default function ChabadDirectoryPage() {
+  const listings = listChabadListings();
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -32,7 +32,7 @@ export default function ChabadEuropePage() {
         data={breadcrumbs([
           { name: "Home", path: "/" },
           { name: "Kosher travel", path: "/kosher-travel" },
-          { name: "Chabad Travel Directory — Europe", path: "/chabad-europe" },
+          { name: "Chabad House Finder", path: "/chabad-directory" },
         ])}
       />
       <Navbar />
@@ -41,11 +41,11 @@ export default function ChabadEuropePage() {
         <div className="mx-auto max-w-7xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kosher travel</p>
           <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-            Chabad Travel Directory — Europe
+            Chabad House Finder
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">
             {listings.length > 0
-              ? "Chabad Houses across Europe, with only what each one's own official page confirms for a traveler — a minyan, a mikveh, kosher food, or Shabbat hospitality."
+              ? "Chabad Houses worldwide, with only what each one's own official page confirms for a traveler — a minyan, a mikveh, kosher food, or Shabbat hospitality."
               : "This directory is being built one confirmed listing at a time — nothing appears here until it has a source and a date it was checked."}
           </p>
           <p className="mt-4 max-w-3xl rounded-lg border border-[var(--gold-light)] bg-[var(--surface)] px-4 py-3 text-sm leading-6 text-stone-600">
@@ -64,7 +64,7 @@ export default function ChabadEuropePage() {
         <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
           <SectionHeading eyebrow="Listings" title="Search the directory" />
           <div className="mt-8">
-            <ChabadEuropeDirectory listings={listings} />
+            <ChabadDirectory listings={listings} />
           </div>
         </section>
       )}

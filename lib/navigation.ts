@@ -110,7 +110,7 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
       { label: "Stays", href: "/hotels" },
       { label: "Shuls", href: "/shuls" },
       { label: "Mikvahs", href: "/mikvaos" },
-      { label: "Chabad Europe", href: "/chabad-europe" },
+      { label: "Chabad House Finder", href: "/chabad-directory" },
       { label: "Eruvin", href: "/eruvin" },
       { label: "Zmanim", href: "/zmanim" },
       { label: "Kevarim", href: "/tzaddikim" },
