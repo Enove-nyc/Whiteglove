@@ -18,6 +18,7 @@ import { passwordProblem } from "@/lib/password-rules";
 import type { SavedPlace } from "@/data/route-utils";
 import { accountCookieName, createAccountSession, parseAccountSession } from "@/lib/account-session";
 import { templateFromTrip, tripFromTemplate } from "@/lib/trip-templates";
+import { readTemplatesStore, writeTemplatesStore, type SavedTemplate } from "@/lib/trip-templates-store";
 import type { PushSubscriptionRecord } from "@/data/push-subscriptions";
 import { sendPushToSubscriptions } from "@/lib/push-notify";
 
@@ -194,19 +195,6 @@ export type SavedTrip = {
   updatedAt: string;
 };
 
-/**
- * An advisor's own trip, saved as a reusable shape rather than a one-off —
- * see lib/trip-templates.ts for exactly what a template keeps and what it
- * strips out of the trip it was made from.
- */
-export type SavedTemplate = {
-  id: string;
-  /** What the advisor called it — "Rome, four days, family of five". */
-  name: string;
-  itinerary: Itinerary;
-  createdAt: string;
-};
-
 export type AccountData = {
   /**
    * The open trip's route and itinerary, kept as they always were.
@@ -232,8 +220,12 @@ export type AccountData = {
    * hotel on a dozen different trips instead of retyping it each time.
    */
   library?: { items: LibraryItem[]; packs: LibraryPack[] };
-  /** The advisor's own saved trip shapes. Absent on accounts that have never
-   *  saved one — see SavedTemplate and lib/trip-templates.ts. */
+  /**
+   * The advisor's own saved trip shapes, from before templates got their own
+   * store (lib/trip-templates-store.ts) — read once, by getTemplates below,
+   * to carry an account's existing templates into the new store. Nothing
+   * writes here any more.
+   */
   templates?: SavedTemplate[];
   updatedAt?: string;
 };
@@ -1062,22 +1054,27 @@ export async function deleteTrip(email: string, id: string) {
 
 // ---- Templates -----------------------------------------------------------
 
-function withTemplates(data: AccountData): SavedTemplate[] {
-  return data.templates?.filter((t) => t && t.id) ?? [];
-}
-
-async function writeTemplates(email: string, templates: SavedTemplate[]) {
-  const normalized = normalizeId(email);
-  const current = await getAccountData(normalized);
-  const next: AccountData = { ...current, templates, updatedAt: new Date().toISOString() };
-  return writeJson(dataKey(normalized), next);
+/**
+ * The account's templates, carrying an older account's inline ones into the
+ * shared store (lib/trip-templates-store.ts) the first time they are read.
+ *
+ * Nothing is written here for an account whose store is already populated —
+ * this only fires once, for a template saved before the store existed, and
+ * writes the carried-over copy back so the next read finds it in the store
+ * directly rather than repeating the migration.
+ */
+async function currentTemplates(email: string): Promise<SavedTemplate[]> {
+  const fromStore = await readTemplatesStore(email);
+  if (fromStore.length) return fromStore;
+  const data = await getAccountData(email);
+  const legacy = data.templates?.filter((t) => t && t.id) ?? [];
+  if (legacy.length) await writeTemplatesStore(email, legacy);
+  return legacy;
 }
 
 export async function getTemplates(email: string): Promise<SavedTemplate[]> {
-  const data = await getAccountData(email);
-  return withTemplates(data)
-    .slice()
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const templates = await currentTemplates(email);
+  return templates.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 /** How long a template's name may be — a label on a list, not a document. */
@@ -1100,7 +1097,7 @@ export async function saveTripAsTemplate(email: string, id: string, name: string
   const { trips } = withTrips(data);
   const trip = trips.find((t) => t.id === id);
   if (!trip) return { ok: false as const, error: "That trip is gone." };
-  const templates = withTemplates(data);
+  const templates = await currentTemplates(email);
   if (templates.length >= MAX_TEMPLATES) {
     return { ok: false as const, error: `That is ${MAX_TEMPLATES} templates already. Delete one first.` };
   }
@@ -1111,7 +1108,7 @@ export async function saveTripAsTemplate(email: string, id: string, name: string
     createdAt: new Date().toISOString(),
   };
   const next = [...templates, template];
-  const saved = await writeTemplates(email, next);
+  const saved = await writeTemplatesStore(email, next);
   if (!saved) return { ok: false as const, error: "Could not save the template." };
   return { ok: true as const, templates: next };
 }
@@ -1120,22 +1117,20 @@ export async function renameTemplate(email: string, id: string, name: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const clean = name.trim().slice(0, MAX_TEMPLATE_NAME);
   if (!clean) return { ok: false as const, error: "Give the template a name." };
-  const data = await getAccountData(email);
-  const templates = withTemplates(data);
+  const templates = await currentTemplates(email);
   if (!templates.some((t) => t.id === id)) return { ok: false as const, error: "That template is gone." };
   const next = templates.map((t) => (t.id === id ? { ...t, name: clean, itinerary: { ...t.itinerary, title: clean } } : t));
-  const saved = await writeTemplates(email, next);
+  const saved = await writeTemplatesStore(email, next);
   if (!saved) return { ok: false as const, error: "Could not rename the template." };
   return { ok: true as const, templates: next };
 }
 
 export async function deleteTemplate(email: string, id: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const data = await getAccountData(email);
-  const templates = withTemplates(data);
+  const templates = await currentTemplates(email);
   if (!templates.some((t) => t.id === id)) return { ok: false as const, error: "That template is already gone." };
   const next = templates.filter((t) => t.id !== id);
-  const saved = await writeTemplates(email, next);
+  const saved = await writeTemplatesStore(email, next);
   if (!saved) return { ok: false as const, error: "Could not delete the template." };
   return { ok: true as const, templates: next };
 }
@@ -1149,7 +1144,7 @@ export async function deleteTemplate(email: string, id: string) {
 export async function startTripFromTemplate(email: string, templateId: string, name: string, startDate: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
   const data = await getAccountData(email);
-  const template = withTemplates(data).find((t) => t.id === templateId);
+  const template = (await currentTemplates(email)).find((t) => t.id === templateId);
   if (!template) return { ok: false as const, error: "That template is gone." };
   const { trips } = withTrips(data);
   const refused = await cannotAddTrip(email, trips.length);

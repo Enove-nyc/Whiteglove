@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getAccountRecord, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, getAccountRecord, getCurrentAccountData, getTemplates } from "@/lib/account-store";
 import { getPlan, setPlan } from "@/lib/account-plan-store";
 import {
   describeSeats,
@@ -24,6 +24,7 @@ import {
 } from "@/lib/agency-store";
 import { readBrand, writeBrand } from "@/lib/business-brand-store";
 import { normalizeIdentity, identityKey } from "@/lib/identity";
+import { writeTemplatesStore } from "@/lib/trip-templates-store";
 import { agencySeatOfferable, agencySeatPriceId, type BillingPeriod, priceIdFor } from "@/lib/plan-billing";
 import { readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
 import { describePrice, readPrice, readSubscriptionFromStripe, setSubscriptionSeatQuantity } from "@/lib/stripe";
@@ -157,14 +158,16 @@ export async function POST(request: NextRequest) {
       }
 
       if (!agency) {
-        // Founding the agency. Their existing letterhead, if any, carries over
-        // to the shared one — nothing about it resets just because a second
-        // login can now use it too.
+        // Founding the agency. Their existing letterhead and saved trip
+        // templates, if any, carry over to the shared pool — nothing about
+        // either resets just because a second login can now use them too.
         const priorBrand = await readBrand(email);
+        const priorTemplates = await getTemplates(email);
         const fresh = newAgency(email, seats);
         await writeAgency(fresh);
         await setAccountAgency(email, fresh.id);
         if (priorBrand) await writeBrand(email, priorBrand);
+        if (priorTemplates.length) await writeTemplatesStore(email, priorTemplates);
         return NextResponse.json({ ok: true });
       }
       await writeAgency({ ...agency, seatsPurchased: seats, updatedAt: new Date().toISOString() });
