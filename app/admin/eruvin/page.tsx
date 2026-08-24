@@ -1,14 +1,36 @@
 import Link from "next/link";
-import EruvAdminForm from "@/components/EruvAdminForm";
-import EruvRemoveButton from "@/components/EruvRemoveButton";
+import FlatFileListEditor, { type FlatFileItem } from "@/components/FlatFileListEditor";
+import { addEruvAction, removeEruvAction } from "@/app/admin/eruvin/actions";
 import { listAllEruvin } from "@/lib/eruvin";
 import { eruvinStoreAvailable } from "@/lib/eruvin-store";
 
 export const dynamic = "force-dynamic";
 
+const FIELDS = [
+  { name: "name", label: "Eruv name", required: true, placeholder: "The Golders Green Eruv" },
+  { name: "sourceUrl", label: "Source link (https://…)", type: "url" as const, required: true, placeholder: "https://…" },
+  { name: "city", label: "City", required: true, placeholder: "London" },
+  { name: "country", label: "Country", required: true, placeholder: "United Kingdom" },
+  { name: "covers", label: "What it covers (optional)", full: true, placeholder: "Golders Green, Hendon and Temple Fortune" },
+  { name: "mapUrl", label: "Boundary map link (optional)", type: "url" as const, placeholder: "https://…" },
+];
+
 export default async function AdminEruvinPage() {
   const [listings, storeReady] = await Promise.all([listAllEruvin(), Promise.resolve(eruvinStoreAvailable())]);
-  const added = listings.filter((e) => e.added);
+  const items: FlatFileItem[] = listings.map((e) => ({
+    id: e.id,
+    added: Boolean(e.added),
+    title: e.name,
+    subtitle: [`${e.city}, ${e.country}`, e.covers].filter(Boolean).join(" · "),
+    values: {
+      name: e.name,
+      city: e.city,
+      country: e.country,
+      covers: e.covers ?? "",
+      sourceUrl: e.sourceUrl,
+      mapUrl: e.mapUrl ?? "",
+    },
+  }));
 
   return (
     <>
@@ -19,9 +41,6 @@ export default async function AdminEruvinPage() {
           Community eruvin for the public page. Each listing says the community maintains an eruv and links a source that
           establishes it — never a claim that the eruv is up — so the source link is the one field that must be a working
           web address. A boundary map is welcome where the community publishes one.
-        </p>
-        <p className="mt-3 text-sm text-stone-500">
-          {listings.length} listed · {added.length} added here · {listings.length - added.length} built in
         </p>
       </header>
 
@@ -34,44 +53,15 @@ export default async function AdminEruvinPage() {
         </Link>
       </div>
 
-      <section className="mt-10">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Add an eruv</h2>
-        <EruvAdminForm storeReady={storeReady} />
-      </section>
-
-      <section className="mt-12">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-          Added here {added.length ? `(${added.length})` : ""}
-        </h2>
-        {added.length === 0 ? (
-          <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-            Nothing added yet. Eruvin you add appear here, alongside the built-in list on the public page.
-          </p>
-        ) : (
-          <ul className="mt-4 divide-y divide-[var(--gold-light)] border-y border-[var(--gold-light)]">
-            {added.map((eruv) => (
-              <li key={eruv.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <span className="text-sm text-[var(--navy)]">
-                  <strong>{eruv.name}</strong> — {eruv.city}, {eruv.country}
-                  {eruv.covers ? <span className="text-stone-500"> · {eruv.covers}</span> : null}{" "}
-                  <a href={eruv.sourceUrl} target="_blank" rel="noreferrer" className="text-stone-500 underline decoration-stone-300 underline-offset-4">
-                    source
-                  </a>
-                  {eruv.mapUrl ? (
-                    <>
-                      {" · "}
-                      <a href={eruv.mapUrl} target="_blank" rel="noreferrer" className="text-stone-500 underline decoration-stone-300 underline-offset-4">
-                        map
-                      </a>
-                    </>
-                  ) : null}
-                </span>
-                <EruvRemoveButton id={eruv.id} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <FlatFileListEditor
+        items={items}
+        fields={FIELDS}
+        addLabel="Add an eruv"
+        emptyLabel="Nothing added yet. Eruvin you add appear here, alongside the built-in list on the public page."
+        storeReady={storeReady}
+        saveAction={addEruvAction}
+        removeAction={removeEruvAction}
+      />
     </>
   );
 }

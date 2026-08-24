@@ -37,8 +37,13 @@ export async function addEruvAction(_prev: ActionResult | null, formData: FormDa
   const problem = eruvProblem(input);
   if (problem) return { ok: false, message: problem };
 
-  if (!(await addStoredEruv(eruvFromInput(input)))) return { ok: false, message: "That could not be saved." };
-  return { ok: true, message: `Added the ${input.name}. It is on the eruvin page now.` };
+  // Editing keeps the entry's own id, so a change is an update in place rather
+  // than a second copy; adding lets eruvFromInput derive a fresh one.
+  const id = str(formData, "id");
+  const listing = eruvFromInput(input);
+  if (id) listing.id = id;
+  if (!(await addStoredEruv(listing))) return { ok: false, message: "That could not be saved." };
+  return { ok: true, message: id ? `Saved the ${input.name}.` : `Added the ${input.name}. It is on the eruvin page now.` };
 }
 
 export async function removeEruvAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
