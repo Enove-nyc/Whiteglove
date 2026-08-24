@@ -11,9 +11,15 @@ import {
 } from "@/lib/account-store";
 import { isStale } from "@/data/itinerary-translation";
 import { itinerarySignature } from "@/data/itinerary-optimization";
+import { rateLimit, tooManyMessage } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
+
+/** Per account, per hour. Every POST here is a generate — it spends the
+ *  deployment's shared paid AI quota — so it carries the same kind of fence
+ *  app/api/account/smart-import/route.ts already keeps on its own model call. */
+const AI_LIMIT = { limit: 20, windowSeconds: 3600 };
 
 const MAX_LANGUAGE = 40;
 
@@ -54,6 +60,9 @@ export async function POST(request: NextRequest) {
   const language = body?.language?.trim();
   if (!body?.tripId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
   if (!language || language.length > MAX_LANGUAGE) return NextResponse.json({ error: "Name a language." }, { status: 400 });
+
+  const flood = await rateLimit(`translate-generate:${email}`, AI_LIMIT);
+  if (!flood.ok) return NextResponse.json({ error: tooManyMessage(flood.retryAfter) }, { status: 429 });
 
   const trip = await getTripItinerary(email, body.tripId);
   if (!trip) return NextResponse.json({ error: "Trip not found." }, { status: 404 });
