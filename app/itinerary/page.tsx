@@ -8,6 +8,7 @@ import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
 import TravelEssentials from "@/components/TravelEssentials";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getActivePromotions } from "@/lib/admin-content";
 import { allCrossings } from "@/lib/border-store";
 import { readAssumptions } from "@/lib/planner-settings-store";
@@ -55,16 +56,19 @@ export default async function ItineraryPage() {
 
       <section className="border-b border-[var(--gold-light)] px-5 py-9 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
-          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Itinerary planner
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-            Flights, hotels and stops, day by day — see{" "}
-            <Link href="/sample-itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-              a sample itinerary
-            </Link>
-            .
-          </p>
+          <PageHeader
+            eyebrow="Planner"
+            title="Itinerary planner"
+            description={
+              <>
+                Flights, hotels and stops, day by day — see{" "}
+                <Link href="/sample-itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
+                  a sample itinerary
+                </Link>
+                .
+              </>
+            }
+          />
         </div>
       </section>
 

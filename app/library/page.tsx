@@ -1,8 +1,10 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import LibraryManager from "@/components/LibraryManager";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card } from "@/components/ui/Card";
+import { LinkButton } from "@/components/ui/Button";
 import { requireSignedIn } from "@/lib/require-signed-in";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
@@ -36,33 +38,27 @@ export default async function LibraryPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
-        <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-          Your content library
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Hotels, activities, tours and contacts, saved once and ready to drop into any proposal instead of retyping
-          them — group them into a destination pack, like Rome Family Trip, to add several at once.
-        </p>
+        <PageHeader
+          eyebrow="Content library"
+          title="Your content library"
+          description="Hotels, activities, tours and contacts, saved once and ready to drop into any proposal instead of retyping them — group them into a destination pack, like Rome Family Trip, to add several at once."
+        />
 
         {allowed ? (
           <div className="mt-8">
             <LibraryManager />
           </div>
         ) : (
-          <div className="mt-8 max-w-xl rounded-2xl border border-[var(--gold-light)] bg-white p-6">
+          <Card className="mt-8 max-w-xl">
             <p className="text-base leading-7 text-stone-600">
               A content library is part of a Business account. You are on {PLAN_LABELS[plan]}. Ask about{" "}
               {PLAN_LABELS.business} from your account, and we will be in touch.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/account" className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-                Ask about {PLAN_LABELS.business}
-              </Link>
-              <Link href="/itinerary" className="rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-white">
-                Back to the planner
-              </Link>
+              <LinkButton href="/account">Ask about {PLAN_LABELS.business}</LinkButton>
+              <LinkButton href="/itinerary" variant="secondary">Back to the planner</LinkButton>
             </div>
-          </div>
+          </Card>
         )}
       </section>
       <Footer />

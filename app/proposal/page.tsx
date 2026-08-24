@@ -1,7 +1,9 @@
-import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ProposalBuilder from "@/components/ProposalBuilder";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card } from "@/components/ui/Card";
+import { LinkButton } from "@/components/ui/Button";
 import { requireSignedIn } from "@/lib/require-signed-in";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
@@ -36,33 +38,27 @@ export default async function ProposalPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
-        <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-          Build a proposal
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          One or more options for the trip in your planner right now — hotels, flights, activities, a price. Send it, and
-          your client compares and approves before it becomes the itinerary.
-        </p>
+        <PageHeader
+          eyebrow="Proposal"
+          title="Build a proposal"
+          description="One or more options for the trip in your planner right now — hotels, flights, activities, a price. Send it, and your client compares and approves before it becomes the itinerary."
+        />
 
         {allowed ? (
           <div className="mt-8">
             <ProposalBuilder />
           </div>
         ) : (
-          <div className="mt-8 max-w-xl rounded-2xl border border-[var(--gold-light)] bg-white p-6">
+          <Card className="mt-8 max-w-xl">
             <p className="text-base leading-7 text-stone-600">
               Proposals are part of a Business account. You are on {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.business} from
               your account, and we will be in touch.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/account" className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-                Ask about {PLAN_LABELS.business}
-              </Link>
-              <Link href="/itinerary" className="rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-white">
-                Back to the planner
-              </Link>
+              <LinkButton href="/account">Ask about {PLAN_LABELS.business}</LinkButton>
+              <LinkButton href="/itinerary" variant="secondary">Back to the planner</LinkButton>
             </div>
-          </div>
+          </Card>
         )}
       </section>
       <Footer />
