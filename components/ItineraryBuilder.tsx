@@ -122,6 +122,36 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [view, setView] = useState<ItineraryView>("days");
   const requireSignIn = useRequireSignIn();
 
+  // The planner is a CRM now, not one long stacked page: with more than one
+  // itinerary you land on the LIST of them (mode "list"), press one to edit it
+  // (mode "edit"), and a "back to all itineraries" button returns you. With one
+  // or none you open straight into it — a list of one is not a list. `mode` is
+  // null until the first trips read decides, so the editor does not flash up
+  // before the list for somebody who has several.
+  const [mode, setMode] = useState<"list" | "edit" | null>(null);
+  const [tripCount, setTripCount] = useState(0);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/account/trips", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!active) return;
+        if (!d?.trips) {
+          // Signed out or no store — behave as the single-editor it always was.
+          setMode((m) => m ?? "edit");
+          return;
+        }
+        setTripCount(d.trips.length);
+        setMode((m) => (m === null ? (d.trips.length >= 2 ? "list" : "edit") : m));
+      })
+      .catch(() => {
+        if (active) setMode((m) => m ?? "edit");
+      });
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
+
   // Load: the account, and nothing else.
   //
   // THERE IS NO BROWSER COPY TO FALL BACK TO. A trip used to be kept in
@@ -367,8 +397,37 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const moveStopBy = (id: string, direction: -1 | 1) => persist(moveStop(itin, id, direction));
   const scheduleStop = (id: string, date: string) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === id ? { ...a, date, order: undefined } : a)) });
 
+  // Until the first trips read lands, show nothing rather than flashing the
+  // editor at somebody who is about to see the list.
+  if (mode === null) {
+    return <p className="py-10 text-sm text-stone-500">Loading your itineraries…</p>;
+  }
+
+  // The index: the list of itineraries by name. Pressing one drills into it.
+  if (mode === "list") {
+    return (
+      <TripSwitcher
+        onSwitched={() => setReloadKey((k) => k + 1)}
+        onOpen={() => {
+          setMode("edit");
+          setReloadKey((k) => k + 1);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-5">
+      {/* Back to the index — the planner is a CRM now, one itinerary at a time.
+          Always here in edit mode: even with a single itinerary it is the way
+          to the list, where a new one is started and the others are managed. */}
+      <button
+        type="button"
+        onClick={() => setMode("list")}
+        className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+      >
+        ← Back to all itineraries
+      </button>
       {/* How long until it, and once it starts, where in it you are. Above
           everything else, because on the third morning in Kraków it is the
           only part of this page anybody needs. */}
@@ -520,8 +579,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <div className="border-t border-[var(--gold-light)] p-3"><RoomGroupsPanel itin={itin} onChange={persist} /></div>
         </details>
       </div>
-
-      <TripSwitcher onSwitched={() => setReloadKey((k) => k + 1)} />
 
       <BookFlightsPanel itin={itin} />
 

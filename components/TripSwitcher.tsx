@@ -36,7 +36,19 @@ type Trip = {
 const smallButton =
   "min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:opacity-50";
 
-export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }) {
+export default function TripSwitcher({
+  onSwitched,
+  /**
+   * When set, this is the itineraries INDEX rather than an inline switcher: a
+   * name opens that one itinerary for editing (the planner drills into it and
+   * shows a "back to all itineraries" button). Given, the names become the
+   * primary action and every row can be opened, not only the inactive ones.
+   */
+  onOpen,
+}: {
+  onSwitched?: () => void;
+  onOpen?: (id: string) => void;
+}) {
   const [trips, setTrips] = useState<Trip[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -112,6 +124,24 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
     [onSwitched],
   );
 
+  /**
+   * Open an itinerary from the index. Make it the active trip first (awaited, so
+   * the planner reloads the right one and not the one that was active a moment
+   * ago), then hand off to the parent to drill in. Without onOpen this is the
+   * plain inline switch it always was.
+   */
+  const openTrip = useCallback(
+    async (id: string) => {
+      if (onOpen) {
+        await act("switch", { id }, false);
+        onOpen(id);
+      } else {
+        void act("switch", { id }, true);
+      }
+    },
+    [onOpen, act],
+  );
+
   // Copy the code (or the link) and flash "Copied!" on that one control.
   const copy = useCallback((key: string, text: string) => {
     navigator.clipboard
@@ -132,18 +162,22 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
     <section className="mt-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Your trips</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
+            {onOpen ? "Your itineraries" : "Your trips"}
+          </p>
           <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
-            {active?.name ?? "My trip"}
+            {onOpen ? "All itineraries" : (active?.name ?? "My trip")}
           </h3>
         </div>
         <button type="button" disabled={busy} onClick={() => void act("create", {}, true)} className={smallButton}>
-          Start another trip
+          {onOpen ? "New itinerary" : "Start another trip"}
         </button>
       </div>
 
       <p className="mt-2 text-sm leading-6 text-stone-600">
-        Everything you plan below belongs to the trip that is open. The others are kept exactly as you left them.
+        {onOpen
+          ? "Press an itinerary to open and edit it. The others are kept exactly as you left them."
+          : "Everything you plan below belongs to the trip that is open. The others are kept exactly as you left them."}
       </p>
 
       <ul className="mt-4 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
@@ -223,8 +257,19 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
               ) : (
                 <>
                   <p className="font-semibold text-[var(--navy)]">
-                    {trip.name}
-                    {trip.active && (
+                    {onOpen ? (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => void openTrip(trip.id)}
+                        className="text-left text-[var(--navy)] underline decoration-[var(--gold-light)] decoration-2 underline-offset-4 transition hover:decoration-[var(--gold)] disabled:opacity-50"
+                      >
+                        {trip.name}
+                      </button>
+                    ) : (
+                      trip.name
+                    )}
+                    {trip.active && !onOpen && (
                       <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Open</span>
                     )}
                   </p>
@@ -251,8 +296,17 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
 
             {renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
               <div className="flex flex-wrap gap-2">
-                {!trip.active && (
-                  <button type="button" disabled={busy} onClick={() => void act("switch", { id: trip.id }, true)} className={smallButton}>
+                {(onOpen || !trip.active) && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void openTrip(trip.id)}
+                    className={
+                      onOpen
+                        ? "min-h-[36px] border border-[var(--navy)] bg-[var(--navy)] px-4 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-50"
+                        : smallButton
+                    }
+                  >
                     Open
                   </button>
                 )}
