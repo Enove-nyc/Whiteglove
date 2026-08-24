@@ -12,6 +12,8 @@ import { tripSignature, type PackingList } from "@/data/packing-list";
 import { suggestPackingList } from "@/lib/packing-ai";
 import { dismissSuggestion, itinerarySignature, type OptimizationResult } from "@/data/itinerary-optimization";
 import { suggestItineraryOptimizations } from "@/lib/itinerary-optimization-ai";
+import { emptyTranslation, type TranslatedItinerary } from "@/data/itinerary-translation";
+import { translateFields, type TranslationField } from "@/lib/itinerary-translation-ai";
 import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -240,6 +242,12 @@ export type SavedTrip = {
    * first send. See data/trip-reminders.ts.
    */
   ratingRequestSentAt?: string;
+  /**
+   * Translated read-outs of this itinerary's free text, one per language
+   * asked for so far — keyed by the language name exactly as typed. Absent
+   * until first generated. See data/itinerary-translation.ts.
+   */
+  translations?: Record<string, TranslatedItinerary>;
   /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
@@ -1696,6 +1704,76 @@ export async function setOptimizationDismissed(email: string, tripId: string, su
   const result = dismissSuggestion(trip.optimization, suggestionId, dismissed);
   const next = trips.map((t) => (t.id === tripId ? { ...t, optimization: result, updatedAt: new Date().toISOString() } : t));
   return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+// ---- Itinerary translation --------------------------------------------------
+//
+// A read-out of an itinerary's free text in another language — see
+// data/itinerary-translation.ts for exactly what is and is not translated.
+
+/** Every translatable field on the itinerary, with its own id — the
+ *  payload lib/itinerary-translation-ai.ts translates and hands back
+ *  matched by id. */
+function translatableFields(itinerary: Itinerary): TranslationField[] {
+  const fields: TranslationField[] = [];
+  if (itinerary.title?.trim()) fields.push({ id: "title", text: itinerary.title.trim() });
+  for (const a of itinerary.activities) {
+    if (a.name?.trim()) fields.push({ id: `activity:${a.id}:name`, text: a.name.trim() });
+    if (a.notes?.trim()) fields.push({ id: `activity:${a.id}:notes`, text: a.notes.trim() });
+  }
+  for (const l of itinerary.lodging) {
+    if (l.notes?.trim()) fields.push({ id: `lodging:${l.id}:notes`, text: l.notes.trim() });
+  }
+  for (const f of itinerary.flights) {
+    if (f.notes?.trim()) fields.push({ id: `flight:${f.id}:notes`, text: f.notes.trim() });
+  }
+  return fields;
+}
+
+/** The trip's saved translation for one language, or null if none yet. */
+export async function getTranslation(email: string, tripId: string, language: string): Promise<TranslatedItinerary | null> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.translations?.[language] ?? null;
+}
+
+/**
+ * Translate the itinerary's free text into a language and save it,
+ * replacing whatever was saved for that language before. Returns null when
+ * no provider is configured or every provider failed.
+ */
+export async function generateTranslation(email: string, tripId: string, language: string): Promise<TranslatedItinerary | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+
+  const fields = translatableFields(trip.itinerary);
+  const translated = await translateFields(language, fields);
+  if (translated === null) return null;
+
+  const result: TranslatedItinerary = { ...emptyTranslation(language), generatedAt: new Date().toISOString(), forSignature: itinerarySignature(trip.itinerary) };
+  result.title = translated.get("title");
+  for (const a of trip.itinerary.activities) {
+    const name = translated.get(`activity:${a.id}:name`);
+    const notes = translated.get(`activity:${a.id}:notes`);
+    if (name || notes) result.activities[a.id] = { name, notes };
+  }
+  for (const l of trip.itinerary.lodging) {
+    const notes = translated.get(`lodging:${l.id}:notes`);
+    if (notes) result.lodging[l.id] = { notes };
+  }
+  for (const f of trip.itinerary.flights) {
+    const notes = translated.get(`flight:${f.id}:notes`);
+    if (notes) result.flights[f.id] = { notes };
+  }
+
+  const nextTranslations = { ...(trip.translations ?? {}), [language]: result };
+  const next = trips.map((t) => (t.id === tripId ? { ...t, translations: nextTranslations, updatedAt: new Date().toISOString() } : t));
+  const ok = await writeTrips(normalized, next, activeId);
+  return ok ? result : null;
 }
 
 // ---- Live travel information ----------------------------------------------

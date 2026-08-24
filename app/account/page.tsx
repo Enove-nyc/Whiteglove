@@ -152,6 +152,7 @@ export default async function AccountPage() {
           <div className="mt-4 flex flex-wrap gap-3">
             <LinkButton href="/packing">Open packing list</LinkButton>
             <LinkButton href="/optimize" variant="secondary">Review your itinerary</LinkButton>
+            <LinkButton href="/translate" variant="secondary">Translate your itinerary</LinkButton>
           </div>
         </section>
 
