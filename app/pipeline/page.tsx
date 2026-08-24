@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import PipelineDashboard from "@/components/PipelineDashboard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LinkButton } from "@/components/ui/Button";
-import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountSummary, readSessionEmail, resolveBusinessOwner } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { pageMetadata } from "@/lib/seo";
@@ -38,7 +38,8 @@ export default async function PipelinePage() {
   const who = account?.email || sessionEmail || "";
   if (!who) redirect("/login?next=%2Fpipeline");
 
-  const plan = await getPlan(who);
+  // A staff login's plan gate is the business it's linked to, not its own.
+  const plan = await getPlan(await resolveBusinessOwner(who));
   if (!mayServeCompanionClients(plan)) {
     return (
       <main className="min-h-screen bg-[var(--cream)]">

@@ -7,6 +7,7 @@ import {
   getCurrentAccountData,
   getProposal,
   getTripItinerary,
+  resolveBusinessOwner,
   saveProposal,
 } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
@@ -26,10 +27,11 @@ export const dynamic = "force-dynamic";
  * side a client actually opens is a separate route, and reads nothing here.
  */
 
+/** The business a staff login is linked to, or the account itself. */
 async function signedInEmail() {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
-  return account?.email ?? null;
+  return account?.email ? resolveBusinessOwner(account.email) : null;
 }
 
 export async function GET(request: NextRequest) {

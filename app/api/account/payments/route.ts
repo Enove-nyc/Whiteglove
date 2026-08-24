@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData, getTripItinerary, getBalance, saveBalance } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, getTripItinerary, getBalance, resolveBusinessOwner, saveBalance } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
@@ -11,10 +11,12 @@ import { emptyItinerary, unitsOf } from "@/data/itinerary";
 
 export const dynamic = "force-dynamic";
 
+/** The business a staff login is linked to, or the account itself — the
+ *  Stripe Connect account and every trip's balance both belong to it. */
 async function signedInEmail() {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
-  return account?.email ?? null;
+  return account?.email ? resolveBusinessOwner(account.email) : null;
 }
 
 /**

@@ -173,7 +173,7 @@ describe("taking a printable copy", () => {
   });
 
   it("counts to a higher limit properly when the owner raises it", () => {
-    const limits = { trips: 2, printsPerWeek: 3 };
+    const limits = { trips: 2, printsPerWeek: 3, staffSeats: 0 };
     const two = [print("a", 1000), print("b", 2000)];
     const d = decidePrint({ plan: "traveler", limits, prints: two, tripId: "c", now: NOW });
     assert.equal(d.allowed, true);

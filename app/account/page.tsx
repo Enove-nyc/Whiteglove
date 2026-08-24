@@ -12,7 +12,8 @@ import { LinkButton } from "@/components/ui/Button";
 import LogoutButton from "@/components/LogoutButton";
 import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
-import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountSummary, readSessionEmail, resolveBusinessOwner } from "@/lib/account-store";
+import TeamMembersPanel from "@/components/TeamMembersPanel";
 import { getPlan, openRequestFor } from "@/lib/account-plan-store";
 import { describeLimits, limitsFor, mayBrandOwnItinerary, mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
 import { emptyBrand } from "@/lib/business-brand";
@@ -64,6 +65,14 @@ export default async function AccountPage() {
   const canAdmin = await isAdminAccount(account?.email || sessionEmail);
   const who = account?.email || sessionEmail || "";
   const [plan, openRequest] = await Promise.all([getPlan(who), openRequestFor(who)]);
+  // Whether this login is staff on somebody else's Business account, and
+  // whose — see lib/account-store.ts's resolveBusinessOwner. Everything about
+  // SERVING CLIENTS (the app, branding, the team itself) reads the business's
+  // plan; everything about THIS PERSON's own subscription (below) still
+  // reads their own.
+  const businessOwnerEmail = await resolveBusinessOwner(who);
+  const isTeamMember = businessOwnerEmail !== who;
+  const businessPlan = isTeamMember ? await getPlan(businessOwnerEmail) : plan;
   // What this plan limits, and where they stand against it. Worked out here
   // rather than in the panel: saying when the next printable copy is due means
   // reading the clock, and a component may not do that while it renders.
@@ -106,13 +115,15 @@ export default async function AccountPage() {
   // A Business account's own letterhead. Read for nobody else — the panel is
   // not drawn for them, and a locked panel advertising an upgrade has no place
   // on somebody's own account page.
-  const canBrand = mayBrandOwnItinerary(plan);
-  const brand = canBrand ? await readBrand(who) : null;
+  const canBrand = mayBrandOwnItinerary(businessPlan);
+  const brand = canBrand ? await readBrand(businessOwnerEmail) : null;
   // The White Glove app (lib/account-limits.ts). Gold and Business both get the
   // app for their own trips, so both see the door here. Only Business hands a
   // trip to a client, so only Business sees the client-link line inside it.
-  const canUseApp = mayUseCompanionApp(plan);
-  const canServeClients = mayServeCompanionClients(plan);
+  // A staff login reads the business's plan for both — the app and the client
+  // tools they use are the business's, not their own dormant personal plan.
+  const canUseApp = mayUseCompanionApp(businessPlan);
+  const canServeClients = mayServeCompanionClients(businessPlan);
   // A phone account has no "@" to cut a name out of, so fall back to the
   // number spelled readably rather than to a blank greeting.
   const identity = account?.email ?? sessionEmail ?? "";
@@ -164,6 +175,11 @@ export default async function AccountPage() {
               </div>
               {canServeClients && (
                 <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+                  {isTeamMember && (
+                    <p className="mb-4 text-sm font-semibold text-[var(--gold-ink)]">
+                      You&apos;re staff on {describeIdentity(businessOwnerEmail)}&apos;s account.
+                    </p>
+                  )}
                   <p className="text-sm leading-6 text-stone-600">
                     To hand a client their own trip, open it in the planner and use{" "}
                     <span className="font-semibold text-[var(--navy)]">Create a client app link</span> — each link opens
@@ -188,6 +204,11 @@ export default async function AccountPage() {
                       </li>
                     ))}
                   </ul>
+                  {!isTeamMember && (
+                    <div className="mt-6 border-t border-[var(--gold-light)] pt-4">
+                      <TeamMembersPanel />
+                    </div>
+                  )}
                 </div>
               )}
               <CompanionSettings />

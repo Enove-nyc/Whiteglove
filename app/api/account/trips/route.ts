@@ -10,6 +10,7 @@ import {
   getTrips,
   importTrip,
   renameTrip,
+  resolveBusinessOwner,
   setTripAdvisor,
   setTripClient,
   stopTripShare,
@@ -22,10 +23,15 @@ import type { Itinerary } from "@/data/itinerary";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Whose trips this request actually operates on — the business a staff login
+ * is linked to, or the signed-in account itself when there is no such link.
+ * See lib/account-store.ts's resolveBusinessOwner.
+ */
 async function signedInEmail() {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
-  return account?.email ?? null;
+  return account?.email ? resolveBusinessOwner(account.email) : null;
 }
 
 export async function GET() {

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getAccountData, getCurrentAccountData, savePipelineStage, withTrips } from "@/lib/account-store";
+import { accountCookieName, getAccountData, getCurrentAccountData, resolveBusinessOwner, savePipelineStage, withTrips } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { readChat, readMarkers } from "@/lib/companion-chat-store";
@@ -43,11 +43,15 @@ export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  if (!mayServeCompanionClients(await getPlan(account.email))) {
+  // A staff login works against the business it's linked to, not its own
+  // (otherwise empty) account — see lib/account-store.ts's resolveBusinessOwner.
+  // An account with no team just resolves to itself, same as always.
+  const owner = await resolveBusinessOwner(account.email);
+  if (!mayServeCompanionClients(await getPlan(owner))) {
     return NextResponse.json({ error: "The trip pipeline is part of a Business account." }, { status: 403 });
   }
 
-  const data = await getAccountData(account.email);
+  const data = await getAccountData(owner);
   const { trips } = withTrips(data);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -91,7 +95,8 @@ export async function POST(request: NextRequest) {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  if (!mayServeCompanionClients(await getPlan(account.email))) {
+  const owner = await resolveBusinessOwner(account.email);
+  if (!mayServeCompanionClients(await getPlan(owner))) {
     return NextResponse.json({ error: "The trip pipeline is part of a Business account." }, { status: 403 });
   }
 
@@ -101,7 +106,7 @@ export async function POST(request: NextRequest) {
   if (!tripId || (stage !== "inquiry" && stage !== "planning")) {
     return NextResponse.json({ error: "Provide a trip and either inquiry or planning." }, { status: 400 });
   }
-  const ok = await savePipelineStage(account.email, tripId, stage as ManualTripStage);
+  const ok = await savePipelineStage(owner, tripId, stage as ManualTripStage);
   if (!ok) return NextResponse.json({ error: "Could not save that." }, { status: 503 });
   return NextResponse.json({ ok: true });
 }

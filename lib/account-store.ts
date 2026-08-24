@@ -12,6 +12,7 @@ import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form"
 import { limitsFor, newTripProblem } from "@/lib/account-limits";
 import { getLimitOverrides } from "@/lib/account-limits-store";
 import { getPlan } from "@/lib/account-plan-store";
+import { inviteProblem, readTeam, type TeamMember } from "@/data/team";
 import { identityKey, normalizeIdentity } from "@/lib/identity";
 import { type Collaborator, type TripRole, may, readCollaborators, roleOf } from "@/lib/trip-roles";
 import { passwordProblem } from "@/lib/password-rules";
@@ -80,6 +81,27 @@ export type AccountRecord = {
    * and nothing else on the site reads it.
    */
   avatarMediaId?: string;
+  /**
+   * A Business account's own roster of staff logins — see data/team.ts. Only
+   * ever set on the OWNER's own record; a team member's record never carries
+   * a copy of this, only teamOwnerEmail pointing the other way. Read and
+   * written together with teamOwnerEmail below by inviteTeamMember,
+   * acceptTeamInvite and removeTeamMember, never by hand elsewhere.
+   */
+  team?: TeamMember[];
+  /**
+   * Set on a STAFF MEMBER's own account once they accept an invite — the
+   * normalized email of the Business account whose trips, pipeline, library
+   * and clients they now work against instead of their own (empty) ones. See
+   * resolveBusinessOwner, the one seam that reads this to decide whose data
+   * a signed-in login actually operates on.
+   *
+   * NEVER SET ON THE OWNER'S OWN RECORD. An account cannot be a member of
+   * itself, and a record carrying both `team` and `teamOwnerEmail` would be
+   * a business owned by another business — removeTeamMember and
+   * acceptTeamInvite both guard against this.
+   */
+  teamOwnerEmail?: string;
 };
 
 /**
@@ -1914,6 +1936,163 @@ export async function deleteAccount(email: string) {
   await deleteKey(accountKey(normalized));
   await deleteKey(dataKey(normalized));
   return { ok: true as const };
+}
+
+/* ---- staff — a Business account's own team ------------------------------
+ *
+ * See data/team.ts for the model this stores, and lib/account-limits.ts for
+ * staffSeats, the number this checks against. A pending invite is its own
+ * short-lived key (the same shape as travelerShareKey and proposalShareKey
+ * above), holding just enough to know who invited whom; accepting it writes
+ * the real, lasting link onto both accounts' own records and forgets the key.
+ */
+
+function teamInviteKey(token: string) {
+  return `white-glove:team-invite:${token}`;
+}
+
+function teamInviteToken() {
+  return randomBytes(9).toString("base64url");
+}
+
+/** Every staff login linked to this Business account, invited or active. */
+export async function listTeamMembers(ownerEmail: string): Promise<TeamMember[]> {
+  const record = await getAccountRecord(normalizeId(ownerEmail));
+  return readTeam(record?.team);
+}
+
+/**
+ * Invite a staff login. Refused when the plan's seats are already spoken
+ * for (data/team.ts's inviteProblem, checked against lib/account-limits.ts's
+ * staffSeats) — an invited seat counts the same as an active one, since the
+ * owner has already committed it to somebody the moment it is sent.
+ *
+ * Returns the token for the join link (app/team/join/[token]) — the caller's
+ * job to build the actual link and get it to the person invited; this module
+ * sends no mail.
+ */
+export async function inviteTeamMember(ownerEmail: string, memberIdentifier: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const owner = normalizeId(ownerEmail);
+  const member = normalizeId(memberIdentifier);
+  const record = await getAccountRecord(owner);
+  if (!record) return { ok: false as const, error: "Could not find your account." };
+  // An account already linked elsewhere — its own team, or somebody else's —
+  // is not a login this invite may be sent to; accepting would either make
+  // it a business owning a business, or move a seat out from under whoever
+  // already invited it.
+  if (record.team && record.teamOwnerEmail) return { ok: false as const, error: "Your own account cannot be a staff login." };
+  const memberRecord = await getAccountRecord(member);
+  if (memberRecord?.teamOwnerEmail && normalizeId(memberRecord.teamOwnerEmail) !== owner) {
+    return { ok: false as const, error: "That account is already staff on another business." };
+  }
+
+  const plan = await getPlan(owner);
+  const overrides = await getLimitOverrides();
+  const limits = limitsFor(plan, overrides);
+  const team = readTeam(record.team);
+  const problem = inviteProblem({ email: member, ownerEmail: owner, existingTeam: team, seats: limits.staffSeats });
+  if (problem) return { ok: false as const, error: problem };
+
+  const token = teamInviteToken();
+  const now = new Date().toISOString();
+  const wrote = await writeJson(teamInviteKey(token), { ownerEmail: owner, memberEmail: member, createdAt: now });
+  if (!wrote) return { ok: false as const, error: "Could not create the invite." };
+  const nextTeam: TeamMember[] = [...team, { email: member, status: "invited", invitedAt: now }];
+  const saved = await writeJson(accountKey(owner), { ...record, team: nextTeam });
+  if (!saved) return { ok: false as const, error: "Could not save the invite." };
+  return { ok: true as const, token };
+}
+
+/** Who a pending invite is for, or null once it has expired or been used. */
+export async function getTeamInvite(token: string) {
+  return readJson<{ ownerEmail: string; memberEmail: string; createdAt: string }>(teamInviteKey(token));
+}
+
+/**
+ * Accept an invite — the SIGNED-IN account's own identity, never the token's
+ * memberEmail, becomes the login that gets linked. The invite named who it
+ * was sent to only so the owner's roster reads as something other than a
+ * blank token; anybody holding the link may accept it as themselves, the
+ * same as any other invite link on the site (a client form, a proposal).
+ *
+ * Refused for the owner's own identity (a business cannot be staff on
+ * itself) and for an identity already linked elsewhere.
+ */
+export async function acceptTeamInvite(token: string, accepterEmail: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const invite = await getTeamInvite(token);
+  if (!invite) return { ok: false as const, error: "That invite is no longer active." };
+  const owner = normalizeId(invite.ownerEmail);
+  const accepter = normalizeId(accepterEmail);
+  if (accepter === owner) return { ok: false as const, error: "You cannot join your own business as staff." };
+
+  const [ownerRecord, accepterRecord] = await Promise.all([getAccountRecord(owner), getAccountRecord(accepter)]);
+  if (!ownerRecord) return { ok: false as const, error: "That business account no longer exists." };
+  if (!accepterRecord) return { ok: false as const, error: "Could not find your account." };
+  if (accepterRecord.teamOwnerEmail && normalizeId(accepterRecord.teamOwnerEmail) !== owner) {
+    return { ok: false as const, error: "Your account is already staff on another business." };
+  }
+  if (accepterRecord.team && accepterRecord.team.length > 0) {
+    return { ok: false as const, error: "A business account cannot also be a staff login." };
+  }
+
+  const now = new Date().toISOString();
+  const team = readTeam(ownerRecord.team);
+  // Invited under a different identifier (a phone, say, normalized
+  // differently than the login they actually accept with) still fills the
+  // same open seat rather than opening a second one — matched by whichever
+  // entry is still pending, since a token is single-use either way.
+  const nextTeam: TeamMember[] = team.some((m) => m.email === accepter)
+    ? team.map((m) => (m.email === accepter ? { ...m, status: "active" as const, joinedAt: now } : m))
+    : [...team.filter((m) => m.status !== "invited" || m.email !== invite.memberEmail), { email: accepter, status: "active" as const, invitedAt: invite.createdAt, joinedAt: now }];
+
+  const ownerSaved = await writeJson(accountKey(owner), { ...ownerRecord, team: nextTeam });
+  const accepterSaved = await writeJson(accountKey(accepter), { ...accepterRecord, teamOwnerEmail: owner });
+  await deleteKey(teamInviteKey(token));
+  if (!ownerSaved || !accepterSaved) return { ok: false as const, error: "Could not finish joining." };
+  return { ok: true as const, ownerEmail: owner };
+}
+
+/**
+ * Remove a staff login — their own account and sign-in are untouched; only
+ * the link to this business is cut. They keep whatever they built while they
+ * had it: nothing here deletes trips, since the trips were never theirs to
+ * begin with — they were always the business's, seen through a second door.
+ */
+export async function removeTeamMember(ownerEmail: string, memberEmail: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const owner = normalizeId(ownerEmail);
+  const member = normalizeId(memberEmail);
+  const ownerRecord = await getAccountRecord(owner);
+  if (!ownerRecord) return { ok: false as const, error: "Could not find your account." };
+  const team = readTeam(ownerRecord.team);
+  if (!team.some((m) => m.email === member)) return { ok: false as const, error: "That person is not on your team." };
+
+  const ownerSaved = await writeJson(accountKey(owner), { ...ownerRecord, team: team.filter((m) => m.email !== member) });
+  const memberRecord = await getAccountRecord(member);
+  const memberSaved = memberRecord
+    ? await writeJson(accountKey(member), { ...memberRecord, teamOwnerEmail: undefined })
+    : true;
+  if (!ownerSaved || !memberSaved) return { ok: false as const, error: "Could not finish removing them." };
+  return { ok: true as const };
+}
+
+/**
+ * Whose business a signed-in login actually works against — the one seam
+ * everything about running the business (trips, the pipeline, the library,
+ * payments, proposals, the client inbox) should read instead of the signed-in
+ * identity directly. An identity with no teamOwnerEmail is its own business,
+ * same as every account before staff logins existed.
+ *
+ * DOES NOT CHECK THE OWNER STILL LISTS THEM AS ACTIVE. removeTeamMember always
+ * clears teamOwnerEmail in the same write that takes them off the roster, so
+ * the two can never disagree — there is nothing here to double-check against.
+ */
+export async function resolveBusinessOwner(email: string): Promise<string> {
+  const normalized = normalizeId(email);
+  const record = await getAccountRecord(normalized);
+  return record?.teamOwnerEmail ? normalizeId(record.teamOwnerEmail) : normalized;
 }
 
 export async function getCurrentAccountData(cookieValue?: string) {

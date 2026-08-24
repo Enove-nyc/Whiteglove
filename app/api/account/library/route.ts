@@ -6,6 +6,7 @@ import {
   deleteLibraryPack,
   getCurrentAccountData,
   getLibrary,
+  resolveBusinessOwner,
   saveLibraryItem,
   saveLibraryPack,
 } from "@/lib/account-store";
@@ -26,10 +27,11 @@ export const dynamic = "force-dynamic";
  * it's the planner's private working set.
  */
 
+/** The business a staff login is linked to, or the account itself. */
 async function signedInEmail() {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
-  return account?.email ?? null;
+  return account?.email ? resolveBusinessOwner(account.email) : null;
 }
 
 export async function GET() {

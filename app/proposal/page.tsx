@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { requireSignedIn } from "@/lib/require-signed-in";
-import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { PLAN_LABELS } from "@/lib/account-plans";
@@ -31,7 +31,8 @@ export default async function ProposalPage() {
   await requireSignedIn("/proposal");
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
-  const plan = account ? await getPlan(account.email) : "traveler";
+  // A staff login's plan gate is the business it's linked to, not its own.
+  const plan = account ? await getPlan(await resolveBusinessOwner(account.email)) : "traveler";
   const allowed = mayServeCompanionClients(plan);
 
   return (

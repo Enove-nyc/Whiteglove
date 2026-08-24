@@ -32,7 +32,7 @@ export default function PlanLimitsForm({ current, storeReady }: { current: Limit
   });
   const [state, act, busy] = useActionState(saveLimitsAction, null);
 
-  const set = (plan: (typeof ACCOUNT_PLANS)[number], field: "trips" | "printsPerWeek", raw: string) => {
+  const set = (plan: (typeof ACCOUNT_PLANS)[number], field: "trips" | "printsPerWeek" | "staffSeats", raw: string) => {
     const n = raw.trim() === "" ? UNLIMITED : Number(raw);
     setDraft({ ...draft, [plan]: { ...draft[plan], [field]: Number.isFinite(n as number) ? n : UNLIMITED } });
   };
@@ -78,6 +78,19 @@ export default function PlanLimitsForm({ current, storeReady }: { current: Limit
                   className={input}
                 />
                 <span className="mt-1 block text-xs leading-5 text-stone-500">Blank means no limit.</span>
+              </label>
+              <label className="block">
+                <span className={label}>Staff logins</span>
+                <input
+                  name={`${plan}-seats`}
+                  type="number"
+                  min={0}
+                  value={shown.staffSeats === UNLIMITED ? "" : String(shown.staffSeats)}
+                  onChange={(e) => set(plan, "staffSeats", e.target.value)}
+                  placeholder="No limit"
+                  className={input}
+                />
+                <span className="mt-1 block text-xs leading-5 text-stone-500">Other logins that may be linked as staff, on top of the owner&apos;s own. Zero means none.</span>
               </label>
             </div>
             <p className="mt-3 text-sm leading-6 text-stone-600">{describeLimits(plan, shown)}</p>
