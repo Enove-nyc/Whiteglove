@@ -88,6 +88,21 @@ export type CompanionChatMessage = {
    * message's own words, just capped and stripped the same way.
    */
   itineraryRef?: string;
+  /**
+   * Kept easy to find again. Either side may pin or unpin a message — this
+   * is "remember this", not a claim about whose words they are, so it is
+   * not limited to the sender's own messages the way an edit is.
+   */
+  pinned?: boolean;
+  /**
+   * Sent by the advisor as a broadcast to everyone on the trip rather than a
+   * private reply. Still one message in the one thread every unit already
+   * shares (see app/t/[shareId]/app's internalChatKey note) — this only
+   * marks it as addressed to all of them, so it renders as a banner instead
+   * of an ordinary bubble. Only ever set server-side, and only for the
+   * advisor's own side — see app/api/companion/chat/route.ts.
+   */
+  announcement?: boolean;
 };
 
 /** The most a text message may carry, and the most a thread keeps. */
@@ -238,6 +253,26 @@ async function findRawIndex(shareId: string, at: string, from: CompanionChatSide
 }
 
 /**
+ * The same lookup as findRawIndex, but by `at` alone — for the one action
+ * that is not "the sender changing their own words": pinning is done by
+ * whichever side finds a message worth keeping easy to find, not only the
+ * side that sent it.
+ */
+async function findRawIndexByAt(shareId: string, at: string): Promise<{ index: number; raw: string } | null> {
+  const rows = await command<string[]>(["LRANGE", keyFor(shareId), 0, -1]);
+  if (!rows) return null;
+  for (let i = 0; i < rows.length; i++) {
+    try {
+      const m = JSON.parse(rows[i]) as CompanionChatMessage;
+      if (m.at === at) return { index: i, raw: rows[i] };
+    } catch {
+      /* not this one */
+    }
+  }
+  return null;
+}
+
+/**
  * Change a text message's words. Text only — a picture or a place is sent
  * again, not edited — and only the side that sent it, checked here as well as
  * by the route, the same belt-and-braces every other write in this file gets.
@@ -283,6 +318,27 @@ export async function deleteMessage(shareId: string, at: string, by: CompanionCh
   }
   if (existing.deletedAt) return readChat(shareId); // already gone; nothing to do
   const updated: CompanionChatMessage = { from: existing.from, kind: existing.kind, text: "", at: existing.at, deletedAt: new Date().toISOString() };
+  await command(["LSET", keyFor(shareId), found.index, JSON.stringify(updated)]);
+  return readChat(shareId);
+}
+
+/**
+ * Pin or unpin a message — either side, not only whoever sent it. Returns
+ * null for a deleted message (nothing left worth keeping easy to find) or a
+ * stale `at`, the same as edit and delete.
+ */
+export async function setPinned(shareId: string, at: string, pinned: boolean): Promise<CompanionChatMessage[] | null> {
+  if (!chatStoreAvailable()) return null;
+  const found = await findRawIndexByAt(shareId, at);
+  if (!found) return null;
+  let existing: CompanionChatMessage;
+  try {
+    existing = JSON.parse(found.raw) as CompanionChatMessage;
+  } catch {
+    return null;
+  }
+  if (existing.deletedAt) return null;
+  const updated: CompanionChatMessage = { ...existing, pinned };
   await command(["LSET", keyFor(shareId), found.index, JSON.stringify(updated)]);
   return readChat(shareId);
 }

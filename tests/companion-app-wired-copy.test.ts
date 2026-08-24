@@ -135,7 +135,7 @@ describe("a sent/read tick shows once, not on every message", () => {
 
 describe("the overflow menu belongs to its own bubble, and recedes until touched", () => {
   it("is centered on the bubble rather than pinned to its bottom edge", () => {
-    const row = APP.slice(APP.indexOf('flexDirection: mine ? "row-reverse" : "row", maxWidth') - 60, APP.indexOf("{hasMenu &&"));
+    const row = APP.slice(APP.indexOf('flexDirection: m.announcement ? "row" : mine ? "row-reverse" : "row"') - 150, APP.indexOf("{hasMenu &&"));
     assert.match(row, /alignItems: "center"/);
   });
 
@@ -173,6 +173,31 @@ describe("wallet rows carry real phone numbers and addresses as taps, not plain 
     const wallet = APP.slice(APP.indexOf("const walletScreen"), APP.indexOf("const profileScreen"));
     assert.match(wallet, /href=\{`tel:\$\{r\.phone/);
     assert.match(wallet, /maps\/search\/\?api=1&query=\$\{encodeURIComponent\(r\.address\)\}/);
+  });
+});
+
+describe("pinned messages and group announcements are wired into the chat screen", () => {
+  it("the pin/unpin menu item is offered on every live message, not only your own", () => {
+    const idx = APP.indexOf('onClick={() => { setMenuOpenAt(null); void togglePin(m); }}');
+    assert.ok(idx > -1);
+    const surrounding = APP.slice(APP.indexOf("Reply</button>"), idx + 200);
+    assert.doesNotMatch(surrounding, /\{mine &&\s*\(\s*<button[^>]*onClick=\{[^}]*togglePin/, "must not be gated on mine, the way Edit and Delete are");
+  });
+
+  it("the \"send to everyone\" toggle only renders for the advisor's own side", () => {
+    const idx = APP.indexOf("Send to everyone on the trip");
+    assert.ok(idx > -1);
+    const block = APP.slice(Math.max(0, idx - 500), idx);
+    assert.match(block, /side === "advisor" && !editingAt && \(/);
+  });
+
+  it("an announcement resets after each send — it is never carried over to the next message", () => {
+    assert.match(APP, /setAsAnnouncement\(false\);\s*\n\s*void post\(\{ text: t, \.\.\.\(announce \? \{ announcement: true \} : \{\}\) \}\);/);
+  });
+
+  it("an announcement renders centered, never aligned to whichever side sent it", () => {
+    const idx = APP.indexOf("m.announcement ? \"center\"");
+    assert.ok(idx > -1);
   });
 });
 
