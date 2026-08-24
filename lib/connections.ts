@@ -121,6 +121,15 @@ export const CONNECTIONS: Connection[] = [
       "Stripe. The webhook secret is on the SAME platform account as STRIPE_SECRET_KEY above — a trip payment is a destination charge created with the platform's own key, sent to a planner's connected account. This needs its OWN webhook secret because it is its own endpoint: add one at /api/payments/webhook listening for payment_intent.succeeded and payment_intent.payment_failed. The publishable key is under Developers → API keys, next to the secret key — safe to expose in the browser, which is the only place it is ever used (Stripe Elements, the traveler's own card form).",
   },
   {
+    vars: ["CRON_SECRET"],
+    what: "Sending an advisor's own automatic client reminders — \"leaving soon\", \"a balance is due\" — on a trip that turned them on.",
+    without:
+      "Nothing is ever wrong on the trip itself: the reminder toggle in the trip switcher still saves. It simply never fires, since Vercel's scheduled run to app/api/cron/trip-reminders refuses without this to prove the request is really Vercel's own and not anybody who found the address.",
+    weight: "feature",
+    where:
+      "Any value of your own choosing, at least twenty random characters. Vercel reads this same variable automatically and signs its own cron requests with it — set once here, nothing to configure on Vercel's side beyond the schedule already in vercel.json.",
+  },
+  {
     vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL_ITINERARIES", "OWNER_EMAIL"],
     what: "Where messages to you are sent.",
     without: "Contact messages and suggestions are still kept in the admin — messages on Settings → Messages, and counted on the dashboard — but nothing lands in your inbox.",

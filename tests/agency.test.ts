@@ -236,3 +236,24 @@ describe("what happens when the Pro subscription that pays for it all lapses", (
     assert.match(branch, /403/);
   });
 });
+
+describe("who is traveling, agency-wide — the owner's view", () => {
+  const TRAVELING_ROUTE = readFileSync("app/api/account/agency/traveling/route.ts", "utf8");
+
+  it("is refused to anybody who is not the agency's owner", () => {
+    // "an agency shares who you are, not your client list" (app/agency/page.tsx)
+    // stays true for every member but the one whose subscription pays for it —
+    // this is the one door where that is deliberately not the rule.
+    assert.match(TRAVELING_ROUTE, /isOwner\(agency, account\.email\)/);
+    assert.match(TRAVELING_ROUTE, /403/);
+  });
+
+  it("reads every member's own trips, not just the caller's", () => {
+    assert.match(TRAVELING_ROUTE, /agency\.members\.map/);
+    assert.match(TRAVELING_ROUTE, /getAccountData\(member\.account\)/);
+  });
+
+  it("only ever returns a trip actually in the traveling stage", () => {
+    assert.match(TRAVELING_ROUTE, /=== "traveling"/);
+  });
+});

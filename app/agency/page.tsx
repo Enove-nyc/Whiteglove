@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AgencyPanel from "@/components/AgencyPanel";
+import AgencyTravelingPanel from "@/components/AgencyTravelingPanel";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
@@ -49,6 +50,7 @@ export default async function AgencyPage() {
         <div className="mt-8">
           <AgencyPanel />
         </div>
+        <AgencyTravelingPanel />
         <div className="mt-8 border-t border-[var(--gold-light)] pt-6">
           <Link href="/account" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
             Back to your account

@@ -7,16 +7,12 @@ import { readChat, readMarkers } from "@/lib/companion-chat-store";
 import { needsAttention, tripStage, type ManualTripStage, type TripStage } from "@/data/trip-pipeline";
 import { hasBalance, outstandingCents } from "@/data/trip-payments";
 import { sameOrigin } from "@/lib/secure-access";
-import { buildDays, type Itinerary } from "@/data/itinerary";
 import { allCrossings } from "@/lib/border-store";
 import { borderCostForLegs } from "@/lib/border-legs";
 import { readAssumptions } from "@/lib/planner-settings-store";
-import type { FollowStop } from "@/lib/trip-progress";
+import { travelDaysFor, type TravelDay } from "@/lib/trip-travel-days";
 
 export const dynamic = "force-dynamic";
-
-/** One day of a traveling trip — enough to say where a client is right now. */
-export type TravelDay = { date: string; activities: FollowStop[]; lodging?: { name: string; address?: string } };
 
 export type PipelineRow = {
   id: string;
@@ -50,27 +46,6 @@ export type PipelineRow = {
   commissionCents?: number;
   commissionCurrency?: string;
 };
-
-/** The day-by-day shape "traveling now" needs, for one trip. */
-function travelDaysFor(
-  itin: Itinerary,
-  borderCost: ReturnType<typeof borderCostForLegs>,
-  assume: Awaited<ReturnType<typeof readAssumptions>>,
-): TravelDay[] {
-  if (!itin.startDate || !itin.endDate) return [];
-  return buildDays(itin, borderCost, assume).map((day) => ({
-    date: day.date,
-    activities: day.activities.map((a) => ({
-      id: a.id,
-      name: a.name,
-      address: a.address,
-      coordinates: a.coordinates,
-      arrivalTime: a.arrivalTime,
-      departureTime: a.departureTime,
-    })),
-    ...(day.lodging ? { lodging: { name: day.lodging.name, address: day.lodging.address } } : {}),
-  }));
-}
 
 /**
  * The planner's whole business, one row per trip/client — the Planner CRM /

@@ -33,6 +33,8 @@ type Trip = {
   /** The public token when shared, so the client's app link can be built. */
   shareId?: string;
   updatedAt: string;
+  /** Whether this trip's client gets automatic reminders — see lib/trip-reminders.ts. */
+  autoReminders: boolean;
 };
 
 /** An advisor's own saved trip shape — see lib/trip-templates.ts. */
@@ -157,7 +159,11 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   );
 
   const act = useCallback(
-    async (action: string, payload: { id?: string; name?: string; client?: string; advisor?: string } = {}, reload = false) => {
+    async (
+      action: string,
+      payload: { id?: string; name?: string; client?: string; advisor?: string; autoReminders?: boolean } = {},
+      reload = false,
+    ) => {
       setBusy(true);
       setError("");
       try {
@@ -467,6 +473,28 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                   <button type="button" disabled={busy} onClick={() => void act("share", { id: trip.id })} className={smallButton}>
                     Create a client code
                   </button>
+                )}
+              </div>
+            )}
+
+            {/* Automatic reminders into the same chat thread the client code
+                opens — off by default, and only offered once there is
+                somewhere to send one. See lib/trip-reminders.ts for what
+                these actually say and when they fire. */}
+            {mayServeClients && trip.shareId && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void act("auto-reminders", { id: trip.id, autoReminders: !trip.autoReminders })}
+                  className={smallButton}
+                >
+                  {trip.autoReminders ? "Automatic reminders: on" : "Turn on automatic reminders"}
+                </button>
+                {trip.autoReminders && (
+                  <span className="text-[11px] leading-4 text-stone-500">
+                    Sends &ldquo;leaving soon&rdquo; and &ldquo;balance due&rdquo; messages to the client on their own, each once.
+                  </span>
                 )}
               </div>
             )}

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { afterEach, describe, it } from "node:test";
 import { createCheckoutSession, customerIdOf, describePrice, setSubscriptionSeatQuantity, statusIsPaid, verifyWebhook } from "@/lib/stripe";
 
@@ -173,6 +174,39 @@ describe("starting a checkout", () => {
     const captured = captureBody();
     await createCheckoutSession({ ...base, plan: "starter" });
     assert.doesNotMatch(captured.body, /trial_period_days/);
+  });
+
+  it("pins a one-time purchase to cards only, and leaves a subscription's methods alone", async () => {
+    // A card settles the moment checkout completes; several other methods
+    // Stripe offers (ACH debit, and others by country) settle days later, so
+    // "completed" and "actually paid" would stop meaning the same moment for
+    // this flow — and there is no subscription behind a one-time purchase to
+    // later correct a charge that fails. See the webhook's own payment_status
+    // guard, below, for the belt-and-braces half of this.
+    const captured = captureBody();
+    await createCheckoutSession({ ...base, plan: "one_trip", mode: "payment" });
+    assert.match(captured.body, /payment_method_types%5B0%5D=card/);
+
+    const subCaptured = captureBody();
+    await createCheckoutSession({ ...base, plan: "starter" });
+    assert.doesNotMatch(subCaptured.body, /payment_method_types/);
+  });
+});
+
+describe("granting a one-time purchase only once it is actually paid for", () => {
+  const WEBHOOK = readFileSync("app/api/billing/webhook/route.ts", "utf8");
+
+  it("never grants a completed checkout that has not actually settled yet", () => {
+    // "completed" is a checkout-page event, not a money-moved event — some
+    // payment methods settle days later, where payment_status is still
+    // "unpaid" the moment this event fires.
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('object.mode === "payment"'), WEBHOOK.indexOf("async_payment_succeeded"));
+    assert.match(branch, /object\.payment_status !== "paid"/);
+  });
+
+  it("grants it later, the one time it is granted for this path, once the delayed payment actually clears", () => {
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('"checkout.session.async_payment_succeeded"'), WEBHOOK.indexOf('"customer.subscription.updated"'));
+    assert.match(branch, /grantOneTimePurchase/);
   });
 });
 

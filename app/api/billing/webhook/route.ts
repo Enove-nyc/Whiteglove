@@ -40,6 +40,20 @@ export const dynamic = "force-dynamic";
  * and cancelled it, keeps what the owner gave them.
  */
 
+/** Grant a One Trip purchase — the one thing common to it settling immediately
+ *  (a card, at checkout) and settling days later (an async payment method). */
+async function grantOneTimePurchase(account: string, plan: AccountPlan): Promise<void> {
+  if (!(await setPlan(account, plan, "Stripe one-time purchase"))) {
+    console.error("[billing] paid but the plan could not be set:", { account, plan });
+  }
+  // Recorded permanently, separate from the plan field itself — see
+  // ownEntitledPlan in lib/plan-billing-store.ts for why: the plan field
+  // gets overwritten the moment this account joins an agency, and this
+  // purchase has to survive that.
+  await writeOneTimePurchase(account, plan);
+  await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "started" });
+}
+
 async function accountFor(object: Record<string, unknown>): Promise<string> {
   const metadata = (object.metadata ?? {}) as Record<string, string>;
   if (typeof metadata.account === "string" && metadata.account) return metadata.account;
@@ -94,15 +108,22 @@ export async function POST(request: NextRequest) {
       // could ever end it from underneath somebody the way a cancelled
       // subscription can. See lib/plan-billing.ts's ONE_TIME_PLANS.
       if (object.mode === "payment" || isOneTimePlan(plan)) {
-        if (!(await setPlan(account, plan, "Stripe one-time purchase"))) {
-          console.error("[billing] paid but the plan could not be set:", { account, plan });
+        // "Completed" is a checkout-page event, not a money-moved event. A
+        // card pays immediately and payment_status is already "paid" here —
+        // but Stripe also offers payment methods (ACH debit and others) that
+        // settle DAYS later, where this event fires the moment the SESSION
+        // finishes and payment_status is still "unpaid". Granting here on
+        // those would mint a permanent entitlement for a charge that has not
+        // happened yet and might still fail — and with no subscription
+        // behind a one-time purchase, nothing would ever take it back.
+        // createCheckoutSession pins this flow to cards only (lib/stripe.ts)
+        // so this should always already be "paid"; the check stays as the
+        // real guarantee rather than trusting that configuration alone.
+        if (object.payment_status !== "paid") {
+          console.log("[billing] one-time checkout completed but not yet paid — waiting on async settlement:", { account, plan });
+          return NextResponse.json({ received: true });
         }
-        // Recorded permanently, separate from the plan field itself — see
-        // ownEntitledPlan in lib/plan-billing-store.ts for why: the plan
-        // field gets overwritten the moment this account joins an agency,
-        // and this purchase has to survive that.
-        await writeOneTimePurchase(account, plan);
-        await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "started" });
+        await grantOneTimePurchase(account, plan);
         return NextResponse.json({ received: true });
       }
 
@@ -134,6 +155,24 @@ export async function POST(request: NextRequest) {
       await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "started" });
       return NextResponse.json({ received: true });
     }
+
+    if (event.type === "checkout.session.async_payment_succeeded") {
+      // The other half of the guard above: a delayed payment method that
+      // completed the checkout page unpaid has now actually cleared. Grant
+      // it now, the only place it is granted for this path.
+      const account = await accountFor(object);
+      const plan = planFrom(object);
+      if (!account || !plan) {
+        console.error("[billing] async payment succeeded with no account or plan on it:", { account, plan });
+        return NextResponse.json({ received: true });
+      }
+      await grantOneTimePurchase(account, plan);
+      return NextResponse.json({ received: true });
+    }
+
+    // async_payment_failed needs no branch: checkout.session.completed above
+    // never granted anything for an unpaid session, so there is nothing to
+    // take back.
 
     if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
       const account = await accountFor(object);

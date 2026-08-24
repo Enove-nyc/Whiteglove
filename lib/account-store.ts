@@ -167,6 +167,18 @@ export type SavedTrip = {
    */
   pipelineStage?: ManualTripStage;
   /**
+   * Whether this trip sends its client automatic reminders — see
+   * lib/trip-reminders.ts for what and when. OFF by default on every trip:
+   * nothing is ever sent to a client the advisor did not choose this for.
+   */
+  autoReminders?: boolean;
+  /**
+   * When each automatic reminder last went out, ISO date — so a reminder
+   * fires once, ever, per trip rather than every day a window holds true.
+   * See lib/trip-reminders.ts.
+   */
+  remindersSent?: { departure?: string; balanceDue?: string };
+  /**
    * This trip's payment balance — total, split across families/travelers,
    * any deposit/installment schedule, and the ledger of what has actually
    * been paid. Absent until the planner sets one up. See data/trip-payments.ts.
@@ -780,6 +792,8 @@ export type TripSummary = {
   /** The public token when shared, so a screen can build the link to it. */
   shareId?: string;
   updatedAt: string;
+  /** Whether this trip's client gets automatic reminders — see lib/trip-reminders.ts. */
+  autoReminders: boolean;
 };
 
 /** How many days the trip covers, from its dates. Zero until both are set. */
@@ -805,6 +819,7 @@ function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
     shared: Boolean(t.shareId),
     shareId: t.shareId,
     updatedAt: t.updatedAt,
+    autoReminders: Boolean(t.autoReminders),
   }));
 }
 
@@ -874,6 +889,44 @@ export async function setTripAdvisor(email: string, id: string, advisor: string)
   const saved = await writeTrips(email, next, activeId);
   if (!saved) return { ok: false as const, error: "Could not save that." };
   return { ok: true as const, trips: saved, activeId };
+}
+
+/**
+ * Turn a trip's automatic client reminders on or off.
+ *
+ * NOT GATED HERE, same reasoning as setTripClient — the route is the door.
+ * Turning this off does not clear `remindersSent`: turning it back on later
+ * must not re-fire a reminder that already went out once.
+ */
+export async function setTripAutoReminders(email: string, id: string, on: boolean) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return { ok: false as const, error: "That trip is gone." };
+  const next = trips.map((t) => (t.id === id ? { ...t, autoReminders: on, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not save that." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+/**
+ * Mark one automatic reminder as sent, so it never fires twice. Called only
+ * from the cron route (app/api/cron/trip-reminders/route.ts), across
+ * whichever account actually owns the trip — not a signed-in caller, so
+ * there is no route gate to point to here; the cron route's own auth is the
+ * only door.
+ */
+export async function markReminderSent(email: string, id: string, kind: "departure" | "balanceDue", when: string) {
+  if (!hasAccountStorage()) return false;
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return false;
+  const next = trips.map((t) =>
+    t.id === id ? { ...t, remindersSent: { ...t.remindersSent, [kind]: when }, updatedAt: new Date().toISOString() } : t,
+  );
+  return writeTrips(email, next, activeId);
 }
 
 /**
@@ -1983,8 +2036,14 @@ export async function stopTripShare(email: string, tripId: string): Promise<bool
   for (const collaborator of readCollaborators(trip.collaborators)) {
     await removeFromSharedWith(collaborator.person, normalized);
   }
+  // Push subscriptions go with it too — a device that opted in while the
+  // link was live has no business still getting trip-change notifications
+  // once the advisor has revoked that link. Left in place, notifySubscribers
+  // (called whenever a flight-status check finds something new) would keep
+  // sending to it regardless: it reads pushSubscriptions off the trip, not
+  // the share token, and never itself checks whether shareId is still set.
   const next = trips.map((t) =>
-    t.id === tripId ? { ...t, shareId: undefined, collaborators: [], updatedAt: new Date().toISOString() } : t,
+    t.id === tripId ? { ...t, shareId: undefined, collaborators: [], pushSubscriptions: [], updatedAt: new Date().toISOString() } : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));
 }

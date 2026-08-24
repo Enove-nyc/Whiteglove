@@ -11,6 +11,7 @@ import {
   importTrip,
   renameTrip,
   setTripAdvisor,
+  setTripAutoReminders,
   setTripClient,
   setTripCommission,
   stopTripShare,
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
         itinerary?: Itinerary;
         commissionCents?: number | null;
         commissionCurrency?: string;
+        autoReminders?: boolean;
       }
     | null;
 
@@ -107,6 +109,20 @@ export async function POST(request: NextRequest) {
         );
       }
       const result = await setTripAdvisor(email, body.id, body.advisor ?? "");
+      return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "auto-reminders": {
+      // Automatic "you're leaving soon" / "a balance is still due" messages
+      // to the CLIENT — same door as naming one, above: this only exists on
+      // a trip that can be handed to a client at all.
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
+      if (!mayServeCompanionClients(await getPlan(email))) {
+        return NextResponse.json(
+          { ok: false, error: `Automatic reminders are part of ${PLAN_LABELS.starter} and up.` },
+          { status: 403 },
+        );
+      }
+      const result = await setTripAutoReminders(email, body.id, Boolean(body.autoReminders));
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "commission": {

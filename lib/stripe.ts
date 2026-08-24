@@ -229,6 +229,16 @@ export async function createCheckoutSession(input: {
       metadata: { account: input.account.slice(0, 200), plan: input.plan },
       ...(input.trialDays && input.trialDays > 0 ? { trial_period_days: input.trialDays } : {}),
     };
+  } else {
+    // A one-time purchase grants a permanent entitlement the moment the
+    // webhook sees it paid (lib/plan-billing-store.ts's writeOneTimePurchase)
+    // — there is no subscription behind it to later correct a bad charge.
+    // Several of Stripe's other payment methods (ACH debit, and others by
+    // country) settle DAYS after checkout completes, not at checkout at all,
+    // so leaving the method list open would mean "completed" and "paid" are
+    // two different moments for the same session. Cards settle immediately;
+    // pinning to cards keeps that gap from existing for this flow at all.
+    body.payment_method_types = ["card"];
   }
   if (input.customerId) body.customer = input.customerId;
   else if (input.email) body.customer_email = input.email;
