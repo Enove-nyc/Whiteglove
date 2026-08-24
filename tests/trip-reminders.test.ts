@@ -133,3 +133,38 @@ describe("automatic reminders stay behind the same fences as the rest of the cli
     );
   });
 });
+
+describe("something actually calls the reminders endpoint on a schedule", () => {
+  // THE ONE THAT MATTERS. Everything above is about what happens when the
+  // endpoint runs. None of it is worth anything if nothing ever calls it —
+  // which is exactly what shipped the first time: the schedule went into
+  // vercel.json, nothing deploys this repository to Vercel, and the reminders
+  // silently never fired. A feature that fails by doing nothing, with no
+  // error anywhere, is the kind this test exists to catch.
+  const WORKFLOW = readFileSync(".github/workflows/trip-reminders.yml", "utf8");
+  const VERCEL = readFileSync("vercel.json", "utf8");
+
+  it("runs on a schedule, not only when somebody presses it", () => {
+    assert.match(WORKFLOW, /schedule:/);
+    assert.match(WORKFLOW, /- cron: "[^"]+"/);
+  });
+
+  it("calls the reminders endpoint, holding the shared secret", () => {
+    assert.match(WORKFLOW, /\/api\/cron\/trip-reminders/);
+    assert.match(WORKFLOW, /Authorization: Bearer \$CRON_SECRET/);
+    assert.match(WORKFLOW, /secrets\.CRON_SECRET/);
+  });
+
+  it("FAILS LOUDLY rather than reporting success on a refused run", () => {
+    // A green tick on a run that sent nothing would hide the outage it is
+    // meant to reveal.
+    assert.match(WORKFLOW, /if \[ "\$code" != "200" \]/);
+    assert.match(WORKFLOW, /exit 1/);
+  });
+
+  it("keeps the inert vercel.json schedule from coming back", () => {
+    // Vercel cron entries do nothing here; one sitting in this file reads as
+    // a working schedule to the next person who looks.
+    assert.doesNotMatch(VERCEL, /"crons"/);
+  });
+});
