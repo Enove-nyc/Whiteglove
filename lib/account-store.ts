@@ -3076,14 +3076,42 @@ export async function removeTeamMember(ownerEmail: string, memberEmail: string) 
  * identity directly. An identity with no teamOwnerEmail is its own business,
  * same as every account before staff logins existed.
  *
- * DOES NOT CHECK THE OWNER STILL LISTS THEM AS ACTIVE. removeTeamMember always
- * clears teamOwnerEmail in the same write that takes them off the roster, so
- * the two can never disagree — there is nothing here to double-check against.
+ * THE OWNER'S ROSTER IS THE AUTHORITY, NOT THE MEMBER'S OWN FIELD. An earlier
+ * version of this trusted teamOwnerEmail alone, on the reasoning that
+ * removeTeamMember clears it in the same write that drops the roster row.
+ * That reasoning was wrong: accept and remove each issue TWO independent
+ * writes, so a half-failure (or a raced accept of one token by two logins)
+ * can leave a login carrying teamOwnerEmail that the owner's roster does not
+ * list — a staff grant over trips, payments, clients and commissions that the
+ * team screen cannot revoke, because removeTeamMember refuses somebody who is
+ * not on the roster.
+ *
+ * So the field is only a POINTER, and the owner's own roster is what decides.
+ * Fails closed: a login the owner does not actively list resolves to itself,
+ * which is exactly the access it had before it ever joined.
  */
 export async function resolveBusinessOwner(email: string): Promise<string> {
   const normalized = normalizeId(email);
   const record = await getAccountRecord(normalized);
-  return record?.teamOwnerEmail ? normalizeId(record.teamOwnerEmail) : normalized;
+  if (!record?.teamOwnerEmail) return normalized;
+  const owner = normalizeId(record.teamOwnerEmail);
+  if (owner === normalized) return normalized;
+  const ownerRecord = await getAccountRecord(owner);
+  const listedActive = readTeam(ownerRecord?.team).some((m) => m.email === normalized && m.status === "active");
+  return listedActive ? owner : normalized;
+}
+
+/**
+ * Whether this login is its own business rather than staff on somebody
+ * else's — the check for the few things only an owner may do (managing the
+ * team, and setting up where the money lands; see the Stripe Connect note in
+ * app/api/account/payments/route.ts). Reads the same authority
+ * resolveBusinessOwner does, so a login the owner no longer lists is its own
+ * business again and passes this, which is correct: it is answering for
+ * itself, not for anybody else.
+ */
+export async function isOwnBusiness(email: string): Promise<boolean> {
+  return (await resolveBusinessOwner(email)) === normalizeId(email);
 }
 
 export async function getCurrentAccountData(cookieValue?: string) {

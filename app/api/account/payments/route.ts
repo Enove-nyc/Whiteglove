@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData, getTripItinerary, getBalance, resolveBusinessOwner, saveBalance } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, getTripItinerary, getBalance, isOwnBusiness, resolveBusinessOwner, saveBalance } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
@@ -18,6 +18,27 @@ async function signedInEmail() {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
   return account?.email ? resolveBusinessOwner(account.email) : null;
+}
+
+/**
+ * The signed-in identity ITSELF, unresolved — for the things only the person
+ * who owns the business may do.
+ *
+ * SETTING UP WHERE THE MONEY LANDS IS NOT A STAFF ERRAND. Everything else
+ * here reads the business through resolveBusinessOwner, which is right for a
+ * trip's balance: staff work the owner's trips. Stripe Connect is different.
+ * "connect" mints an Express account for the owner and hands back a hosted
+ * onboarding link, and "refresh-status" re-reads it — whoever completes that
+ * flow sets the payout bank details. Routed through the owner, any staff
+ * login could point the business's takings at an account they control. So
+ * these two actions check the person actually signed in, the same way
+ * app/api/account/team/route.ts fences team management to the owner.
+ */
+async function isBusinessOwner() {
+  const cookieStore = await cookies();
+  const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
+  if (!account?.email) return false;
+  return isOwnBusiness(account.email);
 }
 
 /**
@@ -74,6 +95,9 @@ export async function POST(request: NextRequest) {
 
   switch (body?.action) {
     case "connect": {
+      if (!(await isBusinessOwner())) {
+        return NextResponse.json({ ok: false, error: "Only the account owner sets up where payments land." }, { status: 403 });
+      }
       if (!canConnectAccounts()) {
         return NextResponse.json({ ok: false, error: "Payments aren't configured on this deployment yet." }, { status: 503 });
       }
@@ -92,6 +116,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, url: link.url });
     }
     case "refresh-status": {
+      if (!(await isBusinessOwner())) {
+        return NextResponse.json({ ok: false, error: "Only the account owner sets up where payments land." }, { status: 403 });
+      }
       const connect = await getConnectAccount(email);
       if (!connect) return NextResponse.json({ ok: false, error: "Nothing connected yet." }, { status: 400 });
       const status = await refreshAccountStatus(connect.accountId);

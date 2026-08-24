@@ -12,9 +12,18 @@ import {
   setOptimizationDismissed,
 } from "@/lib/account-store";
 import { isStale } from "@/data/itinerary-optimization";
+import { rateLimit, tooManyMessage } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
+
+/** Per account, per hour. A generate call spends the deployment's shared
+ *  paid AI quota, so it carries the same kind of fence
+ *  app/api/account/smart-import/route.ts already keeps on its own model call —
+ *  without one, ordinary signed-in accounts can drain the quota the assistant
+ *  and Smart Import also draw on. Generous: a planner regenerating a list a
+ *  few times while tweaking a trip is nowhere near this. */
+const AI_LIMIT = { limit: 20, windowSeconds: 3600 };
 
 /**
  * AI pacing/flow suggestions for a trip's itinerary — for anyone with a
@@ -64,6 +73,8 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.action === "generate") {
+    const flood = await rateLimit(`optimize-generate:${email}`, AI_LIMIT);
+    if (!flood.ok) return NextResponse.json({ error: tooManyMessage(flood.retryAfter) }, { status: 429 });
     const result = await generateOptimization(email, trip.tripId);
     if (!result) return NextResponse.json({ error: "Could not review this itinerary right now. Try again shortly." }, { status: 503 });
     return NextResponse.json({ ok: true, result });
