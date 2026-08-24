@@ -4,6 +4,7 @@ import {
   accountCookieName,
   convertProposalToItinerary,
   ensureProposalShare,
+  getAdvisorWelcome,
   getCurrentAccountData,
   getProposal,
   getTripItinerary,
@@ -44,8 +45,8 @@ export async function GET(request: NextRequest) {
   const wanted = request.nextUrl.searchParams.get("trip") ?? undefined;
   const trip = await getTripItinerary(email, wanted);
   if (!trip) return NextResponse.json({ error: "No trip to build a proposal for yet." }, { status: 404 });
-  const proposal = await getProposal(email, trip.tripId);
-  return NextResponse.json({ proposal, tripId: trip.tripId, tripName: trip.tripName || trip.itinerary.title });
+  const [proposal, advisorWelcome] = await Promise.all([getProposal(email, trip.tripId), getAdvisorWelcome(email, trip.tripId)]);
+  return NextResponse.json({ proposal, tripId: trip.tripId, tripName: trip.tripName || trip.itinerary.title, advisorWelcome });
 }
 
 export async function POST(request: NextRequest) {

@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ProposalBuilder from "@/components/ProposalBuilder";
+import AdvisorWelcomeUploader from "@/components/AdvisorWelcomeUploader";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
@@ -46,8 +47,17 @@ export default async function ProposalPage() {
         />
 
         {allowed ? (
-          <div className="mt-8">
-            <ProposalBuilder />
+          <div className="mt-8 flex flex-col gap-10">
+            <div>
+              <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Welcome video</h2>
+              <p className="mt-1 text-sm text-stone-600">A short hello from you, shown at the top of the proposal before your client even opens it.</p>
+              <div className="mt-4">
+                <AdvisorWelcomeUploader />
+              </div>
+            </div>
+            <div className="border-t border-[var(--gold-light)] pt-8">
+              <ProposalBuilder />
+            </div>
           </div>
         ) : (
           <Card className="mt-8 max-w-xl">

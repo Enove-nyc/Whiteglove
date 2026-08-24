@@ -14,6 +14,7 @@ import { dismissSuggestion, itinerarySignature, type OptimizationResult } from "
 import { suggestItineraryOptimizations } from "@/lib/itinerary-optimization-ai";
 import { emptyTranslation, type TranslatedItinerary } from "@/data/itinerary-translation";
 import { translateFields, type TranslationField } from "@/lib/itinerary-translation-ai";
+import type { AdvisorWelcome } from "@/data/advisor-welcome";
 import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -248,6 +249,12 @@ export type SavedTrip = {
    * until first generated. See data/itinerary-translation.ts.
    */
   translations?: Record<string, TranslatedItinerary>;
+  /**
+   * A short welcome video from the advisor, shown to the client on the
+   * proposal before they've even said yes. Absent until uploaded. See
+   * data/advisor-welcome.ts.
+   */
+  advisorWelcome?: AdvisorWelcome;
   /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
@@ -1776,6 +1783,41 @@ export async function generateTranslation(email: string, tripId: string, languag
   return ok ? result : null;
 }
 
+// ---- Advisor welcome video ---------------------------------------------------
+//
+// A short video greeting on a trip's proposal — see data/advisor-welcome.ts.
+// The file itself lives in lib/media.ts, the same store a companion-chat
+// video already uses; this only keeps the one record saying which media id
+// belongs to which trip.
+
+/** The trip's welcome video, or null if none uploaded yet. */
+export async function getAdvisorWelcome(email: string, tripId: string): Promise<AdvisorWelcome | null> {
+  const data = await getAccountData(email);
+  return withTrips(data).trips.find((t) => t.id === tripId)?.advisorWelcome ?? null;
+}
+
+/** Save (or replace) the trip's welcome video. */
+export async function saveAdvisorWelcome(email: string, tripId: string, welcome: AdvisorWelcome): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, advisorWelcome: welcome, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** Remove the trip's welcome video. */
+export async function removeAdvisorWelcome(email: string, tripId: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, advisorWelcome: undefined, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
 // ---- Live travel information ----------------------------------------------
 //
 // A flight's real status, checked on demand (no cron in this deployment —
@@ -1892,7 +1934,7 @@ export async function getSharedProposal(shareId: string) {
     await saveProposal(rec.ownerEmail, rec.tripId, proposal);
   }
   const record = await getAccountRecord(rec.ownerEmail);
-  return { proposal, tripName: trip.client || trip.name, ownerName: record?.name, advisor: trip.advisor };
+  return { proposal, tripName: trip.client || trip.name, ownerName: record?.name, advisor: trip.advisor, advisorWelcome: trip.advisorWelcome };
 }
 
 export type ProposalClientAction =
