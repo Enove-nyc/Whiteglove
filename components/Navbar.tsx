@@ -26,9 +26,16 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * open. Escape closes and returns focus to its trigger, a press outside
  * closes, and only one is open at a time. See the note above the handlers for
  * why opening on hover made the buttons look dead.
+ *
+ * MINIMAL DROPS THE FOUR CATEGORIES. An advisor working the trip pipeline or
+ * building a proposal saw the exact same Destinations/Travel/Kosher/Book bar
+ * a first-time visitor sees — the header gave no sign this was a business
+ * tool rather than the public site. The six advisor-tool pages pass
+ * `minimal`, which leaves the logo, the account menu (with its own advisor
+ * tools) and sign-out in place and drops only the four public categories.
  */
 
-export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "kosher" | "itineraries" } = {}) {
+export default function Navbar({ brand: brandProp = "kosher", minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
   // A page that knows its brand server-side passes it (the itineraries home);
   // everywhere else Navbar renders with the default and settles from the
   // hostname after mount — one frame on the itineraries domain, nothing on the
@@ -99,15 +106,18 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
   // lib/booking-access.ts and lib/navigation.ts's bookCategoryFor.
   const booking = useBookingLink();
   // Four categories; Travel's booking links resolve through the owner's lock.
-  const categories: NavCategory[] = categoriesForBrand(brand).map((category) =>
-    isItineraries
-      ? category.label === "Book"
-        ? itinerariesBookingCategoryFor(booking)
-        : category
-      : category.label === "Travel"
-        ? travelCategoryFor(booking)
-        : category,
-  );
+  // Minimal drops them entirely — see the note above the component.
+  const categories: NavCategory[] = minimal
+    ? []
+    : categoriesForBrand(brand).map((category) =>
+        isItineraries
+          ? category.label === "Book"
+            ? itinerariesBookingCategoryFor(booking)
+            : category
+          : category.label === "Travel"
+            ? travelCategoryFor(booking)
+            : category,
+      );
 
   useEffect(() => {
     let active = true;

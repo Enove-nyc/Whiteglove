@@ -33,7 +33,7 @@ export default async function LibraryPage() {
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
-      <Navbar />
+      <Navbar minimal />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
         <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
           Your content library
