@@ -10,6 +10,7 @@ import {
   saveFormTemplate,
 } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
 import type { ClientFormTemplate } from "@/data/client-form";
@@ -19,7 +20,7 @@ export const dynamic = "force-dynamic";
 /**
  * The planner's own side of a client's pre-trip form — building the
  * template, sending its link, and the only place the answers can be read
- * back. BUSINESS ONLY, the same gate as a proposal or the library.
+ * back. ADVISOR STARTER AND UP, the same gate as a proposal or the library.
  */
 
 async function signedInEmail() {
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
   const email = await signedInEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   if (!mayServeCompanionClients(await getPlan(email))) {
-    return NextResponse.json({ error: "A client form is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ error: `A client form is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
 
   const body = (await request.json().catch(() => null)) as

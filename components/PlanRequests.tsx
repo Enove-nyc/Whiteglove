@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { type PlanRequest, PLAN_LABELS, waitingFor } from "@/lib/account-plans";
 import { type ActionResult, declineRequestAction, grantRequestAction } from "@/app/admin/accounts/actions";
+import { PAID_PLANS } from "@/lib/plan-billing";
 
 /**
  * Who has asked for a different kind of account.
@@ -70,11 +71,13 @@ export default function PlanRequests({ requests, now }: { requests: PlanRequest[
 
   return (
     <section className="mt-10">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Gold and Business</p>
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">
+        {PAID_PLANS.map((p) => PLAN_LABELS[p]).join(", ")}
+      </p>
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Who has asked</h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-        Nothing is behind Gold or Business yet, and nobody has been charged anything — this is a list of people who
-        said they would like one. Giving somebody a plan changes their account and nothing else.
+        A list of people who said they would like a plan — asking never charges anybody. Giving somebody a plan
+        changes their account and nothing else.
       </p>
 
       {open.length === 0 ? (

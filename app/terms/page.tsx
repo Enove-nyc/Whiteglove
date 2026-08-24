@@ -75,7 +75,7 @@ export default async function TermsOfUsePage() {
 
         <Section title="The Service">
           {itineraries ? (
-            <p>White Glove Itineraries provides trip-planning tools — a day-by-day itinerary builder, saved routes, and flight and hotel search. The Service is provided for personal use, and, for a Business account, for planning travel on behalf of clients.</p>
+            <p>White Glove Itineraries provides trip-planning tools — a day-by-day itinerary builder, saved routes, and flight and hotel search. The Service is provided for personal use, and, on a paid advisor plan, for planning travel on behalf of clients.</p>
           ) : (
             <p>White Glove provides informational travel guides and planning tools for kosher travel and Jewish heritage journeys, including destination guides, cemetery and access information, saved routes, and flight and hotel search. The Service is provided for personal, non-commercial use.</p>
           )}

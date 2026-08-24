@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { mayBrandOwnItinerary } from "@/lib/account-limits";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { accountCookieName, ensureItineraryShare, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
 import { printBrandFor } from "@/lib/business-brand";
@@ -20,7 +21,7 @@ export const dynamic = "force-dynamic";
  * EVERY SPAM RELAY EVER BUILT. So it is fenced in on four sides, and the fences
  * matter more than the feature:
  *
- *   · Business accounts only, checked against the plan on the server.
+ *   · Advisor Pro only, checked against the plan on the server.
  *   · The only link it can send is this account's own share link for their own
  *     trip. There is no url in the request and no way to put one there.
  *   · The only free text is a short note, which appears under the business's
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
 
   const plan = await getPlan(account.email);
   if (!mayBrandOwnItinerary(plan)) {
-    return NextResponse.json({ error: "Sending an itinerary to a client is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ error: `Sending an itinerary to a client is part of ${PLAN_LABELS.pro}.` }, { status: 403 });
   }
 
   const brand = printBrandFor(await readBrand(account.email), true);
