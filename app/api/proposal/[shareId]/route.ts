@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { applyProposalClientAction, getSharedProposal, type ProposalClientAction } from "@/lib/account-store";
+import { sendTripNoteEmail } from "@/lib/email";
+import { isPhoneIdentity } from "@/lib/identity";
 import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -12,7 +14,38 @@ export const dynamic = "force-dynamic";
  * (pick an option, approve, ask for changes, leave a comment) — the shape is
  * checked and refused server-side (lib/account-store.ts), never trusted
  * from whatever the client happened to send.
+ *
+ * APPROVING, ASKING FOR CHANGES, OR LEAVING A COMMENT NOTIFIES THE PLANNER BY
+ * EMAIL — the same fire-and-forget note the itinerary's own comment thread
+ * already sends an owner (app/api/account/itinerary/comments/route.ts), so a
+ * planner doesn't have to keep the pipeline dashboard open to find out a
+ * client acted. Never awaited into the response, and never a reason for the
+ * client's action to fail — the proposal is already saved by the time this
+ * runs.
  */
+
+function noteFor(action: ProposalClientAction): string | null {
+  if (action.kind === "approve") return "Approved the proposal.";
+  if (action.kind === "request_changes") return action.text?.trim() ? action.text.trim() : "Asked for changes to the proposal.";
+  if (action.kind === "comment") return action.text.trim();
+  return null; // Selecting an option is quiet — nothing worth an email yet.
+}
+
+async function notifyOwner(ownerEmail: string, tripName: string, action: ProposalClientAction, request: NextRequest) {
+  try {
+    if (isPhoneIdentity(ownerEmail)) return; // Nowhere to send it.
+    const note = noteFor(action);
+    if (!note) return;
+    await sendTripNoteEmail(ownerEmail, {
+      fromName: "Your client",
+      tripTitle: tripName || "the trip",
+      note,
+      url: new URL("/pipeline", request.nextUrl.origin).toString(),
+    });
+  } catch {
+    // The proposal action is saved. That is the part that mattered.
+  }
+}
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
@@ -43,7 +76,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   else if (body?.kind === "comment" && typeof body.text === "string") action = { kind: "comment", text: body.text };
   if (!action) return NextResponse.json({ error: "Say what to do." }, { status: 400 });
 
-  const proposal = await applyProposalClientAction(shareId, action);
-  if (!proposal) return NextResponse.json({ error: "That didn't go through." }, { status: 400 });
-  return NextResponse.json({ ok: true, proposal });
+  const result = await applyProposalClientAction(shareId, action);
+  if (!result) return NextResponse.json({ error: "That didn't go through." }, { status: 400 });
+  void notifyOwner(result.ownerEmail, result.tripName, action, request);
+  return NextResponse.json({ ok: true, proposal: result.proposal });
 }

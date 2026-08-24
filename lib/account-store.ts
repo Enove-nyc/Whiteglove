@@ -1443,7 +1443,10 @@ export type ProposalClientAction =
  * Approving with nothing selected, or selecting an option that isn't on the
  * proposal, is refused rather than guessed at.
  */
-export async function applyProposalClientAction(shareId: string, action: ProposalClientAction): Promise<Proposal | null> {
+export async function applyProposalClientAction(
+  shareId: string,
+  action: ProposalClientAction,
+): Promise<{ proposal: Proposal; ownerEmail: string; tripName: string } | null> {
   const rec = await readJson<{ ownerEmail: string; tripId: string }>(proposalShareKey(shareId));
   if (!rec) return null;
   const data = await getAccountData(rec.ownerEmail);
@@ -1474,7 +1477,7 @@ export async function applyProposalClientAction(shareId: string, action: Proposa
   }
 
   const ok = await saveProposal(rec.ownerEmail, rec.tripId, next);
-  return ok ? next : null;
+  return ok ? { proposal: next, ownerEmail: rec.ownerEmail, tripName: trip.client || trip.name } : null;
 }
 
 /**

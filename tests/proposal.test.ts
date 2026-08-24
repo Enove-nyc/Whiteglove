@@ -116,3 +116,18 @@ describe("a proposal's public link keeps the same fences everything else does", 
     assert.doesNotMatch(PUBLIC_ROUTE, /saveProposal|ensureProposalShare|convertProposalToItinerary/);
   });
 });
+
+describe("a client's action on a proposal notifies the planner by email", () => {
+  const ROUTE = readFileSync("app/api/proposal/[shareId]/route.ts", "utf8");
+
+  it("emails after the action is saved, never blocking the client's response on it", () => {
+    const savedAt = ROUTE.indexOf("applyProposalClientAction(shareId, action)");
+    const notifyAt = ROUTE.indexOf("void notifyOwner(");
+    assert.ok(savedAt > 0 && notifyAt > savedAt);
+    assert.match(ROUTE, /void notifyOwner/);
+  });
+
+  it("stays quiet for a bare option selection — only approve, changes, and comments are worth an email", () => {
+    assert.match(ROUTE, /Selecting an option is quiet/);
+  });
+});
