@@ -8,6 +8,7 @@ import { duffelTokenHelp, inspectConfiguredDuffelToken } from "@/lib/duffel-toke
 import MapKeyStatus from "@/components/MapKeyStatus";
 import RoutingKeyTest from "@/components/RoutingKeyTest";
 import SmsStatus from "@/components/SmsStatus";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ export default function ConnectionSettings() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Connections</h1>
+        <PageHeader eyebrow="White Glove admin" title="Connections" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           The outside services the website leans on. Each one tells you whether it is working right now, and what to
           do if it is not. Nothing here is needed day to day.

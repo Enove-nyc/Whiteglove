@@ -6,6 +6,7 @@ import { readCollaborationSettings, readMembershipSettings } from "@/lib/growth-
 import { publicReferralStatus } from "@/lib/referral";
 import { readReferralSettings } from "@/lib/referral-store";
 import { getDashboardStats } from "@/lib/site-analytics";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function AdminSettingsPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Settings</h1>
+        <PageHeader eyebrow="White Glove admin" title="Settings" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Access, money, and the services the site depends on.
         </p>

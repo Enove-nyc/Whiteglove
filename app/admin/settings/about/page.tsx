@@ -1,5 +1,6 @@
 import AboutProfileForm from "@/components/AboutProfileForm";
 import { aboutProfileStoreAvailable, readAboutProfileFresh } from "@/lib/about-profile-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export default async function AboutSettingsPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">About</h1>
+        <PageHeader eyebrow="White Glove admin" title="About" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           <strong className="font-semibold text-[var(--navy)]">Nothing on this screen is required, and the About page
           is finished without any of it.</strong>{" "}

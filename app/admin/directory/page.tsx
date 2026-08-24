@@ -3,6 +3,7 @@ import AdminSectionScreens from "@/components/AdminSectionScreens";
 import DirectoryBrowserAdmin from "@/components/DirectoryBrowserAdmin";
 import { builtInDirectory, type DirectoryEntry } from "@/lib/directory-index";
 import { describeDirectorySource, readProviders, type DirectorySource } from "@/lib/directory";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export default async function AdminDirectoryPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Directory</h1>
+        <PageHeader eyebrow="White Glove admin" title="Directory" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Every beis hachaim, town and business. Search, filter, or show what is still missing.
         </p>

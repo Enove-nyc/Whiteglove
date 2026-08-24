@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listMikvaosForAdmin } from "@/lib/mikvaos";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function AdminMikvaosPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Mikvaos</h1>
+        <PageHeader eyebrow="White Glove admin" title="Mikvaos" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Every mikvah listing across towns. Edit one by opening its town — they use the same PracticalPlace form as
           minyanim and Shabbos notes. A listing needs a source URL before it can appear on the public site.
