@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons/Icon";
 import { useFocusTrap } from "@/components/useFocusTrap";
-import { emptyLibraryItem, emptyLibraryPack, itemsInPack, type LibraryItem, type LibraryPack } from "@/data/library";
+import { applyLibraryPack, emptyLibraryItem, emptyLibraryPack, itemsInPack, type LibraryItem, type LibraryPack } from "@/data/library";
+import { emptyItinerary } from "@/data/itinerary";
 import { PROPOSAL_COMPONENT_LABEL, type ProposalComponentKind } from "@/data/proposal";
 import type { AttractionResult } from "@/lib/attraction-search";
 
@@ -179,6 +181,7 @@ function ItemEditor({ item, onSave, onCancel }: { item: LibraryItem; onSave: (it
 }
 
 export default function LibraryManager() {
+  const router = useRouter();
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [packs, setPacks] = useState<LibraryPack[]>([]);
   const [loading, setLoading] = useState(true);
@@ -186,6 +189,7 @@ export default function LibraryManager() {
   const [newPackName, setNewPackName] = useState("");
   const [expandedPack, setExpandedPack] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [startingPack, setStartingPack] = useState<string | null>(null);
   const dialogRef = useFocusTrap<HTMLDivElement>(Boolean(editing), () => setEditing(null));
 
   const load = useCallback(async () => {
@@ -228,6 +232,35 @@ export default function LibraryManager() {
   async function saveItem(item: LibraryItem) {
     const withId = { ...item, id: item.id || uid() };
     if (await post({ action: "save-item", item: withId })) setEditing(null);
+  }
+
+  /**
+   * "Duplicate → Customize → Send" — a saved pack, dropped onto a brand-new
+   * trip. Builds the itinerary here, client-side, from the pack's own items
+   * (data/library.ts's applyLibraryPack) and hands the whole thing to the
+   * same "import" action the trip switcher already uses to add a shared
+   * trip — a new trip is a new trip, whichever door it came in through.
+   */
+  async function startTripFromPack(pack: LibraryPack) {
+    setError("");
+    setStartingPack(pack.id);
+    try {
+      const packItems = itemsInPack(pack, items);
+      const itinerary = applyLibraryPack(emptyItinerary(), pack, packItems, uid);
+      const res = await fetch("/api/account/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "import", itinerary, name: pack.name }),
+      });
+      const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      if (!res.ok || !data?.ok) {
+        setError(data?.error ?? "Could not start a trip from that pack.");
+        return;
+      }
+      router.push("/itinerary");
+    } finally {
+      setStartingPack(null);
+    }
   }
 
   const grouped = new Map<string, LibraryItem[]>();
@@ -315,14 +348,24 @@ export default function LibraryManager() {
                     <p className="font-semibold text-[var(--navy)]">{pack.name}</p>
                     <p className="text-xs text-stone-500">{packItems.length} item{packItems.length === 1 ? "" : "s"}</p>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => window.confirm(`Delete the pack "${pack.name}"? The items in it stay in your library.`) && void post({ action: "delete-pack", id: pack.id })}
-                    className="flex-none text-stone-400 hover:text-red-700"
-                    aria-label="Delete pack"
-                  >
-                    <Icon name="trash" className="h-4 w-4" />
-                  </button>
+                  <div className="flex flex-none items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void startTripFromPack(pack)}
+                      disabled={packItems.length === 0 || startingPack === pack.id}
+                      className={smallButton}
+                    >
+                      {startingPack === pack.id ? "Starting…" : "Start a trip"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => window.confirm(`Delete the pack "${pack.name}"? The items in it stay in your library.`) && void post({ action: "delete-pack", id: pack.id })}
+                      className="text-stone-400 hover:text-red-700"
+                      aria-label="Delete pack"
+                    >
+                      <Icon name="trash" className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
                 {open && (
                   <div className="mt-3 space-y-1.5 border-t border-[var(--gold-light)] pt-3">

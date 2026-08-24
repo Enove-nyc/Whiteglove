@@ -3,6 +3,7 @@ import AirportAdmin from "@/components/AirportAdmin";
 import { AIRPORTS } from "@/data/airports";
 import { mergeAirports, mergeMetros } from "@/lib/airport-admin";
 import { airportStoreAvailable, readAirportEdits } from "@/lib/airport-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,7 @@ export default async function AdminAirportsPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Airports</h1>
+            <PageHeader eyebrow="White Glove admin" title="Airports" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               The {AIRPORTS.length} airports the site came with, plus any you add. This is what the flight search
               offers, what the planner measures driving times from, and how somebody typing a town name finds the

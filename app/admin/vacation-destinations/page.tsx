@@ -7,6 +7,7 @@ import { listVacationDestinationsForAdmin } from "@/lib/vacation-destinations-vi
 import { destinations as heritageTowns } from "@/data/destinations";
 import { vacationDestinationPhotos, vacationDestinationsTableReady } from "@/lib/vacation-destinations-admin";
 import DbSetupButton from "@/components/DbSetupButton";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 // Admin data must always reflect the latest state.
 export const dynamic = "force-dynamic";
@@ -53,10 +54,7 @@ export default async function AdminVacationDestinationsPage({
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-          Vacation destinations
-        </h1>
+        <PageHeader eyebrow="White Glove admin" title="Vacation destinations" />
         <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
           The 21 places somebody goes on holiday — Rome, the Dolomites, Miami Beach. What you write here is the advice:
           why go, how long to give it, when in the year, what catches people out. The practical detail on each page is

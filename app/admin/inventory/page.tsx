@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminInventoryManager from "@/components/AdminInventoryManager";
 import { getEditableInventory } from "@/lib/admin-inventory";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function AdminInventoryPage() {
   const inventory = await getEditableInventory();
@@ -10,8 +11,7 @@ export default async function AdminInventoryPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Checklist</h1>
+            <PageHeader eyebrow="White Glove admin" title="Checklist" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">Sort every page and issue by status, then add owner notes for the missing information you have.</p>
           </div>
           <div className="flex flex-wrap gap-3">

@@ -3,6 +3,7 @@ import FlatFileListEditor, { type FlatFileItem } from "@/components/FlatFileList
 import { addShulAction, removeShulAction } from "@/app/admin/shuls/actions";
 import { listPublishedShuls } from "@/lib/shuls";
 import { shulsStoreAvailable } from "@/lib/shuls-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -41,8 +42,7 @@ export default async function AdminShulsPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Shuls</h1>
+        <PageHeader eyebrow="White Glove admin" title="Shuls" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Shuls and minyanim for the public directory. Most come from the towns&rsquo; own write-ups and the built-in
           catalog; the ones you add here belong to no town on the site. Each needs a source, and coordinates put it on

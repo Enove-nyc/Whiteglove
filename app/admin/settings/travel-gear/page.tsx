@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CANONICAL_ORIGIN, siteOrigin } from "@/lib/seo";
 import TravelGearForm from "@/components/TravelGearForm";
 import { gearStoreAvailable, readGearFresh } from "@/lib/travel-gear-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -28,13 +29,18 @@ export default async function TravelGearSettings() {
         <Link href="/admin/settings" className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">
           ← Settings
         </Link>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Travel gear</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-          A travel blech, a hotplate, a plug adapter — anything worth having in a suitcase, with your Amazon (or other)
-          affiliate link. This page is separate from the shorter list of extras under Earnings
-          (eSIM, insurance, transfers) — this one is its own page, <code>/travel-gear</code>, built to hold a whole shelf
-          rather than three cards under a search.
-        </p>
+        <PageHeader
+          eyebrow="White Glove admin"
+          title="Travel gear"
+          description={
+            <>
+              A travel blech, a hotplate, a plug adapter — anything worth having in a suitcase, with your Amazon (or
+              other) affiliate link. This page is separate from the shorter list of extras under Earnings (eSIM,
+              insurance, transfers) — this one is its own page, <code>/travel-gear</code>, built to hold a whole shelf
+              rather than three cards under a search.
+            </>
+          }
+        />
         <p className="mt-3">
           <a
             href={`${siteOrigin()?.origin || CANONICAL_ORIGIN}/travel-gear`}

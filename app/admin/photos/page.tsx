@@ -2,6 +2,7 @@ import Link from "next/link";
 import PhotoSubmissionQueue, { type PendingSubmission } from "@/components/PhotoSubmissionQueue";
 import { isDbEnabled, listPendingSubmissions } from "@/lib/content-admin";
 import { waitingFor } from "@/lib/suggestions";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -46,10 +47,7 @@ export default async function AdminPhotosPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Photos
-            </h1>
+            <PageHeader eyebrow="White Glove admin" title="Photos" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Pictures waiting to be published or declined. New ones are added from a town or listing editor.
               {submissions.length > 0 && (

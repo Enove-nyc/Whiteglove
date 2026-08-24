@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { ATTACHMENT_KINDS, type AttachmentKind, attachmentProblem } from "@/lib/attachments";
 import { attachmentStoreAvailable, deleteAttachmentFor, getAttachmentFor, putAttachment } from "@/lib/attachment-store";
 import { sameOrigin } from "@/lib/secure-access";
@@ -15,10 +15,13 @@ export const dynamic = "force-dynamic";
  * document carrying somebody's name and booking reference. Everything here is
  * answered only to the account that uploaded it.
  */
+/** The business a staff login is linked to, or the account itself — a
+ *  file kept against a shared trip belongs to the business, the same as
+ *  the trip does, not to whichever login happened to upload it. */
 async function whoIsAsking() {
   const jar = await cookies();
   const account = await getCurrentAccountData(jar.get(accountCookieName())?.value);
-  return account?.email ?? null;
+  return account?.email ? resolveBusinessOwner(account.email) : null;
 }
 
 /** Serve one file back to the person who put it there. */

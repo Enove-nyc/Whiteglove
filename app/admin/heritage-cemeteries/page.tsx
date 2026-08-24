@@ -3,6 +3,7 @@ import HeritageAdminForm from "@/components/HeritageAdminForm";
 import HeritageRemoveButton from "@/components/HeritageRemoveButton";
 import { listAllHeritageCemeteries } from "@/lib/heritage-cemeteries";
 import { heritageStoreAvailable } from "@/lib/heritage-cemeteries-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,7 @@ export default async function AdminHeritageCemeteriesPage() {
   return (
     <>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Heritage cemeteries</h1>
+        <PageHeader eyebrow="White Glove admin" title="Heritage cemeteries" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           The batei hachaim locator — where each cemetery is, with a link to its source for the details. Most come from
           Nesiya Tova; the ones you add here sit alongside them on the map and in the locator, each with its own page

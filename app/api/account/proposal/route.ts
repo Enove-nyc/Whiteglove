@@ -4,9 +4,12 @@ import {
   accountCookieName,
   convertProposalToItinerary,
   ensureProposalShare,
+  getAdvisorWelcome,
   getCurrentAccountData,
   getProposal,
   getTripItinerary,
+  logProposalSent,
+  resolveBusinessOwner,
   saveProposal,
 } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
@@ -27,10 +30,11 @@ export const dynamic = "force-dynamic";
  * side a client actually opens is a separate route, and reads nothing here.
  */
 
+/** The business a staff login is linked to, or the account itself. */
 async function signedInEmail() {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
-  return account?.email ?? null;
+  return account?.email ? resolveBusinessOwner(account.email) : null;
 }
 
 export async function GET(request: NextRequest) {
@@ -42,8 +46,8 @@ export async function GET(request: NextRequest) {
   const wanted = request.nextUrl.searchParams.get("trip") ?? undefined;
   const trip = await getTripItinerary(email, wanted);
   if (!trip) return NextResponse.json({ error: "No trip to build a proposal for yet." }, { status: 404 });
-  const proposal = await getProposal(email, trip.tripId);
-  return NextResponse.json({ proposal, tripId: trip.tripId, tripName: trip.tripName || trip.itinerary.title });
+  const [proposal, advisorWelcome] = await Promise.all([getProposal(email, trip.tripId), getAdvisorWelcome(email, trip.tripId)]);
+  return NextResponse.json({ proposal, tripId: trip.tripId, tripName: trip.tripName || trip.itinerary.title, advisorWelcome });
 }
 
 export async function POST(request: NextRequest) {
@@ -85,6 +89,7 @@ export async function POST(request: NextRequest) {
       const sent: Proposal = { ...current, status: "sent", sentAt: now, updatedAt: now };
       const ok = await saveProposal(email, tripId, sent);
       if (!ok) return NextResponse.json({ ok: false, error: "Could not save the proposal." }, { status: 503 });
+      await logProposalSent(email, tripId);
       return NextResponse.json({ ok: true, proposal: sent, shareId });
     }
     case "share": {

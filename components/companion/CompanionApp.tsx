@@ -446,6 +446,22 @@ export default function CompanionApp({
     };
   }, [liveChat]);
 
+  // Whether THIS DEVICE currently has a connection — not whether the trip
+  // shown is fresh. `navigator.onLine` starts true on the server (there is
+  // no navigator there), so the banner only ever appears client-side, after
+  // the browser actually reports a dropped connection.
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
+
   const advisor = trip.advisorName;
   const firstName = advisor.split(" ")[0];
   // The place, for the guide card — "The Cohens · Rome" → "Rome".
@@ -1005,9 +1021,10 @@ export default function CompanionApp({
           savePushSubscription in lib/account-store.ts), and neither the
           advisor's own view nor the scripted demo has one. */}
       {isClientViewer && liveChat?.shareId && <NotifyControl shareId={liveChat.shareId} />}
-      {/* Real flight-status alerts — never present on the demo. Newest
-          first, each with a Dismiss control on the advisor's own side only;
-          a client sees the same alert with nothing to manage. */}
+      {/* Real alerts only — flight-status changes and "what changed" edits to
+          the itinerary itself (data/trip-alerts.ts) — never present on the
+          demo. Newest first, each with a Dismiss control on the advisor's own
+          side only; a client sees the same alert with nothing to manage. */}
       {[...liveAlerts].reverse().map((a) => (
         <div key={a.id} style={{ padding: "18px 18px", borderRadius: 20, background: a.acknowledged ? "#ffffff" : "#f7eee0", border: `1px solid ${a.acknowledged ? "rgba(38,50,58,.08)" : "rgba(183,138,74,.28)"}`, display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={kicker(a.acknowledged ? "#78716c" : "#765321")}>{new Date(a.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
@@ -1381,6 +1398,18 @@ export default function CompanionApp({
           {(open || unacknowledgedAlerts.length > 0) && <span style={{ position: "absolute", top: -3, right: -3, width: 11, height: 11, borderRadius: 14, background: GOLD, border: `2px solid ${CREAM}` }} />}
         </button>
       </div>
+      {/* Only ever says the DEVICE has no connection right now — never a
+          verdict on whether what's on screen is stale, which nothing here
+          actually knows. Everything shown was loaded from the network at
+          some point; this just says a fresh copy can't be fetched right
+          now, so anything requiring one (Changes, Messages, marking a
+          payment) won't update until the connection is back. */}
+      {isOffline && (
+        <div style={{ flexShrink: 0, padding: "9px 18px", background: "#faf1de", borderBottom: "1px solid rgba(183,138,74,.28)", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ width: 7, height: 7, borderRadius: 14, background: GOLD, flexShrink: 0 }} />
+          <span style={{ font: "600 11.5px/1.3 Inter,sans-serif", color: "#765321" }}>No connection — showing what was last loaded</span>
+        </div>
+      )}
       {/* content */}
       <div className="wg-scroll" style={{ flex: 1, overflow: "auto", WebkitOverflowScrolling: "touch" }}>{body}</div>
       {/* tabs */}
@@ -1451,6 +1480,11 @@ type LiveMsg = {
   deletedAt?: string;
   replyTo?: { at: string; from: ChatSide; kind?: string; text: string };
   itineraryRef?: string;
+  /** Kept easy to find again — either side can pin a message. */
+  pinned?: boolean;
+  /** Sent by the advisor as a broadcast to the whole trip, not a private
+   *  reply — rendered as a banner rather than an ordinary bubble. */
+  announcement?: boolean;
 };
 
 /** The floor a picture may weigh before the server even has a disk to hold it
@@ -1681,6 +1715,11 @@ function LiveChat({
   // message's words rather than a new message, and Send saves the change
   // instead of posting another one.
   const [editingAt, setEditingAt] = useState<string | null>(null);
+  // The advisor's own choice, per message — never carried over from the last
+  // send, so a reminder sent to everyone doesn't quietly turn the next
+  // ordinary reply into one too.
+  const [asAnnouncement, setAsAnnouncement] = useState(false);
+  const [showPinned, setShowPinned] = useState(false);
   const [readAt, setReadAt] = useState<Partial<Record<ChatSide, string>>>({});
   // The `at` of the one message whose "⋯" menu (Report / Edit / Delete) is
   // open. Only ever one at a time, so a single value does the job of a map.
@@ -1879,7 +1918,25 @@ function LiveChat({
       return;
     }
     setDraft("");
-    void post({ text: t });
+    // Only the advisor's side may broadcast one — a client's toggle, if it
+    // somehow reached the request, would be dropped server-side anyway.
+    const announce = side === "advisor" && asAnnouncement;
+    setAsAnnouncement(false);
+    void post({ text: t, ...(announce ? { announcement: true } : {}) });
+  }
+
+  /** Kept easy to find again. Either side may pin or unpin any live
+   *  message — this is "remember this", not an edit of whose words they
+   *  are, so it isn't limited to your own messages the way Edit is. */
+  async function togglePin(m: LiveMsg) {
+    if (m.deletedAt) return;
+    const r = await fetch("/api/companion/chat", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ share: shareId, at: m.at, pinned: !m.pinned }),
+    }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    if (r?.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
   }
 
   /** A message either side can reply to — anything still standing. Staged
@@ -2193,8 +2250,38 @@ function LiveChat({
     }
   }
 
+  const pinnedMessages = messages.filter((m) => m.pinned && !m.deletedAt);
+
   return (
     <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", position: "relative", animation: "wgIn .28s ease both" }}>
+      {pinnedMessages.length > 0 && (
+        <div style={{ flexShrink: 0, borderBottom: "1px solid rgba(38,50,58,.08)" }}>
+          <button
+            onClick={() => setShowPinned((v) => !v)}
+            style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: 0, background: "none", cursor: "pointer", padding: "10px 16px", font: "600 12px/1 Inter,sans-serif", color: "#765321" }}
+          >
+            <Icon name="pin-filled" className="h-3.5 w-3.5" />
+            {pinnedMessages.length} pinned {pinnedMessages.length === 1 ? "message" : "messages"}
+            <span style={{ marginLeft: "auto", fontSize: 11, color: "#a8a29e" }}>{showPinned ? "Hide" : "Show"}</span>
+          </button>
+          {showPinned && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 16px 12px" }}>
+              {pinnedMessages.map((m) => (
+                <button
+                  key={m.at}
+                  onClick={() => { jumpTo(m.at); setShowPinned(false); }}
+                  style={{ display: "block", textAlign: "left", width: "100%", border: "1px solid rgba(183,138,74,.3)", background: "#faf1de", borderRadius: 10, padding: "8px 12px", cursor: "pointer" }}
+                >
+                  <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#765321" }}>{m.from === side ? "You" : otherName}</span>
+                  <span style={{ display: "block", fontSize: 12.5, color: "#4a3016", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {m.kind && m.kind !== "text" ? (m.kind === "image" ? "Photo" : m.kind === "video" ? "Video" : m.kind === "audio" ? "Voice note" : "Location") : m.text}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       <div ref={scrollerRef} onScroll={noteScrollPosition} className="wg-scroll" style={{ flex: 1, overflow: "auto", padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
         {!available && (
           <div style={{ alignSelf: "center", textAlign: "center", font: "400 12px/1.5 Inter,sans-serif", color: "#765321", background: "#f7eee0", padding: "10px 14px", borderRadius: 14 }}>
@@ -2275,6 +2362,20 @@ function LiveChat({
                 <span style={{ fontSize: 12.5, opacity: 0.85 }}>Open in maps →</span>
               </a>
             );
+          } else if (m.announcement) {
+            // A broadcast to everyone on the trip, not a reply aimed at
+            // whoever is reading — centered and bannered rather than a
+            // left/right bubble, so it never reads as one side of a
+            // back-and-forth.
+            content = (
+              <div style={{ alignSelf: "center", maxWidth: "92%", width: "100%", padding: "12px 16px", borderRadius: 14, background: "#faf1de", border: "1px solid rgba(183,138,74,.35)" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, fontSize: 11, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "#765321" }}>
+                  <Icon name="sparkle" className="h-3.5 w-3.5" /> Trip update
+                </span>
+                <span style={{ fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", color: "#4a3016" }}>{m.text}</span>
+                {m.editedAt && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7, fontStyle: "italic", color: "#765321" }}>(edited)</span>}
+              </div>
+            );
           } else {
             content = (
               <div style={{ ...bubble, padding: "13px 15px", fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
@@ -2336,7 +2437,7 @@ function LiveChat({
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: mine ? "flex-end" : "flex-start",
+                  alignItems: m.announcement ? "center" : mine ? "flex-end" : "flex-start",
                   gap: 2,
                   background: jumpFlashAt === m.at ? "rgba(183,138,74,.18)" : "transparent",
                   borderRadius: 10,
@@ -2344,7 +2445,7 @@ function LiveChat({
                 }}
               >
               {itineraryTag}
-              <div style={{ display: "flex", alignItems: "center", gap: 1, flexDirection: mine ? "row-reverse" : "row", maxWidth: "100%" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 1, width: m.announcement ? "100%" : undefined, flexDirection: m.announcement ? "row" : mine ? "row-reverse" : "row", maxWidth: "100%" }}>
                 <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                   {quote}
                   {content}
@@ -2401,6 +2502,13 @@ function LiveChat({
                           style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
                         >
                           <Icon name="reply" className="h-4 w-4" /> Reply
+                        </button>
+                        <button
+                          role="menuitem"
+                          onClick={() => { setMenuOpenAt(null); void togglePin(m); }}
+                          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#26323a" }}
+                        >
+                          <Icon name={m.pinned ? "pin-filled" : "pin"} className="h-4 w-4" /> {m.pinned ? "Unpin" : "Pin"}
                         </button>
                         {!mine && (
                           reported[m.at] ? (
@@ -2570,6 +2678,16 @@ function LiveChat({
                 <Icon name="close" className="h-3.5 w-3.5" />
               </button>
             </div>
+          )}
+          {/* Group announcement — advisor only. A reply to one person and a
+              note to everyone on the trip are different things, and this is
+              the one moment the advisor says which this is, before it's
+              sent rather than after. */}
+          {side === "advisor" && !editingAt && (
+            <label style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 2px", fontSize: 12, color: "#57534e", cursor: "pointer" }}>
+              <input type="checkbox" checked={asAnnouncement} onChange={(e) => setAsAnnouncement(e.target.checked)} style={{ margin: 0 }} />
+              Send to everyone on the trip, not just one reply
+            </label>
           )}
           <div style={{ display: "flex", gap: 7, alignItems: "flex-end" }}>
             <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { void pickImage(e.target.files?.[0]); e.target.value = ""; }} />

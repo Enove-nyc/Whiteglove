@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { decidePrint, limitsFor } from "@/lib/account-limits";
 import { getLimitOverrides, getPrints, recordPrint } from "@/lib/account-limits-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { accountCookieName, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, getTripItinerary, resolveBusinessOwner } from "@/lib/account-store";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
   if (!account) return NextResponse.json({ allowed: true, counted: false, message: "" });
+  // A staff login prints the business's trip against the business's own
+  // allowance, not a personal one — see lib/account-store.ts's
+  // resolveBusinessOwner. An account with no team just resolves to itself.
+  const owner = await resolveBusinessOwner(account.email);
 
   const body = (await request.json().catch(() => null)) as { tripId?: string } | null;
 
@@ -36,11 +40,11 @@ export async function POST(request: NextRequest) {
     // constant would make every trip look like the same trip, and the grace
     // window would then let one allowance print all of them.
     const tripId =
-      body?.tripId?.trim() || (await getTripItinerary(account.email).then((t) => t?.tripId ?? "")) || "the open trip";
+      body?.tripId?.trim() || (await getTripItinerary(owner).then((t) => t?.tripId ?? "")) || "the open trip";
 
-    const plan = await getPlan(account.email);
+    const plan = await getPlan(owner);
     const limits = limitsFor(plan, await getLimitOverrides());
-    const prints = await getPrints(account.email);
+    const prints = await getPrints(owner);
     const now = Date.now();
 
     const decision = decidePrint({ plan, limits, prints, tripId, now });
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
         { status: 200 },
       );
     }
-    if (decision.counted) await recordPrint(account.email, { tripId, at: new Date(now).toISOString() });
+    if (decision.counted) await recordPrint(owner, { tripId, at: new Date(now).toISOString() });
     return NextResponse.json({ allowed: true, counted: decision.counted, message: decision.message });
   } catch {
     return NextResponse.json({ allowed: true, counted: false, message: "" });

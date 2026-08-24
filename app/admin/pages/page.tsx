@@ -4,6 +4,7 @@ import BlockEditor from "@/components/BlockEditor";
 import PageList from "@/components/PageList";
 import { isDbEnabled } from "@/lib/content-admin";
 import { getPageForAdmin, listPagesForAdmin } from "@/lib/pages";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function AdminPagesPage({
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Pages</h1>
+        <PageHeader eyebrow="White Glove admin" title="Pages" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Open a page, edit, then publish or save a draft.
         </p>

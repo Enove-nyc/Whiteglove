@@ -6,6 +6,7 @@ import { alertsStoreAvailable, listAlertSignups } from "@/lib/email-alerts-store
 import { audienceFor } from "@/lib/email-blast";
 import { alreadyHandled, blastStoreAvailable, listBlasts, readBlastSettings } from "@/lib/email-blast-store";
 import { CANONICAL_ORIGIN, siteOrigin } from "@/lib/seo";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +62,7 @@ export default async function SendUpdatesPage() {
   return (
     <div className="pb-12">
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Customer updates</p>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Send an update</h1>
+        <PageHeader eyebrow="Customer updates" title="Send an update" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           One message to the people who asked to hear about a particular thing. It reaches nobody else — not people with
           accounts, not people who have written in, not anybody whose address arrived some other way.

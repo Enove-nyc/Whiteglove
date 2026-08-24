@@ -1,6 +1,7 @@
 import BorderCrossingsEditor from "@/components/BorderCrossingsEditor";
 import { bordersNeedingACheck } from "@/lib/border-crossings";
 import { allCrossings, borderStoreAvailable } from "@/lib/border-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ export default async function AdminBordersPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Borders</h1>
+        <PageHeader eyebrow="White Glove admin" title="Borders" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           The route planner has always warned that leaving the EU takes hours. This is where it learns which crossing
           to name and what it was actually like. The crossings themselves come with the site; what you write down is

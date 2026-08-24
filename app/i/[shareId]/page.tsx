@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { headers } from "next/headers";
 import Footer from "@/components/Footer";
 import TripComments from "@/components/TripComments";
@@ -6,6 +5,9 @@ import TripGroupTools from "@/components/TripGroupTools";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LinkButton } from "@/components/ui/Button";
 import { Icon } from "@/components/icons/Icon";
 import { buildDays, emptyItinerary, formatKm, travelerSummary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
@@ -42,10 +44,12 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
     return (
       <main className="min-h-screen bg-[var(--cream)]">
         <Navbar />
-        <section className="mx-auto max-w-2xl px-5 py-20 text-center sm:px-8">
-          <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">This trip isn&apos;t available</h1>
-          <p className="mt-4 text-stone-600">The link may have been turned off, or the trip hasn&apos;t been built yet. Ask the person who shared it for a fresh link.</p>
-          <Link href="/" className="mt-8 inline-block border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white">Back to White Glove</Link>
+        <section className="mx-auto max-w-2xl px-5 py-20 sm:px-8">
+          <EmptyState
+            title="This trip isn't available"
+            description="The link may have been turned off, or the trip hasn't been built yet. Ask the person who shared it for a fresh link."
+            action={<LinkButton href="/">Back to White Glove</LinkButton>}
+          />
         </section>
         <Footer />
       </main>
@@ -95,7 +99,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
-        <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
+        <Card className="p-6 sm:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Shared itinerary</p>
           <h1 className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] sm:text-3xl">
             {itin.title || "A trip"}
@@ -114,17 +118,22 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
           </dl>
 
           <SharedItineraryActions itinerary={itin} shareId={shareId} />
-        </div>
+        </Card>
 
+        {/* The empty state carries main's fuller copy — it names who shared the
+            trip and offers a way back — through this branch's shared primitive. */}
         {days.length === 0 ? (
-          <div className="mt-8 rounded-2xl border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-center">
-            <p className="text-sm text-stone-600">This trip doesn&apos;t have dates and stops yet — check back once {sharedByName} has added them.</p>
-            <Link href="/" className="mt-4 inline-block border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white">Back to White Glove</Link>
+          <div className="mt-8">
+            <EmptyState
+              title="No dates yet"
+              description={`This trip doesn't have dates and stops yet — check back once ${sharedByName} has added them.`}
+              action={<LinkButton href="/">Back to White Glove</LinkButton>}
+            />
           </div>
         ) : (
           <div className="mt-6 space-y-5">
             {days.map((day) => (
-              <article key={day.date} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+              <Card key={day.date} as="article" className="p-6">
                 <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--gold-light)] pb-2">
                   <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Day {day.index + 1}</h2>
                   <p className="text-sm font-semibold text-stone-500">{day.label}</p>
@@ -165,7 +174,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
                     <span><strong>Tonight:</strong> {day.lodging ? (day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name) : "— to be arranged —"}{day.lodging?.address ? ` — ${day.lodging.address}` : ""}{day.lodging?.phone ? ` · ${day.lodging.phone}` : ""}</span>
                   </p>
                 </div>
-              </article>
+              </Card>
             ))}
           </div>
         )}
@@ -173,10 +182,10 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
         {/* The traveler's own notes travel with the trip, which is what the
             planner tells them when they write them. */}
         {itin.notes?.trim() && (
-          <div className="mt-8 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
+          <Card className="mt-8 p-5 sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Notes</p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-700">{itin.notes.trim()}</p>
-          </div>
+          </Card>
         )}
 
         {/* Notes from the people this was shared with. Reading and writing are
@@ -191,13 +200,13 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
         />
 
         {(collaboration.votingEnabled || collaboration.sharedFavoritesEnabled) && (
-          <div className="mt-8 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
+          <Card className="mt-8 p-5 sm:p-6">
             <TripGroupTools
               shareId={shareId}
               votingEnabled={collaboration.votingEnabled}
               favoritesEnabled={collaboration.sharedFavoritesEnabled}
             />
-          </div>
+          </Card>
         )}
 
         <p className="mt-8 text-center text-xs text-stone-400">Details are traveler-provided and gathered from public sources — please confirm bookings and access before you travel.</p>

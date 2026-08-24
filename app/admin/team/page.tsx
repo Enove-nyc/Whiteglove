@@ -1,5 +1,6 @@
 import TeamEditor from "@/components/TeamEditor";
 import { listTeam, ownerEmail, teamStorageAvailable } from "@/lib/admin-roles";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function AdminTeamPage() {
   return (
     <>
       <header>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">Team</h1>
+        <PageHeader eyebrow="White Glove admin" title="Team" />
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           Let someone see the site while it is closed, or help you run it.
         </p>

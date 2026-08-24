@@ -3,8 +3,9 @@ import Footer from "@/components/Footer";
 import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import ClientFormBuilder from "@/components/ClientFormBuilder";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { requireSignedIn } from "@/lib/require-signed-in";
-import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { pageMetadata } from "@/lib/seo";
@@ -28,21 +29,19 @@ export default async function FormsPage() {
   await requireSignedIn("/forms");
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
-  const plan = account ? await getPlan(account.email) : "free";
+  // A staff login's plan gate is the business it's linked to, not its own.
+  const plan = account ? await getPlan(await resolveBusinessOwner(account.email)) : "free";
   const allowed = mayServeCompanionClients(plan);
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar minimal />
       <section className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Client forms</p>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-          Client forms
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-          Ask for exactly what you need — legal names, passports, preferences — before the trip. Answers come back
-          here, never onto the itinerary itself.
-        </p>
+        <PageHeader
+          eyebrow="Client forms"
+          title="Client forms"
+          description="Ask for exactly what you need — legal names, passports, preferences — before the trip. Answers come back here, never onto the itinerary itself."
+        />
 
         {allowed ? (
           <div className="mt-8">

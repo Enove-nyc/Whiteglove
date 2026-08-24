@@ -5,6 +5,7 @@ import { destinationHref, getDestination } from "@/data/destinations";
 import { getAdminContent, getMissingContentReport, type EditSuggestion } from "@/lib/admin-content";
 import { draftFromProvider, type DirectoryDraft } from "@/lib/directory-fields";
 import { listStoredProviders } from "@/lib/directory-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -79,8 +80,7 @@ export default async function AdminContentPage({ searchParams }: {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Suggestions</h1>
+            <PageHeader eyebrow="White Glove admin" title="Suggestions" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">Corrections people sent in.</p>
           </div>
         </div>

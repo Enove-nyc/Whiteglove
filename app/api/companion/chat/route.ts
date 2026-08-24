@@ -13,6 +13,7 @@ import {
   quoteFor,
   readChat,
   readMarkers,
+  setPinned,
   setTyping,
   type CompanionChatSide,
 } from "@/lib/companion-chat-store";
@@ -127,16 +128,27 @@ export async function PATCH(request: NextRequest) {
   if (!sameOrigin(request)) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
-  const body = (await request.json().catch(() => null)) as { share?: string; at?: string; text?: string } | null;
+  const body = (await request.json().catch(() => null)) as { share?: string; at?: string; text?: string; pinned?: boolean } | null;
   const shareId = body?.share?.trim();
   const at = body?.at?.trim();
-  const text = body?.text?.trim();
-  if (!shareId || !at || !text) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
+  if (!shareId || !at) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
   if (!chatStoreAvailable()) {
     return NextResponse.json({ error: "Messaging needs the private store connected." }, { status: 503 });
   }
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+
+  // Pinning, not editing — a message worth keeping easy to find, marked by
+  // either side, not only whoever sent it. Kept out of the edit path (and
+  // its rate limit) below: pinning changes nothing about the words.
+  if (typeof body?.pinned === "boolean") {
+    const messages = await setPinned(who.chatKey, at, body.pinned);
+    if (!messages) return NextResponse.json({ error: "That message can't be pinned." }, { status: 404 });
+    return NextResponse.json({ messages, side: who.side });
+  }
+
+  const text = body?.text?.trim();
+  if (!text) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
 
   const limited = await rateLimit(`companion-edit:${who.chatKey}`, { limit: 30, windowSeconds: 3600 });
   if (!limited.ok) {
@@ -185,6 +197,7 @@ export async function POST(request: NextRequest) {
         replyToAt?: string;
         typing?: boolean;
         itineraryRef?: string;
+        announcement?: boolean;
       }
     | null;
   const shareId = body?.share?.trim();
@@ -314,6 +327,11 @@ export async function POST(request: NextRequest) {
     at: new Date().toISOString(),
     replyTo,
     itineraryRef,
+    // A broadcast to the trip, never a client's — read from the request,
+    // this is the one field decided by who is actually sending, not by
+    // what the body claims, the same fence every other side check here
+    // already keeps.
+    ...(body?.announcement === true && who.side === "advisor" ? { announcement: true } : {}),
   });
   return NextResponse.json({ messages, side: who.side });
 }

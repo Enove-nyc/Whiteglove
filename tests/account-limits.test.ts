@@ -134,7 +134,7 @@ describe("taking a printable copy", () => {
   // is a locked, planless account — so a limit of 1 is passed in by hand here
   // to exercise the counting rules themselves, the same way the account page
   // would if the owner set one from /admin/settings/limits.
-  const ONE_PRINT_A_WEEK = { trips: UNLIMITED, printsPerWeek: 1 };
+  const ONE_PRINT_A_WEEK = { trips: UNLIMITED, printsPerWeek: 1, staffSeats: 0 };
   const decide = (prints: PrintEvent[], tripId = "trip-1") =>
     decidePrint({ plan: "one_trip", limits: ONE_PRINT_A_WEEK, prints, tripId, now: NOW });
 
@@ -187,7 +187,7 @@ describe("taking a printable copy", () => {
   });
 
   it("counts to a higher limit properly when the owner raises it", () => {
-    const limits = { trips: 2, printsPerWeek: 3 };
+    const limits = { trips: 2, printsPerWeek: 3, staffSeats: 0 };
     const two = [print("a", 1000), print("b", 2000)];
     const d = decidePrint({ plan: "one_trip", limits, prints: two, tripId: "c", now: NOW });
     assert.equal(d.allowed, true);
@@ -213,7 +213,7 @@ describe("what somebody is told before they meet any of it", () => {
   // A synthetic limits object with both a trip and a print ceiling, to
   // exercise describeLimits's own message-joining rather than any one plan's
   // particular built-in numbers.
-  const BOTH_LIMITED = { trips: 2, printsPerWeek: 1 };
+  const BOTH_LIMITED = { trips: 2, printsPerWeek: 1, staffSeats: 0 };
 
   it("says both limits, and what is NOT limited", () => {
     // A list of restrictions with no floor under it reads as though the rest

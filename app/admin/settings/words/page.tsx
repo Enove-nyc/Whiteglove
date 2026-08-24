@@ -3,6 +3,7 @@ import SiteWordsForm from "@/components/SiteWordsForm";
 import { getAdminContent } from "@/lib/admin-content";
 import { changedWords, whatTheOldScreenSaved } from "@/lib/site-words";
 import { readWordsFresh, wordsStoreAvailable } from "@/lib/site-words-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,7 @@ export default async function SiteWordsSettings() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Words</h1>
+            <PageHeader eyebrow="White Glove admin" title="Words" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               The headline, the line under it, the contact address, and the footer. Each one says where it appears.
             </p>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CspClearButton from "@/components/CspClearButton";
 import { cspReportStoreAvailable, readCspSummary } from "@/lib/csp-reports";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,7 @@ export default async function AdminSecurityPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              Security policy
-            </h1>
+            <PageHeader eyebrow="White Glove admin" title="Security policy" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               The site tells the browser which outside services a page is allowed to load — maps, the booking
               search, the card form — and now <strong className="font-semibold text-[var(--navy)]">enforces</strong> it:

@@ -331,3 +331,72 @@ describe("deleting a whole conversation is fenced", () => {
     assert.match(fn, /DEL", typingKeyFor\(shareId, "advisor"\)/);
   });
 });
+
+describe("pinning a message survives a round trip through storage", () => {
+  it("a pinned message reads back pinned", () => {
+    const [m] = parseChatMessages([JSON.stringify({ from: "advisor", text: "Meet at the lobby, 8am", at: "t1", pinned: true })]);
+    assert.equal(m.pinned, true);
+  });
+
+  it("an ordinary message has no pinned field at all, not false", () => {
+    const [m] = parseChatMessages([JSON.stringify({ from: "client", text: "ok thanks", at: "t1" })]);
+    assert.equal(m.pinned, undefined);
+  });
+
+  it("a deleted message loses its pin along with everything else it carried", () => {
+    const [m] = parseChatMessages([JSON.stringify({ from: "advisor", text: "the address", at: "t1", pinned: true, deletedAt: "t2" })]);
+    assert.equal(m.pinned, undefined);
+    assert.equal(m.text, "");
+  });
+});
+
+describe("pinning is fenced — anyone in the thread, but not the words themselves", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const PATCH = ROUTE.slice(ROUTE.indexOf("export async function PATCH"), ROUTE.indexOf("export async function DELETE"));
+
+  it("checks same-origin before touching the store, same as an edit", () => {
+    assert.ok(PATCH.indexOf("sameOrigin") < PATCH.indexOf("setPinned"));
+  });
+
+  it("is not the sender the way an edit is — setPinned is never passed who.side, unlike editMessageText", () => {
+    assert.match(PATCH, /setPinned\(who\.chatKey, at, body\.pinned\)/);
+    assert.doesNotMatch(PATCH, /setPinned\(who\.chatKey, at, who\.side/);
+  });
+
+  it("is checked before the text-edit branch, and does not share its rate limit", () => {
+    const pinIdx = PATCH.indexOf("typeof body?.pinned");
+    const rateIdx = PATCH.indexOf("rateLimit");
+    assert.ok(pinIdx > -1 && pinIdx < rateIdx, "pinning is handled before the edit path's rate limit");
+  });
+
+  it("store-side: a deleted message cannot be (un)pinned", () => {
+    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
+    const fn = STORE.slice(STORE.indexOf("export async function setPinned"));
+    assert.match(fn, /if \(existing\.deletedAt\) return null;/);
+  });
+
+  it("store-side: found by \"at\" alone, not gated to the original sender", () => {
+    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
+    const fn = STORE.slice(STORE.indexOf("export async function setPinned"));
+    assert.match(fn, /findRawIndexByAt\(shareId, at\)/);
+  });
+});
+
+describe("a group announcement is only ever the advisor's, never a client's", () => {
+  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+
+  it("the flag is only honored when who.side is advisor, decided server-side — never trusted from the body alone", () => {
+    assert.match(POST, /body\?\.announcement === true && who\.side === "advisor"/);
+  });
+
+  it("a client sending announcement:true gets an ordinary message, not a silent error", () => {
+    // Same shape as every other "ignore what a client can't do" fence here —
+    // sideFor() decides who.side from the session, so a client's own request
+    // simply doesn't match the condition above and appendChat runs without
+    // the flag, exactly like an ordinary send.
+    const appendIdx = POST.lastIndexOf("appendChat(who.chatKey, {");
+    const block = POST.slice(appendIdx, POST.indexOf("});", appendIdx));
+    assert.match(block, /who\.side === "advisor"/);
+  });
+});

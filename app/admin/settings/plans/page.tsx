@@ -4,6 +4,7 @@ import { PLAN_LABELS } from "@/lib/account-plans";
 import { describeOffering, PAID_PLANS } from "@/lib/plan-billing";
 import { listSubscriptions, planBillingStoreAvailable, readPlanOffering } from "@/lib/plan-billing-store";
 import { stripeReadiness } from "@/lib/stripe";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const PAID_PLAN_LIST = PAID_PLANS.map((plan) => PLAN_LABELS[plan]).join(", ");
 
@@ -28,10 +29,9 @@ export default async function PlanOfferingSettings() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">
-              {PAID_PLAN_LIST}
-            </h1>
+            {/* Title derived from the live plan list, not hardcoded — plans get
+                renamed, and a heading that lies about them is worse than none. */}
+            <PageHeader eyebrow="White Glove admin" title={PAID_PLAN_LIST} />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Whether the paid plans are offered, and how somebody comes by one. Off is the state a site that has
               never been set up is in, and it is a perfectly good state to leave this in.

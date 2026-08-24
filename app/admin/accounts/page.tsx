@@ -3,6 +3,7 @@ import AdminAccountsTable from "@/components/AdminAccountsTable";
 import PlanRequests from "@/components/PlanRequests";
 import { listPlanRequests } from "@/lib/account-plan-store";
 import { hasAccountStorage, listAllAccounts } from "@/lib/account-store";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,7 @@ export default async function AdminAccountsPage() {
       <header>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">White Glove admin</p>
-            <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">Accounts</h1>
+            <PageHeader eyebrow="White Glove admin" title="Accounts" />
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">Everyone who has registered on the site. Passwords are stored only in a hashed form and are never shown here.</p>
           </div>
           <Link href="/admin" className="border border-[var(--gold)] px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]">Dashboard</Link>
