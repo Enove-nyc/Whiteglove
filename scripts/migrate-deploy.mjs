@@ -32,6 +32,15 @@
  *   • The waiting is bounded. If a lock is held for minutes, something is
  *     wrong that a longer wait will not fix, and the deploy should say so
  *     rather than hang until the platform kills it with no explanation.
+ *
+ * AND THE REAL CAUSE, fixed below: migrations were running through Neon's
+ * CONNECTION POOLER. A Postgres advisory lock belongs to a session, and a
+ * pooler hands out a different session per transaction — so the lock could be
+ * left held by a pooled connection nobody was using any more, for minutes at a
+ * time, which is why waiting alone did not save a deploy. Prisma says it in so
+ * many words: migrate wants a direct connection. So the migration takes the
+ * unpooled URL when the platform offers one; the running site keeps the pooler,
+ * which is what a pooler is for.
  */
 
 import { spawnSync } from "node:child_process";
@@ -68,12 +77,36 @@ export function isTransientMigrateError(output) {
   );
 }
 
+/**
+ * The connection the MIGRATION should use — direct, never the pooler.
+ *
+ * Named for whichever platform set it: DIRECT_URL is Prisma's own convention,
+ * DATABASE_URL_UNPOOLED is Neon's, and Railway prefixes a linked database's
+ * variables with the service name. The pooled DATABASE_URL is the fallback,
+ * so a database with no separate direct endpoint still migrates exactly as it
+ * did before.
+ */
+function migrationDatabaseUrl(env) {
+  const direct =
+    env.DIRECT_URL ||
+    env.DATABASE_URL_UNPOOLED ||
+    env.POSTGRES_URL_NON_POOLING ||
+    Object.entries(env).find(([name]) => /DATABASE_URL_UNPOOLED$|POSTGRES_URL_NON_POOLING$/.test(name))?.[1];
+  return direct || env.DATABASE_URL;
+}
+
+export { migrationDatabaseUrl };
+
 function attemptMigrate() {
   // Piped rather than inherited so the output can be classified, then printed
   // as it was — the deploy log should read exactly as it did before.
+  const url = migrationDatabaseUrl(process.env);
   const run = spawnSync("npx", ["prisma", "migrate", "deploy"], {
     encoding: "utf8",
-    env: process.env,
+    // DATABASE_URL is what prisma.config.ts reads. Overridden for this one
+    // child process only — the app it is about to start still gets the pooled
+    // one from its own environment.
+    env: { ...process.env, ...(url ? { DATABASE_URL: url } : {}) },
   });
   const output = `${run.stdout ?? ""}${run.stderr ?? ""}`;
   if (run.stdout) process.stdout.write(run.stdout);
