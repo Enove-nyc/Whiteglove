@@ -27,6 +27,9 @@ type Row = {
   currency?: string;
   /** Only present for a trip in the "traveling" stage — see travelDaysFor server-side. */
   travelDays?: TravelDay[];
+  /** What the advisor recorded earning on this trip — Advisor Pro only. */
+  commissionCents?: number;
+  commissionCurrency?: string;
 };
 
 type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread";
@@ -59,7 +62,85 @@ function rowsFor(view: View, rows: Row[], today: string): Row[] {
   }
 }
 
-function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) => void; onStage?: (stage: "inquiry" | "planning") => void }) {
+/**
+ * What the advisor recorded earning on this trip, and a way to change it.
+ *
+ * Advisor Pro only — the caller decides whether to render this at all, the
+ * same way it decides whether to draw the business-at-a-glance strip.
+ * `onSave(null)` clears the amount entirely rather than storing a zero.
+ */
+function CommissionField({
+  cents,
+  currency,
+  onSave,
+}: {
+  cents?: number;
+  currency?: string;
+  onSave: (cents: number | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(cents !== undefined ? String(cents / 100) : "");
+
+  if (editing) {
+    return (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const parsed = draft.trim() === "" ? null : Math.round(Number(draft) * 100);
+          if (parsed !== null && (!Number.isFinite(parsed) || parsed < 0)) return;
+          onSave(parsed);
+          setEditing(false);
+        }}
+        className="mt-2 flex flex-wrap items-center gap-2"
+      >
+        <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Commission $</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          aria-label="Commission earned"
+          autoFocus
+          className="min-h-[32px] w-24 rounded-md border border-[var(--gold-light)] bg-white px-2 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+        />
+        <button type="submit" className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-2.5 py-1 text-[11px] font-bold text-white">
+          Save
+        </button>
+        <button type="button" onClick={() => setEditing(false)} className="rounded-full border border-stone-300 px-2.5 py-1 text-[11px] font-bold text-stone-500">
+          Cancel
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setDraft(cents !== undefined ? String(cents / 100) : "");
+        setEditing(true);
+      }}
+      className="mt-2 text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+    >
+      {cents ? `Commission: ${formatCents(cents, currency)}` : "Add commission"}
+    </button>
+  );
+}
+
+function RowCard({
+  row,
+  onOpen,
+  onStage,
+  showAnalytics,
+  onCommission,
+}: {
+  row: Row;
+  onOpen: (path: string) => void;
+  onStage?: (stage: "inquiry" | "planning") => void;
+  showAnalytics: boolean;
+  onCommission: (cents: number | null) => void;
+}) {
   return (
     <div className={cardBase}>
       <div className="flex items-start justify-between gap-2">
@@ -98,6 +179,7 @@ function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) =>
           </a>
         )}
       </div>
+      {showAnalytics && <CommissionField cents={row.commissionCents} currency={row.commissionCurrency} onSave={onCommission} />}
       {onStage && (row.stage === "inquiry" || row.stage === "planning") && (
         <div className="mt-3 flex gap-2 border-t border-[var(--gold-light)] pt-3">
           <span className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Mark as</span>
@@ -253,6 +335,19 @@ export default function PipelineDashboard() {
     }).catch(() => undefined);
   }
 
+  async function saveCommission(id: string, cents: number | null) {
+    const res = await fetch("/api/account/trips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "commission", id, commissionCents: cents }),
+    }).catch(() => null);
+    const data = res ? await res.json().catch(() => null) : null;
+    if (!data?.ok) return;
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, commissionCents: cents ?? undefined, commissionCurrency: cents === null ? undefined : r.commissionCurrency ?? "USD" } : r)),
+    );
+  }
+
   if (loading) return <p className="text-sm text-stone-500">Loading…</p>;
   if (error) return <p className="text-sm font-semibold text-red-700">{error}</p>;
   if (rows.length === 0) {
@@ -286,6 +381,16 @@ export default function PipelineDashboard() {
             ) : (
               <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
                 {stats.outstandingByCurrency.map(([currency, cents]) => formatCents(cents, currency)).join(" · ")}
+              </p>
+            )}
+          </div>
+          <div className={cardBase}>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Commission earned</p>
+            {stats.commissionByCurrency.length === 0 ? (
+              <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{formatCents(0)}</p>
+            ) : (
+              <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+                {stats.commissionByCurrency.map(([currency, cents]) => formatCents(cents, currency)).join(" · ")}
               </p>
             )}
           </div>
@@ -325,6 +430,8 @@ export default function PipelineDashboard() {
                       row={row}
                       onOpen={(path) => (switching ? undefined : openTrip(row.id, path))}
                       onStage={(s) => setStage(row.id, s)}
+                      showAnalytics={showAnalytics}
+                      onCommission={(cents) => saveCommission(row.id, cents)}
                     />
                   ))}
                 </div>
@@ -341,7 +448,13 @@ export default function PipelineDashboard() {
               view === "traveling" && row.travelDays ? (
                 <TravelingRowCard key={row.id} row={row} onOpen={(path) => (switching ? undefined : openTrip(row.id, path))} />
               ) : (
-                <RowCard key={row.id} row={row} onOpen={(path) => (switching ? undefined : openTrip(row.id, path))} />
+                <RowCard
+                  key={row.id}
+                  row={row}
+                  onOpen={(path) => (switching ? undefined : openTrip(row.id, path))}
+                  showAnalytics={showAnalytics}
+                  onCommission={(cents) => saveCommission(row.id, cents)}
+                />
               ),
             )
           )}

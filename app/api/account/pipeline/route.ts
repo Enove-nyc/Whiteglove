@@ -42,6 +42,13 @@ export type PipelineRow = {
    * nothing to say about "now".
    */
   travelDays?: TravelDay[];
+  /**
+   * What the advisor recorded earning on this trip — Advisor Pro only, the
+   * same door as the business-at-a-glance strip itself. Left off the
+   * response entirely for Starter rather than merely hidden client-side.
+   */
+  commissionCents?: number;
+  commissionCurrency?: string;
 };
 
 /** The day-by-day shape "traveling now" needs, for one trip. */
@@ -122,6 +129,9 @@ export async function GET() {
         updatedAt: t.updatedAt,
         ...(t.balance && hasBalance(t.balance) ? { outstandingCents: outstandingCents(t.balance), currency: t.balance.currency } : {}),
         ...(stage === "traveling" && t.itinerary ? { travelDays: travelDaysFor(t.itinerary, borderCost, assume) } : {}),
+        ...(showAnalytics && t.commissionCents
+          ? { commissionCents: t.commissionCents, commissionCurrency: t.commissionCurrency ?? "USD" }
+          : {}),
       };
     }),
   );

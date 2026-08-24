@@ -117,6 +117,26 @@ describe("the business, at a glance", () => {
       ]),
     );
   });
+
+  it("sums commission per currency the same way, and separately from what is owed", () => {
+    const stats = pipelineStats(
+      [
+        row({ commissionCents: 12000, commissionCurrency: "USD" }),
+        row({ commissionCents: 8000, commissionCurrency: "USD" }),
+        row({ commissionCents: 5000, commissionCurrency: "EUR" }),
+        row({ commissionCents: 0, commissionCurrency: "USD" }), // recorded as nothing — not counted
+        row({}), // nothing recorded at all
+      ],
+      TODAY,
+    );
+    assert.deepEqual(
+      new Map(stats.commissionByCurrency),
+      new Map([
+        ["USD", 20000],
+        ["EUR", 5000],
+      ]),
+    );
+  });
 });
 
 describe("the pipeline route keeps the same fences everything else does", () => {

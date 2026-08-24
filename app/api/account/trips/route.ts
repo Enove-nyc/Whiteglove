@@ -12,10 +12,11 @@ import {
   renameTrip,
   setTripAdvisor,
   setTripClient,
+  setTripCommission,
   stopTripShare,
   switchTrip,
 } from "@/lib/account-store";
-import { mayServeCompanionClients } from "@/lib/account-limits";
+import { mayServeCompanionClients, mayViewPipelineAnalytics } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
@@ -44,7 +45,16 @@ export async function POST(request: NextRequest) {
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as
-    | { action?: string; id?: string; name?: string; client?: string; advisor?: string; itinerary?: Itinerary }
+    | {
+        action?: string;
+        id?: string;
+        name?: string;
+        client?: string;
+        advisor?: string;
+        itinerary?: Itinerary;
+        commissionCents?: number | null;
+        commissionCurrency?: string;
+      }
     | null;
 
   switch (body?.action) {
@@ -97,6 +107,27 @@ export async function POST(request: NextRequest) {
         );
       }
       const result = await setTripAdvisor(email, body.id, body.advisor ?? "");
+      return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+    }
+    case "commission": {
+      // The advisor's own record of what a trip earned them — the same
+      // Pro-only door as the pipeline's business-at-a-glance numbers, since
+      // this is business bookkeeping rather than something a traveler
+      // planning their own trip has any reason to see.
+      if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
+      if (!mayViewPipelineAnalytics(await getPlan(email))) {
+        return NextResponse.json(
+          { ok: false, error: `Recording commission is part of ${PLAN_LABELS.pro}.` },
+          { status: 403 },
+        );
+      }
+      // Both undefined (the field left off entirely) and null clear the
+      // amount — only an actual number is validated as one.
+      const cents = body.commissionCents ?? null;
+      if (cents !== null && (!Number.isFinite(cents) || cents < 0)) {
+        return NextResponse.json({ ok: false, error: "That doesn't look like an amount." }, { status: 400 });
+      }
+      const result = await setTripCommission(email, body.id, cents, body.commissionCurrency ?? "USD");
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "share":

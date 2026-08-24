@@ -173,6 +173,17 @@ export type SavedTrip = {
    */
   balance?: TripBalance;
   /**
+   * What the advisor recorded earning on this trip — typed in by hand, not
+   * worked out from a percentage or read off a booking. Bookings on this
+   * site can come from more than one supplier with different commission
+   * terms, so a formula here would be a guess dressed up as a fact; a
+   * number the advisor typed in themselves is at least honestly theirs.
+   * Absent until they enter one. Whole cents, the same convention as
+   * TripBalance — see formatCents in data/trip-payments.ts.
+   */
+  commissionCents?: number;
+  commissionCurrency?: string;
+  /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
    * lib/flight-status.ts and checkTripFlightStatus below.
@@ -860,6 +871,35 @@ export async function setTripAdvisor(email: string, id: string, advisor: string)
   if (!trip) return { ok: false as const, error: "That trip is gone." };
   const clean = advisor.trim().slice(0, MAX_TRIP_ADVISOR);
   const next = trips.map((t) => (t.id === id ? { ...t, advisor: clean || undefined, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(email, next, activeId);
+  if (!saved) return { ok: false as const, error: "Could not save that." };
+  return { ok: true as const, trips: saved, activeId };
+}
+
+/**
+ * Record what the advisor earned on this trip, or clear it.
+ *
+ * Not gated here — the route is the door, same as setTripClient. `cents`
+ * null clears the field entirely rather than storing a zero, so "nothing
+ * recorded yet" and "recorded as nothing" stay two different things.
+ */
+export async function setTripCommission(email: string, id: string, cents: number | null, currency: string) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === id);
+  if (!trip) return { ok: false as const, error: "That trip is gone." };
+  const clean = currency.trim().slice(0, 3).toUpperCase() || "USD";
+  const next = trips.map((t) =>
+    t.id === id
+      ? {
+          ...t,
+          commissionCents: cents === null ? undefined : cents,
+          commissionCurrency: cents === null ? undefined : clean,
+          updatedAt: new Date().toISOString(),
+        }
+      : t,
+  );
   const saved = await writeTrips(email, next, activeId);
   if (!saved) return { ok: false as const, error: "Could not save that." };
   return { ok: true as const, trips: saved, activeId };

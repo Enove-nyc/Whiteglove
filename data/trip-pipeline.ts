@@ -76,6 +76,9 @@ export type PipelineStatsRow = {
   startDate: string;
   outstandingCents?: number;
   currency?: string;
+  /** What the advisor recorded earning on this trip — theirs to type in, not derived from the booking. */
+  commissionCents?: number;
+  commissionCurrency?: string;
 };
 
 export type PipelineStats = {
@@ -89,6 +92,13 @@ export type PipelineStats = {
    * totals, not one wrong one. Only currencies with something outstanding.
    */
   outstandingByCurrency: Array<[currency: string, cents: number]>;
+  /**
+   * What the advisor has recorded earning, summed per currency. Same
+   * per-currency discipline as outstandingByCurrency, and the same honesty
+   * about where the number comes from: this is the advisor's own ledger
+   * entry per trip, not a percentage worked out from a booking.
+   */
+  commissionByCurrency: Array<[currency: string, cents: number]>;
 };
 
 /**
@@ -111,9 +121,16 @@ export function pipelineStats(rows: readonly PipelineStatsRow[], today: string):
     byCurrency.set(r.currency, (byCurrency.get(r.currency) ?? 0) + r.outstandingCents);
   }
 
+  const commissionByCurrency = new Map<string, number>();
+  for (const r of rows) {
+    if (!r.commissionCents || !r.commissionCurrency) continue;
+    commissionByCurrency.set(r.commissionCurrency, (commissionByCurrency.get(r.commissionCurrency) ?? 0) + r.commissionCents);
+  }
+
   return {
     activeCount,
     departingSoon,
     outstandingByCurrency: [...byCurrency.entries()].filter(([, cents]) => cents > 0),
+    commissionByCurrency: [...commissionByCurrency.entries()].filter(([, cents]) => cents > 0),
   };
 }

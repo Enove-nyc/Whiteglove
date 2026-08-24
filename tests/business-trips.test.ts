@@ -47,6 +47,23 @@ describe("saying who a trip is for", () => {
   });
 });
 
+describe("recording what a trip earned", () => {
+  it("is Advisor Pro only, checked on the server before the write", () => {
+    // The same door as the business-at-a-glance strip itself — bookkeeping
+    // a traveler planning their own trip has no reason to see.
+    const branch = TRIPS_ROUTE.slice(TRIPS_ROUTE.indexOf('case "commission"'), TRIPS_ROUTE.indexOf('case "share"'));
+    assert.match(branch, /mayViewPipelineAnalytics/);
+    assert.match(branch, /403/);
+    assert.ok(branch.indexOf("mayViewPipelineAnalytics") < branch.indexOf("setTripCommission"));
+  });
+
+  it("refuses a negative or nonsense amount rather than storing it", () => {
+    const branch = TRIPS_ROUTE.slice(TRIPS_ROUTE.indexOf('case "commission"'), TRIPS_ROUTE.indexOf('case "share"'));
+    assert.match(branch, /cents < 0/);
+    assert.match(branch, /Number\.isFinite\(cents\)/);
+  });
+});
+
 describe("sending an itinerary to a client", () => {
   it("is Advisor Pro only, and says so before anything else happens", () => {
     assert.match(SEND_ROUTE, /mayBrandOwnItinerary/);
