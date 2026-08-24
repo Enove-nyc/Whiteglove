@@ -90,4 +90,13 @@ describe("the pipeline route keeps the same fences everything else does", () => 
     assert.doesNotMatch(ROUTE, /getAccountData\(request/);
     assert.match(ROUTE, /getAccountData\(account\.email\)/);
   });
+
+  it("reads outstanding payments from the trip's own balance, not a second number kept alongside it", () => {
+    assert.match(ROUTE, /hasBalance\(t\.balance\)/);
+    assert.match(ROUTE, /outstandingCents\(t\.balance\)/);
+  });
+
+  it("outstanding is absent, not zero, when no balance has been set up at all", () => {
+    assert.match(ROUTE, /t\.balance && hasBalance\(t\.balance\) \? outstandingCents\(t\.balance\) : undefined/);
+  });
 });

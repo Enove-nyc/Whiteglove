@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
+import { formatCents } from "@/data/trip-payments";
 
 type Row = {
   id: string;
@@ -15,10 +16,12 @@ type Row = {
   needsAttention: boolean;
   shareId?: string;
   unread: boolean;
+  outstandingCents?: number;
+  currency?: string;
   updatedAt: string;
 };
 
-type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread";
+type View = "board" | "upcoming" | "traveling" | "awaiting_approval" | "attention" | "unread" | "payment_due";
 
 const VIEWS: Array<{ id: View; label: string }> = [
   { id: "board", label: "Board" },
@@ -27,6 +30,7 @@ const VIEWS: Array<{ id: View; label: string }> = [
   { id: "awaiting_approval", label: "Awaiting approval" },
   { id: "attention", label: "Changes requiring attention" },
   { id: "unread", label: "Unread messages" },
+  { id: "payment_due", label: "Payment due" },
 ];
 
 const cardBase = "rounded-xl border border-[var(--gold-light)] bg-white p-4 text-sm";
@@ -43,6 +47,8 @@ function rowsFor(view: View, rows: Row[], today: string): Row[] {
       return rows.filter((r) => r.needsAttention);
     case "unread":
       return rows.filter((r) => r.unread);
+    case "payment_due":
+      return rows.filter((r) => (r.outstandingCents ?? 0) > 0);
     default:
       return rows;
   }
@@ -67,6 +73,11 @@ function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) =>
               Unread
             </span>
           )}
+          {(row.outstandingCents ?? 0) > 0 && (
+            <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">
+              {formatCents(row.outstandingCents!, row.currency)} due
+            </span>
+          )}
         </div>
       </div>
       {(row.startDate || row.endDate) && (
@@ -80,6 +91,9 @@ function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) =>
         </button>
         <button type="button" onClick={() => onOpen("/proposal")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Proposal
+        </button>
+        <button type="button" onClick={() => onOpen("/payments")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          Payments
         </button>
         {row.shareId && (
           <a href={`/app?trip=${row.id}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">

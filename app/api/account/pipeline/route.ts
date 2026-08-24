@@ -5,6 +5,7 @@ import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { readChat, readMarkers } from "@/lib/companion-chat-store";
 import { needsAttention, tripStage, type ManualTripStage, type TripStage } from "@/data/trip-pipeline";
+import { hasBalance, outstandingCents } from "@/data/trip-payments";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -21,17 +22,22 @@ export type PipelineRow = {
   shareId?: string;
   /** True when the client's last word in the thread hasn't been read yet. */
   unread: boolean;
+  /** Absent when no balance has been set up. Zero once it's fully paid. */
+  outstandingCents?: number;
+  currency?: string;
   updatedAt: string;
 };
 
 /**
  * The planner's whole business, one row per trip/client — the Planner CRM /
- * Trip Pipeline. Reads three things that already exist rather than keeping a
- * fourth in sync with them: each trip's own proposal status, its own dates,
- * and its chat thread's read marker (lib/companion-chat-store.ts, the same
- * one the advisor inbox already reads). BUSINESS-ONLY, same door as the
- * client inbox and the proposal/library/form pages — a Gold account has the
- * app for its own trips and no clients to run a pipeline of.
+ * Trip Pipeline. Reads things that already exist rather than keeping copies
+ * in sync with them: each trip's own proposal status, its own dates, its
+ * chat thread's read marker (lib/companion-chat-store.ts, the same one the
+ * advisor inbox already reads), and its own payment balance
+ * (data/trip-payments.ts) — the same balance /payments shows, not a second
+ * number kept alongside it. BUSINESS-ONLY, same door as the client inbox and
+ * the proposal/library/form pages — a Gold account has the app for its own
+ * trips and no clients to run a pipeline of.
  */
 export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
@@ -67,6 +73,8 @@ export async function GET() {
         needsAttention: needsAttention(t.proposal),
         shareId: t.shareId,
         unread,
+        outstandingCents: t.balance && hasBalance(t.balance) ? outstandingCents(t.balance) : undefined,
+        currency: t.balance?.currency,
         updatedAt: t.updatedAt,
       };
     }),
