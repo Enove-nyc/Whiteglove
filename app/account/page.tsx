@@ -193,6 +193,7 @@ export default async function AccountPage() {
                       { href: "/pipeline", label: "Trip pipeline", description: "Every client trip and where it stands" },
                       { href: "/clients", label: "Clients", description: "Everyone you've planned for, and what's noted about them" },
                       { href: "/payments", label: "Payments", description: "Balances, splits, and collection" },
+                      { href: "/commissions", label: "Commissions", description: "What suppliers owe the agency, across every trip" },
                     ].map((item) => (
                       <li key={item.href}>
                         <Link

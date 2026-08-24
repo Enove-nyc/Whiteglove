@@ -5,6 +5,7 @@ import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
 import type { PaymentRecord, TripBalance } from "@/data/trip-payments";
+import type { CommissionRecord } from "@/data/trip-commission";
 import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -191,6 +192,12 @@ export type SavedTrip = {
    * been paid. Absent until the planner sets one up. See data/trip-payments.ts.
    */
   balance?: TripBalance;
+  /**
+   * What the agency earns from this trip's suppliers — a different money
+   * from `balance` above (a client's payments). Absent until the planner
+   * logs a booking. See data/trip-commission.ts.
+   */
+  commissions?: CommissionRecord[];
   /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
@@ -1242,6 +1249,68 @@ export async function recordPayment(ownerEmail: string, tripId: string, record: 
     t.id === tripId ? { ...t, balance: { ...balance, payments: [...balance.payments, record] }, updatedAt: new Date().toISOString() } : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+// ---- Commission ------------------------------------------------------------
+//
+// What the agency earns from a trip's suppliers — a different ledger from
+// the payment balance above (a client's money). See data/trip-commission.ts.
+
+function commissionId() {
+  return randomBytes(6).toString("base64url");
+}
+
+/** One trip's commission ledger — every supplier booking logged so far. */
+export async function getCommissions(email: string, tripId: string): Promise<CommissionRecord[]> {
+  const data = await getAccountData(email);
+  return withTrips(data).trips.find((t) => t.id === tripId)?.commissions ?? [];
+}
+
+/** Add or update one supplier booking's commission record. */
+export async function saveCommissionRecord(email: string, tripId: string, record: CommissionRecord): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const now = new Date().toISOString();
+  const existing = trip.commissions ?? [];
+  const stamped: CommissionRecord = { ...record, id: record.id || commissionId(), createdAt: record.createdAt || now, updatedAt: now };
+  const nextRecords = existing.some((r) => r.id === stamped.id)
+    ? existing.map((r) => (r.id === stamped.id ? stamped : r))
+    : [...existing, stamped];
+  const next = trips.map((t) => (t.id === tripId ? { ...t, commissions: nextRecords, updatedAt: now } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** Remove one supplier booking's commission record. */
+export async function deleteCommissionRecord(email: string, tripId: string, id: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const nextRecords = (trip.commissions ?? []).filter((r) => r.id !== id);
+  const next = trips.map((t) => (t.id === tripId ? { ...t, commissions: nextRecords, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/**
+ * Every trip that has at least one commission record — the agency-wide
+ * rollup. One row per trip, not per booking: a trip with three supplier
+ * bookings is one line here, the same way the pipeline is one line per
+ * trip regardless of how many stops are on it.
+ */
+export async function listCommissionSummaries(email: string): Promise<
+  Array<{ tripId: string; tripName: string; client: string; records: CommissionRecord[] }>
+> {
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  return trips
+    .filter((t) => (t.commissions?.length ?? 0) > 0)
+    .map((t) => ({ tripId: t.id, tripName: t.name, client: t.client?.trim() ?? "", records: t.commissions ?? [] }));
 }
 
 // ---- Live travel information ----------------------------------------------

@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PaymentsPanel from "@/components/PaymentsPanel";
+import { TripCommissionEditor } from "@/components/CommissionsPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
@@ -46,8 +47,18 @@ export default async function PaymentsPage() {
         />
 
         {allowed ? (
-          <div className="mt-8">
+          <div className="mt-8 flex flex-col gap-10">
             <PaymentsPanel />
+            <div className="border-t border-[var(--gold-light)] pt-8">
+              <PageHeader
+                eyebrow="Commission"
+                title="Supplier commission"
+                description="What this trip's suppliers — a hotel, a tour operator — owe the agency back for the business. A different money from the balance above."
+              />
+              <div className="mt-6">
+                <TripCommissionEditor />
+              </div>
+            </div>
           </div>
         ) : (
           <Card className="mt-8 max-w-xl">
