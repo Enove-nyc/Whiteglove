@@ -1,11 +1,10 @@
-import Link from "next/link";
 import PageBlocks from "@/components/PageBlocks";
 import CemeteryDirectory from "@/components/CemeteryDirectory";
 import Footer from "@/components/Footer";
-import HeritageCemeteryLocator from "@/components/HeritageCemeteryLocator";
 import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import { getPublicCemeteryList } from "@/lib/cemeteries-view";
+import { listAllHeritageCemeteries } from "@/lib/heritage-cemeteries";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -19,10 +18,17 @@ export const metadata = pageMetadata({
 });
 
 export default async function CemeteriesPage({ searchParams }: { searchParams: Promise<{ country?: string }> }) {
-  const [{ country }, cemeteries] = await Promise.all([searchParams, getPublicCemeteryList()]);
+  const [{ country }, cemeteries, heritageCemeteries] = await Promise.all([
+    searchParams,
+    getPublicCemeteryList(),
+    listAllHeritageCemeteries(),
+  ]);
   // Only a country we actually hold records for. A made-up one would silently
   // filter the list down to nothing and read as a broken page.
   const initialCountry = cemeteries.some((entry) => entry.country === country) ? (country as string) : "";
+  // The Nesiya Tova located set, trimmed to what the one directory needs — the
+  // detail page carries the rest (directions, the forward to Nesiya Tova).
+  const heritage = heritageCemeteries.map((h) => ({ slug: h.slug, city: h.city, country: h.country }));
   const page = await resolvePage("cemeteries");
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -55,14 +61,8 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
                 Known kevarim, navigation and arrival notes for each beis hachaim.
               </p>
               <p className="mt-4 max-w-2xl leading-7 text-stone-600">
-                Looking for a town&rsquo;s cemetery rather than a kever?{" "}
-                <Link
-                  href="#heritage"
-                  className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-                >
-                  Jump to the heritage cemetery locator
-                </Link>{" "}
-                — nearly two thousand batei hachaim worldwide, from Nesiya Tova, further down this page.
+                One directory for both: the kevarim guides here, and — the moment you search a town or choose a country —
+                the batei hachaim located worldwide from Nesiya Tova for that place.
               </p>
             </div>
             <SubBrandCrest className="hidden shrink-0 sm:block" />
@@ -71,10 +71,7 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
       )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-        <CemeteryDirectory cemeteries={cemeteries} initialCountry={initialCountry} />
-
-        {/* The Nesiya Tova locator set, folded into this one page. */}
-        <HeritageCemeteryLocator />
+        <CemeteryDirectory cemeteries={cemeteries} heritage={heritage} initialCountry={initialCountry} />
       </section>
 
       <Footer />
