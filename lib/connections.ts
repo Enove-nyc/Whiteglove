@@ -121,7 +121,7 @@ export const CONNECTIONS: Connection[] = [
       "Stripe. The webhook secret is on the SAME platform account as STRIPE_SECRET_KEY above — a trip payment is a destination charge created with the platform's own key, sent to a planner's connected account. This needs its OWN webhook secret because it is its own endpoint: add one at /api/payments/webhook listening for payment_intent.succeeded and payment_intent.payment_failed. The publishable key is under Developers → API keys, next to the secret key — safe to expose in the browser, which is the only place it is ever used (Stripe Elements, the traveler's own card form).",
   },
   {
-    vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"],
+    vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL_ITINERARIES", "OWNER_EMAIL"],
     what: "Where messages to you are sent.",
     without: "Contact messages and suggestions are still kept in the admin — messages on Settings → Messages, and counted on the dashboard — but nothing lands in your inbox.",
     weight: "feature",
@@ -379,7 +379,7 @@ const ANY_ONE_OF: Record<string, string[][]> = {
   TWILIO_ACCOUNT_SID: [["TWILIO_MESSAGING_SERVICE_SID", "TWILIO_FROM_NUMBER"]],
   ANTHROPIC_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"]],
   OPENAI_API_KEY: [["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY"]],
-  OWNER_NOTIFICATION_EMAIL: [["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "OWNER_EMAIL"]],
+  OWNER_NOTIFICATION_EMAIL: [["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL_ITINERARIES", "OWNER_EMAIL"]],
 };
 
 /** The same reading, with the either-or connections judged properly. */

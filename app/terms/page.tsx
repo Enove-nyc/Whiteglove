@@ -69,8 +69,9 @@ export default async function TermsOfUsePage() {
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
-          These Terms of Use govern your access to and use of {siteName} at {siteDomain} (the &ldquo;Service&rdquo;).
-          By using the Service, you agree to these terms. If you do not agree, please do not use the Service.
+          {siteName} at {siteDomain} (the &ldquo;Service&rdquo;) is operated by White Glove Travel, doing business as{" "}
+          {siteName}. These Terms of Use govern your access to and use of the Service. By using the Service, you agree
+          to these terms. If you do not agree, please do not use the Service.
         </p>
 
         <Section title="The Service">

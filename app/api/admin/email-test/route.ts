@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   if (!admin(request)) return NextResponse.json({ error: "Please sign in as an administrator." }, { status: 401 });
   if (!sameOrigin(request)) return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   const body = (await request.json().catch(() => null)) as { inbox?: string } | null;
-  const which = body?.inbox === "edits" ? "edits" : "contact";
+  const which = body?.inbox === "edits" || body?.inbox === "contact-itineraries" ? body.inbox : "contact-kosher";
   const result = await sendTestEmail(which);
   return NextResponse.json({ ...result, config: await emailConfigStatus() });
 }
