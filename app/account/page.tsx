@@ -191,6 +191,7 @@ export default async function AccountPage() {
                       { href: "/library", label: "Content library", description: "Your saved hotels, activities and contacts" },
                       { href: "/forms", label: "Client form", description: "Collect a passport number or emergency contact" },
                       { href: "/pipeline", label: "Trip pipeline", description: "Every client trip and where it stands" },
+                      { href: "/clients", label: "Clients", description: "Everyone you've planned for, and what's noted about them" },
                       { href: "/payments", label: "Payments", description: "Balances, splits, and collection" },
                     ].map((item) => (
                       <li key={item.href}>

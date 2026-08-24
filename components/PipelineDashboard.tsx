@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
 import { formatCents } from "@/data/trip-payments";
+import { clientKey } from "@/data/clients";
 
 type Row = {
   id: string;
@@ -92,6 +93,11 @@ function RowCard({ row, onOpen, onStage }: { row: Row; onOpen: (path: string) =>
         <button type="button" onClick={() => onOpen("/proposal")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Proposal
         </button>
+        {row.client && (
+          <a href={`/clients/${encodeURIComponent(clientKey(row.client))}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+            Client
+          </a>
+        )}
         <button type="button" onClick={() => onOpen("/payments")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Payments
         </button>

@@ -13,6 +13,7 @@ import { limitsFor, newTripProblem } from "@/lib/account-limits";
 import { getLimitOverrides } from "@/lib/account-limits-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { inviteProblem, readTeam, type TeamMember } from "@/data/team";
+import { clientsFromTrips, emptyClientProfile, tripsForClient, type ClientProfile, type ClientSummary } from "@/data/clients";
 import { identityKey, normalizeIdentity } from "@/lib/identity";
 import { type Collaborator, type TripRole, may, readCollaborators, roleOf } from "@/lib/trip-roles";
 import { passwordProblem } from "@/lib/password-rules";
@@ -231,6 +232,15 @@ export type AccountData = {
    * hotel on a dozen different trips instead of retyping it each time.
    */
   library?: { items: LibraryItem[]; packs: LibraryPack[] };
+  /**
+   * A note or preference that belongs to the CLIENT, not any one trip —
+   * "aisle seat, no shellfish" is true across every trip they take. Keyed by
+   * data/clients.ts's clientKey() of the name typed onto SavedTrip.client;
+   * the roster of clients itself is never stored — it's derived fresh from
+   * the trips every time, the same way library packs resolve their items
+   * fresh rather than keeping a copy.
+   */
+  clients?: Record<string, ClientProfile>;
   updatedAt?: string;
 };
 
@@ -715,6 +725,56 @@ export async function deleteLibraryPack(email: string, id: string): Promise<bool
   const current = await getAccountData(normalized);
   const packs = (current.library?.packs ?? []).filter((p) => p.id !== id);
   const next: AccountData = { ...current, library: { items: current.library?.items ?? [], packs }, updatedAt: new Date().toISOString() };
+  return writeJson(dataKey(normalized), next);
+}
+
+/* ---- clients -------------------------------------------------------------
+ *
+ * Every distinct name typed onto SavedTrip.client, grouped and summarized
+ * fresh from the trips themselves (data/clients.ts) — never a second list
+ * to keep in sync. The one thing actually stored is a note or preference
+ * that belongs to the client rather than any one trip; see AccountData's
+ * own comment on `clients` above.
+ */
+
+/** Every distinct client on this account's trips, most recent activity
+ *  first. */
+export async function listClients(email: string, today: string): Promise<ClientSummary[]> {
+  const data = await getAccountData(email);
+  const { trips } = withTrips(data);
+  return clientsFromTrips(
+    trips.map((t) => ({ id: t.id, client: t.client, startDate: t.itinerary?.startDate, endDate: t.itinerary?.endDate, updatedAt: t.updatedAt })),
+    today,
+  );
+}
+
+/** One client's own trips, most recently updated first — the same summary
+ *  shape the trip list itself uses. */
+export async function getClientTrips(email: string, key: string): Promise<TripSummary[]> {
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  return summarize(tripsForClient(trips, key), activeId);
+}
+
+/** A client's own notes and preferences, or an empty one if nothing has
+ *  been written yet — a screen should always have something to show. */
+export async function getClientProfile(email: string, key: string): Promise<ClientProfile> {
+  const data = await getAccountData(email);
+  return data.clients?.[key] ?? emptyClientProfile(key);
+}
+
+/** Save a client's notes/preferences. `key` is trusted from the caller — see
+ *  data/clients.ts's clientKey(), which the route computes from the name on
+ *  the URL, never anything the client-side request could substitute a
+ *  different key for while keeping the visible name the same. */
+export async function saveClientProfile(email: string, key: string, patch: { notes?: string; preferences?: string }): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const now = new Date().toISOString();
+  const existing = current.clients?.[key] ?? emptyClientProfile(key);
+  const stamped: ClientProfile = { ...existing, ...patch, key, updatedAt: now };
+  const next: AccountData = { ...current, clients: { ...current.clients, [key]: stamped }, updatedAt: now };
   return writeJson(dataKey(normalized), next);
 }
 
