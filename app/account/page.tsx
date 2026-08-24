@@ -149,8 +149,9 @@ export default async function AccountPage() {
           <p className="mt-2 text-sm leading-6 text-stone-600">
             An AI-suggested checklist for the trip in your planner right now — destinations, dates and planned stops.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-3">
             <LinkButton href="/packing">Open packing list</LinkButton>
+            <LinkButton href="/optimize" variant="secondary">Review your itinerary</LinkButton>
           </div>
         </section>
 

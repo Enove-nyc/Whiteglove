@@ -1,7 +1,7 @@
 import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
 import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
-import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { buildDays, emptyItinerary, flightRouteLabel, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
 import { formatCents, type PaymentRecord, type TripBalance } from "@/data/trip-payments";
@@ -10,6 +10,8 @@ import type { AddonItem } from "@/data/trip-addons";
 import { withActivity, type ActivityEntry } from "@/data/trip-activity";
 import { tripSignature, type PackingList } from "@/data/packing-list";
 import { suggestPackingList } from "@/lib/packing-ai";
+import { dismissSuggestion, itinerarySignature, type OptimizationResult } from "@/data/itinerary-optimization";
+import { suggestItineraryOptimizations } from "@/lib/itinerary-optimization-ai";
 import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -225,6 +227,12 @@ export type SavedTrip = {
    * data/packing-list.ts and lib/packing-ai.ts.
    */
   packingList?: PackingList;
+  /**
+   * AI suggestions for the itinerary's own pacing and flow. Absent until
+   * first generated. See data/itinerary-optimization.ts and
+   * lib/itinerary-optimization-ai.ts.
+   */
+  optimization?: OptimizationResult;
   /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
@@ -1583,6 +1591,92 @@ export async function togglePackingItem(email: string, tripId: string, itemId: s
  *  a saved list's forSignature without duplicating packingSummary's logic. */
 export function currentPackingSignature(itinerary: Itinerary): string {
   return tripSignature(packingSummary(itinerary));
+}
+
+// ---- Itinerary optimization --------------------------------------------------
+//
+// AI suggestions on an itinerary's own pacing and flow — see
+// data/itinerary-optimization.ts for why this is kept separate from
+// buildDays()'s own deterministic warnings.
+
+function optimizationId() {
+  return randomBytes(6).toString("base64url");
+}
+
+/**
+ * The day-by-day plain-text summary handed to the AI — every day's date,
+ * what's scheduled, how much free time and travel time it has, and
+ * buildDays()'s own warnings. Built from the same computation the planner's
+ * own itinerary builder already draws its day view from, not a second
+ * reading of the raw flights/lodging/activities.
+ */
+function optimizationSummary(itinerary: Itinerary): string {
+  const days = buildDays(itinerary);
+  return days
+    .map((day) => {
+      const lines = [`Day ${day.index + 1} (${day.date}):`];
+      for (const j of day.flightsDeparting) lines.push(`  Flight departs: ${flightRouteLabel(j)}`);
+      for (const j of day.flightsArriving) lines.push(`  Flight arrives: ${flightRouteLabel(j)}`);
+      if (day.lodging) lines.push(`  Sleeping at: ${day.lodging.name}`);
+      for (const a of day.activities) lines.push(`  Stop: ${a.name}${a.startTime ? ` at ${a.startTime}` : ""}`);
+      lines.push(`  Free hours: ${day.freeHours ?? "?"}, travel hours: ${day.travelHours.toFixed(1)}`);
+      if (day.warnings.length > 0) lines.push(`  Known conflicts: ${day.warnings.join("; ")}`);
+      return lines.join("\n");
+    })
+    .join("\n\n");
+}
+
+/** The trip's current pacing/flow suggestions, or null if none generated yet. */
+export async function getOptimization(email: string, tripId: string): Promise<OptimizationResult | null> {
+  const data = await getAccountData(email);
+  return withTrips(data).trips.find((t) => t.id === tripId)?.optimization ?? null;
+}
+
+/**
+ * The itinerary's current signature, for the caller to check a saved
+ * result's staleness against without duplicating optimizationSummary's
+ * reasoning about what the itinerary "is".
+ */
+export function currentOptimizationSignature(itinerary: Itinerary): string {
+  return itinerarySignature(itinerary);
+}
+
+/**
+ * Ask the AI for fresh pacing suggestions and save them, replacing whatever
+ * was there before. Returns null when no provider is configured or every
+ * provider failed — an itinerary the model genuinely found nothing to flag
+ * on still saves (as an empty list), which is a real result, not a failure.
+ */
+export async function generateOptimization(email: string, tripId: string): Promise<OptimizationResult | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+  const messages = await suggestItineraryOptimizations(optimizationSummary(trip.itinerary));
+  if (messages === null) return null;
+  const result: OptimizationResult = {
+    suggestions: messages.map((message) => ({ id: optimizationId(), message, dismissed: false })),
+    generatedAt: new Date().toISOString(),
+    forSignature: itinerarySignature(trip.itinerary),
+  };
+  const next = trips.map((t) => (t.id === tripId ? { ...t, optimization: result, updatedAt: new Date().toISOString() } : t));
+  const ok = await writeTrips(normalized, next, activeId);
+  return ok ? result : null;
+}
+
+/** Dismiss (or restore) one suggestion — never regenerates the list. */
+export async function setOptimizationDismissed(email: string, tripId: string, suggestionId: string, dismissed: boolean): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip?.optimization) return false;
+  const result = dismissSuggestion(trip.optimization, suggestionId, dismissed);
+  const next = trips.map((t) => (t.id === tripId ? { ...t, optimization: result, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
 }
 
 // ---- Live travel information ----------------------------------------------
