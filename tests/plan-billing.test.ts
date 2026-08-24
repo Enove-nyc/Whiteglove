@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import {
+  agencySeatOfferable,
+  agencySeatPriceId,
   cleanOffering,
   DEFAULT_OFFERING,
   describeOffering,
@@ -40,8 +42,9 @@ const NOT_READY = { secretKey: false, webhookSecret: false };
 // fills in the rest of PAID_PLANS at runtime the same way a half-written stored
 // record would, so the test helper's type should not force every literal to
 // spell out all three.
-type OfferingOverride = Partial<Omit<PlanOffering, "pricing">> & {
+type OfferingOverride = Partial<Omit<PlanOffering, "pricing" | "agencySeat">> & {
   pricing?: Partial<Record<PaidPlan, Partial<PlanPricing>>>;
+  agencySeat?: Partial<PlanPricing>;
 };
 
 function offering(over: OfferingOverride = {}): PlanOffering {
@@ -147,6 +150,39 @@ describe("the free trial", () => {
 
   it("is a real number of days, not zero or something silly", () => {
     assert.ok(TRIAL_DAYS >= 7 && TRIAL_DAYS <= 30);
+  });
+});
+
+describe("agency seats", () => {
+  it("is never offerable outside Stripe mode, however it is priced", () => {
+    const asking = offering({ how: "ask", agencySeat: { askingLine: "$25 a month", monthlyPriceId: "price_seat", yearlyPriceId: "" } });
+    assert.equal(agencySeatOfferable(asking, "monthly"), false);
+    const soon = offering({ how: "soon", agencySeat: { monthlyPriceId: "price_seat" } });
+    assert.equal(agencySeatOfferable(soon, "monthly"), false);
+  });
+
+  it("needs an actual price for the period being asked about", () => {
+    const cards = offering({ how: "stripe", agencySeat: { monthlyPriceId: "price_seat_m", yearlyPriceId: "" } });
+    assert.equal(agencySeatOfferable(cards, "monthly"), true);
+    assert.equal(agencySeatOfferable(cards, "yearly"), false);
+    assert.equal(agencySeatPriceId(cards, "monthly"), "price_seat_m");
+    assert.equal(agencySeatPriceId(cards, "yearly"), "");
+  });
+
+  it("is closed along with everything else", () => {
+    const closed = offering({ open: false, how: "stripe", agencySeat: { monthlyPriceId: "price_seat" } });
+    assert.equal(agencySeatOfferable(closed, "monthly"), false);
+  });
+
+  it("defaults to nothing configured, out of the box", () => {
+    assert.equal(DEFAULT_OFFERING.agencySeat.monthlyPriceId, "");
+    assert.equal(DEFAULT_OFFERING.agencySeat.yearlyPriceId, "");
+    assert.equal(DEFAULT_OFFERING.agencySeat.askingLine, "");
+  });
+
+  it("tidies an unreadable seat record into empty rather than throwing", () => {
+    const cleaned = cleanOffering({ agencySeat: "nonsense" });
+    assert.deepEqual(cleaned.agencySeat, { askingLine: "", monthlyPriceId: "", yearlyPriceId: "" });
   });
 });
 

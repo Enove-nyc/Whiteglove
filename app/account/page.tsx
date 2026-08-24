@@ -161,6 +161,15 @@ export default async function AccountPage() {
             offer={offer}
           />
           {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} siteBrand={siteBrand} />}
+          {canBrand && (
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
+              Working with other advisors?{" "}
+              <Link href="/agency" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+                Turn this into an agency
+              </Link>{" "}
+              — one subscription, one letterhead, a login for each of you.
+            </p>
+          )}
           {canUseApp && (
             <div className="mt-6 rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
               <div className="flex flex-wrap items-center justify-between gap-4">

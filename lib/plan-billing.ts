@@ -118,6 +118,14 @@ export type PlanOffering = {
   /** Which of the paid plans are offered. Any, all, or none. */
   plans: Record<PaidPlan, boolean>;
   pricing: Record<PaidPlan, PlanPricing>;
+  /**
+   * The $25-a-seat add-on Advisor Pro buys into an agency (lib/agency.ts).
+   * Not a plan of its own — offerablePlans/PAID_PLANS know nothing about
+   * it — so it is its own field rather than a fourth entry pretending to be
+   * a plan. `askingLine` and the two price ids mean exactly what they do for
+   * a plan; there is simply one of it, since only Advisor Pro can have seats.
+   */
+  agencySeat: PlanPricing;
   updatedAt?: string;
   updatedBy?: string;
 };
@@ -173,6 +181,7 @@ export const DEFAULT_OFFERING: PlanOffering = {
   how: "soon",
   plans: { ...EMPTY_PLANS },
   pricing: { ...EMPTY_PRICING_BY_PLAN },
+  agencySeat: { ...EMPTY_PRICING },
 };
 
 /**
@@ -192,6 +201,7 @@ export function cleanOffering(raw: unknown): PlanOffering {
     monthlyPriceId: typeof pricing[plan]?.monthlyPriceId === "string" ? pricing[plan]!.monthlyPriceId!.trim() : "",
     yearlyPriceId: typeof pricing[plan]?.yearlyPriceId === "string" ? pricing[plan]!.yearlyPriceId!.trim() : "",
   });
+  const seat = (value.agencySeat ?? {}) as Partial<PlanPricing>;
   return {
     open: value.open !== false,
     how: readOfferingHow(value.how),
@@ -201,6 +211,11 @@ export function cleanOffering(raw: unknown): PlanOffering {
       pro: plans.pro !== false,
     },
     pricing: { one_trip: one("one_trip"), starter: one("starter"), pro: one("pro") },
+    agencySeat: {
+      askingLine: typeof seat.askingLine === "string" ? seat.askingLine.slice(0, 80) : "",
+      monthlyPriceId: typeof seat.monthlyPriceId === "string" ? seat.monthlyPriceId.trim() : "",
+      yearlyPriceId: typeof seat.yearlyPriceId === "string" ? seat.yearlyPriceId.trim() : "",
+    },
     updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : undefined,
     updatedBy: typeof value.updatedBy === "string" ? value.updatedBy : undefined,
   };
@@ -236,6 +251,24 @@ export function offerablePlans(offering: PlanOffering): PaidPlan[] {
 export function periodsFor(offering: PlanOffering, plan: PaidPlan): BillingPeriod[] {
   if (offering.how !== "stripe") return [];
   return BILLING_PERIODS.filter((period) => Boolean(priceIdFor(offering, plan, period)));
+}
+
+/** The Stripe price id for one agency seat on one period, or "" if it is not set. */
+export function agencySeatPriceId(offering: PlanOffering, period: BillingPeriod): string {
+  return (period === "yearly" ? offering.agencySeat.yearlyPriceId : offering.agencySeat.monthlyPriceId).trim();
+}
+
+/**
+ * Whether seats can actually be bought right now.
+ *
+ * AGENCY IS STRIPE-ONLY. There is real money in a seat — $25 a month per
+ * person — and this site never invents a price or takes one without a card
+ * on Stripe's own page, the same rule offeringProblem enforces for every
+ * plan. In "ask" or "soon" mode there is no seat button; an advisor who
+ * wants an agency before then asks the way anybody asks about an account.
+ */
+export function agencySeatOfferable(offering: PlanOffering, period: BillingPeriod): boolean {
+  return offering.open && offering.how === "stripe" && Boolean(agencySeatPriceId(offering, period));
 }
 
 /**

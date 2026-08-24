@@ -253,12 +253,50 @@ export type StripeSubscription = {
   cancel_at_period_end?: boolean;
   current_period_end?: number;
   metadata?: Record<string, string>;
-  items?: { data?: Array<{ price?: { id?: string } }> };
+  items?: { data?: Array<{ id: string; quantity?: number; price?: { id?: string } }> };
 };
 
 export async function readSubscriptionFromStripe(id: string): Promise<StripeSubscription | null> {
   const result = await call<StripeSubscription>(`subscriptions/${encodeURIComponent(id)}`);
   return result.ok ? result.data : null;
+}
+
+/**
+ * Add, change, or remove an agency's seat line item on an EXISTING
+ * subscription — see lib/agency.ts. This never touches the base Advisor Pro
+ * item, only the one item on this seat price.
+ *
+ * READS BEFORE IT WRITES, because updating a subscription item needs that
+ * item's own id (`si_...`), not the price id — sending the price id alone a
+ * second time would add a duplicate item instead of changing the quantity of
+ * the one already there. `quantity: 0` deletes the item outright rather than
+ * leaving a zero-quantity line on the invoice.
+ *
+ * `always_invoice` settles the prorated difference right away — the owner
+ * sees the charge or credit the moment they change seats, not buried in next
+ * month's total.
+ */
+export async function setSubscriptionSeatQuantity(input: {
+  subscriptionId: string;
+  seatPriceId: string;
+  quantity: number;
+}): Promise<StripeResult<StripeSubscription>> {
+  const current = await readSubscriptionFromStripe(input.subscriptionId);
+  if (!current) return { ok: false, error: "That subscription could not be read." };
+  const existing = current.items?.data?.find((item) => item.price?.id === input.seatPriceId);
+
+  if (input.quantity <= 0) {
+    if (!existing) return { ok: true, data: current };
+    return call<StripeSubscription>(`subscriptions/${encodeURIComponent(input.subscriptionId)}`, {
+      items: [{ id: existing.id, deleted: true }],
+      proration_behavior: "always_invoice",
+    });
+  }
+
+  return call<StripeSubscription>(`subscriptions/${encodeURIComponent(input.subscriptionId)}`, {
+    items: [existing ? { id: existing.id, quantity: input.quantity } : { price: input.seatPriceId, quantity: input.quantity }],
+    proration_behavior: "always_invoice",
+  });
 }
 
 /* ---- webhooks ----------------------------------------------------------- */

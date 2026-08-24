@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import PipelineDashboard from "@/components/PipelineDashboard";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
+import { PLAN_LABELS } from "@/lib/account-plans";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
@@ -25,9 +26,9 @@ export async function generateMetadata() {
 /**
  * Planner CRM / Trip Pipeline — every client trip, one row each, grouped by
  * where it stands: Inquiry, Planning, Proposal, Awaiting approval, Confirmed,
- * Traveling, Completed. BUSINESS-ONLY, the same door as the client inbox, the
- * proposal builder and client forms — a Gold account has the app for its own
- * trips and no clients to run a pipeline of.
+ * Traveling, Completed. ADVISOR STARTER AND UP, the same door as the client
+ * inbox, the proposal builder and client forms — One Trip has the app for
+ * its own one trip and no clients to run a pipeline of.
  */
 export default async function PipelinePage() {
   const cookieStore = await cookies();
@@ -45,14 +46,14 @@ export default async function PipelinePage() {
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Trip pipeline</p>
           <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Part of a Business account.
+            Part of {PLAN_LABELS.starter} and up.
           </h1>
           <p className="text-base leading-7 text-stone-600">
-            The trip pipeline is where a Business account sees every client trip and where each one stands — from a first
+            The trip pipeline is where an advisor sees every client trip and where each one stands — from a first
             inquiry through to a completed trip.
           </p>
           <Link href="/account" className="w-fit rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-            Ask about Business
+            Ask about {PLAN_LABELS.starter}
           </Link>
         </section>
         <Footer />

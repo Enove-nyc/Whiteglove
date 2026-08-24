@@ -342,6 +342,38 @@ export async function sendItineraryShareEmail(
 }
 
 /**
+ * "So-and-so invited you to their agency."
+ *
+ * NOTHING ABOUT MONEY IS IN THIS EMAIL. The invited advisor is not the one
+ * paying — the owner's card is — so there is nothing here to reassure them
+ * about a charge, unlike sendPlanRequestNotification. What they need is who
+ * asked and a link that says plainly what accepting does.
+ */
+export async function sendAgencyInviteEmail(
+  to: string,
+  opts: { ownerName: string; url: string; siteBrand?: SiteBrand },
+): Promise<boolean> {
+  const who = escapeHtml(opts.ownerName || "A colleague");
+  const url = escapeHtml(opts.url);
+  const siteName = BRAND_NAME[opts.siteBrand ?? "kosher"];
+  const result = await postResend(
+    {
+      to,
+      subject: `${opts.ownerName || "Somebody"} invited you to their agency on ${siteName}`,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} invited you to their agency</h2>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">Accepting puts you on Advisor Pro, sharing ${who}&rsquo;s subscription and letterhead. Your own trips stay your own.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">See the invitation →</a></p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Or open this link: ${url}</p>`,
+      text: `${opts.ownerName || "Somebody"} invited you to their agency on ${siteName}.\n\nAccepting puts you on Advisor Pro, sharing their subscription and letterhead. Your own trips stay your own.\n\nSee the invitation: ${opts.url}`,
+    },
+    to,
+    "agency invite",
+  );
+  return result.ok;
+}
+
+/**
  * "Somebody left a note on your trip."
  *
  * WHY THIS EXISTS. Notes shipped with nothing to tell anybody about them: a

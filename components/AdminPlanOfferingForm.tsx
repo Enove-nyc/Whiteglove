@@ -164,6 +164,39 @@ export default function AdminPlanOfferingForm({
         })}
       </fieldset>
 
+      <fieldset disabled={!open || !storeReady || busy} className={`space-y-4 ${open ? "" : "opacity-50"}`}>
+        <legend className={caption}>Agency seats</legend>
+        <div className="rounded-md border border-[var(--gold-light)] bg-white p-4">
+          <p className="text-sm leading-6 text-stone-700">
+            <span className="font-semibold text-[var(--navy)]">$25 a seat</span>
+            <span className="block text-stone-500">
+              What Advisor Pro buys into an agency — one extra advisor login sharing the same subscription and
+              letterhead. Nothing about this is offered until a Stripe price is set below, whatever the setting
+              above is: seats are never asked about, only bought.
+            </span>
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <label className="block sm:col-span-2">
+              <span className={caption}>What the page says a seat costs — only used when they ask rather than pay</span>
+              <input
+                name="agencySeat-asking"
+                defaultValue={current.agencySeat.askingLine}
+                placeholder="Leave blank to say nothing about money"
+                className={input}
+              />
+            </label>
+            <label className="block">
+              <span className={caption}>Stripe price id — monthly</span>
+              <input name="agencySeat-monthly" defaultValue={current.agencySeat.monthlyPriceId} placeholder="price_…" className={input} />
+            </label>
+            <label className="block">
+              <span className={caption}>Stripe price id — yearly</span>
+              <input name="agencySeat-yearly" defaultValue={current.agencySeat.yearlyPriceId} placeholder="price_… (optional)" className={input} />
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
       <div className="flex flex-wrap items-center gap-4">
         <button
           type="submit"

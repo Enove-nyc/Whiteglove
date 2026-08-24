@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { afterEach, describe, it } from "node:test";
-import { createCheckoutSession, customerIdOf, describePrice, statusIsPaid, verifyWebhook } from "@/lib/stripe";
+import { createCheckoutSession, customerIdOf, describePrice, setSubscriptionSeatQuantity, statusIsPaid, verifyWebhook } from "@/lib/stripe";
 
 /**
  * The webhook signature, which is the only thing standing between the internet
@@ -173,5 +173,61 @@ describe("starting a checkout", () => {
     const captured = captureBody();
     await createCheckoutSession({ ...base, plan: "starter" });
     assert.doesNotMatch(captured.body, /trial_period_days/);
+  });
+});
+
+describe("changing an agency's seats on a live subscription", () => {
+  const originalFetch = globalThis.fetch;
+  const originalKey = process.env.STRIPE_SECRET_KEY;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = originalKey;
+  });
+
+  /** Every subscription read returns this fixed item list; every write is captured. */
+  function mockSubscription(items: Array<{ id: string; price: { id: string } }>) {
+    process.env.STRIPE_SECRET_KEY = "sk_test_x";
+    const calls: Array<{ method: string; body: string }> = [];
+    globalThis.fetch = (async (_input, init) => {
+      calls.push({ method: init?.method ?? "GET", body: String(init?.body ?? "") });
+      return new Response(JSON.stringify({ id: "sub_1", status: "active", customer: "cus_1", items: { data: items } }), { status: 200 });
+    }) as typeof fetch;
+    return calls;
+  }
+
+  it("READS FIRST, so it targets the item's own id rather than adding a duplicate", async () => {
+    const calls = mockSubscription([
+      { id: "si_pro", price: { id: "price_pro" } },
+      { id: "si_seat", price: { id: "price_seat" } },
+    ]);
+    await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 5 });
+    assert.equal(calls[0].method, "GET");
+    assert.match(calls[1].body, /items%5B0%5D%5Bid%5D=si_seat/);
+    assert.match(calls[1].body, /items%5B0%5D%5Bquantity%5D=5/);
+    assert.doesNotMatch(calls[1].body, /items%5B0%5D%5Bprice%5D/);
+  });
+
+  it("adds a new item when this seat price isn't on the subscription yet", async () => {
+    const calls = mockSubscription([{ id: "si_pro", price: { id: "price_pro" } }]);
+    await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 3 });
+    assert.match(calls[1].body, /items%5B0%5D%5Bprice%5D=price_seat/);
+    assert.match(calls[1].body, /items%5B0%5D%5Bquantity%5D=3/);
+    assert.doesNotMatch(calls[1].body, /items%5B0%5D%5Bid%5D/);
+  });
+
+  it("DELETES THE ITEM OUTRIGHT AT ZERO, rather than leaving a zero-quantity line on the invoice", async () => {
+    const calls = mockSubscription([{ id: "si_seat", price: { id: "price_seat" } }]);
+    await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 0 });
+    assert.match(calls[1].body, /items%5B0%5D%5Bid%5D=si_seat/);
+    assert.match(calls[1].body, /items%5B0%5D%5Bdeleted%5D=true/);
+  });
+
+  it("does nothing at all — no second call — when there is no seat item to remove", async () => {
+    const calls = mockSubscription([{ id: "si_pro", price: { id: "price_pro" } }]);
+    const result = await setSubscriptionSeatQuantity({ subscriptionId: "sub_1", seatPriceId: "price_seat", quantity: 0 });
+    assert.equal(calls.length, 1);
+    assert.equal(result.ok, true);
   });
 });
