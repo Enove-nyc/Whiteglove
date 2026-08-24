@@ -15,7 +15,7 @@ import {
   stopTripShare,
   switchTrip,
 } from "@/lib/account-store";
-import { mayBrandOwnItinerary, mayServeCompanionClients } from "@/lib/account-limits";
+import { mayServeCompanionClients } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { sameOrigin } from "@/lib/secure-access";
@@ -70,14 +70,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result, { status: result.ok ? 200 : 400 });
     }
     case "client": {
-      // Saying who a trip is for is part of Advisor Pro — it is the name that
-      // goes on the branded document their client is handed, so it is behind
-      // the same gate as the branding itself. Checked here rather than only
-      // in the panel, because a hidden field is not a closed door.
+      // Naming who a trip is for is part of handing a trip to a client at
+      // all — Advisor Starter and up, the same door as the client-serving
+      // capability itself (AGENTS.md: "naming a client, sending it, and
+      // creating a client code all need Advisor Starter or Advisor Pro").
+      // Checked here rather than only in the panel, because a hidden field
+      // is not a closed door.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
-      if (!mayBrandOwnItinerary(await getPlan(email))) {
+      if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(
-          { ok: false, error: `Planning trips for named clients is part of ${PLAN_LABELS.pro}.` },
+          { ok: false, error: `Planning trips for named clients is part of ${PLAN_LABELS.starter} and up.` },
           { status: 403 },
         );
       }
@@ -86,12 +88,11 @@ export async function POST(request: NextRequest) {
     }
     case "advisor": {
       // The agent the client is dealing with — the name the trip carries, shown
-      // in the app. Same door as naming the client, and behind the same plan:
-      // it is only shown to somebody planning on another person's behalf.
+      // in the app. Same door as naming the client, above.
       if (!body.id) return NextResponse.json({ ok: false, error: "Name the trip." }, { status: 400 });
-      if (!mayBrandOwnItinerary(await getPlan(email))) {
+      if (!mayServeCompanionClients(await getPlan(email))) {
         return NextResponse.json(
-          { ok: false, error: `Putting an advisor on a trip is part of ${PLAN_LABELS.pro}.` },
+          { ok: false, error: `Putting an advisor on a trip is part of ${PLAN_LABELS.starter} and up.` },
           { status: 403 },
         );
       }

@@ -20,6 +20,7 @@ import { updateTag } from "next/cache";
 import { type AccountPlan } from "@/lib/account-plans";
 import { cleanOffering, DEFAULT_OFFERING, type PlanOffering } from "@/lib/plan-billing";
 import { identityKey } from "@/lib/identity";
+import { statusIsPaid } from "@/lib/stripe";
 
 const OFFERING_KEY = "white-glove:plan-offering";
 const SUB_PREFIX = "white-glove:subscription:";
@@ -117,6 +118,27 @@ export async function readSubscription(account: string): Promise<SubscriptionRec
   } catch {
     return null;
   }
+}
+
+/**
+ * What this account is entitled to on its OWN subscription, independent of
+ * anything an agency granted it.
+ *
+ * WHY THIS EXISTS. Joining an agency sets a member's plan to pro by hand
+ * (app/api/account/agency/join/route.ts), the same way the webhook below
+ * sets it by hand when a card is charged. Leaving, being removed, or the
+ * agency's own Pro subscription lapsing all have to take that hand-set plan
+ * back — but "back" is not always free: somebody who was already paying for
+ * their own Advisor Starter before they ever joined an agency is still
+ * being charged for it, and dropping them to free would keep taking their
+ * money while showing them nothing for it. This is what "back" actually
+ * means for one account: whatever its own subscription — if any, and if it
+ * is still paid — actually promises. FREE if there is no subscription, or
+ * it has lapsed; the subscription's own plan otherwise.
+ */
+export async function ownEntitledPlan(account: string): Promise<AccountPlan> {
+  const sub = await readSubscription(account);
+  return sub && statusIsPaid(sub.status) ? sub.plan : "free";
 }
 
 export async function writeSubscription(record: SubscriptionRecord): Promise<boolean> {

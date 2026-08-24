@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { type AccountPlan, PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan, setPlan } from "@/lib/account-plan-store";
+import { agencyIdFor, readAgency } from "@/lib/agency-store";
+import { isOwner as isAgencyOwner } from "@/lib/agency";
 import { sendSubscriptionNotification } from "@/lib/email";
+import { identityKey } from "@/lib/identity";
 import { isOneTimePlan, isPaidPlan } from "@/lib/plan-billing";
 import {
   accountForCustomer,
+  ownEntitledPlan,
   readSubscription,
   rememberCustomer,
   type SubscriptionRecord,
@@ -158,6 +162,25 @@ export async function POST(request: NextRequest) {
         if (current === plan) {
           await setPlan(account, "free", "Stripe subscription ended");
           await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "ended" });
+        }
+
+        // The Advisor Pro subscription that was paying for a whole agency
+        // just ended. Every OTHER member was promoted to pro by hand when
+        // they joined (app/api/account/agency/join/route.ts), with no
+        // subscription of Stripe's own behind it — nothing else will ever
+        // demote them, and left alone they would keep Advisor Pro for free,
+        // indefinitely. Each is set back to whatever THEIR OWN subscription,
+        // if any, actually entitles them to (ownEntitledPlan) rather than a
+        // blanket free, the same as leaving or being removed already does.
+        if (plan === "pro") {
+          const agencyId = await agencyIdFor(account);
+          const agency = agencyId ? await readAgency(agencyId) : null;
+          if (agency && isAgencyOwner(agency, account)) {
+            for (const member of agency.members) {
+              if (identityKey(member.account) === identityKey(account)) continue;
+              await setPlan(member.account, await ownEntitledPlan(member.account), "The agency's Advisor Pro subscription ended");
+            }
+          }
         }
       }
       return NextResponse.json({ received: true });

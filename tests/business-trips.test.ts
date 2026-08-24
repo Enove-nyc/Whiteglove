@@ -23,11 +23,14 @@ const SEND_ROUTE = readFileSync("app/api/account/itinerary/send/route.ts", "utf8
 
 describe("saying who a trip is for", () => {
   it("checks the plan on the server, not just in the panel", () => {
+    // Advisor Starter and up — the same door as handing a trip to a client
+    // at all (AGENTS.md: "naming a client, sending it, and creating a client
+    // code all need Advisor Starter or Advisor Pro"), not Pro-only branding.
     const branch = TRIPS_ROUTE.slice(TRIPS_ROUTE.indexOf('case "client"'), TRIPS_ROUTE.indexOf('case "duplicate"'));
-    assert.match(branch, /mayBrandOwnItinerary/);
+    assert.match(branch, /mayServeCompanionClients/);
     assert.match(branch, /403/);
     // And the refusal is before the write, not after it.
-    assert.ok(branch.indexOf("mayBrandOwnItinerary") < branch.indexOf("setTripClient"));
+    assert.ok(branch.indexOf("mayServeCompanionClients") < branch.indexOf("setTripClient"));
   });
 
   it("keeps the name short enough to sit on a cover", () => {

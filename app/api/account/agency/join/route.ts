@@ -64,9 +64,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "This agency has no free seat right now — ask for one to be added." }, { status: 409 });
   }
 
+  // Read again, right here, right before writing. Two people accepting the
+  // last open seat within the same instant would both pass the check above
+  // against the same stale snapshot; re-reading narrows that window from the
+  // whole request down to one read and one write. It does not close it
+  // completely — Upstash's REST API has no compare-and-swap primitive to do
+  // that without a second counter kept in sync with the members list by
+  // hand, which trades a rare double-accept for a permanent risk of drift.
+  const fresh = await readAgency(agency.id);
+  if (!fresh) return NextResponse.json({ error: "That agency could not be found." }, { status: 404 });
+  if (fresh.members.some((m) => identityKey(m.account) === identityKey(account.email))) {
+    await deleteInvite(invite);
+    return NextResponse.json({ ok: true });
+  }
+  if (fresh.members.length >= fresh.seatsPurchased) {
+    return NextResponse.json({ error: "This agency has no free seat right now — ask for one to be added." }, { status: 409 });
+  }
+
   const next = {
-    ...agency,
-    members: [...agency.members, { account: account.email, role: "advisor" as const, joinedAt: new Date().toISOString() }],
+    ...fresh,
+    members: [...fresh.members, { account: account.email, role: "advisor" as const, joinedAt: new Date().toISOString() }],
     updatedAt: new Date().toISOString(),
   };
   if (!(await writeAgency(next))) {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { countdownPhrase, tripProgress } from "@/lib/trip-progress";
 import { isAccountPlan } from "@/lib/account-plans";
-import { mayUseTripTemplates } from "@/lib/account-limits";
+import { mayServeCompanionClients, mayUseTripTemplates } from "@/lib/account-limits";
 
 // The traveler's trips, and a way to move between them.
 //
@@ -51,7 +51,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
   // endpoint the branding panel uses, and the buttons simply are not drawn for
   // anybody else — a greyed-out control advertising an upgrade has no place in
   // the middle of somebody's planning.
-  const [mayNameClient, setMayNameClient] = useState(false);
+  const [mayServeClients, setMayServeClients] = useState(false);
   // Saving and starting from templates is Advisor Pro — read off the same
   // branding response rather than a second request, since it already
   // resolves the account's plan server-side.
@@ -97,7 +97,12 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!live) return;
-        setMayNameClient(Boolean(d?.allowed));
+        // Naming who a trip is for, naming the advisor, and the client's own
+        // code are all Advisor Starter and up — the same door as handing a
+        // trip to a client at all (AGENTS.md). `allowed` on this response is
+        // mayBrandOwnItinerary, Pro-only, which is a different, narrower
+        // gate (the advisor's OWN logo on the document) — not this one.
+        setMayServeClients(isAccountPlan(d?.plan) ? mayServeCompanionClients(d.plan) : false);
         setMayUseTemplates(isAccountPlan(d?.plan) ? mayUseTripTemplates(d.plan) : false);
       })
       .catch(() => undefined);
@@ -359,7 +364,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                 >
                   Rename
                 </button>
-                {mayNameClient && (
+                {mayServeClients && (
                   <button
                     type="button"
                     disabled={busy}
@@ -372,7 +377,7 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
                     {trip.client ? "Change who it is for" : "Who it is for"}
                   </button>
                 )}
-                {mayNameClient && (
+                {mayServeClients && (
                   <button
                     type="button"
                     disabled={busy}
@@ -418,12 +423,12 @@ export default function TripSwitcher({ onSwitched }: { onSwitched?: () => void }
               </div>
             )}
 
-            {/* The client's per-trip code — Business only, one code per trip.
-                Send the client the code and they enter it on the app's front
-                page; the link is the same thing pre-opened. Either opens THIS
-                trip as the app on the client's phone, no account needed. Other
-                trips are never reachable from it. */}
-            {mayNameClient && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+            {/* The client's per-trip code — Advisor Starter and up, one code
+                per trip. Send the client the code and they enter it on the
+                app's front page; the link is the same thing pre-opened.
+                Either opens THIS trip as the app on the client's phone, no
+                account needed. Other trips are never reachable from it. */}
+            {mayServeClients && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
               <div className="mt-1 w-full">
                 {trip.shareId ? (
                   <div className="flex flex-col gap-2">

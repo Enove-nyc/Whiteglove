@@ -26,7 +26,7 @@ import { readBrand, writeBrand } from "@/lib/business-brand-store";
 import { normalizeIdentity, identityKey } from "@/lib/identity";
 import { writeTemplatesStore } from "@/lib/trip-templates-store";
 import { agencySeatOfferable, agencySeatPriceId, type BillingPeriod, priceIdFor } from "@/lib/plan-billing";
-import { readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
+import { ownEntitledPlan, readPlanOffering, readSubscription } from "@/lib/plan-billing-store";
 import { describePrice, readPrice, readSubscriptionFromStripe, setSubscriptionSeatQuantity } from "@/lib/stripe";
 import { sendAgencyInviteEmail } from "@/lib/email";
 import { sameOrigin } from "@/lib/secure-access";
@@ -164,13 +164,31 @@ export async function POST(request: NextRequest) {
         const priorBrand = await readBrand(email);
         const priorTemplates = await getTemplates(email);
         const fresh = newAgency(email, seats);
-        await writeAgency(fresh);
-        await setAccountAgency(email, fresh.id);
+        // The card is ALREADY CHARGED by this point (setSubscriptionSeatQuantity
+        // above). A saved-but-unlinked or unsaved agency here means somebody
+        // paying for seats with nothing to show for it, so this is not a quiet
+        // best-effort write — it is logged loudly for the owner to reconcile
+        // by hand rather than answered with a false "ok".
+        const savedAgency = await writeAgency(fresh);
+        const linked = savedAgency && (await setAccountAgency(email, fresh.id));
+        if (!linked) {
+          console.error(`[agency] charged ${email} for ${seats} seats but could not save the agency (savedAgency=${savedAgency})`);
+          return NextResponse.json(
+            { error: "The seats were charged but the agency could not be saved. Please contact support so this can be fixed by hand." },
+            { status: 502 },
+          );
+        }
         if (priorBrand) await writeBrand(email, priorBrand);
         if (priorTemplates.length) await writeTemplatesStore(email, priorTemplates);
         return NextResponse.json({ ok: true });
       }
-      await writeAgency({ ...agency, seatsPurchased: seats, updatedAt: new Date().toISOString() });
+      if (!(await writeAgency({ ...agency, seatsPurchased: seats, updatedAt: new Date().toISOString() }))) {
+        console.error(`[agency] charged ${email} for ${seats} seats but could not save the new seat count`);
+        return NextResponse.json(
+          { error: "The seats were charged but the new count could not be saved. Please contact support so this can be fixed by hand." },
+          { status: 502 },
+        );
+      }
       return NextResponse.json({ ok: true });
     }
 
@@ -237,7 +255,9 @@ export async function POST(request: NextRequest) {
       const problem = removeMemberProblem(agency, target);
       if (problem) return NextResponse.json({ error: problem }, { status: 400 });
       await setAccountAgency(target, undefined);
-      await setPlan(target, "free", `Removed from ${email}'s agency`);
+      // Not always free: somebody who was already paying for their own plan
+      // before they joined keeps it — see ownEntitledPlan in plan-billing-store.ts.
+      await setPlan(target, await ownEntitledPlan(target), `Removed from ${email}'s agency`);
       await writeAgency({
         ...agency,
         members: agency.members.filter((m) => identityKey(m.account) !== identityKey(target)),
@@ -251,7 +271,7 @@ export async function POST(request: NextRequest) {
       const problem = removeMemberProblem(agency, email);
       if (problem) return NextResponse.json({ error: problem }, { status: 400 });
       await setAccountAgency(email, undefined);
-      await setPlan(email, "free", "Left the agency");
+      await setPlan(email, await ownEntitledPlan(email), "Left the agency");
       await writeAgency({
         ...agency,
         members: agency.members.filter((m) => identityKey(m.account) !== identityKey(email)),
