@@ -8,6 +8,7 @@
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 import { sendPasswordResetSms, sendVerificationSms, smsConfigured } from "@/lib/sms";
+import type { SiteBrand } from "@/lib/site-brand-core";
 
 export type DeliveryOutcome = {
   ok: boolean;
@@ -21,8 +22,9 @@ export type DeliveryOutcome = {
 async function deliver(
   identity: string,
   code: string,
+  siteBrand: SiteBrand,
   byEmail: (to: string, code: string) => Promise<boolean>,
-  byText: (to: string, code: string) => Promise<boolean>,
+  byText: (to: string, code: string, siteBrand: SiteBrand) => Promise<boolean>,
 ): Promise<DeliveryOutcome> {
   const to = describeIdentity(identity);
   if (isPhoneIdentity(identity)) {
@@ -31,17 +33,17 @@ async function deliver(
       // text service — but an account made while one was connected outlives it.
       return { ok: false, via: "text message", to, error: "No text service is connected, so the code cannot be sent." };
     }
-    const ok = await byText(identity, code);
+    const ok = await byText(identity, code, siteBrand);
     return { ok, via: "text message", to, error: ok ? undefined : "The text could not be sent." };
   }
   const ok = await byEmail(identity, code);
   return { ok, via: "email", to, error: ok ? undefined : "The email could not be sent." };
 }
 
-export function verificationCodeTo(identity: string, code: string) {
-  return deliver(identity, code, sendVerificationEmail, sendVerificationSms);
+export function verificationCodeTo(identity: string, code: string, siteBrand: SiteBrand) {
+  return deliver(identity, code, siteBrand, sendVerificationEmail, sendVerificationSms);
 }
 
-export function resetCodeTo(identity: string, code: string) {
-  return deliver(identity, code, sendPasswordResetEmail, sendPasswordResetSms);
+export function resetCodeTo(identity: string, code: string, siteBrand: SiteBrand) {
+  return deliver(identity, code, siteBrand, sendPasswordResetEmail, sendPasswordResetSms);
 }

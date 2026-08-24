@@ -69,7 +69,14 @@ function encode(value: unknown, prefix = "", out: string[] = []): string[] {
 
 export type StripeResult<T> = { ok: true; data: T } | { ok: false; error: string; status?: number };
 
-async function call<T>(path: string, body?: Record<string, unknown>, idempotencyKey?: string): Promise<StripeResult<T>> {
+/**
+ * Exported so lib/stripe-connect.ts can talk to the SAME Stripe account this
+ * file does (the platform account — Connect calls like creating a connected
+ * account, or a destination charge, are ordinary platform-account API calls,
+ * just with a `destination`/`account` parameter) without a second hand-rolled
+ * HTTP client next to this one.
+ */
+export async function call<T>(path: string, body?: Record<string, unknown>, idempotencyKey?: string): Promise<StripeResult<T>> {
   const key = stripeSecretKey();
   if (!key) return { ok: false, error: "STRIPE_SECRET_KEY is not set on this deployment." };
   try {

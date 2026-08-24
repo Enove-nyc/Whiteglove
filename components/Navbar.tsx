@@ -343,13 +343,19 @@ export default function Navbar({ brand: brandProp = "kosher" }: { brand?: "koshe
                   to mean leaving whatever somebody was reading; the results
                   drop down over the page and Escape gives it straight back.
                   /search is still a real page for a typed URL, a bookmark, or
-                  pressing Enter on a query worth its own screen. */}
-              <IconLink
-                icon="search"
-                label="Search"
-                href="/search"
-                onClick={() => setSearchOpen((v) => !v)}
-              />
+                  pressing Enter on a query worth its own screen.
+                  NOT ON ITINERARIES. It doesn't host a single destination
+                  page — every result would hand the visitor straight to the
+                  kosher site, so the box that promises to search here is
+                  dropped rather than kept as a door that always leads away. */}
+              {!isItineraries && (
+                <IconLink
+                  icon="search"
+                  label="Search"
+                  href="/search"
+                  onClick={() => setSearchOpen((v) => !v)}
+                />
+              )}
               <IconLink icon="route" label="Route" href="/my-route" />
               <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
               {/* Signed in, the icon opens the four places an account has —

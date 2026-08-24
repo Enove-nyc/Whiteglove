@@ -24,14 +24,20 @@ import { isAdminAccount } from "@/lib/admin-roles";
 import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
-// Private to one person. Nothing here belongs in a search result.
-export const metadata = pageMetadata({
-  title: "Your account | White Glove Kosher Travel",
-  description: "Your saved route, itineraries and account settings.",
-  path: "/account",
-  noIndex: true,
-});
+// Private to one person. Nothing here belongs in a search result. Brand-aware
+// for the same reason /login is: an itineraries visitor landing here right
+// after signing in must not read "White Glove Kosher Travel" in the tab.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Your account | White Glove Itineraries" : "Your account | White Glove Kosher Travel",
+    description: "Your saved route, itineraries and account settings.",
+    path: "/account",
+    noIndex: true,
+  });
+}
 
 /**
  * Five areas, in reading order: Itineraries, Route, Favorites, Details, Sign
@@ -40,6 +46,7 @@ export const metadata = pageMetadata({
  * deliberately absent from the header icons and the mobile bar.
  */
 export default async function AccountPage() {
+  const siteBrand = await currentBrand();
   const cookieStore = await cookies();
   const cookie = cookieStore.get(accountCookieName())?.value;
   const account = await getCurrentAccountSummary(cookie);
@@ -147,13 +154,13 @@ export default async function AccountPage() {
             usageLine={usageLine}
             offer={offer}
           />
-          {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} />}
+          {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} siteBrand={siteBrand} />}
           {canUseApp && (
             <div className="mt-6 rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The White Glove app</span>
-                  <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, the kosher side of each day, and the travel wallet kept for when there is no signal. Add it to your home screen.</span>
+                  <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal. Add it to your home screen.</span>
                 </div>
                 <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
               </div>
@@ -162,6 +169,20 @@ export default async function AccountPage() {
                   To hand a client their own trip, open it in the{" "}
                   <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
                   and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
+                  Before that, offer them a{" "}
+                  <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">proposal</Link>{" "}
+                  to compare and approve — options, hotels and a price they see and answer before the trip is confirmed.
+                  Save the hotels, activities and contacts you use often to your{" "}
+                  <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">content library</Link>{" "}
+                  and a proposal is built from what's already there instead of retyped each time.
+                  Need a passport number or an emergency contact first? Send a{" "}
+                  <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">client form</Link>{" "}
+                  — answers come back to you alone, never onto the itinerary itself.
+                  See every client trip and where it stands in your{" "}
+                  <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">trip pipeline</Link>.
+                  Set a trip's balance, split it across families, and collect{" "}
+                  <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">payments</Link>{" "}
+                  straight into your own connected Stripe account.
                 </p>
               )}
               <CompanionSettings />

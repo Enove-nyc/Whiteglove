@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
   }
   const email = await ownerEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  // The app's own settings belong to a Business account — it is the one that
-  // hands the app out. The gate is the same one the app itself reads.
+  // The app's own settings — the same gate the app itself reads: a Gold
+  // traveler carrying their own trip, or a Business account handing it out.
   if (!mayUseCompanionApp(await getPlan(email))) {
-    return NextResponse.json({ error: "The app is part of a Business account." }, { status: 403 });
+    return NextResponse.json({ error: "The app is part of a Gold or Business account." }, { status: 403 });
   }
   const body = (await request.json().catch(() => null)) as { kosherFeatures?: unknown } | null;
   const ok = await setAppPrefs(email, { kosherFeatures: Boolean(body?.kosherFeatures) });

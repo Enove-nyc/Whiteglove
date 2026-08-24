@@ -64,6 +64,8 @@ import {
   type DayAdjustment as ItinAdjustment,
 } from "@/data/itinerary";
 import type { SavedPlace } from "@/data/route-utils";
+import { addImportedItemsToItinerary, type ImportedItem } from "@/data/smart-import";
+import SmartImportPanel from "@/components/SmartImportPanel";
 
 const ROUTE_KEY = "whiteGloveMyRoute";
 
@@ -71,7 +73,7 @@ const inputClass = "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-
 const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500";
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
-type Tab = "flight" | "hotel" | "activity" | null;
+type Tab = "flight" | "hotel" | "activity" | "import" | null;
 type ItineraryView = "days" | "calendar";
 
 export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [] }: {
@@ -105,6 +107,9 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [reloadKey, setReloadKey] = useState(0);
   const [editingLodgingId, setEditingLodgingId] = useState<string | null>(null);
   const [unscheduledOpen, setUnscheduledOpen] = useState(true);
+  // Which trip is loaded, so a per-traveler access link can be requested for
+  // it. Read once off the load response; the itinerary itself carries no id.
+  const [tripId, setTripId] = useState<string | null>(null);
   // The add/edit form sits at the top of the builder, while the flights and
   // hotels it edits are listed further down. Pressing Edit down there opens the
   // top form — so bring it into view, or it reads as nothing happening.
@@ -134,6 +139,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           const data = await res.json();
           if (!active) return;
           setItin(data?.itinerary ? { ...emptyItinerary(), ...data.itinerary } : emptyItinerary());
+          setTripId(data?.tripId ?? null);
           setLoaded(true);
           return;
         }
@@ -211,6 +217,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     } catch {
       /* ignore */
     }
+  }
+
+  // Smart Import's chosen rows, added in one save — same shape as
+  // importSavedRoute's batch above, but across all three arrays at once since
+  // a single confirmation can name a flight, a hotel and a car in one go.
+  function importSmartImportItems(items: ImportedItem[]) {
+    if (items.length) persist(addImportedItemsToItinerary(items, itin));
   }
 
   // Time at a border is folded into the driving rather than mentioned beside
@@ -428,6 +441,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <button type="button" onClick={() => { setEditingLodgingId(null); setTab(tab === "hotel" ? null : "hotel"); }} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Hotel</button>
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Stop</button>
           <button type="button" onClick={importSavedRoute} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Saved route</button>
+          <button type="button" onClick={() => setTab(tab === "import" ? null : "import")} className="rounded-full border border-[var(--gold-light)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]">Smart Import</button>
           <button type="button" onClick={planMyRoute} disabled={planning} className="ml-auto rounded-full border border-[var(--navy)] bg-[var(--navy)] px-5 py-2.5 text-xs font-bold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60">{planning ? "Planning…" : "Plan my route"}</button>
           {savedNote && <span className="text-xs font-semibold text-emerald-700">{savedNote}</span>}
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
@@ -455,6 +469,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         })()}
         {tab === "hotel" && (
           <LodgingForm
+            key={editingLodgingId ?? "new"}
             startDate={itin.startDate}
             initial={itin.lodging.find((l) => l.id === editingLodgingId)}
             onAdd={(l) => { saveLodging(l); setTab(null); setEditingLodgingId(null); }}
@@ -463,6 +478,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           />
         )}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
+        {tab === "import" && <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />}
         </div>
       </section>
 
@@ -481,6 +497,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 const travelers = traveler ? [...travelersOf(itin), traveler] : travelersOf(itin);
                 set({ bookingFor, travelers, travelerName: travelers[0]?.name ?? "" });
               }}
+              tripId={tripId}
             />
           </div>
         </details>
@@ -563,8 +580,15 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
                 <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "calendar" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Calendar</button>
               </span>
-              <span className="inline-flex h-14 items-stretch overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
-                <Link href="/itinerary/print" target="_blank" className="inline-flex items-center justify-center rounded-full bg-[var(--navy)] px-5 text-xs font-bold text-white transition hover:bg-[var(--gold)]">Print / PDF</Link>
+              {/* The navy fill is a <span>, not the <a>: a global rule
+                  (app/globals.css) forces a 0.75rem radius onto any anchor with
+                  a bg- class, which overrode rounded-full and made the inner a
+                  rounded rectangle inside the pill track. Mirroring the toggle
+                  above — an absolutely-inset span under a transparent link —
+                  keeps the fill immune to that rule. */}
+              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+                <span aria-hidden="true" className="absolute inset-1.5 rounded-full bg-[var(--navy)] transition-colors group-hover:bg-[var(--gold)]" />
+                <Link href="/itinerary/print" target="_blank" className="relative z-10 inline-flex h-full items-center justify-center px-5 text-xs font-bold text-white">Print / PDF</Link>
               </span>
             </div>
           </div>
@@ -825,6 +849,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
         />
         {openLeg && (
           <FlightForm
+            key={openLeg.id}
             startDate={day.date}
             initial={openLeg}
             onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
@@ -1571,8 +1596,10 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
         </div>
         {status && <p className="mt-2 text-xs text-[var(--navy)]">{status}</p>}
       </div>
-      <Field label="From *"><AirportAutocomplete required value={f.from ?? ""} onChange={(v) => updateFlight({ from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
-      <Field label="To *"><AirportAutocomplete required value={f.to ?? ""} onChange={(v) => updateFlight({ to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
+      {/* allowGroups={false} — a booked flight lands at one specific airport,
+          never "all airports in the city", which is a search-time idea. */}
+      <Field label="From *"><AirportAutocomplete required allowGroups={false} value={f.from ?? ""} onChange={(v) => updateFlight({ from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
+      <Field label="To *"><AirportAutocomplete required allowGroups={false} value={f.to ?? ""} onChange={(v) => updateFlight({ to: v })} className={inputClass} placeholder="City or airport — e.g. Kyiv, KBP" /></Field>
       <Field label="Airline"><input className={inputClass} value={f.airline ?? ""} onChange={(e) => setF({ ...f, airline: e.target.value })} /></Field>
       <Field label="Flight #"><input className={inputClass} value={f.flightNo ?? ""} onChange={(e) => setF({ ...f, flightNo: e.target.value })} placeholder="e.g. LY1" /></Field>
       <Field label="Date *"><DateField ariaLabel="Flight date" required className={inputClass} value={f.date ?? ""} onChange={(date) => updateFlight({ date })} /></Field>
@@ -1636,6 +1663,7 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
                 <label className="block">
                   <span className={caption}>Stop {i + 1}</span>
                   <AirportAutocomplete
+                    allowGroups={false}
                     value={stop.airport}
                     onChange={(v) => setF({ ...f, stops: (f.stops ?? []).map((x, j) => (j === i ? { ...x, airport: v } : x)) })}
                     className={inputClass}
@@ -2073,16 +2101,64 @@ const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: s
   { value: "infant", label: "Infant" },
 ];
 
+function TravelerShareLink({ tripId, traveler }: { tripId: string | null; traveler: ItinTraveler }) {
+  const [link, setLink] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function create() {
+    if (!tripId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/account/traveler-share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, travelerId: traveler.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.shareId) {
+        setError(data?.error || "Could not create that link.");
+        return;
+      }
+      setLink(`${window.location.origin}/t/${data.shareId}/app`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (link) {
+    return (
+      <div className="mt-1.5 flex w-full min-w-0 items-center gap-2 text-xs">
+        <input readOnly value={link} className="min-w-0 flex-1 truncate border border-[var(--gold-light)] bg-[#fcfaf6] px-2 py-1 text-[var(--navy)]" onFocus={(e) => e.target.select()} />
+        <button type="button" onClick={() => navigator.clipboard?.writeText(link)} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          Copy
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-1.5 w-full">
+      <button type="button" onClick={create} disabled={busy || !tripId} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 disabled:opacity-40">
+        {traveler.hasOwnAccess ? "Get access link" : "Create access link"}
+      </button>
+      {error && <p className="mt-1 text-xs font-semibold text-red-700">{error}</p>}
+    </div>
+  );
+}
+
 function TravelersPanel({
   travelers,
   onChange,
   bookingFor,
   onBookingFor,
+  tripId,
 }: {
   travelers: ItinTraveler[];
   onChange: (t: ItinTraveler[]) => void;
   bookingFor?: "self" | "someone-else";
   onBookingFor: (answer: "self" | "someone-else", traveler?: ItinTraveler) => void;
+  tripId?: string | null;
 }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState<NonNullable<ItinTraveler["kind"]>>("adult");
@@ -2178,6 +2254,14 @@ function TravelersPanel({
               >
                 Remove
               </button>
+              <input
+                value={t.family ?? ""}
+                onChange={(e) => update(t.id, { family: e.target.value })}
+                aria-label={`${t.name || "Traveler"}'s family or group`}
+                placeholder="Family / group (optional)"
+                className="min-w-0 flex-1 border border-[var(--gold-light)] bg-[#fcfaf6] px-2 py-1 text-xs text-[var(--navy)] outline-none"
+              />
+              <TravelerShareLink tripId={tripId ?? null} traveler={t} />
             </li>
           ))}
         </ul>

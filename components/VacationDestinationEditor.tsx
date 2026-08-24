@@ -219,6 +219,19 @@ export default function VacationDestinationEditor({
           checked={destination.seasons}
         />
 
+        <div className="grid gap-3 rounded-lg border border-dashed border-[var(--gold)] p-4 sm:grid-cols-2">
+          <label className="flex items-center gap-2 text-sm text-[var(--navy)]">
+            <input type="checkbox" name="seasonActive" value="on" defaultChecked={destination.seasonActive ?? true} />
+            <input type="hidden" name="seasonActive" value="off" />
+            Active — shown on the site at all
+          </label>
+          <label className="flex items-center gap-2 text-sm text-[var(--navy)]">
+            <input type="checkbox" name="seasonFeatured" value="on" defaultChecked={destination.seasonFeatured ?? false} />
+            Featured this season — shown on the destinations page&apos;s seasonal row whenever the current season is
+            one it is ticked for above
+          </label>
+        </div>
+
         <Area label="Why go — one sentence, on the card" name="whyGo" defaultValue={destination.whyGo} rows={2} />
         <Field
           label="Who it is for"

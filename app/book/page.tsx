@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
 // The one booking page.
 //
@@ -29,12 +30,16 @@ import { pageMetadata } from "@/lib/seo";
 // HOTELS OPENS. Accommodation is the one product this site knows something a
 // comparison site does not — which quarter makes Shabbos walkable — so it is
 // the tab that earns the visit.
-export const metadata = pageMetadata({
-  title: "Search Booking Partners | White Glove Kosher Travel",
-  description:
-    "Search places to stay, flights and rental cars — with cash or miles. Booking and payment happen with trusted partners.",
-  path: "/book",
-});
+// Brand-aware: /book is one of the itineraries domain's own pages too.
+export async function generateMetadata() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Search Booking Partners | White Glove Itineraries" : "Search Booking Partners | White Glove Kosher Travel",
+    description:
+      "Search places to stay, flights and rental cars — with cash or miles. Booking and payment happen with trusted partners.",
+    path: "/book",
+  });
+}
 
 const COMPARISON: Array<[string, string, string]> = [
   [

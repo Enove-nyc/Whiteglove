@@ -17,7 +17,12 @@
 // is simply that nobody is harmed by arriving at the wrong corner of a square.
 
 import { attractions as staticAttractions, type Attraction } from "@/data/attractions";
-import { kosherAreas as staticAreas, kosherStays as staticStays, type KosherStay } from "@/data/kosher-stays";
+import { kosherAreas as staticAreas, kosherStays as staticStays, type Confirmed, type KosherStay } from "@/data/kosher-stays";
+
+/** An unrecognised value reads as "unknown" — never as "yes" by accident. */
+function confirmed(value: string | null | undefined): Confirmed {
+  return (["yes", "no", "unknown"] as const).find((v) => v === value) ?? "unknown";
+}
 import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { cachedRead } from "@/lib/cache-tags";
 
@@ -143,6 +148,17 @@ async function stayListUncached(cities?: CityFilter): Promise<KosherStayItem[]> 
         notes: r.notes,
         website: opt(r.website),
         sourceUrl: r.sourceUrl,
+        onSiteKosherFood: confirmed(r.onSiteKosherFood),
+        kosherBreakfast: confirmed(r.kosherBreakfast),
+        shabbosMeals: confirmed(r.shabbosMeals),
+        nearbyKosherFood: confirmed(r.nearbyKosherFood),
+        nearbyShulOrMinyan: confirmed(r.nearbyShulOrMinyan),
+        eruv: confirmed(r.eruv),
+        shabbosAccessInfo: opt(r.shabbosAccessInfo),
+        shabbosElevator: confirmed(r.shabbosElevator),
+        kitchenSelfCatering: confirmed(r.kitchenSelfCatering),
+        kosherKitchen: confirmed(r.kosherKitchen),
+        walkingDistanceToJewishArea: confirmed(r.walkingDistanceToJewishArea),
         ownerAdded: true,
       })),
     ];

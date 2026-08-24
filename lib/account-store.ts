@@ -2,6 +2,13 @@ import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
 import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
+import type { ManualTripStage } from "@/data/trip-pipeline";
+import type { PaymentRecord, TripBalance } from "@/data/trip-payments";
+import { alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
+import { checkFlightStatus } from "@/lib/flight-status";
+import type { LibraryItem, LibraryPack } from "@/data/library";
+import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
 import { limitsFor, newTripProblem } from "@/lib/account-limits";
 import { getLimitOverrides } from "@/lib/account-limits-store";
 import { getPlan } from "@/lib/account-plan-store";
@@ -120,6 +127,59 @@ export type SavedTrip = {
    * which is what they could already do. See lib/trip-roles.ts.
    */
   collaborators?: (string | Collaborator)[];
+  /**
+   * What the planner is offering before the trip is confirmed — one or more
+   * options the client compares and picks between. Absent until the planner
+   * starts one; stays after it is converted, as the record of what was
+   * actually offered and approved.
+   */
+  proposal?: Proposal;
+  /** Public read-only token for the proposal above — separate from `shareId`
+   *  (the itinerary's own link), since a client may hold one before the
+   *  other exists. */
+  proposalShareId?: string;
+  /**
+   * One traveler's own door into the trip app, keyed by their id in
+   * itinerary.travelers — for a family or group trip where each person gets
+   * their own link rather than everyone sharing the one trip-wide link.
+   * Most trips never use this; it stays empty.
+   */
+  travelerShares?: Record<string, string>;
+  /**
+   * The pre-trip form a client fills out — legal name, passport, emergency
+   * contact, preferences, whatever the planner asks for. The template (which
+   * fields, which are required) is not sensitive; the answers are, so they
+   * are read back only through the planner's own authenticated route, never
+   * through a shared itinerary, a proposal, or the app. See data/client-form.ts.
+   */
+  formTemplate?: ClientFormTemplate;
+  formShareId?: string;
+  formResponses?: ClientFormResponse[];
+  /**
+   * Set only before a proposal exists — an inquiry the planner hasn't started
+   * active work on yet, versus one they have. Every later stage is read off
+   * the proposal's own status and the trip's own dates instead; see
+   * data/trip-pipeline.ts for why nothing past this is stored by hand.
+   */
+  pipelineStage?: ManualTripStage;
+  /**
+   * This trip's payment balance — total, split across families/travelers,
+   * any deposit/installment schedule, and the ledger of what has actually
+   * been paid. Absent until the planner sets one up. See data/trip-payments.ts.
+   */
+  balance?: TripBalance;
+  /**
+   * The last real reading of each of this trip's flights — keyed by the
+   * flight's own id. Absent until a flight is actually checked. See
+   * lib/flight-status.ts and checkTripFlightStatus below.
+   */
+  flightStatus?: Record<string, FlightStatusSnapshot>;
+  /**
+   * What a flight-status check found worth telling somebody about — a
+   * meaningful delay, a cancellation, a real gate/terminal change. Not every
+   * status reading becomes one of these; see data/trip-alerts.ts.
+   */
+  alerts?: TripAlert[];
   createdAt: string;
   updatedAt: string;
 };
@@ -142,6 +202,13 @@ export type AccountData = {
   /** Every trip in the account. Absent on accounts made before this existed. */
   trips?: SavedTrip[];
   activeTripId?: string;
+  /**
+   * The planner's own reusable content — hotels, activities, tours,
+   * contacts — and the destination packs built from them. Belongs to the
+   * ACCOUNT, not one trip, since the whole point is using the same saved
+   * hotel on a dozen different trips instead of retyping it each time.
+   */
+  library?: { items: LibraryItem[]; packs: LibraryPack[] };
   updatedAt?: string;
 };
 
@@ -567,6 +634,68 @@ export async function saveAccountCollection(email: string, collection: "route" |
   return writeJson(dataKey(normalized), next);
 }
 
+// ---- Content library -----------------------------------------------------
+//
+// A planner's reusable hotels, activities, tours and contacts, and the
+// destination packs built from them — scoped to the ACCOUNT rather than one
+// trip, since reuse across trips is the entire point. Read-modify-write
+// against AccountData.library, the same shape every other per-account
+// collection here already keeps.
+
+function libraryId() {
+  return randomBytes(6).toString("base64url");
+}
+
+export async function getLibrary(email: string): Promise<{ items: LibraryItem[]; packs: LibraryPack[] }> {
+  const data = await getAccountData(email);
+  return { items: data.library?.items ?? [], packs: data.library?.packs ?? [] };
+}
+
+export async function saveLibraryItem(email: string, item: LibraryItem): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const items = current.library?.items ?? [];
+  const now = new Date().toISOString();
+  const stamped: LibraryItem = { ...item, id: item.id || libraryId(), savedAt: item.savedAt || now, updatedAt: now };
+  const nextItems = items.some((i) => i.id === stamped.id) ? items.map((i) => (i.id === stamped.id ? stamped : i)) : [...items, stamped];
+  const next: AccountData = { ...current, library: { items: nextItems, packs: current.library?.packs ?? [] }, updatedAt: now };
+  return writeJson(dataKey(normalized), next);
+}
+
+export async function deleteLibraryItem(email: string, id: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const items = (current.library?.items ?? []).filter((i) => i.id !== id);
+  // Drop it from any pack that referenced it too, so a pack never quietly
+  // points at an item that no longer exists.
+  const packs = (current.library?.packs ?? []).map((p) => ({ ...p, itemIds: p.itemIds.filter((x) => x !== id) }));
+  const next: AccountData = { ...current, library: { items, packs }, updatedAt: new Date().toISOString() };
+  return writeJson(dataKey(normalized), next);
+}
+
+export async function saveLibraryPack(email: string, pack: LibraryPack): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const packs = current.library?.packs ?? [];
+  const now = new Date().toISOString();
+  const stamped: LibraryPack = { ...pack, id: pack.id || libraryId(), savedAt: pack.savedAt || now, updatedAt: now };
+  const nextPacks = packs.some((p) => p.id === stamped.id) ? packs.map((p) => (p.id === stamped.id ? stamped : p)) : [...packs, stamped];
+  const next: AccountData = { ...current, library: { items: current.library?.items ?? [], packs: nextPacks }, updatedAt: now };
+  return writeJson(dataKey(normalized), next);
+}
+
+export async function deleteLibraryPack(email: string, id: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const current = await getAccountData(normalized);
+  const packs = (current.library?.packs ?? []).filter((p) => p.id !== id);
+  const next: AccountData = { ...current, library: { items: current.library?.items ?? [], packs }, updatedAt: new Date().toISOString() };
+  return writeJson(dataKey(normalized), next);
+}
+
 // ---- Trips -------------------------------------------------------------
 
 function tripId() {
@@ -921,6 +1050,496 @@ export async function saveAccountItinerary(email: string, itinerary: Itinerary, 
   return Boolean(await writeTrips(normalized, next, activeId));
 }
 
+// ---- Proposals ----------------------------------------------------------
+//
+// A proposal lives on the trip it belongs to (SavedTrip.proposal), read and
+// written the same read-modify-write way the itinerary itself is. Its own
+// public link (proposalShareId) is separate from the itinerary's, resolved
+// through its own reverse-index key — a client may hold a proposal link
+// before the trip has an itinerary worth sharing at all.
+
+function proposalId() {
+  return randomBytes(6).toString("base64url");
+}
+
+function proposalShareKey(shareId: string) {
+  return `white-glove:proposal-share:${shareId}`;
+}
+
+/** One trip's proposal, or null if the planner hasn't started one. */
+export async function getProposal(email: string, tripId: string): Promise<Proposal | null> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.proposal ?? null;
+}
+
+/** Create or overwrite a trip's proposal. */
+export async function saveProposal(email: string, tripId: string, proposal: Proposal): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const stamped: Proposal = { ...proposal, id: proposal.id || proposalId(), updatedAt: new Date().toISOString() };
+  const next = trips.map((t) => (t.id === tripId ? { ...t, proposal: stamped, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/**
+ * Move a trip between the only two stages a planner ever sets by hand —
+ * inquiry and active planning, before a proposal exists. See
+ * data/trip-pipeline.ts for why nothing past this is stored rather than
+ * derived.
+ */
+export async function savePipelineStage(email: string, tripId: string, stage: ManualTripStage): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, pipelineStage: stage, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+// ---- Payments --------------------------------------------------------
+//
+// A trip's payment balance — total, split, schedule and ledger. See
+// data/trip-payments.ts for the shape and every pure computation on it
+// (paid/remaining/collected/outstanding); this file only ever reads and
+// writes the whole TripBalance object, the same read-modify-write every
+// other per-trip record here uses.
+
+/** One trip's payment balance, or null if the planner hasn't set one up. */
+export async function getBalance(email: string, tripId: string): Promise<TripBalance | null> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.balance ?? null;
+}
+
+/** Create or overwrite a trip's balance — the planner's own setup, never a payment itself. */
+export async function saveBalance(email: string, tripId: string, balance: TripBalance): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, balance, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/**
+ * Append one real payment attempt to the ledger — IDEMPOTENT: if a record
+ * with this exact stripePaymentIntentId is already there, this is a no-op
+ * that still returns true, rather than a second row. This is the actual
+ * guarantee behind "duplicate requests/webhooks cannot record duplicate
+ * payments" — a Stripe webhook retried, or delivered twice, changes nothing
+ * the second time.
+ */
+export async function recordPayment(ownerEmail: string, tripId: string, record: PaymentRecord): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(ownerEmail);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const balance: TripBalance = trip.balance ?? { currency: record.currency, splitMode: "equal", assignments: [], schedule: [], showTotalToTravelers: false, payments: [] };
+  if (balance.payments.some((p) => p.stripePaymentIntentId === record.stripePaymentIntentId)) return true;
+  const next = trips.map((t) =>
+    t.id === tripId ? { ...t, balance: { ...balance, payments: [...balance.payments, record] }, updatedAt: new Date().toISOString() } : t,
+  );
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+// ---- Live travel information ----------------------------------------------
+//
+// A flight's real status, checked on demand (no cron in this deployment —
+// see lib/flight-status.ts) whenever somebody opens the app on a trip with a
+// flight coming up soon, throttled so the same flight isn't re-queried every
+// time the page loads.
+
+function tripAlertId() {
+  return randomBytes(6).toString("base64url");
+}
+
+/** Re-check status if the last real reading is older than this. */
+const FLIGHT_RECHECK_MS = 3 * 60 * 60 * 1000;
+/** Only bother checking a flight departing this soon — no use querying a flight six months out. */
+const FLIGHT_CHECK_WINDOW_DAYS = 3;
+
+/**
+ * Check every upcoming flight on this trip that is due for a re-check, and
+ * record whatever alerts come out of a meaningful change. Silent when
+ * nothing needed checking (every flight was checked recently, or none is
+ * departing soon) — no write happens in that case.
+ */
+export async function checkTripFlightStatus(email: string, tripId: string): Promise<TripAlert[]> {
+  if (!hasAccountStorage()) return [];
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return [];
+
+  const today = new Date().toISOString().slice(0, 10);
+  const cutoff = new Date(Date.now() + FLIGHT_CHECK_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10);
+  const candidates = trip.itinerary.flights.filter((f) => f.flightNo?.trim() && f.date && f.date >= today && f.date <= cutoff);
+  if (candidates.length === 0) return [];
+
+  const statuses = { ...(trip.flightStatus ?? {}) };
+  const newAlerts: TripAlert[] = [];
+  let checkedAny = false;
+
+  for (const flight of candidates) {
+    const previous = statuses[flight.id];
+    if (previous && Date.now() - Date.parse(previous.checkedAt) < FLIGHT_RECHECK_MS) continue;
+    const next = await checkFlightStatus(flight.id, flight.flightNo!.trim(), flight.date);
+    if (!next) continue;
+    checkedAny = true;
+    const label = [flight.airline, flight.flightNo].filter(Boolean).join(" ") || `${flight.from} → ${flight.to}`;
+    newAlerts.push(...alertsFromStatusChange(label, previous, next, tripAlertId));
+    statuses[flight.id] = next;
+  }
+  if (!checkedAny) return [];
+
+  const nextTrips = trips.map((t) =>
+    t.id === tripId
+      ? { ...t, flightStatus: statuses, alerts: [...(t.alerts ?? []), ...newAlerts], updatedAt: new Date().toISOString() }
+      : t,
+  );
+  await writeTrips(normalized, nextTrips, activeId);
+  return newAlerts;
+}
+
+/** Every alert recorded on this trip so far, oldest first — read fresh after checkTripFlightStatus so a just-created alert is included. */
+export async function getTripAlerts(email: string, tripId: string): Promise<TripAlert[]> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.alerts ?? [];
+}
+
+/** Mark one alert as read — dismissed from the Changes screen, never deleted. */
+export async function acknowledgeAlert(email: string, tripId: string, alertId: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const nextTrips = trips.map((t) =>
+    t.id === tripId
+      ? { ...t, alerts: (t.alerts ?? []).map((a) => (a.id === alertId ? { ...a, acknowledged: true } : a)), updatedAt: new Date().toISOString() }
+      : t,
+  );
+  return Boolean(await writeTrips(normalized, nextTrips, activeId));
+}
+
+/** The proposal's public link — created once, reused after. */
+export async function ensureProposalShare(email: string, tripId: string): Promise<string | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+  if (trip.proposalShareId) {
+    await writeJson(proposalShareKey(trip.proposalShareId), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+    return trip.proposalShareId;
+  }
+  const token = shareToken();
+  const wrote = await writeJson(proposalShareKey(token), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+  if (!wrote) return null;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, proposalShareId: token, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(normalized, next, activeId);
+  return saved ? token : null;
+}
+
+/** A proposal by its public token — marks it "viewed" the first time a client opens a "sent" one. */
+export async function getSharedProposal(shareId: string) {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(proposalShareKey(shareId));
+  if (!rec) return null;
+  const data = await getAccountData(rec.ownerEmail);
+  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  if (!trip?.proposal) return null;
+  let proposal = trip.proposal;
+  if (proposal.status === "sent") {
+    proposal = { ...proposal, status: "viewed", viewedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    await saveProposal(rec.ownerEmail, rec.tripId, proposal);
+  }
+  const record = await getAccountRecord(rec.ownerEmail);
+  return { proposal, tripName: trip.client || trip.name, ownerName: record?.name, advisor: trip.advisor };
+}
+
+export type ProposalClientAction =
+  | { kind: "select"; optionId: string }
+  | { kind: "approve" }
+  | { kind: "request_changes"; text?: string }
+  | { kind: "comment"; text: string };
+
+/**
+ * What a client may do to a proposal from its public link — never more.
+ * Approving with nothing selected, or selecting an option that isn't on the
+ * proposal, is refused rather than guessed at.
+ */
+export async function applyProposalClientAction(shareId: string, action: ProposalClientAction): Promise<Proposal | null> {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(proposalShareKey(shareId));
+  if (!rec) return null;
+  const data = await getAccountData(rec.ownerEmail);
+  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  if (!trip?.proposal) return null;
+  const now = new Date().toISOString();
+  const current = trip.proposal;
+  let next: Proposal;
+
+  if (action.kind === "select") {
+    if (!current.options.some((o) => o.id === action.optionId)) return null;
+    next = { ...current, selectedOptionId: action.optionId };
+  } else if (action.kind === "approve") {
+    if (!current.selectedOptionId) return null;
+    next = { ...current, status: "approved", respondedAt: now };
+  } else if (action.kind === "request_changes") {
+    const text = action.text?.trim().slice(0, 2000);
+    next = {
+      ...current,
+      status: "changes_requested",
+      respondedAt: now,
+      comments: text ? [...current.comments, { from: "client" as const, text, at: now }] : current.comments,
+    };
+  } else {
+    const text = action.text.trim().slice(0, 2000);
+    if (!text) return null;
+    next = { ...current, comments: [...current.comments, { from: "client" as const, text, at: now }] };
+  }
+
+  const ok = await saveProposal(rec.ownerEmail, rec.tripId, next);
+  return ok ? next : null;
+}
+
+/**
+ * Turn the client's approved option into real itinerary rows — appended to
+ * whatever the itinerary already holds, never replacing it. The proposal
+ * itself stays on the trip afterward, marked confirmed, as the record of
+ * what was actually offered and agreed to.
+ */
+export async function convertProposalToItinerary(email: string, tripId: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip?.proposal?.selectedOptionId) return false;
+  const option = trip.proposal.options.find((o) => o.id === trip.proposal!.selectedOptionId);
+  if (!option) return false;
+  const itinerary = proposalOptionToItinerary(option, trip.itinerary);
+  const now = new Date().toISOString();
+  const next = trips.map((t) =>
+    t.id === tripId
+      ? { ...t, itinerary, proposal: { ...t.proposal!, status: "confirmed" as const, updatedAt: now }, updatedAt: now }
+      : t,
+  );
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+// ---- Per-traveler access --------------------------------------------------
+//
+// A door into the trip app scoped to ONE traveler, for a family or group
+// trip where each person is handed their own link rather than everyone
+// sharing the one trip-wide link. Most trips never use this.
+
+function travelerShareKey(shareId: string) {
+  return `white-glove:traveler-share:${shareId}`;
+}
+
+/** One traveler's own link — created once, reused after. */
+export async function ensureTravelerShare(email: string, tripId: string, travelerId: string): Promise<string | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  const traveler = trip?.itinerary.travelers?.find((p) => p.id === travelerId);
+  if (!trip || !traveler) return null;
+
+  const existing = trip.travelerShares?.[travelerId];
+  if (existing) {
+    await writeJson(travelerShareKey(existing), { ownerEmail: normalized, tripId, travelerId, createdAt: new Date().toISOString() });
+    // A trip that already had per-traveler links from before this was added
+    // may still have no trip-wide share — ensure one now, since the chat
+    // thread a traveler's link opens is keyed by the TRIP's own share token.
+    await ensureTripShare(normalized, tripId);
+    return existing;
+  }
+  const token = shareToken();
+  const wrote = await writeJson(travelerShareKey(token), { ownerEmail: normalized, tripId, travelerId, createdAt: new Date().toISOString() });
+  if (!wrote) return null;
+  const nextTravelers = (trip.itinerary.travelers ?? []).map((p) => (p.id === travelerId ? { ...p, hasOwnAccess: true } : p));
+  const next = trips.map((t) =>
+    t.id === tripId
+      ? {
+          ...t,
+          itinerary: { ...t.itinerary, travelers: nextTravelers },
+          travelerShares: { ...(t.travelerShares ?? {}), [travelerId]: token },
+          updatedAt: new Date().toISOString(),
+        }
+      : t,
+  );
+  const saved = await writeTrips(normalized, next, activeId);
+  if (!saved) return null;
+  // Same reason as above: guarantee a trip-wide share exists so this
+  // traveler's app has a chat thread to open, even if the planner never
+  // created a whole-trip client link.
+  await ensureTripShare(normalized, tripId);
+  return token;
+}
+
+/**
+ * Who a traveler-scoped link belongs to, and everything its own app page
+ * needs: the trip's itinerary (attachments stripped — see
+ * getSharedItineraryByShareId, the same rule applies to every client link,
+ * traveler-scoped or not), and the names shown in the app's header.
+ *
+ * `internalChatKey` IS THE TRIP'S OWN WHOLE-TRIP SHARE TOKEN — a strictly
+ * MORE powerful credential than the one this traveler actually holds, since
+ * it opens /i/[shareId] unredacted for every unit on the trip. It exists here
+ * ONLY so resolveCompanionShare (below) can find the one shared chat thread
+ * every traveler and the advisor post into. NEVER send this field to a
+ * browser or echo it in an API response — a page that did this once already
+ * (app/t/[shareId]/app/page.tsx, fixed) handed a redacted viewer the key to
+ * their own unredacted trip. Use resolveCompanionShare, not this field
+ * directly, for anything chat-related.
+ */
+export async function getSharedTraveler(shareId: string) {
+  const rec = await readJson<{ ownerEmail: string; tripId: string; travelerId: string }>(travelerShareKey(shareId));
+  if (!rec) return null;
+  const [data, record] = await Promise.all([getAccountData(rec.ownerEmail), getAccountRecord(rec.ownerEmail)]);
+  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  const traveler = trip?.itinerary.travelers?.find((p) => p.id === rec.travelerId);
+  if (!trip || !traveler) return null;
+  return {
+    ownerEmail: rec.ownerEmail,
+    tripId: rec.tripId,
+    traveler,
+    itinerary: withoutAttachments(trip.itinerary),
+    internalChatKey: trip.shareId,
+    ownerName: record?.name,
+    advisor: trip.advisor?.trim() ?? "",
+  };
+}
+
+/**
+ * Resolve ANY token that opens the companion app's chat — a trip-wide
+ * /i/[shareId] token, or a traveler-scoped /t/[shareId] one — to the trip's
+ * owner and the ONE real chat key every side's messages are actually stored
+ * under (always the trip's own whole-trip share token, so a family and the
+ * advisor share one thread regardless of which door each person came in by).
+ *
+ * THE RETURNED chatKey IS SERVER-SIDE ONLY. It is what lib/companion-chat-store.ts
+ * is keyed by internally; it must never be echoed back in a response or
+ * handed to a browser as a value it can act on — the caller already has
+ * `shareId`, its own, less-powerful token, for anything the client needs to
+ * keep using.
+ */
+export async function resolveCompanionShare(shareId: string): Promise<{ ownerEmail: string; chatKey: string } | null> {
+  const ownerEmail = await getShareOwnerEmail(shareId);
+  if (ownerEmail) return { ownerEmail, chatKey: shareId };
+  const traveler = await getSharedTraveler(shareId);
+  if (traveler?.internalChatKey) return { ownerEmail: traveler.ownerEmail, chatKey: traveler.internalChatKey };
+  return null;
+}
+
+// ---- Client forms ---------------------------------------------------------
+//
+// The template (which fields, which are required) lives on the trip; the
+// answers do too, but are NEVER handed back by getSharedForm — that route
+// answers a fresh respondent with the template alone. Reading answers back
+// is a separate, planner-only, authenticated call (getFormResponses).
+
+function formShareKey(shareId: string) {
+  return `white-glove:form-share:${shareId}`;
+}
+function formResponseId() {
+  return randomBytes(6).toString("base64url");
+}
+
+export async function getFormTemplate(email: string, tripId: string): Promise<ClientFormTemplate | null> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.formTemplate ?? null;
+}
+
+export async function saveFormTemplate(email: string, tripId: string, template: ClientFormTemplate): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  if (!trips.some((t) => t.id === tripId)) return false;
+  const stamped: ClientFormTemplate = { ...template, updatedAt: new Date().toISOString() };
+  const next = trips.map((t) => (t.id === tripId ? { ...t, formTemplate: stamped, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** The form's public link — created once, reused after. */
+export async function ensureFormShare(email: string, tripId: string): Promise<string | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+  if (trip.formShareId) {
+    await writeJson(formShareKey(trip.formShareId), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+    return trip.formShareId;
+  }
+  const token = shareToken();
+  const wrote = await writeJson(formShareKey(token), { ownerEmail: normalized, tripId, createdAt: new Date().toISOString() });
+  if (!wrote) return null;
+  const next = trips.map((t) => (t.id === tripId ? { ...t, formShareId: token, updatedAt: new Date().toISOString() } : t));
+  const saved = await writeTrips(normalized, next, activeId);
+  return saved ? token : null;
+}
+
+/** What a fresh respondent needs — the template and who it's for, never
+ *  any answer anybody else already gave. */
+export async function getSharedForm(shareId: string) {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(formShareKey(shareId));
+  if (!rec) return null;
+  const data = await getAccountData(rec.ownerEmail);
+  const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
+  if (!trip?.formTemplate) return null;
+  return { template: trip.formTemplate, tripName: trip.client || trip.name, advisor: trip.advisor };
+}
+
+/** Add one response — the only thing a client's link may ever do here. */
+export async function submitFormResponse(shareId: string, respondentName: string, answers: Record<string, string>): Promise<boolean> {
+  const rec = await readJson<{ ownerEmail: string; tripId: string }>(formShareKey(shareId));
+  if (!rec) return false;
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(rec.ownerEmail);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === rec.tripId);
+  if (!trip?.formTemplate) return false;
+  const name = respondentName.trim().slice(0, 120);
+  if (!name) return false;
+  // Only what the template actually asked for — a caller cannot smuggle an
+  // extra field onto the record just by including it in the request.
+  const cleanAnswers: Record<string, string> = {};
+  for (const field of trip.formTemplate.fields) {
+    const value = answers[field.id];
+    if (typeof value === "string" && value.trim()) cleanAnswers[field.id] = value.trim().slice(0, 500);
+  }
+  const response: ClientFormResponse = { id: formResponseId(), respondentName: name, answers: cleanAnswers, submittedAt: new Date().toISOString() };
+  const nextResponses = [...(trip.formResponses ?? []), response];
+  const next = trips.map((t) => (t.id === rec.tripId ? { ...t, formResponses: nextResponses, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** The planner's own read of what's come back — never reachable any other way. */
+export async function getFormResponses(email: string, tripId: string): Promise<ClientFormResponse[]> {
+  const data = await getAccountData(email);
+  const trip = withTrips(data).trips.find((t) => t.id === tripId);
+  return trip?.formResponses ?? [];
+}
+
 // ---- Itinerary sharing ------------------------------------------------
 
 function shareKey(shareId: string) {
@@ -1049,7 +1668,7 @@ export async function getSharedItineraryByShareId(shareId: string) {
   // fetch nothing — but stripping it here means the person holding the link is
   // not even told a pass exists. Two answers to the same question, because
   // this is the one that costs somebody their flight if it is wrong.
-  return { itinerary: withoutAttachments(itinerary), ownerName: record?.name, ownerEmail, client, advisor };
+  return { itinerary: withoutAttachments(itinerary), ownerName: record?.name, ownerEmail, client, advisor, tripId: trip?.id };
 }
 
 /* ---- per-trip sharing: one link, locked to one itinerary ---------------- */

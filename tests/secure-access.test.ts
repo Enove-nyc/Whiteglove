@@ -95,3 +95,77 @@ describe("requests from another site are refused", () => {
     assert.equal(sameOrigin(req({ origin: "not a url", host: "admin.example.com" })), false);
   });
 });
+
+describe("the itineraries domain, fronted by a proxy that rewrites Host", () => {
+  const req = (headers: Record<string, string>) => ({
+    headers: { get: (n: string) => headers[n.toLowerCase()] ?? null },
+  });
+
+  it("allows a real request even though the forwarded host is the proxy's own routing target, not the public domain", () => {
+    // This is the exact shape of what Cloudflare hands Railway: it has to
+    // rewrite Host so Railway's edge can route the request at all, and
+    // Railway's own edge then rewrites x-forwarded-host to match — so neither
+    // names whitegloveitineraries.com any more. The brand header is what still
+    // carries the truth.
+    assert.equal(
+      sameOrigin(
+        req({
+          origin: "https://www.whitegloveitineraries.com",
+          host: "whiteglove-production.up.railway.app",
+          "x-forwarded-host": "whiteglove-production.up.railway.app",
+          "x-wg-brand": "itineraries",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("allows the bare domain too, not only www", () => {
+    assert.equal(
+      sameOrigin(
+        req({
+          origin: "https://whitegloveitineraries.com",
+          host: "whiteglove-production.up.railway.app",
+          "x-wg-brand": "itineraries",
+        }),
+      ),
+      true,
+    );
+  });
+
+  it("A FORGED BRAND HEADER CANNOT BE USED TO BYPASS THE CHECK", () => {
+    // The header is settable by any request-issuing script, so it must never
+    // be trusted on its own. What makes it safe is that the browser's own
+    // Origin cannot be forged the same way — a hostile page's Origin is
+    // always its real origin, never ours, however it labels its request.
+    assert.equal(
+      sameOrigin(
+        req({
+          origin: "https://evil.example",
+          host: "whiteglove-production.up.railway.app",
+          "x-wg-brand": "itineraries",
+        }),
+      ),
+      false,
+    );
+    // Nor by claiming to be the OTHER brand — the header only ever unlocks a
+    // check against that one brand's own fixed host list.
+    assert.equal(
+      sameOrigin(
+        req({
+          origin: "https://evil.example",
+          host: "whiteglove-production.up.railway.app",
+          "x-wg-brand": "kosher",
+        }),
+      ),
+      false,
+    );
+  });
+
+  it("an unrecognised brand value is ignored, falling through to the ordinary check", () => {
+    assert.equal(
+      sameOrigin(req({ origin: "https://www.whitegloveitineraries.com", host: "whiteglove-production.up.railway.app", "x-wg-brand": "nonsense" })),
+      false,
+    );
+  });
+});

@@ -1,6 +1,7 @@
 import { ABOUT_INTRO, type AboutProfile } from "@/data/about-profile";
 import { LISTING_AUDIENCE_ABOUT } from "@/data/listing-audience";
 import { isSafeAboutPhotoUrl } from "@/lib/about-profile";
+import { BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core";
 
 /**
  * The top of the About page.
@@ -22,7 +23,7 @@ import { isSafeAboutPhotoUrl } from "@/lib/about-profile";
  * is irreversible: fill any of those fields in and they appear, exactly as
  * before. What has gone is the page implying they are missing.
  */
-export default function AboutProfileSection({ profile }: { profile: AboutProfile }) {
+export default function AboutProfileSection({ profile, siteBrand }: { profile: AboutProfile; siteBrand: SiteBrand }) {
   // Location is deliberately not in this list. It is shown in the paragraphs
   // below, so counting it here would open an empty grid beside them.
   const hasBio = Boolean(
@@ -53,7 +54,7 @@ export default function AboutProfileSection({ profile }: { profile: AboutProfile
             paragraph above rather than as a field somebody filled in. */}
         {profile.location && (
           <p className="leading-7 text-stone-600">
-            White Glove Kosher Travel is based in {profile.location}.
+            {BRAND_NAME[siteBrand]} is based in {profile.location}.
           </p>
         )}
       </div>

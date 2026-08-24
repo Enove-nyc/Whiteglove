@@ -12,6 +12,24 @@ import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import type { KosherStay } from "@/data/kosher-stays";
 
+/**
+ * Kosher / Shabbos accommodation attributes, in the order they are checked for
+ * both the filter row and the card badges. Never inferred — a stay only
+ * matches on an explicit "yes"; "unknown" is invisible here on purpose.
+ */
+const STAY_ATTRIBUTES: ReadonlyArray<{ key: keyof KosherStay; label: string; badge: string }> = [
+  { key: "onSiteKosherFood", label: "On-site kosher food", badge: "Kosher food on site" },
+  { key: "kosherKitchen", label: "Kosher kitchen", badge: "Kosher kitchen" },
+  { key: "kosherBreakfast", label: "Kosher breakfast", badge: "Kosher breakfast" },
+  { key: "shabbosMeals", label: "Shabbos meals available", badge: "Shabbos meals" },
+  { key: "nearbyKosherFood", label: "Kosher food nearby", badge: "Kosher food nearby" },
+  { key: "nearbyShulOrMinyan", label: "Shul / minyan nearby", badge: "Shul nearby" },
+  { key: "eruv", label: "Within an eruv", badge: "Within an eruv" },
+  { key: "shabbosElevator", label: "Shabbos elevator", badge: "Shabbos elevator" },
+  { key: "kitchenSelfCatering", label: "Self-catering kitchen", badge: "Self-catering kitchen" },
+  { key: "walkingDistanceToJewishArea", label: "Walking distance to Jewish area", badge: "Walk to Jewish area" },
+];
+
 // Where to sleep, and what is within walking distance of it.
 //
 // The distance is measured from the ANCHOR — the shul or quarter the stay sits
@@ -21,13 +39,13 @@ import type { KosherStay } from "@/data/kosher-stays";
 /** How many cards before the page stops and asks. */
 const PAGE = 24;
 
-const DEFAULTS = { q: "", country: "", city: "", kind: "", when: "", kosher: "" };
+const DEFAULTS = { q: "", country: "", city: "", kind: "", when: "", kosher: "", amenity: "" };
 
 export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) {
   // In the address bar, so "the year-round kosher ones in Italy" is a link
   // rather than a set of instructions. components/useListUrl.ts.
   const [filters, setFilters, reset] = useListUrl(DEFAULTS);
-  const { q: query, country, city, kind, when, kosher } = filters;
+  const { q: query, country, city, kind, when, kosher, amenity } = filters;
   const [openNearby, setOpenNearby] = useState<string | null>(null);
   const [limit, setLimit] = useState(PAGE);
 
@@ -50,6 +68,17 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
     () => [...new Set(stays.map((s) => s.kind))].sort().map((value) => ({ value, label: value })),
     [stays],
   );
+  // Only offer a chip for an attribute at least one stay actually has a
+  // confirmed "yes" for — a filter nobody's data can satisfy is worse than no
+  // filter at all.
+  const amenities = useMemo(
+    () =>
+      STAY_ATTRIBUTES.filter((attr) => stays.some((s) => s[attr.key] === "yes")).map((attr) => ({
+        value: attr.key as string,
+        label: attr.label,
+      })),
+    [stays],
+  );
 
   // The anchor is searched too — somebody looking for a hotel by the shul
   // types the shul's name, not the hotel's.
@@ -68,6 +97,9 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
         // anything, which is a different thing from a claim we have not
         // confirmed.
         (!kosher || s.kosherClaim === kosher) &&
+        // An unknown-value stay simply doesn't match a "yes" filter — it is
+        // not excluded from the rest of browsing, only from this one filter.
+        (!amenity || s[amenity as keyof KosherStay] === "yes") &&
         listMatches(
           [s.name, s.city, s.country, s.kind, s.summary, s.anchor.name, s.season ?? "", (s.notes ?? []).join(" "), extraSpellings([s.slug, s.city])].join(" "),
           query,
@@ -116,6 +148,17 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
             ],
             allLabel: "Any",
           },
+          ...(amenities.length
+            ? [
+                {
+                  label: "Shabbos & kosher",
+                  value: amenity,
+                  onChange: (value: string) => { setFilters({ amenity: value }); setLimit(PAGE); },
+                  options: amenities,
+                  allLabel: "Any",
+                },
+              ]
+            : []),
         ]}
       />
 
@@ -128,6 +171,26 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{s.name}</h2>
             <p className="mt-3 text-sm leading-7 text-stone-600">{s.summary}</p>
+
+            {/* Up to 3 confirmed advantages, never an "unknown" — a scannable
+                signal of the property's actual Shabbos/kosher edge, not a
+                spec sheet of every attribute on record. */}
+            {(() => {
+              const badges = STAY_ATTRIBUTES.filter((attr) => s[attr.key] === "yes").slice(0, 3);
+              if (badges.length === 0) return null;
+              return (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {badges.map((attr) => (
+                    <span
+                      key={attr.key as string}
+                      className="inline-flex items-center rounded-md border border-[var(--gold)] bg-[var(--cream)] px-2 py-1 text-[11px] font-semibold text-[var(--navy)]"
+                    >
+                      {attr.badge}
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* The two warnings that cost people a Shabbos, said before
                 anything else on the card. */}
@@ -155,12 +218,27 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
               </p>
             )}
 
+            {s.shabbosAccessInfo && (
+              <p className="mt-3 border-l-2 border-[var(--gold-light)] pl-3 text-sm leading-6 text-stone-600">
+                {s.shabbosAccessInfo}
+              </p>
+            )}
+
+            {/* The kashrus and seasonal warnings above are never hidden — this
+                is the secondary, practical-preference detail (which quarter,
+                how walkable), collapsed so the card stays scannable. */}
             {s.notes && s.notes.length > 0 && (
-              <ul className="mt-4 space-y-2 text-sm leading-6 text-stone-600">
-                {s.notes.map((note, i) => (
-                  <li key={i} className="border-l-2 border-[var(--gold-light)] pl-3">{note}</li>
-                ))}
-              </ul>
+              <details className="group mt-4">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+                  More details
+                  <span aria-hidden="true" className="inline-block text-xs transition group-open:rotate-90">→</span>
+                </summary>
+                <ul className="mt-3 space-y-2 text-sm leading-6 text-stone-600">
+                  {s.notes.map((note, i) => (
+                    <li key={i} className="border-l-2 border-[var(--gold-light)] pl-3">{note}</li>
+                  ))}
+                </ul>
+              </details>
             )}
 
             <p className="mt-4 text-xs leading-5 text-stone-500">

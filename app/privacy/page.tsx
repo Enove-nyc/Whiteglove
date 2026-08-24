@@ -1,16 +1,25 @@
 import { readWords } from "@/lib/site-words-store";
 import { pageMetadata } from "@/lib/seo";
-import { SITE_DOMAIN } from "@/lib/features";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import { resolvePage } from "@/lib/pages";
+import { BRAND_DOMAIN, BRAND_NAME } from "@/lib/site-brand-core";
+import { currentBrand } from "@/lib/site-brand";
 
-export const metadata = pageMetadata({
-  title: "Privacy Policy — White Glove Kosher Travel",
-  description: "How White Glove Kosher Travel collects, uses, and protects your information.",
-  path: "/privacy",
-});
+// See app/terms/page.tsx for why this is rendered per request rather than
+// prerendered: which brand this policy names depends on which domain a
+// visitor is actually on, and a single static page cannot answer that.
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const name = BRAND_NAME[await currentBrand()];
+  return pageMetadata({
+    title: `Privacy Policy — ${name}`,
+    description: `How ${name} collects, uses, and protects your information.`,
+    path: "/privacy",
+  });
+}
 
 const UPDATED = "July 26, 2026";
 
@@ -37,12 +46,16 @@ export default async function PrivacyPolicyPage() {
     );
   }
   const { contactEmail } = await readWords();
+  const brand = await currentBrand();
+  const itineraries = brand === "itineraries";
+  const siteName = BRAND_NAME[brand];
+  const siteDomain = BRAND_DOMAIN[brand];
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove Kosher Travel</p>
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">{siteName}</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Privacy Policy</h1>
           <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
         </div>
@@ -50,9 +63,9 @@ export default async function PrivacyPolicyPage() {
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
-          White Glove Kosher Travel (&ldquo;White Glove,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) provides travel guides and planning
-          tools for kosher travel and Jewish heritage journeys at {SITE_DOMAIN}. This policy explains what information we collect,
-          how we use it, and the choices you have.
+          {siteName} (&ldquo;White Glove,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) provides{" "}
+          {itineraries ? "trip-planning tools" : "travel guides and planning tools for kosher travel and Jewish heritage journeys"} at{" "}
+          {siteDomain}. This policy explains what information we collect, how we use it, and the choices you have.
         </p>
 
         <Section title="Information we collect">

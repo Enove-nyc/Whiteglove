@@ -145,6 +145,41 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
           Choose <strong>Confirmed</strong> only for kashrus you checked with the hotel or its mashgiach yourself. A
           plain hotel with no kosher claim gets no kashrus caveat printed under it — it never claimed anything.
         </p>
+
+        <div className="mt-5 border-t border-[var(--gold-light)] pt-5">
+          <p className={captionClass}>Kosher / Shabbos attributes</p>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            Leave anything you have not checked as &ldquo;Not checked&rdquo; — it stays invisible to customers. Only a
+            &ldquo;Yes&rdquo; ever shows as a badge on the card or matches a filter.
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {[
+              ["onSiteKosherFood", "On-site kosher food"],
+              ["kosherKitchen", "Kosher kitchen"],
+              ["kosherBreakfast", "Kosher breakfast"],
+              ["shabbosMeals", "Shabbos meals available"],
+              ["nearbyKosherFood", "Kosher food nearby"],
+              ["nearbyShulOrMinyan", "Shul / minyan nearby"],
+              ["eruv", "Within an eruv"],
+              ["shabbosElevator", "Shabbos elevator"],
+              ["kitchenSelfCatering", "Self-catering kitchen"],
+              ["walkingDistanceToJewishArea", "Walking distance to Jewish area"],
+            ].map(([key, label]) => (
+              <label className="block" key={key}>
+                <span className={captionClass}>{label}</span>
+                <select name={key} className={inputClass} defaultValue="unknown">
+                  <option value="unknown">Not checked</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+            ))}
+            <label className="block sm:col-span-2">
+              <span className={captionClass}>Shabbos access info — keys, entry codes, anything relevant</span>
+              <input name="shabbosAccessInfo" className={inputClass} placeholder="Optional" />
+            </label>
+          </div>
+        </div>
         <div className="mt-5 flex items-center gap-4">
           <button type="submit" disabled={stayPending} className={submitClass}>{stayPending ? "Adding…" : "Add it"}</button>
           <Status state={stayState} />

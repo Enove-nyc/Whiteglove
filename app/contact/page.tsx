@@ -7,13 +7,15 @@ import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import { CONTACT_REASONS, readReason } from "@/lib/contact-reasons";
 import { resolvePage } from "@/lib/pages";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 
 export async function generateMetadata() {
-  const page = await resolvePage("contact");
+  const [page, name] = await Promise.all([resolvePage("contact"), currentBrand().then((b) => BRAND_NAME[b])]);
   // The owner writes the title and description in the admin; the
   // canonical URL and the share card come from the page it is.
   return pageMetadata({
-    title: page?.seoTitle ?? "White Glove Kosher Travel",
+    title: page?.seoTitle ?? name,
     description:
       page?.seoDescription ??
       "Tell us something on the site is wrong, ask about advertising, or ask a question.",

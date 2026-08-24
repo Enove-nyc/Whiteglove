@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons/Icon";
 import { useFocusTrap } from "@/components/useFocusTrap";
@@ -39,6 +40,17 @@ import type { AssistantTurn } from "@/lib/assistant-conversation";
 
 type Thread = { turns: AssistantTurn[]; signedIn: boolean; kept: boolean };
 
+/**
+ * The one door a client reaches with no account at all — the trip their
+ * adviser's code opens, at /i/<shareId>/app. It fills the whole screen with
+ * its own chrome (tabs, the chat with their real adviser) and none of the
+ * site's own; a corner launcher floating over it has nothing to do there and
+ * only sits in the way of the app's own buttons in that same corner.
+ */
+export function isClientCodeAppView(pathname: string | null): boolean {
+  return /^\/i\/[^/]+\/app(\/|$)/.test(pathname ?? "");
+}
+
 /** "rgb(a)(…)" → its parts, or null for a value we cannot read. */
 function parseRgb(value: string): { r: number; g: number; b: number; a: number } | null {
   const match = value.match(/rgba?\(([^)]+)\)/);
@@ -76,6 +88,7 @@ function darkBehind(launcher: HTMLElement): boolean {
 }
 
 export default function SiteAssistant() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [thread, setThread] = useState<Thread>({ turns: [], signedIn: false, kept: false });
   const [question, setQuestion] = useState("");
@@ -179,6 +192,11 @@ export default function SiteAssistant() {
     },
     [busy],
   );
+
+  // All hooks above have already run unconditionally; bailing here, right
+  // before the render, is what keeps this a normal early return rather than a
+  // rules-of-hooks violation.
+  if (isClientCodeAppView(pathname)) return null;
 
   return (
     <>

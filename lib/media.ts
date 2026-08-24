@@ -19,6 +19,7 @@
 // behaves exactly as it always did: Redis holds the files, the old cap
 // applies, and no code path touches the filesystem.
 
+import { randomBytes } from "node:crypto";
 import { mkdirSync, existsSync } from "node:fs";
 import { readFile, writeFile, rename, unlink } from "node:fs/promises";
 import { join } from "node:path";
@@ -164,9 +165,14 @@ async function diskWrite(id: string, media: StoredMedia): Promise<boolean> {
 
 /* ---- the store ----------------------------------------------------------- */
 
-/** Store a file and return its id, or null on failure. */
+/** Store a file and return its id, or null on failure. Unguessable by
+ * construction (128 bits from the platform CSPRNG) rather than merely
+ * unlisted — this store now also holds private advisor↔client chat photos,
+ * videos and voice notes served back with no session check (see
+ * app/api/media/route.ts), so the id itself is the only thing standing
+ * between a guess and someone else's picture. */
 export async function putMedia(contentType: string, base64: string): Promise<string | null> {
-  const id = `m-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const id = `m-${Date.now()}-${randomBytes(16).toString("hex")}`;
   if (await diskWrite(id, { contentType, data: base64 })) return id;
   const res = await redisCommand(`set/${encodeURIComponent(mediaKey(id))}`, JSON.stringify({ contentType, data: base64 } satisfies StoredMedia));
   return res?.ok ? id : null;

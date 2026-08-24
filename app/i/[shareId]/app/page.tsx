@@ -2,18 +2,19 @@ import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
-import { getSharedItineraryByShareId } from "@/lib/account-store";
-import { emptyItinerary } from "@/data/itinerary";
+import { checkTripFlightStatus, getSharedItineraryByShareId, getTripAlerts } from "@/lib/account-store";
+import { emptyItinerary, unitsOf } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
 import { getAppPrefs } from "@/lib/app-prefs-store";
+import { paymentForUnit } from "@/lib/companion-payment";
 import { pageMetadata } from "@/lib/seo";
 
 // A link given to a client, not found. It carries somebody's dates and stops;
 // it does not belong in a search result.
 export const metadata = pageMetadata({
   title: "Your trip",
-  description: "The trip in your pocket — a day at a time, the kosher side of each day, and the Shabbos that stops early.",
+  description: "The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal.",
   path: "/i",
   noIndex: true,
 });
@@ -43,9 +44,17 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   const plan = await getPlan(shared.ownerEmail);
   if (!mayServeCompanionClients(plan)) redirect(`/i/${shareId}`);
 
-  const [brand, prefs] = await Promise.all([
+  // A whole-trip link only ever shows Payments when the trip has exactly one
+  // family/traveler on it — a link not scoped to one unit has no way to know
+  // whose balance to show, the same rule app/api/pay/[shareId]/route.ts
+  // applies before it lets a whole-trip link pay anything.
+  const units = unitsOf({ ...emptyItinerary(), ...shared.itinerary });
+  const [brand, prefs, payment] = await Promise.all([
     readBrand(shared.ownerEmail).catch(() => null),
     getAppPrefs(shared.ownerEmail).catch(() => ({ kosherFeatures: false })),
+    units.length === 1 && shared.tripId
+      ? paymentForUnit(shared.ownerEmail, shared.tripId, units[0].unitKey, units[0].label, shareId).catch(() => undefined)
+      : Promise.resolve(undefined),
   ]);
   const trip = await buildCompanionFromItinerary(
     { ...emptyItinerary(), ...shared.itinerary },
@@ -57,6 +66,11 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
     },
   );
   if (!trip) redirect(`/i/${shareId}`); // no dates / no days — the document still reads
+  if (payment) trip.payment = payment;
+  if (shared.tripId) {
+    await checkTripFlightStatus(shared.ownerEmail, shared.tripId).catch(() => []);
+    trip.liveAlerts = await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
+  }
 
   // The client's side of the thread: this link IS the channel to their advisor.
   const chat = {

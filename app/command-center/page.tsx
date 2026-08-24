@@ -10,15 +10,20 @@ import { stopsForTrip } from "@/lib/command-center-data";
 import { tripAlerts } from "@/lib/trip-alerts";
 import { tripDocuments } from "@/lib/trip-documents";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = pageMetadata({
-  title: "Your trip | White Glove Kosher Travel",
-  description: "Everything still to sort before you travel, stop by stop.",
-  path: "/command-center",
-  noIndex: true,
-});
+export async function generateMetadata() {
+  const name = BRAND_NAME[await currentBrand()];
+  return pageMetadata({
+    title: `Your trip | ${name}`,
+    description: "Everything still to sort before you travel, stop by stop.",
+    path: "/command-center",
+    noIndex: true,
+  });
+}
 
 /**
  * One page for the week before somebody travels.

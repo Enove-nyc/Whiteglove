@@ -8,6 +8,7 @@ import { printBrandFor } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
 import { burialsForSlugs } from "@/lib/kever-search";
 import { readAssumptions } from "@/lib/planner-settings-store";
+import { currentBrand } from "@/lib/site-brand";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +58,7 @@ export default async function SharedItineraryPrintPage({ params }: { params: Pro
       assume={await readAssumptions()}
       brand={brand}
       preparedFor={shared.client}
+      siteBrand={await currentBrand()}
     />
   );
 }

@@ -33,7 +33,17 @@
 // list. A destination whose cities match nothing renders as a page with honest
 // empty states rather than a broken one — and the test suite says so.
 
-export type TripTheme = "beach" | "city" | "mountains" | "family" | "couples" | "short-break" | "heritage";
+export type TripTheme =
+  | "beach"
+  | "city"
+  | "mountains"
+  | "family"
+  | "couples"
+  | "short-break"
+  | "heritage"
+  | "pesach"
+  | "sukkos"
+  | "yeshiva-week";
 
 export type Season = "spring" | "summer" | "autumn" | "winter";
 
@@ -60,7 +70,33 @@ export const TRIP_THEMES: ReadonlyArray<{ value: TripTheme; label: string; blurb
    * walk, kevarim within reach — not on every city that has a shul.
    */
   { value: "heritage", label: "Heritage", blurb: "Kevarim and old kehillos within reach." },
+  /**
+   * YOM TOV THEMES ARE DERIVED, NOT TAGGED. Nobody fills in "Pesach" on a
+   * destination record — these three read the existing `bestFor` free-text
+   * tags (see deriveYomTovThemes below) so a destination only carries one of
+   * these when a real record already says so in its own words. A chip with
+   * nothing behind it does not render (lib/vacation-ideas.ts themeOptions
+   * applies a minimum-count floor for exactly this row).
+   */
+  { value: "pesach", label: "Pesach", blurb: "Yom Tov away, kept in mind." },
+  { value: "sukkos", label: "Sukkos", blurb: "Yom Tov away, kept in mind." },
+  { value: "yeshiva-week", label: "Yeshiva Week", blurb: "The mid-winter bein hazmanim window." },
 ] as const;
+
+/**
+ * Yom Tov themes a destination answers to, read off its own `bestFor` tags —
+ * never invented. Matches are intentionally loose text (a record that says
+ * "Pesach programme" or "Yeshiva week crowd" should count) but never inferred
+ * from season or theme alone.
+ */
+export function deriveYomTovThemes(bestFor: readonly string[]): TripTheme[] {
+  const text = bestFor.join(" ").toLowerCase();
+  const out: TripTheme[] = [];
+  if (text.includes("pesach") || text.includes("passover")) out.push("pesach");
+  if (text.includes("sukkos") || text.includes("sukkot")) out.push("sukkos");
+  if (text.includes("yeshiva week") || text.includes("bein hazmanim")) out.push("yeshiva-week");
+  return out;
+}
 
 export const SEASONS: ReadonlyArray<{ value: Season; label: string }> = [
   { value: "spring", label: "Spring" },
@@ -125,6 +161,16 @@ export type VacationDestination = {
    * the branded default stands in (lib/default-photo.ts).
    */
   photos?: readonly { id: string; url: string; caption?: string; credit?: string }[];
+  /**
+   * Seasonal discovery. `seasonActive` defaults true — an untouched built-in
+   * destination behaves exactly as before. `seasonFeatured` defaults false:
+   * nothing is promoted on the "featured this season" row until an admin
+   * opts a destination in, and even then it only shows while the current
+   * season is one of the destination's own `seasons` — never hardcoded to a
+   * particular Yom Tov or time of year.
+   */
+  seasonFeatured?: boolean;
+  seasonActive?: boolean;
 };
 
 export const vacationDestinations: readonly VacationDestination[] = [

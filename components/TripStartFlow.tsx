@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { BRAND_ORIGIN, brandForHost } from "@/lib/site-brand-core";
 import {
   ACCESSIBILITY_NEEDS,
   emptyAnswers,
@@ -128,6 +129,16 @@ export default function TripStartFlow({
     destination: initialDestination,
     kind: initialKind,
   }));
+  // /plan is one of the itineraries domain's own pages. /heritage is a
+  // guide-only path (middleware.ts) that does not exist there — reached on
+  // that domain it silently redirects to the kosher site, which also breaks
+  // out of an installed itineraries app (the Trusted Web Activity drops to an
+  // ordinary browser tab, address bar and all, the moment it leaves the
+  // verified domain). Detected client-side, the same way Navbar settles brand.
+  const [itineraries, setItineraries] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") setItineraries(brandForHost(window.location.hostname) === "itineraries");
+  }, []);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   function update(patch: Partial<TripPlanAnswers>) {
@@ -557,9 +568,20 @@ export default function TripStartFlow({
                       onChange={(event) => update({ kevarim: event.target.value })}
                     />
                     <span className="mt-1.5 block text-xs leading-5 text-stone-500">
-                      <Link href="/heritage" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-                        Browse the kevarim directory
-                      </Link>
+                      {itineraries ? (
+                        <a
+                          href={`${BRAND_ORIGIN.kosher}/heritage`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+                        >
+                          Browse the kevarim directory
+                        </a>
+                      ) : (
+                        <Link href="/heritage" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+                          Browse the kevarim directory
+                        </Link>
+                      )}
                     </span>
                   </label>
                 )}

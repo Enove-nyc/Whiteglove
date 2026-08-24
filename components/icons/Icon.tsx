@@ -37,7 +37,15 @@ export type IconName =
   | "lightbulb"
   | "plane"
   | "check"
-  | "sparkle";
+  | "sparkle"
+  | "camera"
+  | "video"
+  | "microphone"
+  | "stop"
+  | "more"
+  | "reply"
+  | "check-check"
+  | "trash";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -163,6 +171,61 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M12 4.5 13.7 10.3 19.5 12 13.7 13.7 12 19.5 10.3 13.7 4.5 12 10.3 10.3Z" />
       <path d="M18.5 4.5v3" />
       <path d="M17 6h3" />
+    </>
+  ),
+  camera: (
+    <>
+      <path d="M4 8.3a2 2 0 0 1 2-2h1.3l1.1-1.7a1.6 1.6 0 0 1 1.3-.7h4.6a1.6 1.6 0 0 1 1.3.7l1.1 1.7H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+      <circle cx="12" cy="12.6" r="3.4" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="3" y="7" width="12.5" height="10" rx="2.2" />
+      <path d="M15.5 10.4 20.5 7v10l-5-3.4Z" />
+    </>
+  ),
+  microphone: (
+    <>
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M6 11.3a6 6 0 0 0 12 0" />
+      <path d="M12 17.3v3.2" />
+      <path d="M9 20.5h6" />
+    </>
+  ),
+  stop: <rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" stroke="none" />,
+  // Three small dots — an overflow menu, not a shape drawn from the same
+  // stroke as the rest; filled, because at this size a stroked circle is
+  // barely a dot at all.
+  more: (
+    <>
+      <circle cx="5.5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="18.5" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </>
+  ),
+  reply: (
+    <>
+      <path d="M10 7 4 12l6 5" />
+      <path d="M4 12h9a7 7 0 0 1 7 7v1" />
+    </>
+  ),
+  // Two offset checks — a message read, not just sent. `check` alone still
+  // means "sent"; this is the pair a messaging app shows once the other side
+  // has actually seen it.
+  "check-check": (
+    <>
+      <path d="M1.5 12.5 6 17 13 9.5" />
+      <path d="M9 12.5 13.5 17 22.5 7" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M5 7h14" />
+      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+      <path d="M7 7l.8 12a2 2 0 0 0 2 1.9h4.4a2 2 0 0 0 2-1.9L17 7" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
     </>
   ),
 };

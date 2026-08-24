@@ -1,6 +1,7 @@
 import { recordEmailAttempt, emailLogAvailable, readEmailLog } from "@/lib/email-log";
 import type { BlastBlock } from "@/lib/email-blast";
 import { renderBlastHtml, renderBlastText } from "@/lib/email-template";
+import { BRAND_DOMAIN, BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -8,7 +9,12 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 // owns the Resend account — anything else is rejected. A real domain sender
 // (e.g. no-reply@whiteglovekoshertravel.com, once the domain is verified in
 // Resend) is required for mail to reach the edits@/contact@ inboxes.
-const TEST_SENDER = "White Glove Kosher Travel <onboarding@resend.dev>";
+//
+// Named "White Glove", not either brand's full name: this is the fallback for
+// EVERY email this file sends, from both brands, whenever RESEND_FROM_EMAIL is
+// unset — so it cannot say "Kosher Travel" without telling an itineraries
+// visitor's inbox which other site this one is.
+const TEST_SENDER = "White Glove <onboarding@resend.dev>";
 
 function resendConfig() {
   const apiKey = process.env.RESEND_API_KEY;
@@ -310,20 +316,26 @@ export async function sendContactMessage(msg: ContactMessage): Promise<boolean> 
  * Emails a person a link to an itinerary that was shared with them. Never
  * throws; returns true when Resend accepts it.
  */
-export async function sendItineraryShareEmail(to: string, opts: { fromName: string; url: string; title: string }): Promise<boolean> {
+export async function sendItineraryShareEmail(
+  to: string,
+  opts: { fromName: string; url: string; title: string; siteBrand?: SiteBrand },
+): Promise<boolean> {
   const who = escapeHtml(opts.fromName || "A fellow traveler");
   const title = escapeHtml(opts.title || "their trip");
   const url = escapeHtml(opts.url);
+  // Reachable from both brands — whoever shared the trip did it from one site
+  // or the other, and this email must say that one, never the other.
+  const siteName = BRAND_NAME[opts.siteBrand ?? "kosher"];
   const result = await postResend(
     {
       to,
       subject: `${opts.fromName || "A traveler"} shared "${opts.title}" with you`,
       html:
         `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} shared a trip with you</h2>` +
-        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">You've been added to <strong>${title}</strong> on White Glove Kosher Travel.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">You've been added to <strong>${title}</strong> on ${siteName}.</p>` +
         `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">View the itinerary →</a></p>` +
         `<p style="font-family:Arial,sans-serif;font-size:12px;color:#999;">Or open this link: ${url}</p>`,
-      text: `${opts.fromName || "A fellow traveler"} shared "${opts.title}" with you on White Glove Kosher Travel.\n\nView it here: ${opts.url}`,
+      text: `${opts.fromName || "A fellow traveler"} shared "${opts.title}" with you on ${siteName}.\n\nView it here: ${opts.url}`,
     },
     to,
     "itinerary share",
@@ -543,11 +555,17 @@ export async function sendItineraryToClient(input: {
   /** Anything the agent wanted to say. Optional. */
   note?: string;
   url: string;
+  /** Which site the agent's account is actually on. Defaults to kosher. */
+  siteBrand?: SiteBrand;
 }): Promise<SendResult> {
   const business = escapeHtml(input.from);
   const title = escapeHtml(input.tripTitle || "your trip");
   const url = escapeHtml(input.url);
   const note = input.note?.trim();
+  // Like the printed document's own credit line (components/PrintableItinerary.tsx):
+  // the business's own branding replaces everything except this, and this
+  // names whichever site actually produced the document.
+  const domain = BRAND_DOMAIN[input.siteBrand ?? "kosher"];
   return postResend(
     {
       to: input.to,
@@ -564,12 +582,12 @@ export async function sendItineraryToClient(input: {
         `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open your itinerary →</a></p>` +
         `<p style="font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#8a8a8a;margin-top:24px;">` +
         `Sent by ${business}. Reply to this email to reach them.<br>` +
-        `Planned with whiteglovekoshertravel.com.</p></div>`,
+        `Planned with ${domain}.</p></div>`,
       text:
         `Your itinerary from ${input.from}\n\n` +
         (note ? `${note}\n\n` : "") +
         `${input.tripTitle || "Your trip"} is ready. Open it to see every day, and print it or save it as a PDF:\n${input.url}\n\n` +
-        `Sent by ${input.from}. Reply to this email to reach them.\nPlanned with whiteglovekoshertravel.com.`,
+        `Sent by ${input.from}. Reply to this email to reach them.\nPlanned with ${domain}.`,
     },
     input.to,
     "itinerary to client",

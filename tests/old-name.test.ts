@@ -42,16 +42,21 @@ describe("what each of them shows instead", () => {
     const print = readFileSync("components/PrintableItinerary.tsx", "utf8");
     assert.match(print, /logo-hand-navy\.png/);
     assert.match(print, /White Glove<\/p>/);
-    assert.match(print, /Kosher Travel<\/p>/);
+    // The sub-line names whichever site actually produced the document — see
+    // tests/two-brands-print.test.ts for which text renders for which brand.
+    assert.match(print, /"Kosher Travel"/);
   });
 
   it("keeps the Business preview showing what the real cover shows", () => {
     // The preview's whole claim is that it is the real thing. If it drifts,
-    // it is a picture of a document that does not exist.
+    // it is a picture of a document that does not exist. The sub-line names
+    // whichever site the account is actually on — see
+    // tests/two-brands-print.test.ts and tests/two-brands-legal.test.ts for
+    // the sibling checks on the document itself and the legal pages.
     const panel = readFileSync("components/BusinessBrandPanel.tsx", "utf8");
     assert.match(panel, /logo-hand-navy\.png/);
     assert.match(panel, /White Glove\s*\n?\s*<\/p>/);
-    assert.match(panel, /Kosher Travel\s*\n?\s*<\/p>/);
+    assert.match(panel, /"Kosher Travel"/);
   });
 
   it("SIGNS EMAILS WITH A NAME THAT SURVIVES BLOCKED IMAGES", () => {

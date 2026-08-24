@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import StartingPoints from "@/components/StartingPoints";
 
 /**
  * The home page for whitegloveitineraries.com.
@@ -10,6 +11,14 @@ import Footer from "@/components/Footer";
  * handing it to somebody on their phone — and leaves the kosher directory on
  * the other domain. Everything it links to already exists; this is a front
  * door, not a new section.
+ *
+ * TWO AUDIENCES, ONE PAGE. The three cards below are for the advisor already
+ * using this as a client tool. Underneath them is the site's other real
+ * audience — somebody planning their own trip — who used to have no way in
+ * from this page at all: no self-service door, nothing free, nothing to
+ * search. StartingPoints is the same three doors every other page on the
+ * site names the same way (lib/starting-points.ts) — get recommendations,
+ * build it yourself, search booking partners — not a new pitch invented here.
  */
 export default function ItinerariesHome() {
   const cta =
@@ -72,6 +81,10 @@ export default function ItinerariesHome() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 pb-16 sm:px-8">
+        <StartingPoints heading="Planning your own trip?" />
       </section>
 
       <Footer />

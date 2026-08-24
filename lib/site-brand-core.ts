@@ -20,9 +20,26 @@ export const BRAND_ORIGIN: Record<SiteBrand, string> = {
   itineraries: "https://www.whitegloveitineraries.com",
 };
 
+/**
+ * Every real hostname a brand is actually reached on — the bare domain and
+ * its "www." form, both pointed at the same app. Compile-time constants, not
+ * read from any request, so lib/secure-access.ts can compare an untamperable
+ * Origin header against them without trusting anything a proxy forwarded.
+ */
+export const BRAND_HOSTS: Record<SiteBrand, readonly string[]> = {
+  kosher: ["www.whiteglovekoshertravel.com", "whiteglovekoshertravel.com"],
+  itineraries: ["www.whitegloveitineraries.com", "whitegloveitineraries.com"],
+};
+
 export const BRAND_NAME: Record<SiteBrand, string> = {
   kosher: "White Glove Kosher Travel",
   itineraries: "White Glove Itineraries",
+};
+
+/** The bare domain a brand is credited by, on printed and shared documents. */
+export const BRAND_DOMAIN: Record<SiteBrand, string> = {
+  kosher: "whiteglovekoshertravel.com",
+  itineraries: "whitegloveitineraries.com",
 };
 
 /** The brand a host belongs to. Anything unrecognised is the kosher default. */

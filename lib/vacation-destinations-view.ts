@@ -109,6 +109,8 @@ type Row = {
   outlineDays: string[];
   cautions: string[];
   photos: { id: string; url: string; caption: string | null; credit: string | null }[];
+  seasonFeatured: boolean;
+  seasonActive: boolean;
 };
 
 function photosOf(row: Row): DestinationPhoto[] {
@@ -179,6 +181,10 @@ function overlay(base: VacationDestination | undefined, row: Row): VacationDesti
     transport: said(row.transport) ?? from.transport,
     outline: outlineTitle && outlineDays ? { title: outlineTitle, days: outlineDays } : from.outline,
     cautions: saidList(row.cautions) ?? from.cautions,
+    // Booleans, not "blank means leave alone" text — a row always carries an
+    // explicit value (with real column defaults), so it always wins.
+    seasonFeatured: row.seasonFeatured,
+    seasonActive: row.seasonActive,
     ownerAdded: !base,
     edited: Boolean(base),
     photos: photosOf(row),

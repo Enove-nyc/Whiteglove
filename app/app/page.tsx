@@ -6,7 +6,9 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import {
   accountCookieName,
+  checkTripFlightStatus,
   getCurrentAccountSummary,
+  getTripAlerts,
   getTripItinerary,
   getTrips,
   readSessionEmail,
@@ -24,7 +26,7 @@ import { pageMetadata } from "@/lib/seo";
 // result, and the gate below means most visitors never see it at all.
 export const metadata = pageMetadata({
   title: "The White Glove app",
-  description: "The trip in your pocket — a day at a time, the kosher side of each day, and the Shabbos that stops early.",
+  description: "The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal.",
   path: "/app",
   noIndex: true,
 });
@@ -54,7 +56,7 @@ function firstParam(value: string | string[] | undefined): string {
 export default async function AppPage({
   searchParams,
 }: {
-  searchParams: Promise<{ trip?: string | string[] }>;
+  searchParams: Promise<{ trip?: string | string[]; share_title?: string | string[]; share_text?: string | string[]; share_url?: string | string[] }>;
 }) {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountSummary(cookie);
@@ -74,8 +76,7 @@ export default async function AppPage({
             The trip in your pocket.
           </h1>
           <p className="text-base leading-7 text-stone-600">
-            A day at a time, the kosher side of each day, the Shabbos that stops early, and a travel
-            wallet kept on the phone for when there is no signal.
+            A day at a time, with a travel wallet kept on the phone for when there is no signal.
           </p>
 
           <div className="rounded-2xl border border-[var(--gold)]/30 bg-white p-6">
@@ -118,7 +119,16 @@ export default async function AppPage({
     // The copy below turns on this, so a Gold member is never offered a client
     // feature they do not have.
     const servesClients = mayServeCompanionClients(plan);
-    const wantedId = firstParam((await searchParams).trip);
+    const params = await searchParams;
+    const wantedId = firstParam(params.trip);
+    // A place shared in from outside — Google Maps' own share sheet, say —
+    // arrives here as the OS's Web Share Target params (app/manifest.ts).
+    // Held as a plain line of text; the advisor picks which client's thread
+    // it goes into, the same way any other message does.
+    const sharedDraft = [firstParam(params.share_title), firstParam(params.share_text), firstParam(params.share_url)]
+      .filter(Boolean)
+      .join("\n")
+      .trim();
     const trips = await getTrips(who).catch(() => []);
     const selected =
       trips.find((t) => t.id === wantedId) ?? trips.find((t) => t.active) ?? trips[0] ?? null;
@@ -139,9 +149,14 @@ export default async function AppPage({
             advisorName,
             tripName: chosen.tripName,
             client: chosen.client,
+            tripId: selected.id,
             kosher: prefs.kosherFeatures,
           },
         );
+        // Best-effort, and throttled server-side — see checkTripFlightStatus.
+        // A failure here should never keep the app from opening.
+        await checkTripFlightStatus(who, selected.id).catch(() => []);
+        if (companionTrip) companionTrip.liveAlerts = await getTripAlerts(who, selected.id).catch(() => []);
       }
     }
 
@@ -155,7 +170,7 @@ export default async function AppPage({
       // and no inbox; the tab simply is not there.
       return (
         <main>
-          <CompanionApp trip={companionTrip} advisorInbox={servesClients} />
+          <CompanionApp trip={companionTrip} advisorInbox={servesClients} sharedDraft={sharedDraft || undefined} />
         </main>
       );
     }

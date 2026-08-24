@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import nextConfig from "@/next.config";
-import VersionPage, { metadata as versionMetadata } from "@/app/version/page";
+import VersionPage, { generateMetadata as versionMetadata } from "@/app/version/page";
 import { STARTING_POINTS } from "@/lib/starting-points";
 
 describe("the old planning address", () => {
@@ -46,6 +46,6 @@ describe("the version route", () => {
     assert.match(html, /White Glove is available\./);
     assert.match(html, /href="\/"/);
     assert.doesNotMatch(html, /Vercel|deployment|developer|build|commit|branch|environment|troubleshoot/i);
-    assert.deepEqual(versionMetadata.robots, { index: false, follow: false });
+    assert.deepEqual((await versionMetadata()).robots, { index: false, follow: false });
   });
 });

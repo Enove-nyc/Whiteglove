@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { sameOrigin } from "@/lib/secure-access";
 import { searchSite } from "@/lib/site-search";
 import { citedSources, stripFalseAttribution, type AssistantSource } from "@/lib/assistant-disclosure";
-import { NOT_ON_THE_SITE, SITE_ASSISTANT_SYSTEM, saysNotOnTheSite } from "@/lib/site-assistant";
+import { NOT_ON_THE_SITE, saysNotOnTheSite, siteAssistantSystemFor } from "@/lib/site-assistant";
+import { brandFromRequestHeaders } from "@/lib/site-brand-core";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
+  const system = siteAssistantSystemFor(brandFromRequestHeaders(request.headers));
 
   const body = (await request.json().catch(() => null)) as { question?: string } | null;
   const question = clean(body?.question ?? "", 500);
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SITE_ASSISTANT_SYSTEM }] },
+            systemInstruction: { parts: [{ text: system }] },
             contents: [{ role: "user", parts: [{ text: userMessage }] }],
             // Cooler than the travel assistant on purpose: this one is meant to
             // restate what a page says, not to compose around it.
@@ -115,7 +117,7 @@ export async function POST(request: NextRequest) {
         model: "claude-haiku-4-5-20251001",
         max_tokens: 800,
         temperature: 0.2,
-        system: SITE_ASSISTANT_SYSTEM,
+        system,
         messages: [{ role: "user", content: userMessage }],
       }),
     });

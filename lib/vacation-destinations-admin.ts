@@ -47,6 +47,9 @@ export type VacationDestinationFields = {
   outlineTitle: string | null;
   outlineDays: string[];
   cautions: string[];
+  /** Real booleans, not "blank means leave alone" — always written explicitly. */
+  seasonFeatured: boolean;
+  seasonActive: boolean;
 };
 
 /**

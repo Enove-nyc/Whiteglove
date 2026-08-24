@@ -1,0 +1,58 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { describe, it } from "node:test";
+
+/**
+ * Sharing a place from outside the app — Google Maps' own share sheet — into
+ * White Glove: the manifest registers the app as a Web Share Target, the page
+ * turns what arrives into a plain line of text, and the advisor picks which
+ * client's thread it lands in, the same way any other message does.
+ */
+
+const MANIFEST = readFileSync("app/manifest.ts", "utf8");
+const APP_PAGE = readFileSync("app/app/page.tsx", "utf8");
+const APP = readFileSync("components/companion/CompanionApp.tsx", "utf8");
+
+describe("the app registers itself as a share target", () => {
+  it("shares into /app by GET, carrying title, text and url", () => {
+    assert.match(MANIFEST, /share_target:\s*\{/);
+    assert.match(MANIFEST, /action:\s*"\/app"/);
+    assert.match(MANIFEST, /method:\s*"GET"/);
+    assert.match(MANIFEST, /params:\s*\{\s*title:\s*"share_title",\s*text:\s*"share_text",\s*url:\s*"share_url"\s*\}/);
+  });
+});
+
+describe("app/app/page.tsx turns a shared place into a draft, not a crash", () => {
+  it("joins whatever arrived — title, text, url — trimming empties", () => {
+    assert.match(APP_PAGE, /firstParam\(params\.share_title\)/);
+    assert.match(APP_PAGE, /firstParam\(params\.share_text\)/);
+    assert.match(APP_PAGE, /firstParam\(params\.share_url\)/);
+    assert.match(APP_PAGE, /\.filter\(Boolean\)\s*\n\s*\.join\("\\n"\)/);
+  });
+
+  it("hands it to CompanionApp as sharedDraft, empty string turned into undefined", () => {
+    assert.match(APP_PAGE, /sharedDraft=\{sharedDraft \|\| undefined\}/);
+  });
+});
+
+describe("a shared place waits for the advisor to pick a client, then lands in that thread's composer", () => {
+  it("a shared draft that arrives on the advisor's inbox opens straight to Messages", () => {
+    assert.match(APP, /screen: sharedDraft && advisorInbox \? "messages" : "home"/);
+  });
+
+  it("AdvisorInbox is told about the pending share and how to clear it", () => {
+    assert.match(APP, /<AdvisorInbox pendingShare=\{pendingShare\} onPendingShareUsed=\{\(\) => setPendingShare\(null\)\} \/>/);
+  });
+
+  it("opening a client's thread carries the pending share into its composer", () => {
+    const openBlock = APP.slice(APP.indexOf("if (open) {"), APP.indexOf("return (\n    <div style={{ padding: \"16px 16px 28px\""));
+    assert.match(openBlock, /initialDraft=\{pendingShare\}/);
+    assert.match(openBlock, /onInitialDraftUsed=\{onPendingShareUsed\}/);
+  });
+
+  it("LiveChat puts a shared draft straight into the composer, then hands the callback back", () => {
+    const effect = APP.slice(APP.indexOf("A place shared in from outside, put straight"), APP.indexOf("A place shared in from outside, put straight") + 400);
+    assert.match(effect, /setDraft\(initialDraft\)/);
+    assert.match(effect, /onInitialDraftUsedRef\.current\?\.\(\)/);
+  });
+});

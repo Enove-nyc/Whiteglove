@@ -176,6 +176,28 @@ export type ItinTraveler = {
   kind?: "adult" | "child" | "infant";
   /** Passport notes, seat preference, dietary needs — whatever matters. */
   notes?: string;
+  /** A contact for this one person — where their own app link, if any, is sent. */
+  email?: string;
+  phone?: string;
+  /**
+   * Whether the planner has given this person their OWN door into the trip
+   * app — a link scoped to them, not the one shared trip-wide link every
+   * traveler on a family or group trip would otherwise be handed alike.
+   * Absent/false is the normal case: most trips still use the one link.
+   * The token itself lives server-side (lib/account-store.ts), the same way
+   * a trip's own share token does — never here, since this record travels
+   * with the itinerary and a token baked into it would leak wherever a copy
+   * of the trip goes.
+   */
+  hasOwnAccess?: boolean;
+  /**
+   * Free text — "Smith family", "Cohen group" — travelers sharing this exact
+   * text (trimmed, case-insensitive) are one unit for privacy and, on a trip
+   * with a payment balance, for splitting it. Blank means this traveler is
+   * their own unit; see travelerUnitKey/unitMates below. Not a separate list
+   * of units to manage — a unit is just whatever the planner typed, matched.
+   */
+  family?: string;
 };
 
 /** Re-exported shape; the rules live in lib/day-progress.ts. */
@@ -250,6 +272,15 @@ export type Itinerary = {
    */
   rooms?: Array<{ id: string; label: string; travelerIds: string[] }>;
   notes?: string;
+  /**
+   * A practical note for one day of the trip, keyed by that day's date —
+   * "enter through the side door", where to eat, where to park. The
+   * White Glove app's Guide tab (components/companion/CompanionApp.tsx),
+   * written by the advisor and read by the traveler. Kosher/Shabbos content is
+   * a separate, account-level opt-in layer folded into the same Guide section
+   * — see lib/app-prefs-store.ts and lib/companion-trip.ts — not part of this.
+   */
+  guideNotes?: Record<string, string>;
   updatedAt?: string;
 };
 
@@ -293,6 +324,60 @@ export function travelerSummary(itin: Itinerary): string {
   if (children.length) parts.push(`${children.length} ${children.length === 1 ? "child" : "children"}`);
   if (infants.length) parts.push(`${infants.length} ${infants.length === 1 ? "infant" : "infants"}`);
   return parts.join(", ");
+}
+
+/**
+ * This traveler's unit key — everyone sharing the same trimmed, lowercased
+ * `family` text is one unit; a traveler with none is their own, solo unit.
+ * Used for both privacy (unitMates/redactForTraveler below) and, on a trip
+ * with a payment balance, for splitting it per family rather than per head.
+ */
+export function travelerUnitKey(t: ItinTraveler): string {
+  const family = t.family?.trim().toLowerCase();
+  return family ? `family:${family}` : `solo:${t.id}`;
+}
+
+/**
+ * Every distinct unit on this trip — one entry per family, plus one per solo
+ * traveler — in the order each first appears. For building a payment split or
+ * a family-by-family roster; not stored anywhere, always derived fresh from
+ * the travelers themselves so it can never drift out of sync with them.
+ */
+export function unitsOf(itin: Itinerary): Array<{ unitKey: string; label: string }> {
+  const seen = new Map<string, string>();
+  for (const t of travelersOf(itin)) {
+    const key = travelerUnitKey(t);
+    if (!seen.has(key)) seen.set(key, t.family?.trim() || t.name);
+  }
+  return [...seen.entries()].map(([unitKey, label]) => ({ unitKey, label }));
+}
+
+/** Every traveler sharing this one's unit, this one included. */
+export function unitMates(itin: Itinerary, travelerId: string): ItinTraveler[] {
+  const travelers = travelersOf(itin);
+  const me = travelers.find((t) => t.id === travelerId);
+  if (!me) return [];
+  const key = travelerUnitKey(me);
+  return travelers.filter((t) => travelerUnitKey(t) === key);
+}
+
+/**
+ * This itinerary, as one traveler's own unit may see it: the shared trip
+ * itself (flights, lodging, activities — one party, one schedule) stays
+ * whole, but every OTHER unit's private notes, email and phone are stripped.
+ * The roster still shows who else is on the trip — name and kind are not
+ * secret — only what the planner wrote about them is.
+ *
+ * This is the one place "do not expose one traveler's private information to
+ * another unless explicitly intended" is enforced: intent is reading as
+ * whichever travelers the planner put in the same family/unit together.
+ */
+export function redactForTraveler(itin: Itinerary, viewerTravelerId: string): Itinerary {
+  const mine = new Set(unitMates(itin, viewerTravelerId).map((t) => t.id));
+  const travelers = (itin.travelers ?? []).map((t) =>
+    mine.has(t.id) ? t : { id: t.id, name: t.name, kind: t.kind, family: t.family },
+  );
+  return { ...itin, travelers };
 }
 
 // ---- Date helpers (UTC-noon to dodge DST/timezone drift) --------------

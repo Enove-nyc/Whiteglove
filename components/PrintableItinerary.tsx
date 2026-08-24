@@ -5,6 +5,7 @@ import type { PrintBrand } from "@/lib/business-brand";
 import { buildDays, formatDateLong, travelerSummary, type Itinerary } from "@/data/itinerary";
 import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
 import { buildPrintTimeline, coverDates, dayCountries, dayRouteEnglishTitle, dayRouteTitle, tripCountries } from "@/data/itinerary-print";
+import { BRAND_DOMAIN, BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core";
 
 // The printed itinerary — a keepsake document, not a screen dump.
 //
@@ -63,16 +64,17 @@ export default function PrintableItinerary({
    * A Business account's own letterhead, when there is one.
    *
    * WHAT IT REPLACES: the crest on the cover, the mark and name in every page
-   * header, and the "A White Glove Kosher Travel journey" line. That is the whole
-   * point — an agent hands this to their client, and a document with somebody
-   * else's crest on the cover is one they cannot hand over.
+   * header, and the "A White Glove …" journey line. That is the whole point —
+   * an agent hands this to their client, and a document with somebody else's
+   * crest on the cover is one they cannot hand over.
    *
-   * WHAT IT DOES NOT REPLACE, EVER: the credit line. Every page still says the
-   * itinerary was planned with whiteglovekoshertravel.com, quietly, at 8.5px in
-   * the footer. That is the owner's decision and this component is where it is
-   * enforced, so a caller cannot pass a flag that removes it — there is no such
-   * flag to pass. The line is small and it is not an advertisement; it is the
-   * one true statement about where the document came from.
+   * WHAT IT DOES NOT REPLACE, EVER: the credit line. Every page still says
+   * which site the itinerary was planned with, quietly, at 8.5px in the
+   * footer — that site's own name and domain, from `siteBrand`, never the
+   * other one's. That is the owner's decision and this component is where it
+   * is enforced, so a caller cannot pass a flag that removes it — there is no
+   * such flag to pass. The line is small and it is not an advertisement; it is
+   * the one true statement about where the document came from.
    *
    * Null — which is what every traveller and every Pro account gets — is the
    * White Glove document exactly as it was.
@@ -88,6 +90,14 @@ export default function PrintableItinerary({
    * caller to remember.
    */
   preparedFor = "",
+  /**
+   * Which of the two sites produced this document — never the reader's site,
+   * the document's own origin. Kosher by default: every caller that prints a
+   * document actually reachable from the itineraries brand passes its own
+   * value; a caller that cannot ever be reached from that brand (the sample on
+   * /sample-itinerary, guide-only) is fine leaving this unset.
+   */
+  siteBrand = "kosher",
 }: {
   itin: Itinerary;
   burials: Record<string, string[]>;
@@ -96,7 +106,10 @@ export default function PrintableItinerary({
   assume?: PlannerAssumptions;
   brand?: PrintBrand | null;
   preparedFor?: string;
+  siteBrand?: SiteBrand;
 }) {
+  const brandName = BRAND_NAME[siteBrand];
+  const brandDomain = BRAND_DOMAIN[siteBrand];
   const CoverHeading = embedded ? "h2" : "h1";
   const DayHeading = embedded ? "h3" : "h2";
   // No border cost, deliberately, and unchanged by the planning figures above.
@@ -174,10 +187,10 @@ export default function PrintableItinerary({
             <>
               <Image src="/logo-hand-navy.png" alt="" width={355} height={460} className="wg-crest-hand" priority />
               <p className="wg-crest-wordmark">White Glove</p>
-              <p className="wg-crest-wordmark-sub">Kosher Travel</p>
+              <p className="wg-crest-wordmark-sub">{siteBrand === "itineraries" ? "Itineraries" : "Kosher Travel"}</p>
             </>
           )}
-          <p className="wg-cover-eyebrow">{brand ? `Prepared by ${brand.name}` : "A White Glove Kosher Travel journey"}</p>
+          <p className="wg-cover-eyebrow">{brand ? `Prepared by ${brand.name}` : `A ${brandName} journey`}</p>
           {brand?.contactLine && <p className="wg-cover-contact">{brand.contactLine}</p>}
           <CoverHeading className="wg-cover-title">{title}</CoverHeading>
           <div className="wg-cover-rule" />
@@ -195,7 +208,7 @@ export default function PrintableItinerary({
 
         <p className="wg-cover-foot">
           {brand ? brand.name : "Thoughtfully arranged · meaningfully traveled"}
-          <span className="wg-cover-site">{brand ? "Planned with whiteglovekoshertravel.com" : "whiteglovekoshertravel.com"}</span>
+          <span className="wg-cover-site">{brand ? `Planned with ${brandDomain}` : brandDomain}</span>
         </p>
       </section>
 
@@ -211,7 +224,7 @@ export default function PrintableItinerary({
               ) : brand ? null : (
                 <Image src="/logo-hand-navy.png" alt="" width={355} height={460} className="wg-head-mark" />
               )}
-              <span className="wg-head-name">{brand ? brand.name : "White Glove Kosher Travel"} · {title}</span>
+              <span className="wg-head-name">{brand ? brand.name : brandName} · {title}</span>
               <span className="wg-head-day">Day {String(index + 1).padStart(2, "0")}</span>
             </header>
 
@@ -254,7 +267,7 @@ export default function PrintableItinerary({
             <footer className="wg-foot">
               {/* The credit line. On a branded document this is the only thing
                   on the page that is not the business's own, and it stays. */}
-              <span>{brand ? `${brand.name} · planned with whiteglovekoshertravel.com` : "White Glove Kosher Travel · whiteglovekoshertravel.com"}</span>
+              <span>{brand ? `${brand.name} · planned with ${brandDomain}` : `${brandName} · ${brandDomain}`}</span>
               <span>{footerRight}</span>
             </footer>
           </section>

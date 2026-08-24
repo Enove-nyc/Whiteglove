@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import PrintableItinerary from "@/components/PrintableItinerary";
 import type { PrintBrand } from "@/lib/business-brand";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { brandForHost } from "@/lib/site-brand-core";
 import { useKeverBurials } from "@/lib/use-kever-burials";
 import { usePlannerAssumptions } from "@/components/usePlannerAssumptions";
 
@@ -128,5 +129,12 @@ export default function PrintItineraryPage() {
 
   if (!itin || !ready || !claim) return <main className="p-10 text-sm text-stone-500">Loading your itinerary…</main>;
 
-  return <PrintableItinerary itin={itin} burials={burials} assume={assume} brand={brand} preparedFor={client} />;
+  // Read only once the trip itself is on the page — never during the loading
+  // render both the server and the client draw first — so this never becomes
+  // a hydration mismatch.
+  const siteBrand = brandForHost(window.location.hostname);
+
+  return (
+    <PrintableItinerary itin={itin} burials={burials} assume={assume} brand={brand} preparedFor={client} siteBrand={siteBrand} />
+  );
 }
