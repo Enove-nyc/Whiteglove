@@ -27,4 +27,12 @@ describe("sending a post-trip rating request is Business-only", () => {
   it("rejects a request with no valid client email", () => {
     assert.match(ROUTE, /EMAIL\.test\(clientEmail\)/);
   });
+
+  it("is rate limited per account, the same fence app/api/account/itinerary/send/route.ts keeps on the same shape of request", () => {
+    assert.match(ROUTE, /rateLimit\(`rating-request:\$\{owner\}`, SEND_LIMIT\)/);
+  });
+
+  it("builds its one link from siteOrigin(), never trusting the request's own Host header alone", () => {
+    assert.match(ROUTE, /siteOrigin\(\)\?\.origin \|\| request\.nextUrl\.origin/);
+  });
 });

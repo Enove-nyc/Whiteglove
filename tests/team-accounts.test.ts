@@ -171,6 +171,25 @@ describe("removing a member cuts the link both ways", () => {
     const fn = STORE.slice(STORE.indexOf("export async function removeTeamMember"), STORE.indexOf("export async function resolveBusinessOwner"));
     assert.doesNotMatch(fn, /deleteTrip|deleteAccount|writeTrips/);
   });
+
+  it("revokes a still-pending invite's own join token — a withdrawn invite is not just off the roster, its link stops working too", () => {
+    const fn = STORE.slice(STORE.indexOf("export async function removeTeamMember"), STORE.indexOf("export async function resolveBusinessOwner"));
+    assert.match(fn, /deleteKey\(teamInviteKey\(entry\.inviteToken\)\)/);
+  });
+});
+
+describe("a pending invite's own join token travels with its roster entry", () => {
+  const STORE = readFileSync("lib/account-store.ts", "utf8");
+
+  it("inviteTeamMember stamps the token onto the new roster entry", () => {
+    const fn = STORE.slice(STORE.indexOf("export async function inviteTeamMember"), STORE.indexOf("export async function getTeamInvite"));
+    assert.match(fn, /inviteToken: token/);
+  });
+
+  it("readTeam carries inviteToken through, the same as every other field", () => {
+    const stored = [{ email: "staff@example.com", status: "invited", invitedAt: "2026-01-01T00:00:00Z", inviteToken: "abc123" }];
+    assert.equal(readTeam(stored)[0].inviteToken, "abc123");
+  });
 });
 
 describe("resolveBusinessOwner is the one seam business-data routes read", () => {

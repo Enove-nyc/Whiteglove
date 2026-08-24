@@ -2640,7 +2640,7 @@ export async function inviteTeamMember(ownerEmail: string, memberIdentifier: str
   const now = new Date().toISOString();
   const wrote = await writeJson(teamInviteKey(token), { ownerEmail: owner, memberEmail: member, createdAt: now });
   if (!wrote) return { ok: false as const, error: "Could not create the invite." };
-  const nextTeam: TeamMember[] = [...team, { email: member, status: "invited", invitedAt: now }];
+  const nextTeam: TeamMember[] = [...team, { email: member, status: "invited", invitedAt: now, inviteToken: token }];
   const saved = await writeJson(accountKey(owner), { ...record, team: nextTeam });
   if (!saved) return { ok: false as const, error: "Could not save the invite." };
   return { ok: true as const, token };
@@ -2686,7 +2686,7 @@ export async function acceptTeamInvite(token: string, accepterEmail: string) {
   // same open seat rather than opening a second one — matched by whichever
   // entry is still pending, since a token is single-use either way.
   const nextTeam: TeamMember[] = team.some((m) => m.email === accepter)
-    ? team.map((m) => (m.email === accepter ? { ...m, status: "active" as const, joinedAt: now } : m))
+    ? team.map((m) => (m.email === accepter ? { ...m, status: "active" as const, joinedAt: now, inviteToken: undefined } : m))
     : [...team.filter((m) => m.status !== "invited" || m.email !== invite.memberEmail), { email: accepter, status: "active" as const, invitedAt: invite.createdAt, joinedAt: now }];
 
   const ownerSaved = await writeJson(accountKey(owner), { ...ownerRecord, team: nextTeam });
@@ -2709,7 +2709,17 @@ export async function removeTeamMember(ownerEmail: string, memberEmail: string) 
   const ownerRecord = await getAccountRecord(owner);
   if (!ownerRecord) return { ok: false as const, error: "Could not find your account." };
   const team = readTeam(ownerRecord.team);
-  if (!team.some((m) => m.email === member)) return { ok: false as const, error: "That person is not on your team." };
+  const entry = team.find((m) => m.email === member);
+  if (!entry) return { ok: false as const, error: "That person is not on your team." };
+  // A withdrawn invite has to kill the join link itself, not just the
+  // roster row — otherwise anyone still holding /team/join/<token> could
+  // accept it later and land a staff seat the owner thought they'd
+  // cancelled. An active member's own token was already deleted the moment
+  // they accepted (acceptTeamInvite), so this only ever fires for one still
+  // pending.
+  if (entry.status === "invited" && entry.inviteToken) {
+    await deleteKey(teamInviteKey(entry.inviteToken));
+  }
 
   const ownerSaved = await writeJson(accountKey(owner), { ...ownerRecord, team: team.filter((m) => m.email !== member) });
   const memberRecord = await getAccountRecord(member);

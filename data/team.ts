@@ -25,6 +25,15 @@ export type TeamMember = {
   /** Set once they actually accept — an invited seat still counts against
    *  the seat limit, since the owner has already committed it to somebody. */
   joinedAt?: string;
+  /**
+   * The join token this invite was sent under — set only while status is
+   * "invited". Kept on the roster entry (not just the invite's own
+   * short-lived key) so withdrawing an invite can revoke that exact token:
+   * without this, removing a pending member from the roster left the join
+   * link itself still live, since lib/account-store.ts's invite key has no
+   * other index to find and delete it by.
+   */
+  inviteToken?: string;
 };
 
 export function readTeam(stored: unknown): TeamMember[] {
@@ -37,7 +46,8 @@ export function readTeam(stored: unknown): TeamMember[] {
     if (!email || !invitedAt) continue;
     const status: TeamMemberStatus = (entry as TeamMember).status === "active" ? "active" : "invited";
     const joinedAt = typeof (entry as TeamMember).joinedAt === "string" ? (entry as TeamMember).joinedAt : undefined;
-    out.push({ email, status, invitedAt, joinedAt });
+    const inviteToken = typeof (entry as TeamMember).inviteToken === "string" ? (entry as TeamMember).inviteToken : undefined;
+    out.push({ email, status, invitedAt, joinedAt, inviteToken });
   }
   return out;
 }
