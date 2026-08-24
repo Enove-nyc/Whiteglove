@@ -35,7 +35,8 @@ export default async function PaymentsPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar minimal />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
-        <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Payments</p>
+        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
           Trip payments
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">

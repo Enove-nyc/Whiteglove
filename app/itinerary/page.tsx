@@ -58,7 +58,8 @@ export default async function ItineraryPage() {
 
       <section className="border-b border-[var(--gold-light)] px-5 py-9 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
-          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Itinerary planner</p>
+          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
             Itinerary planner
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
