@@ -1,11 +1,12 @@
 "use client";
 
 import AddressAndCoordinate from "@/components/AddressAndCoordinate";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import type { Photo } from "@prisma/client";
 import MixedText from "@/components/MixedText";
 import PhotoManager from "@/components/PhotoManager";
 import SearchableSelect from "@/components/SearchableSelect";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import {
   addCemeteryForPersonAction,
   addPersonToCemeteryAction,
@@ -180,11 +181,29 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
   // him — saveCemeteryBurial upserts by name — so Edit fills this one form
   // rather than opening a second one that could drift away from it.
   const [draft, setDraft] = useState<PersonDraft | null>(null);
+  // The add/edit form opens in a pop-up over the list rather than below it, so
+  // pressing Edit no longer scrolls the page away to find where it landed.
+  const [personOpen, setPersonOpen] = useState(false);
   const [newState, newAction, newPending] = useFormAction(addCemeteryForPersonAction);
   const [removeState, removeAction] = useFormAction(removePersonAction);
+  const personDialogRef = useFocusTrap<HTMLDivElement>(personOpen, () => setPersonOpen(false));
 
   const selected = cemeteries.find((c) => c.slug === slug) ?? cemeteries[0];
   const activeSlug = selected?.slug ?? "";
+
+  // A save that went through closes the pop-up; the list refreshes from the
+  // action's revalidate.
+  useEffect(() => {
+    if (addState?.ok) {
+      setPersonOpen(false);
+      setDraft(null);
+    }
+  }, [addState]);
+  // Switching beis hachaim closes a pop-up that belonged to the old one.
+  useEffect(() => {
+    setPersonOpen(false);
+    setDraft(null);
+  }, [slug]);
 
   return (
     <div className="space-y-8">
@@ -224,14 +243,23 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
             <div className="mt-6 border border-[var(--gold-light)] bg-white p-5">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Buried here now</h3>
-                <a
-                  href={`/cemeteries/${selected.slug}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
-                >
-                  Open the public page →
-                </a>
+                <div className="flex items-center gap-4">
+                  <a
+                    href={`/cemeteries/${selected.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+                  >
+                    Open the public page →
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => { setDraft(null); setPersonOpen(true); }}
+                    className="min-h-[36px] border border-[var(--navy)] bg-[var(--navy)] px-4 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                  >
+                    Add a person
+                  </button>
+                </div>
               </div>
               {selected.builtIn.length === 0 && selected.stored.length === 0 ? (
                 <p className="mt-3 text-sm text-stone-600">Nobody is listed yet.</p>
@@ -247,10 +275,7 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
                       <span className="flex items-center gap-2">
                         <button
                         type="button"
-                        onClick={() => {
-                          setDraft(b);
-                          document.getElementById("kever-person-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
-                        }}
+                        onClick={() => { setDraft(b); setPersonOpen(true); }}
                         className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-[var(--navy)] hover:text-[var(--navy)]"
                       >
                         Edit
@@ -269,10 +294,7 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
                       <span className="flex items-center gap-2">
                         <button
                         type="button"
-                        onClick={() => {
-                          setDraft(b);
-                          document.getElementById("kever-person-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
-                        }}
+                        onClick={() => { setDraft(b); setPersonOpen(true); }}
                         className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-[var(--navy)] hover:text-[var(--navy)]"
                       >
                         Edit
@@ -295,31 +317,49 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
               <Status state={removeState} />
             </div>
 
-            <form action={addAction} className="mt-6" id="kever-person-form" key={draft?.name ?? "new"}>
-              <input type="hidden" name="slug" value={selected.slug} />
-              <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
-                {draft ? `Correcting ${draft.name}` : `Add someone to ${selected.city}`}
-              </h3>
-              <p className="mt-1 text-sm text-stone-600">
-                {draft
-                  ? "Change what needs changing and save. A box left blank keeps whatever the record already has rather than clearing it."
-                  : "Typing a name that is already here corrects that entry instead of listing him twice."}
-                {draft ? (
-                  <button type="button" onClick={() => setDraft(null)} className="ml-2 underline decoration-[var(--gold)] underline-offset-2">
-                    start a new one instead
-                  </button>
-                ) : null}
-              </p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <PersonFields idPrefix="add" values={draft ?? undefined} />
+            {personOpen && (
+              <div
+                className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
+                onClick={(event) => { if (event.target === event.currentTarget) setPersonOpen(false); }}
+              >
+                <div
+                  ref={personDialogRef}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="kever-person-title"
+                  className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 id="kever-person-title" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
+                      {draft ? `Correcting ${draft.name}` : `Add someone to ${selected.city}`}
+                    </h3>
+                    <button type="button" onClick={() => setPersonOpen(false)} className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]">
+                      Close
+                    </button>
+                  </div>
+                  <p className="mt-2 text-sm text-stone-600">
+                    {draft
+                      ? "Change what needs changing and save. A box left blank keeps whatever the record already has rather than clearing it."
+                      : "Typing a name that is already here corrects that entry instead of listing him twice."}
+                  </p>
+                  <form action={addAction} className="mt-5" key={draft?.name ?? "new"}>
+                    <input type="hidden" name="slug" value={selected.slug} />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <PersonFields idPrefix="add" values={draft ?? undefined} />
+                    </div>
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                      <button type="submit" disabled={addPending} className={submitClass}>
+                        {addPending ? "Saving…" : draft ? "Save the correction" : "Add to this beis hachaim"}
+                      </button>
+                      <button type="button" onClick={() => setPersonOpen(false)} className="min-h-[44px] px-4 text-xs font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]">
+                        Cancel
+                      </button>
+                    </div>
+                    {addState && !addState.ok && <p className="mt-3 text-sm font-semibold text-red-700">{addState.message}</p>}
+                  </form>
+                </div>
               </div>
-              <div className="mt-5">
-                <button type="submit" disabled={addPending} className={submitClass}>
-                  {addPending ? "Saving…" : draft ? "Save the correction" : "Add to this beis hachaim"}
-                </button>
-              </div>
-              <Status state={addState} />
-            </form>
+            )}
 
             {/* Pictures of the beis hachaim. What somebody wants before they
                 travel is the gate, the path, the ohel — so they know they are
