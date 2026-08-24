@@ -59,6 +59,11 @@ export default function CommissionsPanel() {
   }
 
   const allRecords = summaries.flatMap((s) => s.records);
+  // Assumes one currency across the agency's commission ledger — summing
+  // mismatched currencies as if they were the same money would be wrong,
+  // and this codebase has no conversion rates to do it properly. Shown in
+  // whichever currency the first record was logged in.
+  const agencyCurrency = allRecords[0]?.currency;
   const totals = {
     revenue: tripRevenueCents(allRecords),
     cost: supplierCostCents(allRecords),
@@ -79,7 +84,7 @@ export default function CommissionsPanel() {
         ].map((t) => (
           <div key={t.label} className="wg-card border border-[var(--gold-light)] bg-white p-4">
             <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{t.label}</p>
-            <p className="mt-1 text-lg font-semibold text-[var(--navy)]">{formatCommissionCents(t.value)}</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--navy)]">{formatCommissionCents(t.value, agencyCurrency)}</p>
           </div>
         ))}
       </div>
@@ -88,6 +93,7 @@ export default function CommissionsPanel() {
         {summaries.map((s) => {
           const expected = expectedCommissionCents(s.records);
           const outstanding = outstandingCommissionCents(s.records);
+          const currency = s.records[0]?.currency;
           return (
             <li key={s.tripId} className="wg-card flex flex-wrap items-center justify-between gap-3 border border-[var(--gold-light)] bg-white p-4">
               <div>
@@ -100,12 +106,12 @@ export default function CommissionsPanel() {
               <div className="flex items-center gap-4 text-right">
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Expected</p>
-                  <p className="text-sm font-semibold text-[var(--navy)]">{formatCommissionCents(expected)}</p>
+                  <p className="text-sm font-semibold text-[var(--navy)]">{formatCommissionCents(expected, currency)}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Outstanding</p>
                   <p className={`text-sm font-semibold ${outstanding > 0 ? "text-red-700" : "text-[var(--navy)]"}`}>
-                    {formatCommissionCents(outstanding)}
+                    {formatCommissionCents(outstanding, currency)}
                   </p>
                 </div>
               </div>
@@ -177,12 +183,22 @@ export function TripCommissionEditor() {
 
   async function removeRecord(id: string) {
     if (!tripId) return;
+    const previous = records;
     setRecords((prev) => prev.filter((r) => r.id !== id));
-    await fetch("/api/account/commissions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tripId, action: "delete", id }),
-    }).catch(() => undefined);
+    try {
+      const res = await fetch("/api/account/commissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, action: "delete", id }),
+      });
+      if (!res.ok) {
+        setRecords(previous);
+        setError("Could not remove that record.");
+      }
+    } catch {
+      setRecords(previous);
+      setError("Could not reach the account service.");
+    }
   }
 
   if (loading) return <p className="text-sm text-stone-500">Loading…</p>;
@@ -203,8 +219,8 @@ export function TripCommissionEditor() {
                 {r.description && <p className="text-xs text-stone-500">{r.description}</p>}
               </div>
               <div className="flex items-center gap-3 text-xs text-stone-600">
-                <span>Expected {formatCommissionCents(r.expectedCommissionCents)}</span>
-                <span>Received {formatCommissionCents(r.receivedCommissionCents)}</span>
+                <span>Expected {formatCommissionCents(r.expectedCommissionCents, r.currency)}</span>
+                <span>Received {formatCommissionCents(r.receivedCommissionCents, r.currency)}</span>
                 <button type="button" onClick={() => removeRecord(r.id)} className="font-semibold text-red-700 underline">
                   Remove
                 </button>
@@ -212,8 +228,8 @@ export function TripCommissionEditor() {
             </li>
           ))}
           <li className="flex justify-end gap-4 pt-1 text-xs text-stone-600">
-            <span>Expected total {formatCommissionCents(expected)}</span>
-            <span className={outstanding > 0 ? "font-semibold text-red-700" : ""}>Outstanding {formatCommissionCents(outstanding)}</span>
+            <span>Expected total {formatCommissionCents(expected, records[0]?.currency)}</span>
+            <span className={outstanding > 0 ? "font-semibold text-red-700" : ""}>Outstanding {formatCommissionCents(outstanding, records[0]?.currency)}</span>
           </li>
         </ul>
       )}

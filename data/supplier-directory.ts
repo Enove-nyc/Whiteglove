@@ -29,6 +29,10 @@ export type SupplierSummary = {
   name: string;
   tripCount: number;
   bookingCount: number;
+  /** The first record's own currency — assumes one currency per supplier,
+   *  the same assumption the agency-wide Commissions totals make; summing
+   *  mismatched currencies as if they were the same money would be wrong. */
+  currency: string;
   revenueCents: number;
   expectedCommissionCents: number;
   receivedCommissionCents: number;
@@ -58,6 +62,7 @@ export function suppliersFromCommissions(trips: TripCommissions[]): SupplierSumm
         name,
         tripCount: 0,
         bookingCount: 0,
+        currency: record.currency,
         revenueCents: 0,
         expectedCommissionCents: 0,
         receivedCommissionCents: 0,

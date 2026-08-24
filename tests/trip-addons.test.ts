@@ -9,6 +9,7 @@ function item(over: Partial<AddonItem> = {}): AddonItem {
     id: "i1",
     name: "Travel insurance",
     priceCents: 10000,
+    currency: "USD",
     status: "offered",
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",

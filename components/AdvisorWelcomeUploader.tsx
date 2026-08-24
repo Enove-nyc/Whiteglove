@@ -71,8 +71,18 @@ export default function AdvisorWelcomeUploader() {
 
   async function remove() {
     if (!tripId) return;
+    const previous = welcome;
     setWelcome(null);
-    await fetch(`/api/account/welcome-video?trip=${encodeURIComponent(tripId)}`, { method: "DELETE" }).catch(() => undefined);
+    try {
+      const res = await fetch(`/api/account/welcome-video?trip=${encodeURIComponent(tripId)}`, { method: "DELETE" });
+      if (!res.ok) {
+        setWelcome(previous);
+        setError("Could not remove that video.");
+      }
+    } catch {
+      setWelcome(previous);
+      setError("Could not reach the account service.");
+    }
   }
 
   if (loading) return <p className="text-sm text-stone-500">Loading…</p>;

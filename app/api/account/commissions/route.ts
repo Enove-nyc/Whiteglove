@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   accountCookieName,
   deleteCommissionRecord,
+  getBalance,
   getCommissions,
   getCurrentAccountData,
   getTripItinerary,
@@ -93,6 +94,13 @@ export async function POST(request: NextRequest) {
   }
   const toCents = (n: unknown) => (typeof n === "number" && Number.isFinite(n) && n >= 0 ? Math.round(n) : 0);
 
+  // Editing an existing record keeps its own currency and creation date —
+  // only a new one picks up the trip's current balance currency, the same
+  // "preserve what an edit shouldn't touch" rule app/api/account/addons/route.ts
+  // already follows for a re-edited add-on.
+  const existing = body.id ? (await getCommissions(who.email, trip.tripId)).find((r) => r.id === body.id) : undefined;
+  const balance = existing ? null : await getBalance(who.email, trip.tripId);
+
   const record: CommissionRecord = {
     id: body.id || "",
     supplier: body.supplier.trim(),
@@ -102,8 +110,9 @@ export async function POST(request: NextRequest) {
     expectedCommissionCents: toCents(body.expectedCommissionCents),
     receivedCommissionCents: toCents(body.receivedCommissionCents),
     receivedAt: body.receivedAt?.trim() || undefined,
+    currency: existing?.currency ?? balance?.currency ?? "USD",
     notes: body.notes?.trim() || undefined,
-    createdAt: new Date().toISOString(),
+    createdAt: existing?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 

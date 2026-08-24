@@ -26,6 +26,10 @@ export type AddonItem = {
   name: string;
   description?: string;
   priceCents: number;
+  /** ISO 4217, uppercase — e.g. "USD". Defaults to the trip's own balance
+   *  currency when an add-on is offered, so what a client is asked to pay
+   *  reads in the same money as the rest of the trip's balance. */
+  currency: string;
   status: AddonStatus;
   createdAt: string;
   updatedAt: string;
@@ -33,9 +37,9 @@ export type AddonItem = {
   respondedAt?: string;
 };
 
-export function emptyAddonItem(): AddonItem {
+export function emptyAddonItem(currency = "USD"): AddonItem {
   const now = new Date().toISOString();
-  return { id: "", name: "", priceCents: 0, status: "offered", createdAt: now, updatedAt: now };
+  return { id: "", name: "", priceCents: 0, currency, status: "offered", createdAt: now, updatedAt: now };
 }
 
 /** Only what's been accepted counts toward what the client owes. */

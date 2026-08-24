@@ -19,6 +19,7 @@ function record(over: Partial<CommissionRecord> = {}): CommissionRecord {
     costCents: 0,
     expectedCommissionCents: 0,
     receivedCommissionCents: 0,
+    currency: "USD",
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
     ...over,

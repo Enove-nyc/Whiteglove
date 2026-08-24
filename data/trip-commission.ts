@@ -28,12 +28,17 @@ export type CommissionRecord = {
   receivedCommissionCents: number;
   /** When the most recent payment against this booking's commission arrived. */
   receivedAt?: string;
+  /** ISO 4217, uppercase — e.g. "USD". Defaults to the trip's own balance
+   *  currency when a record is created, so a booking logged in the same
+   *  money the client is being charged in reads correctly without the
+   *  planner having to set it by hand every time. */
+  currency: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
 };
 
-export function emptyCommissionRecord(): CommissionRecord {
+export function emptyCommissionRecord(currency = "USD"): CommissionRecord {
   const now = new Date().toISOString();
   return {
     id: "",
@@ -42,6 +47,7 @@ export function emptyCommissionRecord(): CommissionRecord {
     costCents: 0,
     expectedCommissionCents: 0,
     receivedCommissionCents: 0,
+    currency,
     createdAt: now,
     updatedAt: now,
   };

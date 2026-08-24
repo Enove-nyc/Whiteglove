@@ -50,7 +50,7 @@ export default function AddonsClientView({ shareId, items: initial }: { shareId:
               <h3 className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">{i.name}</h3>
               {i.description && <p className="mt-1 text-sm text-stone-600">{i.description}</p>}
             </div>
-            <p className="whitespace-nowrap font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">{formatAddonCents(i.priceCents)}</p>
+            <p className="whitespace-nowrap font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">{formatAddonCents(i.priceCents, i.currency)}</p>
           </div>
 
           {i.status === "offered" ? (

@@ -67,12 +67,22 @@ export default function AddonsEditor() {
 
   async function removeItem(id: string) {
     if (!tripId) return;
+    const previous = items;
     setItems((prev) => prev.filter((i) => i.id !== id));
-    await fetch("/api/account/addons", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tripId, action: "delete", id }),
-    }).catch(() => undefined);
+    try {
+      const res = await fetch("/api/account/addons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, action: "delete", id }),
+      });
+      if (!res.ok) {
+        setItems(previous);
+        setError("Could not remove that add-on.");
+      }
+    } catch {
+      setItems(previous);
+      setError("Could not reach the account service.");
+    }
   }
 
   async function copyLink() {
@@ -115,7 +125,7 @@ export default function AddonsEditor() {
                 {i.description && <p className="text-xs text-stone-500">{i.description}</p>}
               </div>
               <div className="flex items-center gap-3 text-xs">
-                <span className="text-stone-600">{formatAddonCents(i.priceCents)}</span>
+                <span className="text-stone-600">{formatAddonCents(i.priceCents, i.currency)}</span>
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                     i.status === "accepted" ? "bg-emerald-100 text-emerald-800" : i.status === "declined" ? "bg-stone-200 text-stone-600" : "bg-amber-100 text-amber-800"

@@ -1597,7 +1597,7 @@ export async function generatePackingList(email: string, tripId: string): Promis
   if (!trip) return null;
   const summary = packingSummary(trip.itinerary);
   const suggestions = await suggestPackingList(summary);
-  if (suggestions.length === 0) return null;
+  if (suggestions === null) return null;
   const list: PackingList = {
     items: suggestions.map((s) => ({ id: packingItemId(), label: s.label, category: s.category, checked: false })),
     generatedAt: new Date().toISOString(),

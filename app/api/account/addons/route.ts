@@ -5,6 +5,7 @@ import {
   deleteAddonItem,
   ensureAddonsShare,
   getAddons,
+  getBalance,
   getCurrentAccountData,
   getTripItinerary,
   resolveBusinessOwner,
@@ -92,12 +93,14 @@ export async function POST(request: NextRequest) {
   // only the client's own action changes status, so an edit keeps whatever
   // the client already decided.
   const existing = body.id ? (await getAddons(email, trip.tripId)).find((i) => i.id === body.id) : undefined;
+  const balance = existing ? null : await getBalance(email, trip.tripId);
 
   const item: AddonItem = {
     id: body.id || "",
     name: body.name.trim(),
     description: body.description?.trim() || undefined,
     priceCents,
+    currency: existing?.currency ?? balance?.currency ?? "USD",
     status: existing?.status ?? "offered",
     respondedAt: existing?.respondedAt,
     createdAt: existing?.createdAt || new Date().toISOString(),

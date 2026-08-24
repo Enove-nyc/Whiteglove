@@ -133,17 +133,21 @@ async function askOpenAI(key: string, prompt: string): Promise<string | null> {
 }
 
 /**
- * Suggest a packing list from a trip summary. Returns an empty array —
- * never throws — when no provider is configured or every provider failed,
- * so the caller can say "couldn't generate one right now" without a
- * special error path.
+ * Suggest a packing list from a trip summary.
+ *
+ * NULL MEANS "COULDN'T ASK" — no provider configured, every provider
+ * failed, or the model's output didn't parse into anything usable. AN
+ * EMPTY ARRAY IS A GENUINE, IF UNLIKELY, RESULT, kept distinct the same
+ * way lib/itinerary-optimization-ai.ts's suggestItineraryOptimizations
+ * keeps "couldn't ask" apart from "asked, and there was nothing to add" —
+ * so a caller never mistakes a real (if odd) empty answer for an outage.
  */
 export async function suggestPackingList(input: {
   destinations: string[];
   startDate?: string;
   endDate?: string;
   stops: string[];
-}): Promise<PackingSuggestion[]> {
+}): Promise<PackingSuggestion[] | null> {
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
   const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
   const openaiKey = process.env.OPENAI_API_KEY?.trim();
@@ -154,10 +158,10 @@ export async function suggestPackingList(input: {
     if (geminiKey) raw = await askGemini(geminiKey, prompt);
     if (!raw && anthropicKey) raw = await askAnthropic(anthropicKey, prompt);
     if (!raw && openaiKey) raw = await askOpenAI(openaiKey, prompt);
-    if (!raw) return [];
+    if (!raw) return null;
     return parseItems(raw);
   } catch (err) {
     console.warn("[packing-ai] generation failed", err);
-    return [];
+    return null;
   }
 }

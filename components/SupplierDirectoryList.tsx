@@ -52,20 +52,20 @@ export default function SupplierDirectoryList() {
           <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
             <div>
               <dt className="font-bold uppercase tracking-wide text-stone-500">Revenue booked</dt>
-              <dd className="text-[var(--navy)]">{formatCommissionCents(s.revenueCents)}</dd>
+              <dd className="text-[var(--navy)]">{formatCommissionCents(s.revenueCents, s.currency)}</dd>
             </div>
             <div>
               <dt className="font-bold uppercase tracking-wide text-stone-500">Expected commission</dt>
-              <dd className="text-[var(--navy)]">{formatCommissionCents(s.expectedCommissionCents)}</dd>
+              <dd className="text-[var(--navy)]">{formatCommissionCents(s.expectedCommissionCents, s.currency)}</dd>
             </div>
             <div>
               <dt className="font-bold uppercase tracking-wide text-stone-500">Received</dt>
-              <dd className="text-[var(--navy)]">{formatCommissionCents(s.receivedCommissionCents)}</dd>
+              <dd className="text-[var(--navy)]">{formatCommissionCents(s.receivedCommissionCents, s.currency)}</dd>
             </div>
             <div>
               <dt className="font-bold uppercase tracking-wide text-stone-500">Outstanding</dt>
               <dd className={s.outstandingCommissionCents > 0 ? "font-semibold text-red-700" : "text-[var(--navy)]"}>
-                {formatCommissionCents(s.outstandingCommissionCents)}
+                {formatCommissionCents(s.outstandingCommissionCents, s.currency)}
               </dd>
             </div>
           </dl>
