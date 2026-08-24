@@ -9,7 +9,7 @@
 // online, and the cache is only a fallback when offline. Only truly static
 // media (images, fonts) is cache-first.
 const CACHE = "wg-cache-v2";
-const PRECACHE = ["/", "/icon-192.png", "/icon-512.png"];
+const PRECACHE = ["/", "/offline", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).catch(() => {}));
@@ -27,6 +27,13 @@ self.addEventListener("activate", (event) => {
 });
 
 // Network-first: use the network when we can, fall back to the cache offline.
+//
+// A NAVIGATION MISS GOES TO /offline, NOT THE HOMEPAGE. It used to fall back
+// to "/" for any page that wasn't already cached — silently swapping the
+// trip somebody was trying to reopen for the marketing homepage, with
+// nothing said about why. A traveler standing at a gate with no signal needs
+// to know the connection is the problem, not wonder if the app lost their
+// trip.
 function networkFirst(req) {
   return fetch(req)
     .then((res) => {
@@ -36,7 +43,7 @@ function networkFirst(req) {
       }
       return res;
     })
-    .catch(() => caches.match(req).then((r) => r || (req.mode === "navigate" ? caches.match("/") : undefined)));
+    .catch(() => caches.match(req).then((r) => r || (req.mode === "navigate" ? caches.match("/offline") : undefined)));
 }
 
 self.addEventListener("fetch", (event) => {

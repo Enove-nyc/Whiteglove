@@ -444,6 +444,22 @@ export default function CompanionApp({
     };
   }, [liveChat]);
 
+  // Whether THIS DEVICE currently has a connection — not whether the trip
+  // shown is fresh. `navigator.onLine` starts true on the server (there is
+  // no navigator there), so the banner only ever appears client-side, after
+  // the browser actually reports a dropped connection.
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
+
   const advisor = trip.advisorName;
   const firstName = advisor.split(" ")[0];
   // The place, for the guide card — "The Cohens · Rome" → "Rome".
@@ -1330,6 +1346,18 @@ export default function CompanionApp({
           {(open || unacknowledgedAlerts.length > 0) && <span style={{ position: "absolute", top: -3, right: -3, width: 11, height: 11, borderRadius: 14, background: GOLD, border: `2px solid ${CREAM}` }} />}
         </button>
       </div>
+      {/* Only ever says the DEVICE has no connection right now — never a
+          verdict on whether what's on screen is stale, which nothing here
+          actually knows. Everything shown was loaded from the network at
+          some point; this just says a fresh copy can't be fetched right
+          now, so anything requiring one (Changes, Messages, marking a
+          payment) won't update until the connection is back. */}
+      {isOffline && (
+        <div style={{ flexShrink: 0, padding: "9px 18px", background: "#faf1de", borderBottom: "1px solid rgba(183,138,74,.28)", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ width: 7, height: 7, borderRadius: 14, background: GOLD, flexShrink: 0 }} />
+          <span style={{ font: "600 11.5px/1.3 Inter,sans-serif", color: "#765321" }}>No connection — showing what was last loaded</span>
+        </div>
+      )}
       {/* content */}
       <div className="wg-scroll" style={{ flex: 1, overflow: "auto", WebkitOverflowScrolling: "touch" }}>{body}</div>
       {/* tabs */}
