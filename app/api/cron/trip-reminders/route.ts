@@ -32,12 +32,17 @@ async function wasDelivered(shareId: string, message: CompanionChatMessage): Pro
  * due — "you're leaving soon", "a balance is still due" — into each trip's
  * own chat thread, the same one the advisor and client already talk in.
  *
- * RUN BY VERCEL CRON (see vercel.json), NEVER BY A BROWSER. Authenticated by
- * `CRON_SECRET`: Vercel signs its own cron requests with it automatically,
- * and there is no other legitimate caller — this endpoint sends a message
- * to a real person, so an open door here is not a quiet bug, it is spam
- * with the site's name on it. Not configured means refused, the same
- * fail-closed rule the billing webhook follows for its own secret.
+ * RUN ONCE A DAY BY A GITHUB ACTIONS WORKFLOW, NEVER BY A BROWSER — see
+ * .github/workflows/trip-reminders.yml, which calls this with the shared
+ * `CRON_SECRET` as a bearer token. The schedule lives there rather than in
+ * vercel.json because the site deploys to Railway, where a long-running web
+ * service has no scheduler of its own; a `crons` entry in vercel.json was
+ * silently inert and sent nothing.
+ *
+ * There is no other legitimate caller — this endpoint sends a message to a
+ * real person, so an open door here is not a quiet bug, it is spam with the
+ * site's name on it. Not configured means refused, the same fail-closed rule
+ * the billing webhook follows for its own secret.
  */
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;

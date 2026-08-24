@@ -124,10 +124,10 @@ export const CONNECTIONS: Connection[] = [
     vars: ["CRON_SECRET"],
     what: "Sending an advisor's own automatic client reminders — \"leaving soon\", \"a balance is due\" — on a trip that turned them on.",
     without:
-      "Nothing is ever wrong on the trip itself: the reminder toggle in the trip switcher still saves. It simply never fires, since Vercel's scheduled run to app/api/cron/trip-reminders refuses without this to prove the request is really Vercel's own and not anybody who found the address.",
+      "Nothing is ever wrong on the trip itself: the reminder toggle in the trip switcher still saves. It simply never fires, because app/api/cron/trip-reminders refuses every request that cannot prove it is the scheduled run rather than somebody who found the address.",
     weight: "feature",
     where:
-      "Any value of your own choosing, at least twenty random characters. Vercel reads this same variable automatically and signs its own cron requests with it — set once here, nothing to configure on Vercel's side beyond the schedule already in vercel.json.",
+      "Any value of your own choosing, at least twenty random characters. It has to be set in TWO places with the SAME value: here on the server, and as a CRON_SECRET repository secret on GitHub (Settings → Secrets and variables → Actions), because the daily run is a GitHub Actions workflow — .github/workflows/trip-reminders.yml. Set in only one of the two and the run is refused every day, quietly.",
   },
   {
     vars: ["OWNER_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL", "CONTACT_NOTIFICATION_EMAIL_ITINERARIES", "OWNER_EMAIL"],

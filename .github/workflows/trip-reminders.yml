@@ -1,0 +1,68 @@
+# Send the day's automatic client reminders.
+#
+# WHY THIS EXISTS AS A WORKFLOW. app/api/cron/trip-reminders is the endpoint
+# that actually sends them — "your trip leaves in 3 days", "a balance is still
+# due" — into each trip's own chat thread. It does nothing on its own: it has
+# to be called once a day by something holding the shared secret. The site runs
+# on Railway, which has no scheduler for a long-running web service, so the
+# clock lives here instead. A `crons` entry in vercel.json was tried first and
+# was silently inert, because nothing deploys this repository to Vercel; a
+# reminder that never fires and never complains is the worst way for this to
+# fail, so the schedule now sits somewhere its runs are visible.
+#
+# WHAT IT NEEDS: a CRON_SECRET repository secret whose value matches the
+# CRON_SECRET set on the Railway service. Without it the endpoint refuses every
+# request, which is deliberate — this sends messages to real clients, so an
+# open door here would be spam with the site's name on it.
+#
+# SAFE TO RUN TWICE. Each reminder is marked sent the moment it lands, and the
+# endpoint checks that mark before sending anything, so a re-run on a bad day
+# repeats nothing.
+
+name: Trip reminders
+
+on:
+  schedule:
+    # 13:17 UTC — mid-morning in New York, so a client reading "you leave in
+    # three days" is awake for it. Not on the hour: GitHub queues everybody who
+    # asks for :00 and the run drifts by tens of minutes.
+    - cron: "17 13 * * *"
+  # So a missed day can be sent by hand without waiting for tomorrow.
+  workflow_dispatch:
+
+concurrency:
+  group: trip-reminders
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the reminders endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          # Overridable so this keeps working if the site ever moves; the
+          # default is the live production host.
+          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whiteglovekoshertravel.com' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET is not set on this repository — nothing can be sent."
+            echo "Add it under Settings → Secrets and variables → Actions, matching the value on Railway."
+            exit 1
+          fi
+
+          # -sS keeps curl quiet but still prints real errors; the body and the
+          # status code are captured separately so a failure can show both.
+          body=$(mktemp)
+          code=$(curl -sS --max-time 120 -o "$body" -w "%{http_code}" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/cron/trip-reminders")
+
+          echo "HTTP $code"
+          cat "$body"
+          echo
+
+          if [ "$code" != "200" ]; then
+            echo "The reminders run did not succeed."
+            exit 1
+          fi
