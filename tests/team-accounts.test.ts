@@ -174,24 +174,45 @@ describe("removing a member cuts the link both ways", () => {
 });
 
 describe("resolveBusinessOwner is the one seam business-data routes read", () => {
-  const ROUTES = [
+  const WIRED = [
     "app/api/account/pipeline/route.ts",
     "app/api/account/trips/route.ts",
     "app/api/account/library/route.ts",
     "app/api/account/payments/route.ts",
     "app/api/account/proposal/route.ts",
     "app/api/account/itinerary/route.ts",
+    "app/api/account/alerts/route.ts",
+    "app/api/account/print/route.ts",
+    "app/api/account/client-form/route.ts",
+    "app/api/account/traveler-share/route.ts",
+    "app/api/account/attachments/route.ts",
+    "app/api/account/branding/route.ts",
+    "app/api/account/itinerary/send/route.ts",
+    "app/app/page.tsx",
   ];
 
-  for (const path of ROUTES) {
+  for (const path of WIRED) {
     it(`${path} resolves the signed-in identity through resolveBusinessOwner`, () => {
       const src = readFileSync(path, "utf8");
       assert.match(src, /resolveBusinessOwner/);
     });
   }
 
-  it("account settings (name, password, phone) are NOT resolved to the business owner — that would edit the wrong person's login", () => {
-    const src = readFileSync("app/api/account/update/route.ts", "utf8");
-    assert.doesNotMatch(src, /resolveBusinessOwner/);
-  });
+  // Deliberately NOT resolved — each of these is either the signed-in
+  // login's own identity-level thing (settings, personal favorites, a
+  // per-login rate limit, collaboration invites addressed to one specific
+  // person) rather than the shared business's trips/pipeline/library.
+  const DELIBERATELY_PERSONAL = [
+    "app/api/account/update/route.ts",
+    "app/api/account/places/route.ts",
+    "app/api/account/smart-import/route.ts",
+    "app/api/account/shared-with-me/route.ts",
+  ];
+
+  for (const path of DELIBERATELY_PERSONAL) {
+    it(`${path} stays on the signed-in identity itself, not resolved to a business owner`, () => {
+      const src = readFileSync(path, "utf8");
+      assert.doesNotMatch(src, /resolveBusinessOwner/);
+    });
+  }
 });

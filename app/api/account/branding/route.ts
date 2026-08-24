@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { mayBrandOwnItinerary } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
-import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { brandProblem, cleanBrand, describeBrand, emptyBrand, printBrandFor } from "@/lib/business-brand";
 import { brandStoreAvailable, readBrand, writeBrand } from "@/lib/business-brand-store";
 import { effectiveMediaLimit, isAllowedMediaType, mediaStoreAvailable, putMedia } from "@/lib/media";
@@ -42,11 +42,14 @@ const MAX_LOGO_BYTES = effectiveMediaLimit();
  */
 const LOGO_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
+/** The business a staff login is linked to, or the account itself — a
+ *  letterhead belongs to the business, not to whichever login set it. */
 async function whoAndPlan(cookie: string | undefined) {
   const account = await getCurrentAccountData(cookie);
   if (!account) return null;
-  const plan = await getPlan(account.email);
-  return { account, plan, allowed: mayBrandOwnItinerary(plan) };
+  const email = await resolveBusinessOwner(account.email);
+  const plan = await getPlan(email);
+  return { email, plan, allowed: mayBrandOwnItinerary(plan) };
 }
 
 export async function GET() {
@@ -54,13 +57,13 @@ export async function GET() {
   const who = await whoAndPlan(cookieStore.get(accountCookieName())?.value);
   if (!who) return NextResponse.json({ signedIn: false, allowed: false, brand: null, print: null });
 
-  const stored = await readBrand(who.account.email);
+  const stored = await readBrand(who.email);
   return NextResponse.json({
     signedIn: true,
     allowed: who.allowed,
     plan: who.plan,
     storeReady: brandStoreAvailable(),
-    brand: stored ?? emptyBrand(who.account.email),
+    brand: stored ?? emptyBrand(who.email),
     /** What the printed document should actually use. Null means White Glove. */
     print: printBrandFor(stored, who.allowed),
     summary: describeBrand(stored, who.allowed),
@@ -95,7 +98,7 @@ export async function POST(request: NextRequest) {
   const problem = brandProblem(body);
   if (problem) return NextResponse.json({ error: problem }, { status: 400 });
 
-  const existing = await readBrand(who.account.email);
+  const existing = await readBrand(who.email);
   let logoMediaId = existing?.logoMediaId ?? "";
 
   if (body.removeLogo) logoMediaId = "";
@@ -125,13 +128,13 @@ export async function POST(request: NextRequest) {
     logoMediaId = id;
   }
 
-  const next = cleanBrand(who.account.email, {
+  const next = cleanBrand(who.email, {
     name: body.name,
     contactLine: body.contactLine,
     enabled: body.enabled === true,
     logoMediaId,
   });
-  if (!(await writeBrand(who.account.email, next))) {
+  if (!(await writeBrand(who.email, next))) {
     return NextResponse.json({ error: "That could not be saved. Try again." }, { status: 503 });
   }
   return NextResponse.json({

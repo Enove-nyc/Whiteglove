@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { mayBrandOwnItinerary } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
-import { accountCookieName, ensureItineraryShare, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
+import { accountCookieName, ensureItineraryShare, getCurrentAccountData, getTripItinerary, resolveBusinessOwner } from "@/lib/account-store";
 import { printBrandFor } from "@/lib/business-brand";
 import { readBrand } from "@/lib/business-brand-store";
 import { sendItineraryToClient } from "@/lib/email";
@@ -48,13 +48,17 @@ export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
   if (!account) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  // The trip, the brand and the plan gate are the business's — a staff login
+  // sends the SAME trip the owner would. Who the client actually replies to
+  // (below) stays the person who clicked send, not the business's owner.
+  const owner = await resolveBusinessOwner(account.email);
 
-  const plan = await getPlan(account.email);
+  const plan = await getPlan(owner);
   if (!mayBrandOwnItinerary(plan)) {
     return NextResponse.json({ error: "Sending an itinerary to a client is part of a Business account." }, { status: 403 });
   }
 
-  const brand = printBrandFor(await readBrand(account.email), true);
+  const brand = printBrandFor(await readBrand(owner), true);
   if (!brand) {
     return NextResponse.json(
       { error: "Set up your business name first — the email goes out as you, and it needs a name to go out as." },
@@ -72,13 +76,13 @@ export async function POST(request: NextRequest) {
   const limited = await rateLimit(`itinerary-send:${account.email.toLowerCase()}`, SEND_LIMIT);
   if (!limited.ok) return NextResponse.json({ error: tooManyMessage(limited.retryAfter) }, { status: 429 });
 
-  const trip = await getTripItinerary(account.email, body?.tripId);
+  const trip = await getTripItinerary(owner, body?.tripId);
   if (!trip) return NextResponse.json({ error: "There is no trip to send." }, { status: 404 });
 
   // The share link is made here if it does not exist. Sending somebody a link
   // and asking them to press "share" first would be a step that exists only
   // because the code was written in the wrong order.
-  const shareId = await ensureItineraryShare(account.email);
+  const shareId = await ensureItineraryShare(owner);
   if (!shareId) return NextResponse.json({ error: "Could not make the link to send. Try again." }, { status: 503 });
 
   const origin = siteOrigin()?.origin || request.nextUrl.origin;

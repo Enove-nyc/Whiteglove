@@ -15,6 +15,7 @@ import {
   getTripItinerary,
   getTrips,
   readSessionEmail,
+  resolveBusinessOwner,
 } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
@@ -64,7 +65,11 @@ export default async function AppPage({
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountSummary(cookie);
   const sessionEmail = readSessionEmail(cookie);
-  const who = account?.email || sessionEmail || "";
+  const signedInAs = account?.email || sessionEmail || "";
+  // A staff login opens the business's own trip here, not a personal one —
+  // see lib/account-store.ts's resolveBusinessOwner. An account with no
+  // team just resolves to itself.
+  const who = signedInAs ? await resolveBusinessOwner(signedInAs) : "";
   // Not signed in: the two doors. A client enters the code their adviser sent
   // and opens their one trip with no account; an adviser or a Gold member logs
   // in to their own trips. This replaced a straight redirect to /login, which
