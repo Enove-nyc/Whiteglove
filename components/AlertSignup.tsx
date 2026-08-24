@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import {
   ALERT_TOPIC_BLURBS,
   ALERT_TOPIC_LABELS,
@@ -178,7 +179,7 @@ export default function AlertSignup({
           <button
             type="submit"
             disabled={busy}
-            className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60"
+            className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary} disabled:opacity-60`}
           >
             {busy ? "Saving…" : "Save my preferences"}
           </button>

@@ -1,13 +1,12 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
+import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import LibraryManager from "@/components/LibraryManager";
 import { requireSignedIn } from "@/lib/require-signed-in";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
-import { PLAN_LABELS } from "@/lib/account-plans";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
 
@@ -29,14 +28,15 @@ export default async function LibraryPage() {
   await requireSignedIn("/library");
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
-  const plan = account ? await getPlan(account.email) : "traveler";
+  const plan = account ? await getPlan(account.email) : "free";
   const allowed = mayServeCompanionClients(plan);
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
-      <Navbar />
+      <Navbar minimal />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
-        <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Content library</p>
+        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
           Your content library
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
@@ -49,20 +49,15 @@ export default async function LibraryPage() {
             <LibraryManager />
           </div>
         ) : (
-          <div className="mt-8 max-w-xl rounded-2xl border border-[var(--gold-light)] bg-white p-6">
-            <p className="text-base leading-7 text-stone-600">
-              A content library is part of a Business account. You are on {PLAN_LABELS[plan]}. Ask about{" "}
-              {PLAN_LABELS.business} from your account, and we will be in touch.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/account" className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-                Ask about {PLAN_LABELS.business}
-              </Link>
-              <Link href="/itinerary" className="rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-white">
-                Back to the planner
-              </Link>
-            </div>
-          </div>
+          <LockedToolCard
+            toolLabel="A content library"
+            plan={plan}
+            bullets={[
+              "Save a hotel, activity or contact once, and reuse it on any proposal.",
+              "Group favorites into a pack, like Rome Family Trip, to add several at once.",
+              "Stop retyping the same details for every client.",
+            ]}
+          />
         )}
       </section>
       <Footer />

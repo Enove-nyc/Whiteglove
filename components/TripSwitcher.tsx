@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { countdownPhrase, tripProgress } from "@/lib/trip-progress";
+import { isAccountPlan } from "@/lib/account-plans";
+import { mayServeCompanionClients, mayUseTripTemplates } from "@/lib/account-limits";
 
 // The traveler's trips, and a way to move between them.
 //
@@ -31,7 +33,12 @@ type Trip = {
   /** The public token when shared, so the client's app link can be built. */
   shareId?: string;
   updatedAt: string;
+  /** Whether this trip's client gets automatic reminders — see lib/trip-reminders.ts. */
+  autoReminders: boolean;
 };
+
+/** An advisor's own saved trip shape — see lib/trip-templates.ts. */
+type Template = { id: string; name: string; createdAt: string };
 
 const smallButton =
   "min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:opacity-50";
@@ -58,13 +65,27 @@ export default function TripSwitcher({
   // endpoint the branding panel uses, and the buttons simply are not drawn for
   // anybody else — a greyed-out control advertising an upgrade has no place in
   // the middle of somebody's planning.
-  const [mayNameClient, setMayNameClient] = useState(false);
+  const [mayServeClients, setMayServeClients] = useState(false);
+  // Saving and starting from templates is Advisor Pro — read off the same
+  // branding response rather than a second request, since it already
+  // resolves the account's plan server-side.
+  const [mayUseTemplates, setMayUseTemplates] = useState(false);
   const [clientFor, setClientFor] = useState<string | null>(null);
   const [draftClient, setDraftClient] = useState("");
   // The agent on the trip, edited the same way as the client name.
   const [advisorFor, setAdvisorFor] = useState<string | null>(null);
   const [draftAdvisor, setDraftAdvisor] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  // The advisor's own saved trip shapes — a separate list from the trips
+  // themselves, fetched the same way.
+  const [templates, setTemplates] = useState<Template[] | null>(null);
+  const [savingTemplateFor, setSavingTemplateFor] = useState<string | null>(null);
+  const [templateDraftName, setTemplateDraftName] = useState("");
+  const [renamingTemplate, setRenamingTemplate] = useState<string | null>(null);
+  const [templateRenameDraft, setTemplateRenameDraft] = useState("");
+  const [startingFrom, setStartingFrom] = useState<string | null>(null);
+  const [startDraftName, setStartDraftName] = useState("");
+  const [startDraftDate, setStartDraftDate] = useState("");
   // This site's own origin, so the client link is absolute and copyable. This
   // panel only ever renders after its trips have loaded on the client, so
   // window is always here by the time the link is drawn — no effect needed.
@@ -88,15 +109,73 @@ export default function TripSwitcher({
     let live = true;
     fetch("/api/account/branding", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => live && setMayNameClient(Boolean(d?.allowed)))
+      .then((d) => {
+        if (!live) return;
+        // Naming who a trip is for, naming the advisor, and the client's own
+        // code are all Advisor Starter and up — the same door as handing a
+        // trip to a client at all (AGENTS.md). `allowed` on this response is
+        // mayBrandOwnItinerary, Pro-only, which is a different, narrower
+        // gate (the advisor's OWN logo on the document) — not this one.
+        setMayServeClients(isAccountPlan(d?.plan) ? mayServeCompanionClients(d.plan) : false);
+        setMayUseTemplates(isAccountPlan(d?.plan) ? mayUseTripTemplates(d.plan) : false);
+      })
       .catch(() => undefined);
     return () => {
       live = false;
     };
   }, []);
 
+  const loadTemplates = useCallback(() => {
+    fetch("/api/account/templates", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.templates && setTemplates(d.templates))
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
+
+  const templateAct = useCallback(
+    async (action: string, payload: { id?: string; tripId?: string; name?: string; startDate?: string } = {}, reload = false) => {
+      setBusy(true);
+      setError("");
+      try {
+        const res = await fetch("/api/account/templates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, ...payload }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) {
+          setError(data?.error ?? "That did not work. Try again.");
+          return;
+        }
+        if (data.templates) setTemplates(data.templates);
+        else loadTemplates();
+        // Starting a trip from a template creates a real trip, which the
+        // switcher's own trips list needs to show — same response shape
+        // /api/account/trips already returns.
+        if (data.trips) setTrips(data.trips);
+        setSavingTemplateFor(null);
+        setRenamingTemplate(null);
+        setStartingFrom(null);
+        if (reload) onSwitched?.();
+      } catch {
+        setError("Could not reach the server.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [loadTemplates, onSwitched],
+  );
+
   const act = useCallback(
-    async (action: string, payload: { id?: string; name?: string; client?: string; advisor?: string } = {}, reload = false) => {
+    async (
+      action: string,
+      payload: { id?: string; name?: string; client?: string; advisor?: string; autoReminders?: boolean } = {},
+      reload = false,
+    ) => {
       setBusy(true);
       setError("");
       try {
@@ -254,6 +333,30 @@ export default function TripSwitcher({
                     Cancel
                   </button>
                 </form>
+              ) : savingTemplateFor === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void templateAct("save", { tripId: trip.id, name: templateDraftName });
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={templateDraftName}
+                    onChange={(e) => setTemplateDraftName(e.target.value)}
+                    aria-label="Template name"
+                    placeholder="Rome, four days, family of five"
+                    maxLength={80}
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setSavingTemplateFor(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
               ) : (
                 <>
                   <p className="font-semibold text-[var(--navy)]">
@@ -294,7 +397,7 @@ export default function TripSwitcher({
               )}
             </div>
 
-            {renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+            {renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && savingTemplateFor !== trip.id && (
               <div className="flex flex-wrap gap-2">
                 {(onOpen || !trip.active) && (
                   <button
@@ -321,7 +424,7 @@ export default function TripSwitcher({
                 >
                   Rename
                 </button>
-                {mayNameClient && (
+                {mayServeClients && (
                   <button
                     type="button"
                     disabled={busy}
@@ -334,7 +437,7 @@ export default function TripSwitcher({
                     {trip.client ? "Change who it is for" : "Who it is for"}
                   </button>
                 )}
-                {mayNameClient && (
+                {mayServeClients && (
                   <button
                     type="button"
                     disabled={busy}
@@ -350,6 +453,19 @@ export default function TripSwitcher({
                 <button type="button" disabled={busy} onClick={() => void act("duplicate", { id: trip.id })} className={smallButton}>
                   Make a copy
                 </button>
+                {mayUseTemplates && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setSavingTemplateFor(trip.id);
+                      setTemplateDraftName(trip.name);
+                    }}
+                    className={smallButton}
+                  >
+                    Save as template
+                  </button>
+                )}
                 {trips.length > 1 && (
                   <button
                     type="button"
@@ -367,12 +483,12 @@ export default function TripSwitcher({
               </div>
             )}
 
-            {/* The client's per-trip code — Business only, one code per trip.
-                Send the client the code and they enter it on the app's front
-                page; the link is the same thing pre-opened. Either opens THIS
-                trip as the app on the client's phone, no account needed. Other
-                trips are never reachable from it. */}
-            {mayNameClient && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+            {/* The client's per-trip code — Advisor Starter and up, one code
+                per trip. Send the client the code and they enter it on the
+                app's front page; the link is the same thing pre-opened.
+                Either opens THIS trip as the app on the client's phone, no
+                account needed. Other trips are never reachable from it. */}
+            {mayServeClients && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
               <div className="mt-1 w-full">
                 {trip.shareId ? (
                   <div className="flex flex-col gap-2">
@@ -414,9 +530,146 @@ export default function TripSwitcher({
                 )}
               </div>
             )}
+
+            {/* Automatic reminders into the same chat thread the client code
+                opens — off by default, and only offered once there is
+                somewhere to send one. See lib/trip-reminders.ts for what
+                these actually say and when they fire. */}
+            {mayServeClients && trip.shareId && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void act("auto-reminders", { id: trip.id, autoReminders: !trip.autoReminders })}
+                  className={smallButton}
+                >
+                  {trip.autoReminders ? "Automatic reminders: on" : "Turn on automatic reminders"}
+                </button>
+                {trip.autoReminders && (
+                  <span className="text-[11px] leading-4 text-stone-500">
+                    Sends &ldquo;leaving soon&rdquo; and &ldquo;balance due&rdquo; messages to the client on their own, each once.
+                  </span>
+                )}
+              </div>
+            )}
           </li>
         ))}
       </ul>
+
+      {/* Trip shapes the advisor has saved for reuse — separate from the
+          trips themselves, and only shown once there is at least one. */}
+      {templates && templates.length > 0 && (
+        <div className="mt-6 border-t border-[var(--gold-light)] pt-5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Your templates</p>
+          <p className="mt-1 text-sm leading-6 text-stone-600">
+            Saved from a trip, with no client on it — start a new trip from one whenever you need the same shape again.
+          </p>
+          <ul className="mt-3 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
+            {templates.map((tpl) => (
+              <li key={tpl.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  {renamingTemplate === tpl.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void templateAct("rename", { id: tpl.id, name: templateRenameDraft });
+                      }}
+                      className="flex flex-wrap gap-2"
+                    >
+                      <input
+                        value={templateRenameDraft}
+                        onChange={(e) => setTemplateRenameDraft(e.target.value)}
+                        aria-label="Template name"
+                        autoFocus
+                        className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                      />
+                      <button type="submit" disabled={busy} className={smallButton}>
+                        Save
+                      </button>
+                      <button type="button" onClick={() => setRenamingTemplate(null)} className={smallButton}>
+                        Cancel
+                      </button>
+                    </form>
+                  ) : startingFrom === tpl.id ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void templateAct("start", { id: tpl.id, name: startDraftName, startDate: startDraftDate }, true);
+                      }}
+                      className="flex flex-wrap gap-2"
+                    >
+                      <input
+                        value={startDraftName}
+                        onChange={(e) => setStartDraftName(e.target.value)}
+                        aria-label="New trip name"
+                        placeholder="The Friedman family"
+                        maxLength={80}
+                        autoFocus
+                        className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                      />
+                      <input
+                        type="date"
+                        value={startDraftDate}
+                        onChange={(e) => setStartDraftDate(e.target.value)}
+                        aria-label="Start date"
+                        required
+                        className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                      />
+                      <button type="submit" disabled={busy} className={smallButton}>
+                        Start
+                      </button>
+                      <button type="button" onClick={() => setStartingFrom(null)} className={smallButton}>
+                        Cancel
+                      </button>
+                    </form>
+                  ) : (
+                    <p className="font-semibold text-[var(--navy)]">{tpl.name}</p>
+                  )}
+                </div>
+                {renamingTemplate !== tpl.id && startingFrom !== tpl.id && (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        setStartingFrom(tpl.id);
+                        setStartDraftName(tpl.name);
+                        setStartDraftDate("");
+                      }}
+                      className={smallButton}
+                    >
+                      Start a trip from this
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        setRenamingTemplate(tpl.id);
+                        setTemplateRenameDraft(tpl.name);
+                      }}
+                      className={smallButton}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        if (confirm(`Delete the template “${tpl.name}”? This does not touch any trip already started from it.`)) {
+                          void templateAct("delete", { id: tpl.id });
+                        }
+                      }}
+                      className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700 disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
     </section>

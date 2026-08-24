@@ -4,7 +4,7 @@ import { featuresFor, mayBrandOwnItinerary, PLAN_FEATURES } from "@/lib/account-
 import { brandProblem, cleanBrand, describeBrand, emptyBrand, printBrandFor } from "@/lib/business-brand";
 
 /**
- * A Business account's own letterhead.
+ * An Advisor Pro account's own letterhead.
  *
  * TWO THINGS THIS HAS TO GET RIGHT, and they pull in opposite directions. The
  * document an agent hands their client must be the agent's — that is the whole
@@ -16,26 +16,22 @@ import { brandProblem, cleanBrand, describeBrand, emptyBrand, printBrandFor } fr
  */
 
 describe("who may brand an itinerary", () => {
-  it("is Business, and only Business", () => {
-    assert.equal(mayBrandOwnItinerary("business"), true);
-    assert.equal(mayBrandOwnItinerary("pro"), false);
-    assert.equal(mayBrandOwnItinerary("traveler"), false);
+  it("is Advisor Pro, and only Advisor Pro", () => {
+    assert.equal(mayBrandOwnItinerary("pro"), true);
+    assert.equal(mayBrandOwnItinerary("starter"), false);
+    assert.equal(mayBrandOwnItinerary("free"), false);
   });
 
-  it("KEEPS BRANDING A BUSINESS THING, NOW THAT PRO HAS AN ENTITLEMENT", () => {
-    // This test said Pro was "the same site without the two free limits" and
-    // that the day it grew an entitlement, here is where it would be noticed.
-    // That day came: Pro keeps the assistant's conversation between visits.
-    //
-    // What it still holds is the thing it was really protecting — branding is
-    // what Business buys, and a new Pro entitlement must not quietly become
-    // one. Traveler and Pro are no longer identical, so that comparison is
-    // replaced by the claim underneath it.
-    assert.equal(PLAN_FEATURES.pro.ownBranding, false);
-    assert.equal(PLAN_FEATURES.traveler.ownBranding, false);
-    assert.equal(PLAN_FEATURES.business.ownBranding, true);
-    assert.equal(featuresFor("pro").assistantHistory, true);
-    assert.equal(featuresFor("traveler").assistantHistory, false);
+  it("KEEPS BRANDING RESERVED FOR THE TOP TIER, EVEN THOUGH STARTER HAS ENTITLEMENTS TOO", () => {
+    // Advisor Starter has real entitlements of its own — the assistant keeps
+    // its thread, the app is handed to clients — so it would be an easy
+    // mistake for branding to quietly follow along with them. It does not:
+    // only Advisor Pro puts a name on the cover.
+    assert.equal(PLAN_FEATURES.starter.ownBranding, false);
+    assert.equal(PLAN_FEATURES.free.ownBranding, false);
+    assert.equal(PLAN_FEATURES.pro.ownBranding, true);
+    assert.equal(featuresFor("starter").assistantHistory, true);
+    assert.equal(featuresFor("free").assistantHistory, false);
   });
 });
 
@@ -121,9 +117,9 @@ describe("what somebody is told about their brand", () => {
   });
 
   it("does not dangle an upgrade in front of somebody who cannot have it", () => {
-    // It says what a Business account is, once, plainly. It does not ask.
+    // It says what Advisor Pro is, once, plainly. It does not ask.
     const line = describeBrand(null, false);
-    assert.match(line, /Business/);
+    assert.match(line, /Advisor Pro/);
     assert.doesNotMatch(line, /upgrade|buy|subscribe/i);
   });
 });

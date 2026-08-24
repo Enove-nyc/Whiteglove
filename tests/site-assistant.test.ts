@@ -81,9 +81,9 @@ describe("the conversation belongs to an account or to nobody", () => {
 
   it("SAYS WHICH OF THE THREE IS HAPPENING, RATHER THAN LEAVING IT ASSUMED", () => {
     // Kept, signed in but not kept, and signed out. "Signed in" stopped being
-    // the answer the moment keeping the thread became a Pro feature.
+    // the answer the moment keeping the thread became a paid-plan feature.
     assert.match(PANEL, /Saved to your account/);
-    assert.match(PANEL, /keeping the conversation between visits comes with Pro/);
+    assert.match(PANEL, /keeping the conversation between visits comes with a plan/);
     assert.match(PANEL, /this conversation is not saved anywhere/);
   });
 
@@ -190,15 +190,16 @@ describe("it is on every page and in nobody's way", () => {
   });
 });
 
-describe("keeping the conversation is a Pro feature; asking is not", () => {
+describe("keeping the conversation is a paid-plan feature; asking is not", () => {
   it("GATES THE STORING AND NEVER THE ANSWERING", async () => {
-    // A traveler on the free plan gets exactly the same answers from exactly
-    // the same pages. What Pro buys is that the thread is still there
+    // Somebody with no plan yet gets exactly the same answers from exactly
+    // the same pages. What a plan buys is that the thread is still there
     // tomorrow. Withholding an answer over it would be a different product.
     const { keepsAssistantHistory } = await import("@/lib/account-limits");
-    assert.equal(keepsAssistantHistory("traveler"), false);
+    assert.equal(keepsAssistantHistory("free"), false);
+    assert.equal(keepsAssistantHistory("one_trip"), true);
+    assert.equal(keepsAssistantHistory("starter"), true);
     assert.equal(keepsAssistantHistory("pro"), true);
-    assert.equal(keepsAssistantHistory("business"), true);
     // The site assistant's own route knows nothing about plans.
     assert.doesNotMatch(ROUTE, /getPlan|keepsAssistantHistory|plan/i);
   });
@@ -209,7 +210,7 @@ describe("keeping the conversation is a Pro feature; asking is not", () => {
     const code = ACCOUNT.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^import .*$/gm, "");
     assert.equal((code.match(/keepsAssistantHistory\(/g) ?? []).length, 2, "one read, one write");
     // The panel is told, and does not decide.
-    assert.doesNotMatch(PANEL, /keepsAssistantHistory|"pro"|"business"/);
+    assert.doesNotMatch(PANEL, /keepsAssistantHistory|"one_trip"|"starter"|"pro"/);
   });
 
   it("DOES NOT DELETE A THREAD WHEN A PLAN LAPSES, ONLY STOPS SHOWING IT", () => {
@@ -222,12 +223,24 @@ describe("keeping the conversation is a Pro feature; asking is not", () => {
   });
 
   it("says it in the words a traveler reads, and keeps those in step with the gate", async () => {
-    const { whatYouGet } = await import("@/lib/account-plans");
+    const { ACCOUNT_PLANS, PLAN_LABELS, whatYouGet } = await import("@/lib/account-plans");
     const { keepsAssistantHistory } = await import("@/lib/account-limits");
-    for (const plan of ["traveler", "pro", "business"] as const) {
-      const promised = whatYouGet(plan).some((line) => /assistant remembers/i.test(line));
+    // A higher tier's copy sometimes says "Everything Advisor Starter has"
+    // rather than repeating a lower tier's own line — Pro promises the
+    // assistant's memory this way. A customer reading that line already has
+    // the promise, so the check follows it rather than demanding the words
+    // be typed out twice.
+    function promised(plan: (typeof ACCOUNT_PLANS)[number]): boolean {
+      const lines = whatYouGet(plan);
+      if (lines.some((line) => /assistant remembers/i.test(line))) return true;
+      const inherits = lines.find((line) => /^Everything (.+) has$/.test(line));
+      const parentLabel = inherits?.match(/^Everything (.+) has$/)?.[1];
+      const parentPlan = parentLabel && ACCOUNT_PLANS.find((p) => PLAN_LABELS[p] === parentLabel);
+      return parentPlan ? promised(parentPlan) : false;
+    }
+    for (const plan of ACCOUNT_PLANS) {
       assert.equal(
-        promised,
+        promised(plan),
         keepsAssistantHistory(plan),
         `${plan}: what the plan page promises and what the code allows have drifted apart`,
       );

@@ -21,6 +21,7 @@ import StructuredData from "@/components/StructuredData";
 import { Icon } from "@/components/icons/Icon";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 import { fromHechsherState, fromKosherClaim, reconfirmBeforeTravel } from "@/lib/trust-status";
@@ -711,7 +712,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href={staySearchHref({ destination: destination.name })}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
             >
               See places to stay in {destination.name}
             </Link>
@@ -721,7 +722,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
             <AddDestinationToTrip
               name={destination.name}
               href={destinationHref(destination)}
-              className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--surface)] disabled:opacity-60"
+              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.secondary} disabled:opacity-60`}
             />
           </div>
         </div>

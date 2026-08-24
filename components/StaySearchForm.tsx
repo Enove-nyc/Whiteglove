@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { nextDay, today } from "@/lib/date-range";
 import type { StaySearch } from "@/lib/stay-search";
 
@@ -124,7 +125,7 @@ export default function StaySearchForm({
         <div className="flex items-end">
           <button
             type="submit"
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+            className={`inline-flex min-h-12 w-full items-center justify-center ${ACTION_BUTTON_CLASS.primary}`}
           >
             {submitLabel}
           </button>

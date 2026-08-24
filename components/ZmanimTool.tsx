@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import type { ZmanimPlace } from "@/lib/zmanim-places";
 import type { FoundPlace } from "@/lib/place-lookup";
 import { calculateZmanim, todayInTimeZone, type ZmanimResult } from "@/lib/zmanim";
@@ -315,7 +316,7 @@ export default function ZmanimTool({ places, initialPlaceId, initialDate }: Prop
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60"
+            className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary} disabled:opacity-60`}
           >
             {pending ? "Calculating…" : "Show zmanim"}
           </button>

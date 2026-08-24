@@ -169,7 +169,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/about", label: "About", blurb: "Optional About page fields." },
       { href: "/admin/settings/proof", label: "Case studies", blurb: "Trip outcomes with permission." },
       { href: "/admin/settings/limits", label: "Limits", blurb: "Trip and print limits." },
-      { href: "/admin/settings/plans", label: "Gold and Business", blurb: "Whether they are offered, and how." },
+      { href: "/admin/settings/plans", label: "Paid plans", blurb: "Whether they are offered, and how." },
       { href: "/admin/team", label: "Team", blurb: "Who else can get in." },
       { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site." },
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },

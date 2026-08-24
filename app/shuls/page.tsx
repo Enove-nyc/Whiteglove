@@ -43,7 +43,13 @@ export default async function ShulsPage() {
         <section className="border-b border-[var(--gold-light)] px-5 py-10 sm:px-8">
           <div className="mx-auto max-w-7xl">
             <Breadcrumbs trail={[{ name: "Kosher", href: "/kosher-travel" }, { name: "Shuls" }]} />
-            <h1 className="mt-4 font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.08] text-[var(--navy)]">Shuls</h1>
+            <p className="mt-4 text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Kosher travel</p>
+            <h1 className="mt-2 font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.08] text-[var(--navy)]">Shuls</h1>
+            <p className="mt-3 max-w-2xl leading-7 text-stone-600">
+              {listings.length > 0
+                ? "Shul and minyan listings, each with a source behind it — confirm times locally before you go."
+                : "Shul listings appear here once they have a source and are ready to publish."}
+            </p>
           </div>
         </section>
       )}

@@ -44,6 +44,8 @@ import {
 } from "@/data/companion-demo";
 import { Icon } from "@/components/icons/Icon";
 import PaymentCheckout from "@/components/companion/PaymentCheckout";
+import { useDeviceClock } from "@/components/TripProgressStrip";
+import { followAlong, type FollowStop } from "@/lib/trip-progress";
 
 /** The blue the app already uses for its own accents — map notes, the
  * initials avatar, kickers. The chat toolbar's icons match it rather than
@@ -502,6 +504,21 @@ export default function CompanionApp({
   const usesRealChat = hasMessages;
   const sel = days[st.selDay];
   const items = sel.items.map(decorate);
+
+  /**
+   * Where the traveler actually is on today's plan, by the clock on their own
+   * device — not "the first thing on the list", which is only ever true
+   * before the day has started. See lib/trip-progress.ts, already used the
+   * same way for the advisor's live planner view (TripProgressStrip); this is
+   * that same real logic, reused rather than re-guessed, for the client's own
+   * app. Only computed for the day that IS today — a browsed future or past
+   * day has no "now" on it.
+   */
+  const { nowMinutes } = useDeviceClock();
+  const followStops: FollowStop[] = items.map((it, i) => ({ id: String(i), name: it.title, arrivalTime: it.time || undefined }));
+  const follow = sel.today ? followAlong({ stops: followStops, nowMinutes }) : null;
+  const nowIdx = follow?.now ? Number(follow.now.id) : null;
+  const nextIdx = follow?.next ? Number(follow.next.id) : null;
   const hasSwap = Boolean(trip.swaps);
   const open = hasSwap && !st.swap; // an open weather alert waiting on a decision
   const settled = hasSwap && Boolean(st.swap); // one was picked
@@ -689,10 +706,18 @@ export default function CompanionApp({
           <h3 style={{ margin: 0, font: `400 21px/1.1 ${serif}` }}>{sel.name}</h3>
           <button onClick={() => go("day")} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", font: "600 12px/1 Inter,sans-serif", color: "#765321", padding: 0 }}>Full day →</button>
         </div>
-        {items.slice(0, 3).map((it, i) => {
-          // The one thing today that most needs finding fast: the day's
-          // first still-ahead stop, only when the day on screen IS today.
-          const isNext = Boolean(sel.today) && i === 0;
+        {/* The one thing today that most needs finding fast: where the plan
+            says the traveler should actually be right now, or what's next —
+            worked out from the clock, not assumed to be the first row. When
+            the day is fully behind them, or it isn't today, this just opens
+            on the start of the list, as it always did. */}
+        {items
+          .map((it, i) => ({ it, i }))
+          .slice(sel.today ? (nowIdx ?? nextIdx ?? 0) : 0, (sel.today ? (nowIdx ?? nextIdx ?? 0) : 0) + 3)
+          .map(({ it, i }) => {
+          const isNow = Boolean(sel.today) && i === nowIdx;
+          const isNext = Boolean(sel.today) && i === nextIdx;
+          const highlight = isNow || isNext;
           return (
             <button
               key={i}
@@ -700,21 +725,21 @@ export default function CompanionApp({
               className="wg-fade"
               style={{
                 textAlign: "left",
-                border: isNext ? `1px solid ${GOLD}` : 0,
-                background: isNext ? "#f7eee0" : "none",
-                borderRadius: isNext ? 16 : 0,
-                padding: isNext ? "15px 16px" : 0,
+                border: highlight ? `1px solid ${GOLD}` : 0,
+                background: highlight ? "#f7eee0" : "none",
+                borderRadius: highlight ? 16 : 0,
+                padding: highlight ? "15px 16px" : 0,
                 cursor: "pointer",
                 display: "flex",
                 gap: 13,
                 alignItems: "flex-start",
               }}
             >
-              <span style={{ flex: "none", width: 52, font: `600 ${isNext ? 13.5 : 12.5}px/1.5 ui-monospace,Menlo,monospace`, color: isNext ? "#765321" : "#78716c", paddingTop: 2 }}>{it.time}</span>
+              <span style={{ flex: "none", width: 52, font: `600 ${highlight ? 13.5 : 12.5}px/1.5 ui-monospace,Menlo,monospace`, color: highlight ? "#765321" : "#78716c", paddingTop: 2 }}>{it.time}</span>
               <span style={{ flex: "none", width: 9, height: 9, borderRadius: 14, background: it.dot, marginTop: 6 }} />
               <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                {isNext && <span style={{ ...kicker("#765321"), marginBottom: 1 }}>Next up</span>}
-                <span style={{ fontSize: isNext ? 17 : 15, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
+                {highlight && <span style={{ ...kicker("#765321"), marginBottom: 1 }}>{isNow ? "Happening now" : "Next up"}</span>}
+                <span style={{ fontSize: highlight ? 17 : 15, fontWeight: 600, lineHeight: 1.3 }}>{it.title}</span>
                 <span style={{ fontSize: 12.5, color: "#78716c" }}>{it.place}</span>
               </span>
             </button>
@@ -834,23 +859,45 @@ export default function CompanionApp({
 
   const railView = (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      {items.map((it, i) => (
-        <div key={i} style={{ display: "flex", gap: 12 }}>
-          <div style={{ flex: "none", width: 54, paddingTop: 3, textAlign: "right", font: "600 12.5px/1.4 ui-monospace,Menlo,monospace", color: "#78716c" }}>{it.time}</div>
-          <div style={{ flex: "none", width: 11, display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <span style={{ width: 11, height: 11, borderRadius: 14, background: it.dot, marginTop: 5 }} />
-            <span style={{ flex: 1, width: 1.5, background: "rgba(38,50,58,.14)" }} />
+      {items.map((it, i) => {
+        const isNow = Boolean(sel.today) && i === nowIdx;
+        const isNext = Boolean(sel.today) && i === nextIdx;
+        // Behind them, by the clock — shown a little quieter, never hidden:
+        // a stop that already happened is still worth tapping back into.
+        const isDone = Boolean(sel.today) && nowMinutes !== null && follow?.done.some((d) => d.id === String(i));
+        return (
+          <div key={i} style={{ display: "flex", gap: 12, opacity: isDone ? 0.55 : 1 }}>
+            <div style={{ flex: "none", width: 54, paddingTop: 3, textAlign: "right", font: `600 12.5px/1.4 ui-monospace,Menlo,monospace`, color: isNow ? "#765321" : "#78716c" }}>{it.time}</div>
+            <div style={{ flex: "none", width: 11, display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <span style={{ width: 11, height: 11, borderRadius: 14, background: isNow ? GOLD : it.dot, marginTop: 5 }} />
+              <span style={{ flex: 1, width: 1.5, background: "rgba(38,50,58,.14)" }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0, paddingBottom: 18, display: "flex", flexDirection: "column", gap: 8 }}>
+              <button
+                onClick={() => openActivity(st.selDay, i)}
+                className="wg-warm"
+                style={{
+                  textAlign: "left",
+                  cursor: "pointer",
+                  border: isNow ? `1px solid ${GOLD}` : "1px solid rgba(38,50,58,.09)",
+                  background: isNow ? "#f7eee0" : "#ffffff",
+                  borderRadius: 16,
+                  padding: "15px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 5,
+                }}
+              >
+                {(isNow || isNext) && <span style={{ ...kicker("#765321"), marginBottom: 1 }}>{isNow ? "Happening now" : "Next up"}</span>}
+                <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.25 }}>{it.title}</span>
+                <span style={{ fontSize: 12.5, color: "#78716c" }}>{it.place}</span>
+                <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{it.note}</span>
+              </button>
+              {it.walk && <span style={{ font: "400 11px/1 ui-monospace,Menlo,monospace", color: "#a8a29e", paddingLeft: 2 }}>{it.walk}</span>}
+            </div>
           </div>
-          <div style={{ flex: 1, minWidth: 0, paddingBottom: 18, display: "flex", flexDirection: "column", gap: 8 }}>
-            <button onClick={() => openActivity(st.selDay, i)} className="wg-warm" style={{ textAlign: "left", cursor: "pointer", border: "1px solid rgba(38,50,58,.09)", background: "#ffffff", borderRadius: 16, padding: "15px 16px", display: "flex", flexDirection: "column", gap: 5 }}>
-              <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.25 }}>{it.title}</span>
-              <span style={{ fontSize: 12.5, color: "#78716c" }}>{it.place}</span>
-              <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{it.note}</span>
-            </button>
-            {it.walk && <span style={{ font: "400 11px/1 ui-monospace,Menlo,monospace", color: "#a8a29e", paddingLeft: 2 }}>{it.walk}</span>}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -953,6 +1000,11 @@ export default function CompanionApp({
 
   const alertsScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 14, animation: "wgIn .28s ease both" }}>
+      {/* Only where a client is looking at their own trip through a real
+          share link — the subscription is keyed by that token (see
+          savePushSubscription in lib/account-store.ts), and neither the
+          advisor's own view nor the scripted demo has one. */}
+      {isClientViewer && liveChat?.shareId && <NotifyControl shareId={liveChat.shareId} />}
       {/* Real flight-status alerts — never present on the demo. Newest
           first, each with a Dismiss control on the advisor's own side only;
           a client sees the same alert with nothing to manage. */}
@@ -1411,6 +1463,137 @@ const MAX_CHAT_IMAGE_BYTES_FLOOR = 900 * 1024;
 
 function formatBytes(n: number): string {
   return n >= 1024 * 1024 ? `${(n / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`;
+}
+
+/** A VAPID key, as Google's console gives it, into the form the Push API wants. */
+function urlBase64ToUint8Array(base64: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+type NotifyStatus = "checking" | "unsupported" | "off" | "on" | "denied";
+
+/**
+ * "Tell me on my phone" — a client's own opt-in to a push notification when
+ * something on their trip changes (see lib/push-notify.ts for what actually
+ * sends it). Renders nothing when the browser can't do push at all, or when
+ * this deployment has no VAPID key configured — an offer nobody can accept
+ * is not an offer.
+ */
+function NotifyControl({ shareId }: { shareId: string }) {
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const [status, setStatus] = useState<NotifyStatus>("checking");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!publicKey || typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setStatus("unsupported");
+      return;
+    }
+    let active = true;
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => {
+        if (active) setStatus(sub ? "on" : Notification.permission === "denied" ? "denied" : "off");
+      })
+      .catch(() => {
+        if (active) setStatus("off");
+      });
+    return () => {
+      active = false;
+    };
+  }, [publicKey]);
+
+  async function subscribe() {
+    if (!publicKey) return;
+    setBusy(true);
+    setError("");
+    try {
+      const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+      if (permission !== "granted") {
+        setStatus("denied");
+        return;
+      }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource });
+      const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
+      if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) throw new Error("incomplete subscription");
+      const res = await fetch("/api/companion/push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shareId, subscription: { endpoint: json.endpoint, keys: json.keys } }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      setStatus("on");
+    } catch {
+      setError("Could not turn on notifications. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function unsubscribe() {
+    setBusy(true);
+    setError("");
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await fetch("/api/companion/push", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shareId, action: "unsubscribe", endpoint: sub.endpoint }),
+        }).catch(() => undefined);
+        await sub.unsubscribe();
+      }
+      setStatus("off");
+    } catch {
+      setError("Could not turn off notifications. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (status === "unsupported" || status === "checking") return null;
+
+  const serif = "Georgia,'Times New Roman',serif";
+  return (
+    <div style={{ padding: "16px 18px", borderRadius: 20, background: "#ffffff", border: "1px solid rgba(38,50,58,.08)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <span style={{ fontSize: 14.5, fontWeight: 600 }}>Notify me about changes</span>
+        <span style={{ fontSize: 12, color: "#57534e" }}>
+          {status === "denied"
+            ? "Notifications are blocked in your browser's settings."
+            : status === "on"
+              ? "On for this device."
+              : "A delay, a cancellation, a gate change — sent straight to your phone."}
+        </span>
+        {error && <span style={{ fontSize: 12, color: "#b42318" }}>{error}</span>}
+      </div>
+      {status !== "denied" && (
+        <button
+          onClick={() => void (status === "on" ? unsubscribe() : subscribe())}
+          disabled={busy}
+          className="wg-press"
+          style={{
+            flex: "none",
+            border: status === "on" ? "1px solid rgba(38,50,58,.16)" : 0,
+            background: status === "on" ? "#ffffff" : GOLD,
+            color: status === "on" ? "#26323a" : CREAM,
+            cursor: "pointer",
+            font: `400 13px/1 ${serif}`,
+            padding: "11px 16px",
+            borderRadius: 14,
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          {status === "on" ? "Turn off" : "Turn on"}
+        </button>
+      )}
+    </div>
+  );
 }
 /** The most a video may weigh — a short clip, not a film. Matches
  * MAX_CHAT_VIDEO_BYTES in lib/media.ts; kept as its own number here because a

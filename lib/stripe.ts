@@ -179,12 +179,20 @@ export function describePrice(price: StripePrice | null): string {
 export type CheckoutSession = { id: string; url?: string | null; customer?: string | null };
 
 /**
- * A hosted checkout page for one subscription.
+ * A hosted checkout page for one subscription, or for a single one-time
+ * payment — see lib/plan-billing.ts's ONE_TIME_PLANS. `mode: "payment"` has
+ * no renewal and no cancellation, so `subscription_data` — meaningless for a
+ * one-time charge, and rejected by Stripe if sent with one — is only ever
+ * attached in subscription mode.
  *
  * `clientReferenceId` is the account — it comes back on the completed event and
  * is how a payment finds the person who made it. The customer's email is
  * pre-filled so Stripe does not create a second customer for somebody who
  * already has one.
+ *
+ * `trialDays`, when given, is attached to `subscription_data` and Stripe's own
+ * checkout page shows the trial terms before anybody enters a card — nothing
+ * on this site has to say so separately for the charge itself to be honest.
  */
 export async function createCheckoutSession(input: {
   priceId: string;
@@ -195,19 +203,43 @@ export async function createCheckoutSession(input: {
   cancelUrl: string;
   /** So the webhook knows which plan was bought without looking the price up. */
   plan: string;
+  /** "subscription" unless told otherwise — see the note above. */
+  mode?: "subscription" | "payment";
+  /**
+   * Days free before the card is charged — only ever set for a first
+   * subscription, never a one-time purchase. See trialEligible in
+   * lib/plan-billing.ts, the one place that decides who qualifies.
+   */
+  trialDays?: number;
 }): Promise<StripeResult<CheckoutSession>> {
+  const mode = input.mode ?? "subscription";
   const body: Record<string, unknown> = {
-    mode: "subscription",
+    mode,
     line_items: [{ price: input.priceId, quantity: 1 }],
     success_url: input.successUrl,
     cancel_url: input.cancelUrl,
     client_reference_id: input.account.slice(0, 200),
     allow_promotion_codes: true,
     metadata: { account: input.account.slice(0, 200), plan: input.plan },
+  };
+  if (mode === "subscription") {
     // Repeated on the subscription itself: the events that arrive months later
     // — a renewal, a cancellation — carry the subscription, not the session.
-    subscription_data: { metadata: { account: input.account.slice(0, 200), plan: input.plan } },
-  };
+    body.subscription_data = {
+      metadata: { account: input.account.slice(0, 200), plan: input.plan },
+      ...(input.trialDays && input.trialDays > 0 ? { trial_period_days: input.trialDays } : {}),
+    };
+  } else {
+    // A one-time purchase grants a permanent entitlement the moment the
+    // webhook sees it paid (lib/plan-billing-store.ts's writeOneTimePurchase)
+    // — there is no subscription behind it to later correct a bad charge.
+    // Several of Stripe's other payment methods (ACH debit, and others by
+    // country) settle DAYS after checkout completes, not at checkout at all,
+    // so leaving the method list open would mean "completed" and "paid" are
+    // two different moments for the same session. Cards settle immediately;
+    // pinning to cards keeps that gap from existing for this flow at all.
+    body.payment_method_types = ["card"];
+  }
   if (input.customerId) body.customer = input.customerId;
   else if (input.email) body.customer_email = input.email;
   return call<CheckoutSession>("checkout/sessions", body);
@@ -231,12 +263,50 @@ export type StripeSubscription = {
   cancel_at_period_end?: boolean;
   current_period_end?: number;
   metadata?: Record<string, string>;
-  items?: { data?: Array<{ price?: { id?: string } }> };
+  items?: { data?: Array<{ id: string; quantity?: number; price?: { id?: string } }> };
 };
 
 export async function readSubscriptionFromStripe(id: string): Promise<StripeSubscription | null> {
   const result = await call<StripeSubscription>(`subscriptions/${encodeURIComponent(id)}`);
   return result.ok ? result.data : null;
+}
+
+/**
+ * Add, change, or remove an agency's seat line item on an EXISTING
+ * subscription — see lib/agency.ts. This never touches the base Advisor Pro
+ * item, only the one item on this seat price.
+ *
+ * READS BEFORE IT WRITES, because updating a subscription item needs that
+ * item's own id (`si_...`), not the price id — sending the price id alone a
+ * second time would add a duplicate item instead of changing the quantity of
+ * the one already there. `quantity: 0` deletes the item outright rather than
+ * leaving a zero-quantity line on the invoice.
+ *
+ * `always_invoice` settles the prorated difference right away — the owner
+ * sees the charge or credit the moment they change seats, not buried in next
+ * month's total.
+ */
+export async function setSubscriptionSeatQuantity(input: {
+  subscriptionId: string;
+  seatPriceId: string;
+  quantity: number;
+}): Promise<StripeResult<StripeSubscription>> {
+  const current = await readSubscriptionFromStripe(input.subscriptionId);
+  if (!current) return { ok: false, error: "That subscription could not be read." };
+  const existing = current.items?.data?.find((item) => item.price?.id === input.seatPriceId);
+
+  if (input.quantity <= 0) {
+    if (!existing) return { ok: true, data: current };
+    return call<StripeSubscription>(`subscriptions/${encodeURIComponent(input.subscriptionId)}`, {
+      items: [{ id: existing.id, deleted: true }],
+      proration_behavior: "always_invoice",
+    });
+  }
+
+  return call<StripeSubscription>(`subscriptions/${encodeURIComponent(input.subscriptionId)}`, {
+    items: [existing ? { id: existing.id, quantity: input.quantity } : { price: input.seatPriceId, quantity: input.quantity }],
+    proration_behavior: "always_invoice",
+  });
 }
 
 /* ---- webhooks ----------------------------------------------------------- */

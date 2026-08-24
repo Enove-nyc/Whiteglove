@@ -8,6 +8,7 @@ import StructuredData from "@/components/StructuredData";
 import VerificationBadge from "@/components/VerificationBadge";
 import { SubBrandCrest, SUB_BRAND_HEBREW, SUB_BRAND_NAME } from "@/components/SubBrand";
 import { guidedDestinations, destinationHref } from "@/data/destinations";
+import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { getPublicCemeteryList } from "@/lib/cemeteries-view";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -247,7 +248,7 @@ export default async function HeritagePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/my-route"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
               >
                 Open My Route
               </Link>
@@ -320,7 +321,7 @@ export default async function HeritagePage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/plan?kind=heritage"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+                className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
               >
                 Start a heritage journey
               </Link>

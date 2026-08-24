@@ -63,7 +63,7 @@ export default async function PrivacyPolicyPage() {
 
       <article className="wg-prose mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-[15px] leading-7 text-stone-600">
-          {siteName} (&ldquo;White Glove,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) provides{" "}
+          {siteName} (&ldquo;we,&rdquo; &ldquo;us&rdquo;), operated by White Glove Travel, LLC, provides{" "}
           {itineraries ? "trip-planning tools" : "travel guides and planning tools for kosher travel and Jewish heritage journeys"} at{" "}
           {siteDomain}. This policy explains what information we collect, how we use it, and the choices you have.
         </p>

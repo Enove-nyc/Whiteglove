@@ -41,9 +41,9 @@ function firstParam(value: string | string[] | undefined): string {
 /**
  * The White Glove app — a trip in your pocket.
  *
- * GOLD AND BUSINESS, in one place. The gate is mayUseCompanionApp in
+ * EVERY PAID PLAN, in one place. The gate is mayUseCompanionApp in
  * lib/account-limits.ts, and this page is the only door that reads it. Handing a
- * trip to a client stays Business-only behind a separate gate
+ * trip to a client stays Advisor Starter and up, behind a separate gate
  * (mayServeCompanionClients) — the Messages inbox below, and the client links,
  * chat and report routes elsewhere.
  *
@@ -219,9 +219,9 @@ export default async function AppPage({
     );
   }
 
-  // Signed in on Traveler — the only plan the app is not part of (Gold and
-  // Business both cleared the gate above). Say what it is, and point at Gold,
-  // the first plan that includes it, not Business. It still takes a client's
+  // Signed in with no plan yet — the only state the app is not part of (every
+  // paid plan cleared the gate above). Say what it is, and point at One Trip,
+  // the first and cheapest plan that includes it. It still takes a client's
   // code, since a client may have their own account and a code from their
   // adviser at once. The itineraries "See the app" link can land here, so this
   // is where that promise has to be true.
@@ -251,15 +251,15 @@ export default async function AppPage({
         </div>
 
         <p className="text-base leading-7 text-stone-600">
-          The app comes with {PLAN_LABELS.pro} and {PLAN_LABELS.business}. You are on{" "}
-          {PLAN_LABELS[plan]}. Ask about {PLAN_LABELS.pro} from your account, and we will be in touch.
+          The app comes with every plan. You are on {PLAN_LABELS[plan]}. Choose a plan from your account, and it
+          opens.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
             href="/account"
             className="rounded-full bg-[var(--navy)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Ask about {PLAN_LABELS.pro}
+            Choose a plan
           </Link>
           <Link
             href="/itinerary"

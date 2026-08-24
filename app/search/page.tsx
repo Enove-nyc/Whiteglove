@@ -43,9 +43,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <Navbar />
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-3xl">
-          <h1 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
+          <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Site search</p>
+          <h1 className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
             Search
           </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">Find a destination, kever, shul or guide across the site.</p>
           <div className="mt-6"><DestinationSearch compact showChrome={false} id="search-page" /></div>
         </div>
       </section>

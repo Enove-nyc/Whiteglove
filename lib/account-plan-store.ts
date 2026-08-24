@@ -61,7 +61,7 @@ async function readAccount(account: string): Promise<StoredAccount | null> {
   }
 }
 
-/** Which plan an account is on. Traveler for anything unset or unreadable. */
+/** Which plan an account is on. Nothing bought yet for anything unset or unreadable. */
 export async function getPlan(account: string): Promise<AccountPlan> {
   return planOf(await readAccount(account));
 }
@@ -113,16 +113,13 @@ const sameAccount = (a: string, b: string) => identityKey(a) === identityKey(b);
  * An answered request is left where it is: it is what happened, and the new
  * ask sits beside it.
  */
-export async function askForPlan(
-  input: { account: string; wanted: AccountPlan; businessName?: string; note?: string },
-): Promise<boolean> {
+export async function askForPlan(input: { account: string; wanted: AccountPlan; note?: string }): Promise<boolean> {
   if (!planStoreAvailable()) return false;
   const rows = await readRequests();
   const kept = rows.filter((row) => !(sameAccount(row.account, input.account) && row.state === "asked"));
   kept.unshift({
     account: input.account,
     wanted: input.wanted,
-    businessName: input.businessName?.trim() || undefined,
     note: input.note?.trim() || undefined,
     askedAt: new Date().toISOString(),
     state: "asked",
