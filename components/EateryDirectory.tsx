@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import AddToItineraryButton from "@/components/AddToItineraryButton";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 import { IconLink } from "@/components/icons/IconAction";
@@ -53,6 +54,13 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
 
   return (
     <>
+      {/* Said once, above the one search. It used to sit above a second search
+          box further down the page that looked through the same listings. */}
+      <p className="mb-5 border-l-4 border-[var(--gold)] bg-[var(--surface)] px-4 py-3 text-sm leading-6 text-stone-600">
+        White Glove&apos;s curated kosher restaurants, bakeries and groceries — search by city, country, kind or name.
+        Confirm current supervision directly before you go.
+      </p>
+
       <ListToolbar
         query={query}
         onQuery={setQuery}
@@ -91,6 +99,17 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
               {e.website && <IconLink icon="website" label="Website" href={e.website} external />}
               {e.phone && <IconLink icon="phone" label={`Call ${e.phone}`} href={`tel:${e.phone}`} />}
               <SuggestEditPanel targetType="site" targetId={e.slug} title={e.name} compact />
+            </div>
+
+            {/* Putting it on the trip, from the one search rather than from a
+                second one further down the page. The shared hook behind this
+                asks which trip when there is more than one. */}
+            <div className="mt-3">
+              <AddToItineraryButton
+                place={{ id: e.slug, name: e.name, address: e.address, coordinates: e.coordinates }}
+                label="Add to my trip"
+                className="text-sm"
+              />
             </div>
           </article>
         ))}

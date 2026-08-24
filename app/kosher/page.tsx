@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import EateryDirectory from "@/components/EateryDirectory";
-import KosherFinder from "@/components/KosherFinder";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { resolvePage } from "@/lib/pages";
 
@@ -26,13 +25,13 @@ export default async function KosherPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <PageBlocks blocks={page.blocks} />
-      {/* The directory and finder share White Glove's curated collection. The
-          directory provides the fuller card view; the finder narrows it. */}
-      <section className="mx-auto max-w-7xl px-5 pb-4 sm:px-8">
-        <EateryDirectory eateries={kosherEateries} />
-      </section>
+      {/* ONE SEARCH, NOT TWO. There used to be a second search box under this
+          one — the same curated collection, searched again — so the page asked
+          you to search twice for one thing. The directory is the kosher food
+          finder: it searches those listings by city, country, kind or name,
+          shows the fuller card, and puts a place on the trip. */}
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <KosherFinder />
+        <EateryDirectory eateries={kosherEateries} />
       </section>
       <Footer />
     </main>
