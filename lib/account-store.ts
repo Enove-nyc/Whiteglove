@@ -2717,8 +2717,18 @@ export async function removeTeamMember(ownerEmail: string, memberEmail: string) 
   // cancelled. An active member's own token was already deleted the moment
   // they accepted (acceptTeamInvite), so this only ever fires for one still
   // pending.
+  //
+  // FAILS CLOSED, AND THE ORDER IS THE WHOLE POINT. The roster row is the
+  // only place that token is written down, so dropping the row after a
+  // failed delete would strand a live join link with nothing left to revoke
+  // it by. If the key will not go, nothing else moves and the owner can try
+  // again — a member who is still listed is recoverable; an unrevokable
+  // invite is not.
   if (entry.status === "invited" && entry.inviteToken) {
-    await deleteKey(teamInviteKey(entry.inviteToken));
+    const revoked = await deleteKey(teamInviteKey(entry.inviteToken));
+    if (!revoked) {
+      return { ok: false as const, error: "Could not withdraw their invite just now. Try again in a moment." };
+    }
   }
 
   const ownerSaved = await writeJson(accountKey(owner), { ...ownerRecord, team: team.filter((m) => m.email !== member) });

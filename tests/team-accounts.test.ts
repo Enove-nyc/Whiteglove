@@ -176,6 +176,15 @@ describe("removing a member cuts the link both ways", () => {
     const fn = STORE.slice(STORE.indexOf("export async function removeTeamMember"), STORE.indexOf("export async function resolveBusinessOwner"));
     assert.match(fn, /deleteKey\(teamInviteKey\(entry\.inviteToken\)\)/);
   });
+
+  it("fails closed when the token cannot be revoked — the roster row holding that token is never dropped after a failed delete", () => {
+    const fn = STORE.slice(STORE.indexOf("export async function removeTeamMember"), STORE.indexOf("export async function resolveBusinessOwner"));
+    const revokeAt = fn.indexOf("const revoked = await deleteKey");
+    const bailAt = fn.indexOf("if (!revoked)");
+    const rosterWriteAt = fn.indexOf("const ownerSaved = await writeJson");
+    assert.ok(revokeAt > 0 && bailAt > revokeAt, "the delete's result is checked, not ignored");
+    assert.ok(bailAt < rosterWriteAt, "it returns before the roster row (the token's only handle) is removed");
+  });
 });
 
 describe("a pending invite's own join token travels with its roster entry", () => {
