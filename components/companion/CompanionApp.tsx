@@ -953,9 +953,10 @@ export default function CompanionApp({
 
   const alertsScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 14, animation: "wgIn .28s ease both" }}>
-      {/* Real flight-status alerts — never present on the demo. Newest
-          first, each with a Dismiss control on the advisor's own side only;
-          a client sees the same alert with nothing to manage. */}
+      {/* Real alerts only — flight-status changes and "what changed" edits to
+          the itinerary itself (data/trip-alerts.ts) — never present on the
+          demo. Newest first, each with a Dismiss control on the advisor's own
+          side only; a client sees the same alert with nothing to manage. */}
       {[...liveAlerts].reverse().map((a) => (
         <div key={a.id} style={{ padding: "18px 18px", borderRadius: 20, background: a.acknowledged ? "#ffffff" : "#f7eee0", border: `1px solid ${a.acknowledged ? "rgba(38,50,58,.08)" : "rgba(183,138,74,.28)"}`, display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={kicker(a.acknowledged ? "#78716c" : "#765321")}>{new Date(a.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>

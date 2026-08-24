@@ -5,7 +5,7 @@ import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
 import type { PaymentRecord, TripBalance } from "@/data/trip-payments";
-import { alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
+import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
 import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
@@ -1041,10 +1041,22 @@ export async function saveAccountItinerary(email: string, itinerary: Itinerary, 
   const data = await getAccountData(normalized);
   const { trips, activeId } = withTrips(data);
   const targetId = id && trips.some((t) => t.id === id) ? id : activeId;
+  const target = trips.find((t) => t.id === targetId);
   const stamped = { ...itinerary, updatedAt: new Date().toISOString() };
+  // "What Changed?" — see data/trip-alerts.ts. Computed against the record
+  // being replaced, so a change made anywhere a trip is saved from (the
+  // planner, an import, a proposal turning into the itinerary) is caught the
+  // same way, without each of those call sites having to know about it.
+  const changeAlerts = target ? alertsFromItineraryDiff(target.itinerary, stamped, tripAlertId) : [];
   const next = trips.map((t) =>
     t.id === targetId
-      ? { ...t, itinerary: stamped, name: stamped.title?.trim() || t.name, updatedAt: new Date().toISOString() }
+      ? {
+          ...t,
+          itinerary: stamped,
+          name: stamped.title?.trim() || t.name,
+          alerts: changeAlerts.length ? [...(t.alerts ?? []), ...changeAlerts] : t.alerts,
+          updatedAt: new Date().toISOString(),
+        }
       : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));

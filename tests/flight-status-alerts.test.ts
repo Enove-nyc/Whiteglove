@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-import { alertsFromStatusChange, type FlightStatusSnapshot } from "@/data/trip-alerts";
+import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot } from "@/data/trip-alerts";
+import { emptyItinerary, type Itinerary } from "@/data/itinerary";
 
 let seq = 0;
 const idFor = () => `alert-${++seq}`;
@@ -135,5 +136,65 @@ describe("the live-travel-information wiring keeps the same fences everything el
   it("still does not add a sixth tab for live alerts — they live on the existing Changes screen", () => {
     const tabsBlock = APP.slice(APP.indexOf("const tabs ="), APP.indexOf("const tabs =") + 600);
     assert.doesNotMatch(tabsBlock, /"alertsLive"|"liveAlerts"/);
+  });
+});
+
+describe("\"What Changed?\" — diffing an advisor's own edit", () => {
+  let seq2 = 0;
+  const idFor2 = () => `change-${++seq2}`;
+
+  function itin(over: Partial<Itinerary> = {}): Itinerary {
+    return { ...emptyItinerary(), ...over };
+  }
+
+  it("says nothing the first time a flight is entered — there is nothing to change from", () => {
+    const next = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }] });
+    assert.deepEqual(alertsFromItineraryDiff(itin(), next, idFor2), []);
+  });
+
+  it("a flight's date or time moving, once it already had one, is an alert", () => {
+    const previous = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }] });
+    const next = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "14:30" }] });
+    const alerts = alertsFromItineraryDiff(previous, next, idFor2);
+    assert.equal(alerts.length, 1);
+    assert.equal(alerts[0].kind, "flight_time_changed");
+    assert.match(alerts[0].note, /14:30/);
+  });
+
+  it("a scheduled flight disappearing is an alert", () => {
+    const previous = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }] });
+    const alerts = alertsFromItineraryDiff(previous, itin(), idFor2);
+    assert.equal(alerts.length, 1);
+    assert.equal(alerts[0].kind, "flight_removed");
+  });
+
+  it("a stop added that was never there before is ordinary trip-building, not a change", () => {
+    const next = itin({ activities: [{ id: "a1", name: "Old Town", date: "2026-06-11" }] });
+    assert.deepEqual(alertsFromItineraryDiff(itin(), next, idFor2), []);
+  });
+
+  it("a scheduled stop moving to a new date is an alert", () => {
+    const previous = itin({ activities: [{ id: "a1", name: "Old Town", date: "2026-06-11" }] });
+    const next = itin({ activities: [{ id: "a1", name: "Old Town", date: "2026-06-12" }] });
+    const alerts = alertsFromItineraryDiff(previous, next, idFor2);
+    assert.equal(alerts.length, 1);
+    assert.equal(alerts[0].kind, "activity_time_changed");
+  });
+
+  it("a hotel's check-in date changing, once it had one, is an alert", () => {
+    const previous = itin({ lodging: [{ id: "l1", type: "hotel", name: "Hotel Bristol", checkIn: "2026-06-10", checkOut: "2026-06-12" }] });
+    const next = itin({ lodging: [{ id: "l1", type: "hotel", name: "Hotel Bristol", checkIn: "2026-06-11", checkOut: "2026-06-12" }] });
+    const alerts = alertsFromItineraryDiff(previous, next, idFor2);
+    assert.equal(alerts.length, 1);
+    assert.equal(alerts[0].kind, "lodging_changed");
+  });
+
+  it("re-saving with nothing actually different produces nothing", () => {
+    const same = itin({
+      flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }],
+      lodging: [{ id: "l1", type: "hotel", name: "Hotel Bristol", checkIn: "2026-06-10", checkOut: "2026-06-12" }],
+      activities: [{ id: "a1", name: "Old Town", date: "2026-06-11" }],
+    });
+    assert.deepEqual(alertsFromItineraryDiff(same, { ...same }, idFor2), []);
   });
 });
