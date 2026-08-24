@@ -19,15 +19,18 @@ import type { CemeteryListItem } from "@/lib/cemeteries-view";
 // country — and the whole card is the link; the kevarim themselves, the
 // counts and everything else live on the detail page.
 //
-// ONE DIRECTORY, TWO SETS BEHIND IT. There used to be a second browser lower on
-// the page — the Nesiya Tova "batei hachaim worldwide" locator, with its own
-// country dropdowns — so the page asked you to pick a country twice. They are
-// one directory now: the curated kevarim guides are what you see by default
-// (rich cards, ~150), and the moment you search a town or choose a country the
-// far larger set located from Nesiya Tova joins in for that place. The Nesiya
-// Tova set stays out of the default view on purpose — nearly two thousand
-// location-only entries would bury the guides — and never carries a per-card
-// source line; its own detail page forwards to Nesiya Tova for the details.
+// ONE DIRECTORY, ONE LIST. There used to be a second browser lower on the page
+// — the Nesiya Tova "batei hachaim worldwide" locator, with its own country
+// dropdowns — so the page asked you to pick a country twice. Then the two
+// browsers became one search but still drew two grids: the guides, then a
+// divided-off "located" section under them. Now it is a single list. The
+// curated kevarim guides (rich cards, ~150) are what you see by default, and
+// the moment you search a town or choose a country the located grounds join
+// the SAME grid for that place, sorted in among the guides rather than fenced
+// off below them. The located set stays out of the default view on purpose —
+// nearly two thousand location-only entries would bury the guides — and never
+// carries a per-card source line; a located card is marked "Location" and its
+// own detail page forwards to Nesiya Tova for the details.
 
 type Order = "city" | "country" | "tzaddik" | "kevarim";
 
@@ -97,6 +100,23 @@ export default function CemeteryDirectory({
       );
   }, [heritage, country, query, order, narrowed]);
 
+  // ONE list, not two. The guides and the located grounds are merged and shown
+  // in a single grid, so a town's guide and its located ground sit next to each
+  // other rather than in two directories with a divider between them. Ordering
+  // by town or country interleaves the two sets by that key; the guide-only
+  // orders (by tzaddik, most kevarim) keep the guides in that order and let the
+  // located grounds — which have neither — follow.
+  const results = useMemo<Array<{ kind: "guide"; c: CemeteryListItem } | { kind: "located"; h: HeritageEntry }>>(() => {
+    const guides = shown.map((c) => ({ kind: "guide" as const, c }));
+    const located = heritageShown.map((h) => ({ kind: "located" as const, h }));
+    const cityOf = (r: (typeof guides)[number] | (typeof located)[number]) => (r.kind === "guide" ? r.c.city : r.h.city);
+    const countryOf = (r: (typeof guides)[number] | (typeof located)[number]) => (r.kind === "guide" ? r.c.country : r.h.country);
+    const merged = [...guides, ...located];
+    if (order === "city") return merged.sort((a, b) => cityOf(a).localeCompare(cityOf(b)));
+    if (order === "country") return merged.sort((a, b) => countryOf(a).localeCompare(countryOf(b)) || cityOf(a).localeCompare(cityOf(b)));
+    return merged;
+  }, [shown, heritageShown, order]);
+
   return (
     <>
       <ListToolbar
@@ -122,46 +142,43 @@ export default function CemeteryDirectory({
         ]}
       />
 
-      <div className="mt-8 grid gap-5 md:grid-cols-2">
-        {shown.map((cemetery) => (
-          <Link
-            key={cemetery.slug}
-            href={`/cemeteries/${cemetery.slug}`}
-            className="min-w-0 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7"
-          >
-            <h2 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{cemetery.yiddishName}</h2>
-            <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{cemetery.name}</p>
-            <p className="mt-3 break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{cemetery.city} · {cemetery.country}</p>
-          </Link>
-        ))}
-      </div>
-
-      {/* The located-from-Nesiya-Tova batei hachaim for the same search or
-          country. Compact — a town and a country — each opening a page with
-          directions and a forward to Nesiya Tova for the details. */}
+      {/* A located ground opens with directions only, and many are locked, so
+          the caveat is said once above the one list rather than fencing them
+          off into a directory of their own. */}
       {heritageShown.length > 0 && (
-        <div className="mt-12 border-t border-[var(--gold-light)] pt-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Located from Nesiya Tova</p>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-            Batei hachaim located for this search — locations rather than full guides. Each opens with directions and
-            forwards to Nesiya Tova for access, hours and contacts. Many grounds are locked; confirm access before
-            travelling.
-          </p>
-          <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {heritageShown.map((h) => (
-              <li key={h.slug}>
-                <Link
-                  href={`/cemeteries/heritage/${h.slug}`}
-                  className="block min-w-0 border border-[var(--gold-light)] bg-[var(--surface)] p-4 transition hover:border-[var(--gold)] hover:shadow-sm"
-                >
-                  <span className="block truncate font-semibold text-[var(--navy)]">{h.city}</span>
-                  <span className="mt-0.5 block truncate text-xs text-stone-500">{h.country}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p className="mt-8 max-w-3xl text-sm leading-6 text-stone-500">
+          Entries marked <span className="font-semibold text-[var(--gold-ink)]">Location</span> open with directions
+          only — many grounds are locked, so confirm access before travelling.
+        </p>
       )}
+
+      <div className="mt-6 grid gap-5 md:grid-cols-2">
+        {results.map((result) =>
+          result.kind === "guide" ? (
+            <Link
+              key={result.c.slug}
+              href={`/cemeteries/${result.c.slug}`}
+              className="min-w-0 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7"
+            >
+              <h2 dir="rtl" lang="yi" className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-4xl">{result.c.yiddishName}</h2>
+              <p className="mt-2 font-[family-name:var(--font-display)] text-xl text-stone-500">{result.c.name}</p>
+              <p className="mt-3 break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{result.c.city} · {result.c.country}</p>
+            </Link>
+          ) : (
+            <Link
+              key={`h-${result.h.slug}`}
+              href={`/cemeteries/heritage/${result.h.slug}`}
+              className="flex min-w-0 flex-col justify-between border border-dashed border-[var(--gold-light)] bg-[var(--surface)] p-5 transition hover:border-[var(--gold)] hover:shadow-md sm:p-7"
+            >
+              <div className="min-w-0">
+                <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] [overflow-wrap:anywhere] sm:text-3xl">{result.h.city}</h2>
+                <p className="mt-3 break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">{result.h.country}</p>
+              </div>
+              <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">Location</p>
+            </Link>
+          ),
+        )}
+      </div>
 
       {/* Nothing typed and no country chosen: say the located set is there, and
           how to bring it in — without a count, and without a wall of it. */}
