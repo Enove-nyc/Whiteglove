@@ -50,6 +50,7 @@ import {
   readOvernightFlight,
   summarize,
   travelersOf,
+  unitsOf,
   unscheduledActivities,
   type Itinerary,
   type ItinActivity,
@@ -288,6 +289,10 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // Who is buried at each beis hachaim on the trip, looked up by slug.
   const burials = useKeverBurials(itin.activities);
   const hasDates = Boolean(itin.startDate && itin.endDate);
+  // Every distinct family/solo unit on the trip. Only worth asking "who is
+  // this for" once there is more than one — an ordinary solo or
+  // single-family trip never sees the question at all.
+  const units = useMemo(() => unitsOf(itin), [itin]);
 
   // Boarding passes need an account; without one there is nowhere to keep
   // them that survives closing the browser.
@@ -456,6 +461,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
               key={editing?.id ?? "new"}
               startDate={itin.startDate}
               initial={editing}
+              units={units}
               onAdd={(f) => {
                 if (editing) updateFlight(f);
                 else addFlight(f);
@@ -472,12 +478,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             key={editingLodgingId ?? "new"}
             startDate={itin.startDate}
             initial={itin.lodging.find((l) => l.id === editingLodgingId)}
+            units={units}
             onAdd={(l) => { saveLodging(l); setTab(null); setEditingLodgingId(null); }}
             onRemove={editingLodgingId ? () => { removeLodging(editingLodgingId); setTab(null); setEditingLodgingId(null); } : undefined}
             onCancel={() => { setTab(null); setEditingLodgingId(null); }}
           />
         )}
-        {tab === "activity" && <ActivityForm startDate={itin.startDate} onAdd={(a) => { addActivity(a); setTab(null); }} />}
+        {tab === "activity" && <ActivityForm startDate={itin.startDate} units={units} onAdd={(a) => { addActivity(a); setTab(null); }} />}
         {tab === "import" && <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />}
         </div>
       </section>
@@ -630,6 +637,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 <DayCard
                   key={day.date}
                   day={day}
+                  units={units}
                   signedIn={Boolean(viewer?.signedIn)}
                   isToday={day.date === todayInTrip}
                   adjustments={itin.adjustments ?? []}
@@ -730,7 +738,7 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates }: {
+function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates, units }: {
   day: ReturnType<typeof buildDays>[number];
   /** Today, on the traveler's own device. Marked, and opened. */
   isToday?: boolean;
@@ -764,6 +772,8 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
   onUpdateFlight: (f: ItinFlight) => void;
   onRemoveFlight: (id: string) => void;
   allDates: Array<{ date: string; label: string }>;
+  /** Every distinct unit on the trip — see ItineraryBuilder's own comment. */
+  units: Array<{ unitKey: string; label: string }>;
 }) {
   const [adding, setAdding] = useState<"stop" | "hotel" | "flight" | null>(null);
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
@@ -852,6 +862,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
             key={openLeg.id}
             startDate={day.date}
             initial={openLeg}
+            units={units}
             onAdd={(next) => { onUpdateFlight(next); setEditingFlight(null); }}
             onRemove={() => { onRemoveFlight(openLeg.id); setEditingFlight(null); }}
             onCancel={() => setEditingFlight(null)}
@@ -1146,6 +1157,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
         <LodgingForm
           startDate={day.date}
           initial={day.lodging}
+          units={units}
           onAdd={(l) => { onSaveLodging(l); setEditingLodging(false); }}
           onRemove={() => { onRemoveLodging(day.lodging!.id); setEditingLodging(false); }}
           onCancel={() => setEditingLodging(false)}
@@ -1170,6 +1182,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
       {adding === "stop" && (
         <ActivityForm
           startDate={day.date}
+          units={units}
           onAdd={(a) => {
             onAddStop({ ...a, date: a.date || day.date });
             setAdding(null);
@@ -1179,6 +1192,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
       {adding === "hotel" && (
         <LodgingForm
           startDate={day.date}
+          units={units}
           onAdd={(l) => {
             onSaveLodging(l);
             setAdding(null);
@@ -1191,6 +1205,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
       {adding === "flight" && (
         <FlightForm
           startDate={day.date}
+          units={units}
           onAdd={(f) => {
             onAddFlight(f);
             setAdding(null);
@@ -1403,10 +1418,12 @@ function BookingList({ title, items, onRemove, onEdit }: {
  * form built just for editing would drift away from this one — different
  * fields, a lookup on one and not the other.
  */
-function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
+function FlightForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
   startDate: string;
   /** The flight being edited. Absent when adding a new one. */
   initial?: ItinFlight;
+  /** On a trip with more than one unit, who this flight is for. */
+  units?: Array<{ unitKey: string; label: string }>;
   onAdd: (f: ItinFlight) => void;
   onRemove?: () => void;
   onCancel?: () => void;
@@ -1459,6 +1476,7 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
       notes: f.notes,
       confirmation: f.confirmation?.trim() || undefined,
       bookedOnSite: initial?.bookedOnSite ?? false,
+      unitKey: f.unitKey || undefined,
     });
   }
 
@@ -1607,6 +1625,14 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
       <Field label="Arrives"><input type="time" className={inputClass} value={f.arriveTime ?? ""} onChange={(e) => setF({ ...f, arriveTime: e.target.value })} /></Field>
       <Field label="Landing date"><DateField ariaLabel="Landing date" className={inputClass} min={f.date} value={f.arriveDate ?? ""} onChange={(arriveDate) => setF({ ...f, arriveDate })} /></Field>
       <Field label="Booking reference"><input className={inputClass} value={f.confirmation ?? ""} onChange={(e) => setF({ ...f, confirmation: e.target.value })} placeholder="e.g. XR4K9T" /></Field>
+      {units && units.length > 1 && (
+        <Field label="Who is this for">
+          <select className={inputClass} value={f.unitKey ?? ""} onChange={(e) => setF({ ...f, unitKey: e.target.value || undefined })}>
+            <option value="">Everyone on the trip</option>
+            {units.map((u) => <option key={u.unitKey} value={u.unitKey}>{u.label}</option>)}
+          </select>
+        </Field>
+      )}
 
       {overnight?.note && (
         <p className={`sm:col-span-2 lg:col-span-3 border-l-4 px-3 py-2 text-xs leading-5 ${overnight.detected ? "border-[var(--gold)] bg-[var(--cream)] text-[var(--navy)]" : "border-stone-300 bg-stone-50 text-stone-600"}`}>
@@ -1719,10 +1745,12 @@ function FlightForm({ startDate, initial, onAdd, onRemove, onCancel }: {
   );
 }
 
-function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
+function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
   startDate: string;
   /** The stay being changed. Absent when adding a new one. */
   initial?: ItinLodging;
+  /** On a trip with more than one unit, who this stay is for. */
+  units?: Array<{ unitKey: string; label: string }>;
   onAdd: (l: ItinLodging) => void;
   onRemove?: () => void;
   onCancel?: () => void;
@@ -1764,6 +1792,7 @@ function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
             notes: l.notes,
             confirmation: l.confirmation?.trim() || undefined,
             bookedOnSite: initial?.bookedOnSite ?? false,
+            unitKey: l.unitKey || undefined,
           });
         }
       }}
@@ -1787,6 +1816,14 @@ function LodgingForm({ startDate, initial, onAdd, onRemove, onCancel }: {
       {!overnight && <Field label="Check-out *"><DateField ariaLabel="Check-out date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(checkOut) => setL({ ...l, checkOut: correctedEnd(checkIn, checkOut, "exclusive") })} /></Field>}
       {!overnight && <Field label="Booking reference"><input className={inputClass} value={l.confirmation ?? ""} onChange={(e) => setL({ ...l, confirmation: e.target.value })} placeholder="What the hotel gave you" /></Field>}
       <Field label="Notes"><input className={inputClass} value={l.notes ?? ""} onChange={(e) => setL({ ...l, notes: e.target.value })} placeholder="Late check-in, kitchen, minyan times…" /></Field>
+      {units && units.length > 1 && (
+        <Field label="Who is this for">
+          <select className={inputClass} value={l.unitKey ?? ""} onChange={(e) => setL({ ...l, unitKey: e.target.value || undefined })}>
+            <option value="">Everyone on the trip</option>
+            {units.map((u) => <option key={u.unitKey} value={u.unitKey}>{u.label}</option>)}
+          </select>
+        </Field>
+      )}
     </FormShell>
   );
 }
@@ -1850,7 +1887,12 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
   );
 }
 
-function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: ItinActivity) => void }) {
+function ActivityForm({ startDate, units, onAdd }: {
+  startDate: string;
+  /** On a trip with more than one unit, who this stop is for. */
+  units?: Array<{ unitKey: string; label: string }>;
+  onAdd: (a: ItinActivity) => void;
+}) {
   const [a, setA] = useState<Partial<ItinActivity>>({ date: startDate });
 
   function pickKever(k: KeverResult) {
@@ -1888,7 +1930,7 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
   }
 
   return (
-    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false }); }}>
+    <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) onAdd({ id: uid(), name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false, unitKey: a.unitKey || undefined }); }}>
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#faf7ef] p-3">
         <span className={caption}>Add a kever from our list</span>
         <KeverPicker onPick={pickKever} />
@@ -1905,6 +1947,14 @@ function ActivityForm({ startDate, onAdd }: { startDate: string; onAdd: (a: Itin
       <Field label="Time"><input type="time" className={inputClass} value={a.startTime ?? ""} onChange={(e) => setA({ ...a, startTime: e.target.value })} /></Field>
       <Field label="Duration (min)"><input type="number" min={0} className={inputClass} value={a.durationMins ?? ""} onChange={(e) => setA({ ...a, durationMins: Number(e.target.value) || undefined })} /></Field>
       <Field label="Notes"><input className={inputClass} value={a.notes ?? ""} onChange={(e) => setA({ ...a, notes: e.target.value })} /></Field>
+      {units && units.length > 1 && (
+        <Field label="Who is this for">
+          <select className={inputClass} value={a.unitKey ?? ""} onChange={(e) => setA({ ...a, unitKey: e.target.value || undefined })}>
+            <option value="">Everyone on the trip</option>
+            {units.map((u) => <option key={u.unitKey} value={u.unitKey}>{u.label}</option>)}
+          </select>
+        </Field>
+      )}
     </FormShell>
   );
 }
