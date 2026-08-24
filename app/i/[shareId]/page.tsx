@@ -6,6 +6,7 @@ import TripGroupTools from "@/components/TripGroupTools";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
+import { Icon } from "@/components/icons/Icon";
 import { buildDays, emptyItinerary, formatKm, travelerSummary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { allCrossings } from "@/lib/border-store";
@@ -116,7 +117,10 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
         </div>
 
         {days.length === 0 ? (
-          <p className="mt-8 text-sm text-stone-500">This trip doesn&apos;t have dates and stops yet.</p>
+          <div className="mt-8 rounded-2xl border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-center">
+            <p className="text-sm text-stone-600">This trip doesn&apos;t have dates and stops yet — check back once {sharedByName} has added them.</p>
+            <Link href="/" className="mt-4 inline-block border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white">Back to White Glove</Link>
+          </div>
         ) : (
           <div className="mt-6 space-y-5">
             {days.map((day) => (
@@ -126,7 +130,12 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
                   <p className="text-sm font-semibold text-stone-500">{day.label}</p>
                 </div>
                 <div className="mt-3 space-y-2 text-sm">
-                  {day.flightsArriving.map((f) => <p key={`a${f.id}`} className="text-[var(--navy)]">✈️ Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
+                  {day.flightsArriving.map((f) => (
+                    <p key={`a${f.id}`} className="flex items-start gap-1.5 text-[var(--navy)]">
+                      <Icon name="plane" className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>Arrive {f.to}{f.arriveTime ? ` at ${f.arriveTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></span>
+                    </p>
+                  ))}
                   {day.activities.map((a) => (
                     <div key={a.id} className="border-t border-[var(--gold-light)] pt-2 first:border-t-0 first:pt-0">
                       {a.distanceFromPrev !== null && <p className="text-[11px] uppercase tracking-wide text-stone-400">↓ {formatKm(a.distanceFromPrev)} from previous stop</p>}
@@ -135,13 +144,26 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
                       {a.keverSlug && burials[a.keverSlug]?.length ? (
                         <p className="text-stone-700"><span className="font-semibold text-[var(--gold-ink)]">Buried here: </span>{burials[a.keverSlug].join(" · ")}</p>
                       ) : null}
-                      {a.phone ? <p className="text-stone-500">📞 {a.phone}</p> : null}
+                      {a.phone ? (
+                        <p className="flex items-center gap-1.5 text-stone-500">
+                          <Icon name="phone" className="h-4 w-4 shrink-0" />
+                          {a.phone}
+                        </p>
+                      ) : null}
                       {a.href ? <p><a href={a.href} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2" target="_blank" rel="noreferrer">Details →</a></p> : null}
                       {a.notes ? <p className="text-stone-500">{a.notes}</p> : null}
                     </div>
                   ))}
-                  {day.flightsDeparting.map((f) => <p key={`d${f.id}`} className="text-[var(--navy)]">✈️ Depart {f.from}{f.departTime ? ` at ${f.departTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></p>)}
-                  <p className="pt-1 text-stone-600">🛏️ <strong>Tonight:</strong> {day.lodging ? (day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name) : "— to be arranged —"}{day.lodging?.address ? ` — ${day.lodging.address}` : ""}{day.lodging?.phone ? ` · ${day.lodging.phone}` : ""}</p>
+                  {day.flightsDeparting.map((f) => (
+                    <p key={`d${f.id}`} className="flex items-start gap-1.5 text-[var(--navy)]">
+                      <Icon name="plane" className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>Depart {f.from}{f.departTime ? ` at ${f.departTime}` : ""} <span className="text-stone-500">({f.from} → {f.to}{f.airline ? `, ${f.airline}` : ""})</span></span>
+                    </p>
+                  ))}
+                  <p className="flex items-start gap-1.5 pt-1 text-stone-600">
+                    <Icon name="bed" className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span><strong>Tonight:</strong> {day.lodging ? (day.lodging.type === "overnight-transit" ? `Overnight ${day.lodging.name || "bus/flight"}` : day.lodging.name) : "— to be arranged —"}{day.lodging?.address ? ` — ${day.lodging.address}` : ""}{day.lodging?.phone ? ` · ${day.lodging.phone}` : ""}</span>
+                  </p>
                 </div>
               </article>
             ))}
