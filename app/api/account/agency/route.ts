@@ -195,6 +195,15 @@ export async function POST(request: NextRequest) {
     case "invite": {
       if (!agency) return NextResponse.json({ error: "Buy a seat before inviting anybody." }, { status: 409 });
       if (!isAgencyOwner(agency, email)) return NextResponse.json({ error: "Only the owner can invite." }, { status: 403 });
+      // Being the AGENCY'S owner is a fact about the record; still being
+      // paid up on Pro is a fact about the account, and the two can drift —
+      // a lapsed subscription demotes the owner's plan (see the webhook)
+      // without deleting the agency record itself. Minting a new Pro
+      // account for somebody else with nothing paying for it would be worse
+      // than refusing here.
+      if (plan !== "pro") {
+        return NextResponse.json({ error: "Your Advisor Pro subscription has lapsed — renew it before inviting anybody new." }, { status: 403 });
+      }
       const identity = normalizeIdentity(String(body?.email ?? ""));
       if (!identity || identity.kind !== "email") {
         return NextResponse.json({ error: "That does not look like an email address." }, { status: 400 });

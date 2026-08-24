@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { type AccountPlan, PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan, setPlan } from "@/lib/account-plan-store";
-import { agencyIdFor, readAgency } from "@/lib/agency-store";
+import { agencyIdFor, deleteInvite, listOpenInvites, readAgency, setAccountAgency, writeAgency } from "@/lib/agency-store";
 import { isOwner as isAgencyOwner } from "@/lib/agency";
 import { sendSubscriptionNotification } from "@/lib/email";
 import { identityKey } from "@/lib/identity";
@@ -12,6 +12,7 @@ import {
   readSubscription,
   rememberCustomer,
   type SubscriptionRecord,
+  writeOneTimePurchase,
   writeSubscription,
 } from "@/lib/plan-billing-store";
 import { customerIdOf, readSubscriptionFromStripe, statusIsPaid, stripeWebhookSecret, verifyWebhook } from "@/lib/stripe";
@@ -96,6 +97,11 @@ export async function POST(request: NextRequest) {
         if (!(await setPlan(account, plan, "Stripe one-time purchase"))) {
           console.error("[billing] paid but the plan could not be set:", { account, plan });
         }
+        // Recorded permanently, separate from the plan field itself — see
+        // ownEntitledPlan in lib/plan-billing-store.ts for why: the plan
+        // field gets overwritten the moment this account joins an agency,
+        // and this purchase has to survive that.
+        await writeOneTimePurchase(account, plan);
         await sendSubscriptionNotification({ account, plan: PLAN_LABELS[plan], event: "started" });
         return NextResponse.json({ received: true });
       }
@@ -169,17 +175,45 @@ export async function POST(request: NextRequest) {
         // they joined (app/api/account/agency/join/route.ts), with no
         // subscription of Stripe's own behind it — nothing else will ever
         // demote them, and left alone they would keep Advisor Pro for free,
-        // indefinitely. Each is set back to whatever THEIR OWN subscription,
-        // if any, actually entitles them to (ownEntitledPlan) rather than a
-        // blanket free, the same as leaving or being removed already does.
+        // indefinitely.
+        //
+        // TAKEN OFF THE AGENCY ENTIRELY, not just demoted — the same as the
+        // owner removing them by hand (remove-member below). A seat nobody
+        // is paying for is not a seat that is still theirs to keep warm: if
+        // it stayed on the roster with agencyId still pointing at this
+        // agency, the owner resubscribing later would find seats that
+        // LOOK filled but promote nobody back (nothing re-checks a former
+        // member automatically), which is worse than an honest empty
+        // roster the owner re-invites onto. Each account is set back to
+        // whatever THEIR OWN subscription or one-time purchase, if any,
+        // actually entitles them to (ownEntitledPlan) rather than a blanket
+        // free — the same rule leaving or being removed already follows.
         if (plan === "pro") {
           const agencyId = await agencyIdFor(account);
           const agency = agencyId ? await readAgency(agencyId) : null;
           if (agency && isAgencyOwner(agency, account)) {
-            for (const member of agency.members) {
-              if (identityKey(member.account) === identityKey(account)) continue;
+            const others = agency.members.filter((m) => identityKey(m.account) !== identityKey(account));
+            for (const member of others) {
+              await setAccountAgency(member.account, undefined);
               await setPlan(member.account, await ownEntitledPlan(member.account), "The agency's Advisor Pro subscription ended");
             }
+            if (others.length > 0) {
+              await writeAgency({
+                ...agency,
+                members: agency.members.filter((m) => identityKey(m.account) === identityKey(account)),
+                updatedAt: new Date().toISOString(),
+              });
+            }
+            // Any invite still open would otherwise keep working, whether or
+            // not anybody had accepted one yet — used days later, it mints a
+            // fresh unpaid Pro account the same way the members just removed
+            // above got theirs. The invite route itself now also refuses
+            // once the owner's plan has lapsed (see "invite" in
+            // app/api/account/agency/route.ts), but a stale link already in
+            // somebody's inbox does not care about that check until it is
+            // used, so it is cleared here too rather than left to expire on
+            // its own in up to 14 days.
+            for (const invite of await listOpenInvites(agency.id)) await deleteInvite(invite);
           }
         }
       }

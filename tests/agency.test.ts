@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   type AgencyRecord,
@@ -189,5 +190,39 @@ describe("removing somebody", () => {
 
   it("says so when they are not on it at all", () => {
     assert.match(removeMemberProblem(a, "stranger@example.com") ?? "", /not on this agency/);
+  });
+});
+
+describe("what happens when the Pro subscription that pays for it all lapses", () => {
+  const WEBHOOK = readFileSync("app/api/billing/webhook/route.ts", "utf8");
+  const AGENCY_ROUTE = readFileSync("app/api/account/agency/route.ts", "utf8");
+
+  it("takes every other member off the agency, not just their plan", () => {
+    // A demoted-but-still-listed member is a seat that looks filled but
+    // promotes nobody back on its own — see the comment beside this in the
+    // webhook itself for why that is worse than an honest empty roster.
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('if (plan === "pro")'));
+    assert.match(branch, /setAccountAgency\(member\.account, undefined\)/);
+    assert.match(branch, /members: agency\.members\.filter/);
+  });
+
+  it("restores each member to their OWN entitlement, never a blanket free", () => {
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('if (plan === "pro")'));
+    assert.match(branch, /ownEntitledPlan\(member\.account\)/);
+  });
+
+  it("clears every open invite, so a stale link cannot mint a fresh unpaid member later", () => {
+    const branch = WEBHOOK.slice(WEBHOOK.indexOf('if (plan === "pro")'));
+    assert.match(branch, /listOpenInvites\(agency\.id\)/);
+    assert.match(branch, /deleteInvite\(invite\)/);
+  });
+
+  it("refuses a NEW invite once the owner's own plan has lapsed, not just once nobody owns the agency", () => {
+    // Being the agency's owner (a fact about the record) and being paid up
+    // on Pro (a fact about the account) can drift apart the moment the
+    // subscription ends — the record survives, the plan does not.
+    const branch = AGENCY_ROUTE.slice(AGENCY_ROUTE.indexOf('case "invite"'), AGENCY_ROUTE.indexOf('case "revoke-invite"'));
+    assert.match(branch, /plan !== "pro"/);
+    assert.match(branch, /403/);
   });
 });
