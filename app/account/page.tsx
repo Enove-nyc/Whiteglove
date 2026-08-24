@@ -144,6 +144,16 @@ export default async function AccountPage() {
         {/* Itineraries, Route, Favorites. */}
         <AccountRoutePanel />
 
+        <section aria-labelledby="account-packing" className="mt-8">
+          <h2 id="account-packing" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Packing list</h2>
+          <p className="mt-2 text-sm leading-6 text-stone-600">
+            An AI-suggested checklist for the trip in your planner right now — destinations, dates and planned stops.
+          </p>
+          <div className="mt-4">
+            <LinkButton href="/packing">Open packing list</LinkButton>
+          </div>
+        </section>
+
         <section aria-labelledby="account-details" className="mt-8">
           <h2 id="account-details" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Details</h2>
           <div className="mt-4">

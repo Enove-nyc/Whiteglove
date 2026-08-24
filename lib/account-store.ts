@@ -8,6 +8,8 @@ import { formatCents, type PaymentRecord, type TripBalance } from "@/data/trip-p
 import type { CommissionRecord } from "@/data/trip-commission";
 import type { AddonItem } from "@/data/trip-addons";
 import { withActivity, type ActivityEntry } from "@/data/trip-activity";
+import { tripSignature, type PackingList } from "@/data/packing-list";
+import { suggestPackingList } from "@/lib/packing-ai";
 import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
@@ -217,6 +219,12 @@ export type SavedTrip = {
    * hand. Absent until the first entry. See data/trip-activity.ts.
    */
   activity?: ActivityEntry[];
+  /**
+   * AI-suggested packing list for this trip. Absent until first generated;
+   * regenerated on request when the trip has changed since. See
+   * data/packing-list.ts and lib/packing-ai.ts.
+   */
+  packingList?: PackingList;
   /**
    * The last real reading of each of this trip's flights — keyed by the
    * flight's own id. Absent until a flight is actually checked. See
@@ -1502,6 +1510,79 @@ export async function applyAddonClientAction(
   const next = trips.map((t) => (t.id === rec.tripId ? { ...t, addons: items, activity, updatedAt: now } : t));
   const ok = await writeTrips(normalized, next, activeId);
   return ok ? { items, ownerEmail: rec.ownerEmail, tripName: trip.client || trip.name, addon: answered } : null;
+}
+
+// ---- Packing list -----------------------------------------------------------
+//
+// An AI-suggested checklist for a trip — see data/packing-list.ts and
+// lib/packing-ai.ts. Generated on request, never automatically: a trip
+// still being planned would just get regenerated against every edit for no
+// reason nobody asked for.
+
+function packingItemId() {
+  return randomBytes(6).toString("base64url");
+}
+
+/** A short summary of what the trip actually is, for the AI prompt and for
+ *  tripSignature() — destinations from where flights land and where the
+ *  traveler sleeps, since neither alone is always present. */
+function packingSummary(itinerary: Itinerary) {
+  const destinations = Array.from(
+    new Set([...itinerary.flights.map((f) => f.to).filter(Boolean), ...itinerary.lodging.map((l) => l.name).filter(Boolean)]),
+  );
+  const stops = [...itinerary.lodging.map((l) => l.name), ...itinerary.activities.map((a) => a.name)].filter(Boolean);
+  return { destinations, startDate: itinerary.startDate, endDate: itinerary.endDate, stops, activityCount: itinerary.activities.length };
+}
+
+/** The trip's current packing list, or null if none has been generated yet. */
+export async function getPackingList(email: string, tripId: string): Promise<PackingList | null> {
+  const data = await getAccountData(email);
+  return withTrips(data).trips.find((t) => t.id === tripId)?.packingList ?? null;
+}
+
+/**
+ * Ask the AI for a fresh packing list and save it, replacing whatever was
+ * there before. Returns null when no provider is configured or every
+ * provider failed — the caller says so rather than saving an empty list
+ * over a real one.
+ */
+export async function generatePackingList(email: string, tripId: string): Promise<PackingList | null> {
+  if (!hasAccountStorage()) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+  const summary = packingSummary(trip.itinerary);
+  const suggestions = await suggestPackingList(summary);
+  if (suggestions.length === 0) return null;
+  const list: PackingList = {
+    items: suggestions.map((s) => ({ id: packingItemId(), label: s.label, category: s.category, checked: false })),
+    generatedAt: new Date().toISOString(),
+    forSignature: tripSignature(summary),
+  };
+  const next = trips.map((t) => (t.id === tripId ? { ...t, packingList: list, updatedAt: new Date().toISOString() } : t));
+  const ok = await writeTrips(normalized, next, activeId);
+  return ok ? list : null;
+}
+
+/** Check or uncheck one item — never regenerates the list. */
+export async function togglePackingItem(email: string, tripId: string, itemId: string, checked: boolean): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip?.packingList) return false;
+  const list: PackingList = { ...trip.packingList, items: trip.packingList.items.map((i) => (i.id === itemId ? { ...i, checked } : i)) };
+  const next = trips.map((t) => (t.id === tripId ? { ...t, packingList: list, updatedAt: new Date().toISOString() } : t));
+  return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+/** The trip's current signature, for the caller to check staleness against
+ *  a saved list's forSignature without duplicating packingSummary's logic. */
+export function currentPackingSignature(itinerary: Itinerary): string {
+  return tripSignature(packingSummary(itinerary));
 }
 
 // ---- Live travel information ----------------------------------------------
