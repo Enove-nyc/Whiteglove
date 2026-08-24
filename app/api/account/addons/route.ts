@@ -43,8 +43,16 @@ export async function GET(request: NextRequest) {
   const wanted = request.nextUrl.searchParams.get("trip") ?? undefined;
   const trip = await getTripItinerary(email, wanted);
   if (!trip) return NextResponse.json({ error: "No trip to offer add-ons on yet." }, { status: 404 });
-  const items = await getAddons(email, trip.tripId);
-  return NextResponse.json({ tripId: trip.tripId, tripName: trip.tripName || trip.itinerary.title || "", items });
+  const [items, balance] = await Promise.all([getAddons(email, trip.tripId), getBalance(email, trip.tripId)]);
+  return NextResponse.json({
+    tripId: trip.tripId,
+    tripName: trip.tripName || trip.itinerary.title || "",
+    items,
+    // What a NEW add-on will be priced in — the same currency saveAddonItem
+    // below defaults to. Lets the form's own "Price" label say so up front,
+    // rather than always showing a "$" that may not be what gets saved.
+    currency: balance?.currency || "USD",
+  });
 }
 
 export async function POST(request: NextRequest) {

@@ -50,8 +50,16 @@ export async function GET(request: NextRequest) {
   const wanted = request.nextUrl.searchParams.get("trip");
   const trip = await getTripItinerary(who.email, wanted === "current" ? undefined : wanted || undefined);
   if (!trip) return NextResponse.json({ error: "Trip not found." }, { status: 404 });
-  const records = await getCommissions(who.email, trip.tripId);
-  return NextResponse.json({ tripId: trip.tripId, tripName: trip.tripName || trip.itinerary.title || "", records });
+  const [records, balance] = await Promise.all([getCommissions(who.email, trip.tripId), getBalance(who.email, trip.tripId)]);
+  return NextResponse.json({
+    tripId: trip.tripId,
+    tripName: trip.tripName || trip.itinerary.title || "",
+    records,
+    // What a NEW commission record will be priced in — the same currency
+    // the POST handler below defaults to. Lets the form's own labels say
+    // so up front, rather than always showing a "$" that may not match.
+    currency: balance?.currency || "USD",
+  });
 }
 
 export async function POST(request: NextRequest) {

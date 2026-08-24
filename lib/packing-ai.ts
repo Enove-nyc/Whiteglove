@@ -36,19 +36,25 @@ function userPrompt(input: { destinations: string[]; startDate?: string; endDate
   return lines.join("\n");
 }
 
-function parseItems(raw: string): PackingSuggestion[] {
+/**
+ * Null means the reply couldn't be read as a packing list at all — no JSON
+ * object found, or it didn't parse — which is a failure, not "nothing to
+ * pack". An empty array is the one case that's a real result: the JSON
+ * parsed fine and `items` was genuinely an empty list.
+ */
+function parseItems(raw: string): PackingSuggestion[] | null {
   const match = /\{[\s\S]*\}/.exec(raw);
-  if (!match) return [];
+  if (!match) return null;
   try {
     const parsed = JSON.parse(match[0]) as { items?: unknown };
-    if (!Array.isArray(parsed.items)) return [];
+    if (!Array.isArray(parsed.items)) return null;
     return parsed.items
       .filter((i): i is { label: unknown; category: unknown } => Boolean(i) && typeof i === "object")
       .map((i) => ({ label: String(i.label ?? "").trim(), category: String(i.category ?? "Other").trim() || "Other" }))
       .filter((i) => i.label.length > 0 && i.label.length <= 120)
       .slice(0, 60);
   } catch {
-    return [];
+    return null;
   }
 }
 

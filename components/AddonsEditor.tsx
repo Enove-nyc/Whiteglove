@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
  */
 export default function AddonsEditor() {
   const [tripId, setTripId] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [items, setItems] = useState<AddonItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -31,6 +32,7 @@ export default function AddonsEditor() {
         if (!res.ok) setError(data?.error || "Could not load add-ons.");
         else {
           setTripId(data?.tripId || "");
+          setCurrency(data?.currency || "USD");
           setItems(Array.isArray(data?.items) ? data.items : []);
         }
       } catch {
@@ -153,7 +155,7 @@ export default function AddonsEditor() {
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
-          Price ($)
+          {`Price (${currency})`}
           <input
             type="number"
             min={0}

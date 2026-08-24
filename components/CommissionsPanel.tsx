@@ -131,6 +131,7 @@ export default function CommissionsPanel() {
  */
 export function TripCommissionEditor() {
   const [tripId, setTripId] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [records, setRecords] = useState<CommissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -147,6 +148,7 @@ export function TripCommissionEditor() {
         if (!res.ok) setError(data?.error || "Could not load commission records.");
         else {
           setTripId(data?.tripId || "");
+          setCurrency(data?.currency || "USD");
           setRecords(Array.isArray(data?.records) ? data.records : []);
         }
       } catch {
@@ -254,7 +256,7 @@ export function TripCommissionEditor() {
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
-          Trip revenue ($)
+          {`Trip revenue (${currency})`}
           <input
             type="number"
             min={0}
@@ -264,7 +266,7 @@ export function TripCommissionEditor() {
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
-          Supplier cost ($)
+          {`Supplier cost (${currency})`}
           <input
             type="number"
             min={0}
@@ -274,7 +276,7 @@ export function TripCommissionEditor() {
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
-          Expected commission ($)
+          {`Expected commission (${currency})`}
           <input
             type="number"
             min={0}
@@ -284,7 +286,7 @@ export function TripCommissionEditor() {
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-semibold text-stone-600">
-          Received so far ($)
+          {`Received so far (${currency})`}
           <input
             type="number"
             min={0}
