@@ -7,6 +7,8 @@ import CompanionSettings from "@/components/companion/CompanionSettings";
 import AccountRoutePanel from "@/components/AccountRoutePanel";
 import AccountSettings from "@/components/AccountSettings";
 import Footer from "@/components/Footer";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { LinkButton } from "@/components/ui/Button";
 import LogoutButton from "@/components/LogoutButton";
 import OpenAdminButton from "@/components/OpenAdminButton";
 import Navbar from "@/components/Navbar";
@@ -121,16 +123,12 @@ export default async function AccountPage() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="mx-auto max-w-5xl px-5 py-14 sm:px-8 sm:py-20">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Your account</p>
-            <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Welcome, {displayName}.</h1>
-            <p className="mt-4 text-sm leading-6 text-stone-600">
-              Signed in as {describeIdentity(who)}.{account && !account.verifiedAt ? " Still waiting for its verification code." : ""}
-            </p>
-          </div>
-          {canAdmin && <OpenAdminButton />}
-        </div>
+        <PageHeader
+          eyebrow="Your account"
+          title={`Welcome, ${displayName}.`}
+          description={`Signed in as ${describeIdentity(who)}.${account && !account.verifiedAt ? " Still waiting for its verification code." : ""}`}
+          action={canAdmin ? <OpenAdminButton /> : undefined}
+        />
 
         {/* Itineraries, Route, Favorites. */}
         <AccountRoutePanel />
@@ -162,28 +160,35 @@ export default async function AccountPage() {
                   <span className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">The White Glove app</span>
                   <span className="text-sm leading-6 text-stone-600">The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal. Add it to your home screen.</span>
                 </div>
-                <Link href="/app" className="rounded-full bg-[var(--navy)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">Open the app</Link>
+                <LinkButton href="/app">Open the app</LinkButton>
               </div>
               {canServeClients && (
-                <p className="mt-4 border-t border-[var(--gold-light)] pt-4 text-sm leading-6 text-stone-600">
-                  To hand a client their own trip, open it in the{" "}
-                  <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">planner</Link>{" "}
-                  and use <span className="font-semibold text-[var(--navy)]">Create a client app link</span> on that trip — each link opens only that one itinerary on the client&apos;s phone.
-                  Before that, offer them a{" "}
-                  <Link href="/proposal" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">proposal</Link>{" "}
-                  to compare and approve — options, hotels and a price they see and answer before the trip is confirmed.
-                  Save the hotels, activities and contacts you use often to your{" "}
-                  <Link href="/library" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">content library</Link>{" "}
-                  and a proposal is built from what's already there instead of retyped each time.
-                  Need a passport number or an emergency contact first? Send a{" "}
-                  <Link href="/forms" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">client form</Link>{" "}
-                  — answers come back to you alone, never onto the itinerary itself.
-                  See every client trip and where it stands in your{" "}
-                  <Link href="/pipeline" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">trip pipeline</Link>.
-                  Set a trip's balance, split it across families, and collect{" "}
-                  <Link href="/payments" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">payments</Link>{" "}
-                  straight into your own connected Stripe account.
-                </p>
+                <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
+                  <p className="text-sm leading-6 text-stone-600">
+                    To hand a client their own trip, open it in the planner and use{" "}
+                    <span className="font-semibold text-[var(--navy)]">Create a client app link</span> — each link opens
+                    only that one itinerary on the client&apos;s phone.
+                  </p>
+                  <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {[
+                      { href: "/proposal", label: "Proposal", description: "Offer options to compare and approve" },
+                      { href: "/library", label: "Content library", description: "Your saved hotels, activities and contacts" },
+                      { href: "/forms", label: "Client form", description: "Collect a passport number or emergency contact" },
+                      { href: "/pipeline", label: "Trip pipeline", description: "Every client trip and where it stands" },
+                      { href: "/payments", label: "Payments", description: "Balances, splits, and collection" },
+                    ].map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="flex flex-col rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 transition hover:border-[var(--gold)]"
+                        >
+                          <span className="font-semibold text-[var(--navy)]">{item.label}</span>
+                          <span className="text-sm text-stone-600">{item.description}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
               <CompanionSettings />
             </div>

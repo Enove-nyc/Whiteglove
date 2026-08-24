@@ -242,12 +242,32 @@ export default async function AdminHome() {
         </div>
       </header>
 
-      {/* What the site holds. The dashboard knew how many people had visited
-          and nothing about what they had visited. Counted from the built-in
-          content, so these survive the database being away. */}
+      {/* The one surface that actually demands action, so it comes first —
+          before anything merely informational. */}
+      {visibleAlerts.length > 0 && (
+        <section aria-labelledby="attention-heading" className="mt-7 rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <div className="flex items-center justify-between gap-4">
+            <h2 id="attention-heading" className="font-[family-name:var(--font-display)] text-2xl text-amber-950">Needs attention</h2>
+          </div>
+          <ul className="mt-4 divide-y divide-amber-200">
+            {visibleAlerts.map((alert) => (
+              <li key={alert.href} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm leading-6 text-amber-950">{alert.text}</p>
+                <AdminNavLink href={alert.href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-amber-950 underline underline-offset-4">
+                  {alert.label} →
+                </AdminNavLink>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Work waiting on a decision — distinct from "Needs attention" above,
+          which is urgent; this is the everyday queue. Counted from the
+          built-in content, so these survive the database being away. */}
       {(may("/admin/imports/needs-review") || may("/admin/content") || may("/admin/ratings") || may("/admin/history")) && (
         <section aria-labelledby="now-heading" className="mt-7">
-          <h2 id="now-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Needs you now</h2>
+          <h2 id="now-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Waiting on you</h2>
           <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {may("/admin/imports/needs-review") && (
               <TotalCard
@@ -277,20 +297,6 @@ export default async function AdminHome() {
         </section>
       )}
 
-      <section aria-labelledby="totals-heading" className="mt-7">
-        <h2 id="totals-heading" className="sr-only">What the site holds</h2>
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {ADMIN_TOTAL_CARDS.map((card) => (
-            <TotalCard
-              key={card.key}
-              label={card.label}
-              value={totals[card.key]}
-              href={may(card.href) ? card.href : null}
-            />
-          ))}
-        </ul>
-      </section>
-
       {/* The jobs somebody opens the admin to do, rather than a place to go
           and then find the button. */}
       {quickAdd.length > 0 && (
@@ -308,24 +314,6 @@ export default async function AdminHome() {
           ))}
         </div>
       </section>
-      )}
-
-      {visibleAlerts.length > 0 && (
-        <section aria-labelledby="attention-heading" className="mt-7 rounded-xl border border-amber-200 bg-amber-50 p-5">
-          <div className="flex items-center justify-between gap-4">
-            <h2 id="attention-heading" className="font-[family-name:var(--font-display)] text-2xl text-amber-950">Needs attention</h2>
-          </div>
-          <ul className="mt-4 divide-y divide-amber-200">
-            {visibleAlerts.map((alert) => (
-              <li key={alert.href} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm leading-6 text-amber-950">{alert.text}</p>
-                <AdminNavLink href={alert.href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-amber-950 underline underline-offset-4">
-                  {alert.label} →
-                </AdminNavLink>
-              </li>
-            ))}
-          </ul>
-        </section>
       )}
 
       {quickActions.length > 0 && (
@@ -406,6 +394,22 @@ export default async function AdminHome() {
         </div>
       </section>
       )}
+
+      {/* Informational totals — what the site holds, not what needs doing.
+          Kept quiet and last among the summary sections on purpose. */}
+      <section aria-labelledby="totals-heading" className="mt-10 border-t border-[var(--gold-light)] pt-7">
+        <h2 id="totals-heading" className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">What the site holds</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {ADMIN_TOTAL_CARDS.map((card) => (
+            <TotalCard
+              key={card.key}
+              label={card.label}
+              value={totals[card.key]}
+              href={may(card.href) ? card.href : null}
+            />
+          ))}
+        </ul>
+      </section>
 
       <section aria-labelledby="all-tools-heading" className="mt-10 border-t border-[var(--gold-light)] pt-9">
         <div>

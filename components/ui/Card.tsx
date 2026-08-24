@@ -1,14 +1,21 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { ElementType, HTMLAttributes, ReactNode } from "react";
 
 /**
  * The one card shape for the app. Every page that hand-rolled its own
  * bordered box should use this instead — see the shared-primitives audit.
+ * `as` picks the rendered tag (e.g. "article" for a day of an itinerary)
+ * without changing the shape.
  */
-export function Card({ children, className = "", ...rest }: HTMLAttributes<HTMLDivElement> & { children: ReactNode }) {
+export function Card({
+  children,
+  className = "",
+  as: Tag = "div",
+  ...rest
+}: HTMLAttributes<HTMLElement> & { children: ReactNode; as?: ElementType }) {
   return (
-    <div className={`wg-card border border-[var(--gold-light)] bg-white p-6 ${className}`} {...rest}>
+    <Tag className={`wg-card border border-[var(--gold-light)] bg-white p-6 ${className}`} {...rest}>
       {children}
-    </div>
+    </Tag>
   );
 }
 
