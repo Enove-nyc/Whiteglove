@@ -1,0 +1,227 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import {
+  CHABAD_FEATURE_KEYS,
+  CHABAD_FEATURE_LABELS,
+  chabadEuropeCountries,
+  confirmedFeaturesOf,
+  type ChabadEuropeListing,
+  type ChabadFeatureKey,
+} from "@/lib/chabad-directory";
+import { placeMapUrl } from "@/data/route-utils";
+
+const FEATURE_FILTERS = CHABAD_FEATURE_KEYS;
+
+/**
+ * Search + filter UI for the Chabad Travel Directory — Europe.
+ *
+ * Client-side only, over the listings the server component already fetched
+ * (there is no live database behind this directory yet — see
+ * data/chabad-europe.ts). A card shows only the features that listing's own
+ * source actually confirms; every unconfirmed feature is simply absent from
+ * the card rather than shown as a "no", so the page never implies a negative
+ * nobody checked.
+ */
+export default function ChabadEuropeDirectory({ listings }: { listings: ChabadEuropeListing[] }) {
+  const [query, setQuery] = useState("");
+  const [country, setCountry] = useState("");
+  const [features, setFeatures] = useState<Set<ChabadFeatureKey>>(new Set());
+
+  const countries = useMemo(() => chabadEuropeCountries(listings), [listings]);
+
+  const toggleFeature = (key: ChabadFeatureKey) => {
+    setFeatures((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("en");
+    return listings.filter((listing) => {
+      if (country && listing.country !== country) return false;
+      if (needle) {
+        const haystack = `${listing.name} ${listing.city} ${listing.country} ${listing.address}`.toLocaleLowerCase("en");
+        if (!haystack.includes(needle)) return false;
+      }
+      if (features.size > 0) {
+        const confirmed = new Set(confirmedFeaturesOf(listing).map((feature) => feature.key));
+        for (const key of features) if (!confirmed.has(key)) return false;
+      }
+      return true;
+    });
+  }, [listings, query, country, features]);
+
+  return (
+    <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+        <label className="flex-1 sm:max-w-xs">
+          <span className="sr-only">Search by name or city</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by name or city"
+            className="min-h-11 w-full rounded-full border border-[var(--gold-light)] bg-[var(--surface)] px-4 text-sm text-[var(--ink)] placeholder:text-stone-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)]"
+          />
+        </label>
+
+        <label className="sm:w-56">
+          <span className="sr-only">Country</span>
+          <select
+            value={country}
+            onChange={(event) => setCountry(event.target.value)}
+            className="min-h-11 w-full rounded-full border border-[var(--gold-light)] bg-[var(--surface)] px-4 text-sm text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)]"
+          >
+            <option value="">All countries</option>
+            {countries.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by confirmed feature">
+          {FEATURE_FILTERS.map((key) => {
+            const active = features.has(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => toggleFeature(key)}
+                aria-pressed={active}
+                className={`min-h-11 rounded-full border px-4 text-sm font-semibold transition ${
+                  active
+                    ? "border-[var(--navy)] bg-[var(--navy)] text-white"
+                    : "border-[var(--gold-light)] bg-[var(--surface)] text-[var(--navy)] hover:bg-[var(--cream-deep)]"
+                }`}
+              >
+                {CHABAD_FEATURE_LABELS[key]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <p className="mt-4 text-sm text-stone-500">
+        {filtered.length} of {listings.length} listing{listings.length === 1 ? "" : "s"} shown.
+      </p>
+
+      {filtered.length === 0 ? (
+        <p className="mt-8 max-w-2xl leading-7 text-stone-600">
+          No listing matches that search. Try clearing a filter, or search by city instead.
+        </p>
+      ) : (
+        <ul className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((listing) => (
+            <ChabadCard key={listing.id} listing={listing} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ChabadCard({ listing }: { listing: ChabadEuropeListing }) {
+  const confirmed = confirmedFeaturesOf(listing);
+  return (
+    <li className="flex flex-col rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
+        {listing.city}, {listing.country}
+      </p>
+      <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+        {listing.name}
+      </h3>
+      <p className="mt-2 text-sm leading-6 text-stone-600">{listing.address}</p>
+
+      {confirmed.length > 0 && (
+        <ul className="mt-3 flex flex-wrap gap-1.5">
+          {confirmed.map((feature) => (
+            <li
+              key={feature.key}
+              className="rounded-full border border-[var(--gold-light)] bg-[var(--cream)] px-2.5 py-1 text-[11px] font-semibold text-[var(--navy)]"
+            >
+              {feature.label}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {listing.reservation_required !== null && (
+        <p className="mt-3 text-sm leading-6 text-stone-600">
+          <span className="font-semibold text-[var(--navy)]">Reservation:</span>{" "}
+          {listing.reservation_required ? "required" : "not required"}
+        </p>
+      )}
+
+      {confirmed
+        .filter((feature) => feature.notes)
+        .map((feature) => (
+          <p key={feature.key} className="mt-2 text-sm leading-6 text-stone-600">
+            <span className="font-semibold text-[var(--navy)]">{feature.label}:</span> {feature.notes}
+          </p>
+        ))}
+
+      <div className="mt-4 flex flex-wrap gap-3 text-sm">
+        {listing.phone && (
+          <a
+            href={`tel:${listing.phone.replace(/[^+\d]/g, "")}`}
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Call
+          </a>
+        )}
+        {listing.whatsapp && (
+          <a
+            href={`https://wa.me/${listing.whatsapp.replace(/[^\d]/g, "")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            WhatsApp
+          </a>
+        )}
+        {listing.email && (
+          <a
+            href={`mailto:${listing.email}`}
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Email
+          </a>
+        )}
+        {listing.website && (
+          <a
+            href={listing.website}
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+          >
+            Website
+          </a>
+        )}
+        <a
+          href={placeMapUrl(listing.address)}
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+        >
+          Map
+        </a>
+        <a
+          href={listing.source_url}
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+        >
+          Official Chabad.org page
+        </a>
+      </div>
+
+      <p className="mt-3 text-xs text-stone-400">Last verified {listing.last_verified}</p>
+    </li>
+  );
+}
