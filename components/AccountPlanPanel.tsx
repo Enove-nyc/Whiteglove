@@ -207,7 +207,10 @@ export default function AccountPlanPanel({
 
       {/* A way back down, once upgraded. It opens Stripe's own page — the one
           place a subscription cancels decently — where a member can switch
-          plan, cancel, or return to Traveler. Shown for any paid plan, not only
+          plan or stop paying altogether, which returns the account to no plan.
+          ("Traveler" was the old free tier and is gone; there is no plan below
+          the paid ones to move to, only ending the one you have.) Shown for any
+          paid plan, not only
           a live card subscription: somebody the owner put on a plan by hand has
           no Stripe customer and the portal route answers them plainly (write in
           and we sort it out) rather than with an error. */}

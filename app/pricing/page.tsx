@@ -190,6 +190,13 @@ export default async function PricingPage() {
             </dd>
           </div>
           <div>
+            <dt className="text-sm font-bold text-[var(--navy)]">Can I stop, or move to a smaller plan?</dt>
+            <dd className="mt-1 text-sm leading-6 text-stone-600">
+              Yes, from your account page at any time — switch plan or stop altogether. It opens the same billing page
+              you would use to change your card, and the trips you have already built stay yours.
+            </dd>
+          </div>
+          <div>
             <dt className="text-sm font-bold text-[var(--navy)]">I am planning one trip, for myself.</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
               One Trip is for exactly that — a single fee, no subscription, and the app on your own phone while you
