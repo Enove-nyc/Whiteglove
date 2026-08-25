@@ -1,6 +1,9 @@
 import Link from "next/link";
 import CspClearButton from "@/components/CspClearButton";
+import TwoFactorPanel from "@/components/admin/TwoFactorPanel";
 import { cspReportStoreAvailable, readCspSummary } from "@/lib/csp-reports";
+import { readTwoFactor, SHARED_DOOR, twoFactorStorageAvailable } from "@/lib/admin-2fa-store";
+import { currentAdmin } from "@/lib/admin-current";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +20,15 @@ export const dynamic = "force-dynamic";
  */
 export default async function AdminSecurityPage() {
   const summary = await readCspSummary();
+
+  // Which door this session came through decides which factor is managed here.
+  // Somebody on the shared password manages the shared one; somebody signed in
+  // as themselves manages their own. Never a choice on screen — offering one
+  // would let a holder of the shared password reach the owner's.
+  const { identity } = await currentAdmin();
+  const door = identity?.how === "account" ? identity.email : SHARED_DOOR;
+  const doorLabel = identity?.how === "account" ? identity.email : "the shared admin password";
+  const enrolled = twoFactorStorageAvailable() ? (await readTwoFactor(door)) !== null : false;
 
   return (
     <>
@@ -43,6 +55,19 @@ export default async function AdminSecurityPage() {
           </Link>
         </div>
       </header>
+
+      {/* Above the report table: what is blocked matters, but who can get in
+          at all matters more, and this screen is where somebody looks for it. */}
+      {twoFactorStorageAvailable() ? (
+        <TwoFactorPanel enrolled={enrolled} who={doorLabel} />
+      ) : (
+        <div className="border border-[var(--gold-light)] bg-white p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Two-factor</p>
+          <p className="mt-3 text-sm leading-6 text-stone-600">
+            This needs the private store connected before a second factor can be kept.
+          </p>
+        </div>
+      )}
 
       <section className="mx-auto mt-10 max-w-4xl">
         {!cspReportStoreAvailable() ? (
