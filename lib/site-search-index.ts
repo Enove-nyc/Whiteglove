@@ -19,7 +19,7 @@ import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { bustTag, cachedRead } from "@/lib/cache-tags";
-import { staticMikvahListings } from "@/lib/mikvaos";
+import { notableMikvahListings, staticMikvahListings } from "@/lib/mikvaos";
 import { heritageTownHref } from "@/lib/route-migration";
 import { extraSpellings, normalize } from "@/lib/place-search";
 import { compact } from "@/lib/site-search-match";
@@ -870,7 +870,13 @@ function unique(values: string[]): string[] {
 function pushStaticPracticalPlaces(docs: DraftDoc[], destinations: readonly VacationDestination[]) {
   const seen = new Set(docs.filter((d) => d.kind === "Practical travel").map((d) => `${normalize(d.title)}|${normalize(d.city ?? "")}`));
 
-  for (const listing of staticMikvahListings()) {
+  // notableMikvahListings alongside the static ones, because the public
+  // mikvaos page builds its list with both (withNotable in lib/mikvaos.ts) and
+  // this index was taking only half of it. The mikvaos of London, Manchester,
+  // Gateshead, New York, Los Angeles, Miami, Toronto and Jerusalem were on the
+  // page and absent from the search box on top of it — "mikvah london" found
+  // nothing in a site that holds the answer.
+  for (const listing of [...staticMikvahListings(), ...notableMikvahListings()]) {
     const key = `${normalize(listing.name)}|${normalize(listing.city)}`;
     if (seen.has(key)) continue;
     seen.add(key);

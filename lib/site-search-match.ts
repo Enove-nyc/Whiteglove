@@ -43,12 +43,37 @@ export function damerauLevenshtein(a: string, b: string): number {
   return prev[bLen] > maxDist ? maxDist : prev[bLen];
 }
 
-/** How many edits a query token of this length may spend. */
+/**
+ * How many edits a query token of this length may spend.
+ *
+ * DELIBERATELY MEAN, because the cost of generosity is a confident wrong
+ * answer. The budget used to be two edits from four letters up, and the
+ * hechsherim page indexes every certifier name it knows — Chai, Ches, CHLP,
+ * Tikva, Heights. Two edits on a five-letter word is forty per cent of the
+ * word, so "cheap" reached "chai" and "flights" reached "heights"; a visitor
+ * searching "cheap flights" was shown a page about kashrus symbols, and one
+ * searching "mikvah london" got the same, because "mikvah" reached "tikva".
+ * With nothing else matching, that wrong page WON.
+ *
+ * One edit is what a typo is up to six letters: a slip, a doubled letter, a
+ * transposition — krakov for krakow. From seven letters two edits is a
+ * reasonable share of the word rather than half of it, and that is where
+ * TRANSLITERATION lives, which is not a typo at all: בארדיאב sounds out to
+ * "bardiab" and the town is indexed as "bardiov", two edits apart with neither
+ * spelling wrong. Cutting that off broke the Yiddish bridge, which is the
+ * thing the generosity was for.
+ *
+ * The wrong answers died at the SHORT end, which is where they were: "cheap"
+ * and "mikvah" can no longer reach "chai" and "tikva". A multi-word query
+ * needs every word to match one document, so killing the short-word reaches is
+ * enough — "cheap flights" no longer has a first word that matches anything on
+ * the hechsherim page, and the page drops out whole.
+ */
 export function maxEditsFor(token: string): number {
   const n = token.length;
-  if (n <= 2) return 0;
-  if (n <= 4) return 1;
-  if (n <= 8) return 2;
+  if (n <= 3) return 0;
+  if (n <= 6) return 1;
+  if (n <= 9) return 2;
   return 3;
 }
 
