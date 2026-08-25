@@ -104,6 +104,9 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/esim", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-gear", priority: 0.5, changeFrequency: "monthly" },
+  // What the planner costs — the page a visitor could not reach without an
+  // account, so the one most worth being findable.
+  { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
   { path: "/mikvaos", priority: 0.6, changeFrequency: "monthly" },
   { path: "/zmanim", priority: 0.5, changeFrequency: "monthly" },
   // Who is behind the site. Indexed for the same reason /verification is: it

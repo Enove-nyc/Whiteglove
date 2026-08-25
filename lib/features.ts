@@ -1,3 +1,5 @@
+import { BRAND_NAME } from "@/lib/site-brand-core";
+
 /**
  * Parts of the service that are built but not open yet.
  *
@@ -46,7 +48,18 @@ export function tripArrangementOpen(): boolean {
  * happened to be, including a Vercel preview URL.
  */
 export const SITE_DOMAIN = "whiteglovekoshertravel.com";
-export const SITE_NAME = "White Glove Kosher Travel";
+
+/**
+ * THE KOSHER BRAND'S OWN NAME, and only for the things pinned to the kosher
+ * domain above — never a general "what site is this". It is re-exported from
+ * lib/site-brand-core.ts rather than typed again: a second copy of a brand
+ * name is a fork waiting for the day one of them is changed and the other is
+ * not, and this file already had one.
+ *
+ * Anything that should follow the domain a visitor actually arrived on wants
+ * currentBrand() and BRAND_NAME, not this.
+ */
+export const SITE_NAME = BRAND_NAME.kosher;
 
 /**
  * What "Featured" means in the provider directory.

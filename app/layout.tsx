@@ -20,9 +20,17 @@ export const metadata: Metadata = {
   // share image as a plain path and have them resolved to this deployment's
   // real address. See lib/seo.ts.
   metadataBase: siteOrigin(),
-  title: "White Glove Kosher Travel",
-  description: "Thoughtfully planned kosher travel and Jewish heritage journeys.",
-  applicationName: "White Glove Kosher Travel",
+  // NEUTRAL ON PURPOSE, NOT UNFINISHED. One root layout serves both domains,
+  // and it is a STATIC metadata export: reading the request's brand here would
+  // make every one of the 841 prerendered pages render on demand, to fix a
+  // string almost nobody sees — every real page sets its own title through
+  // pageMetadata(), which is brand-aware. So the fallback is the name both
+  // brands genuinely share, the same call lib/email.ts already makes for mail
+  // that could belong to either. app/manifest.ts, which is what an installed
+  // icon is actually labelled from, reads the brand properly.
+  title: "White Glove",
+  description: "Plan a trip, day by day, and hand it to the person taking it.",
+  applicationName: "White Glove",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "White Glove" },
   icons: {
     // Every icon here is built from public/logo-mark.png — the logo artwork

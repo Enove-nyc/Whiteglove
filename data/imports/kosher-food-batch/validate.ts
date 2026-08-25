@@ -9,6 +9,7 @@ import {
   normalizeText,
 } from "./schema";
 import { sourceCatalog } from "./sources";
+import { notABusinessReason } from "@/data/listing-quality";
 
 const HTTP_URL = /^https?:\/\/[^\s]+$/;
 const FORBIDDEN_PHRASE = /kosher-style|israeli-style|jewish-style/i;
@@ -48,6 +49,14 @@ export function validatePack() {
     assert.match(candidate.sourceUrl, HTTP_URL);
     assert.match(candidate.kosherSourceUrl, HTTP_URL);
     assert.doesNotMatch(candidate.sourceUrl, /openstreetmap|overpass|photon|maps\.google|places\.googleapis/i);
+    // A harvester walking a page's rows picks up the page's own furniture as
+    // readily as its listings — a "Need Help?" box, a newsletter form, a
+    // cookie "Close" button. Ten of those reached the published directory
+    // before this assertion existed, each one wrapped in a generated sentence
+    // claiming a named certifier lists it as kosher. Fail here, at the
+    // harvest, rather than leaning on the read-path filter forever.
+    const notABusiness = notABusinessReason(candidate.name);
+    assert.ok(!notABusiness, `${candidate.id}: ${notABusiness}`);
     const blob = `${candidate.name} ${candidate.summary} ${candidate.keywords.join(" ")}`;
     assert.doesNotMatch(blob, FORBIDDEN_PHRASE, `${candidate.id} uses a kosher-style stand-in`);
     assert.match(blob, /kosher/i, `${candidate.id} does not say kosher`);
