@@ -29,6 +29,10 @@ import { getDestinationRecord } from "@/data/destination-database";
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { heritageTownHref, vacationDestinationHref } from "@/lib/route-migration";
 import { allTzaddikim } from "@/lib/tzaddikim";
+import { samePlaceName } from "@/data/shabbos-mode";
+import { kosherEateries } from "@/data/kosher-eateries";
+import { listEruvin } from "@/lib/eruvin";
+import { zmanimPlaces } from "@/lib/zmanim-places";
 
 /**
  * Addresses no search engine should index or list.
@@ -133,6 +137,29 @@ export type SitemapEntry = {
  * exists has a line here by construction, and one that is removed loses it
  * without anybody remembering to.
  */
+
+/**
+ * Whether /shabbos/<slug> will render anything at all.
+ *
+ * Times need coordinates; the sections need listings. With neither, the page
+ * is a heading and a pointer elsewhere, which is fine to reach by a link and
+ * not worth offering a crawler — see the note on the heritage towns above for
+ * why an empty page in a sitemap costs the whole domain.
+ *
+ * Deliberately reads only the flat files. Shuls and mikvaos come from the
+ * database, and they can only ADD to a page, so a destination judged worth
+ * listing here is still worth it once they load.
+ */
+function shabbosPageHasSomething(slug: string): boolean {
+  const destination = vacationDestinations.find((entry) => entry.slug === slug);
+  if (!destination) return false;
+  const inPlace = (city: string, country: string) =>
+    samePlaceName(country, destination.country) && destination.cities.some((name) => samePlaceName(name, city));
+  if (zmanimPlaces().some((place) => inPlace(place.city, place.country))) return true;
+  if (listEruvin().some((eruv) => inPlace(eruv.city, eruv.country))) return true;
+  return kosherEateries.some((eatery) => inPlace(eatery.city, eatery.country));
+}
+
 export function publicPaths(
   /**
    * The merged destination list, when the caller has read it. Defaults to the
@@ -168,6 +195,15 @@ export function publicPaths(
   }
   for (const destination of destinations) {
     entries.push({ path: vacationDestinationHref(destination.slug), priority: 0.8, changeFrequency: "monthly" });
+    // Shabbos in that place, on its own page — but only where the page will
+    // have something on it, the same rule the heritage towns above follow. A
+    // destination with no listings AND no coordinates to compute times from
+    // renders an empty page, and an empty page is not worth a crawl. Weekly,
+    // because the times on it are this week's: a monthly hint would leave a
+    // crawler holding a candle-lighting time from four weeks ago.
+    if (shabbosPageHasSomething(destination.slug)) {
+      entries.push({ path: `/shabbos/${destination.slug}`, priority: 0.7, changeFrequency: "weekly" });
+    }
   }
   for (const tzaddik of allTzaddikim()) {
     entries.push({ path: `/tzaddikim/${tzaddik.slug}`, priority: 0.7, changeFrequency: "monthly" });

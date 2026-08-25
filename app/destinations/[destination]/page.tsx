@@ -819,6 +819,17 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               </Suspense>
             </div>
           </div>
+          {/* The one page that answers Shabbos on its own: the shuls, the
+              mikvaos, the eruv, the times and where to buy beforehand, without
+              reading the rest of this one. */}
+          <p className="mt-8">
+            <Link
+              href={`/shabbos/${destination.slug}`}
+              className="font-semibold text-[var(--gold-ink)] underline decoration-[var(--gold-light)] underline-offset-4"
+            >
+              Everything for Shabbos in {destination.name} on one page →
+            </Link>
+          </p>
         </Fold>
 
         <Fold id="getting-around" title="Getting there and around">
