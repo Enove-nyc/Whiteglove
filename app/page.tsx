@@ -55,6 +55,14 @@ export async function generateMetadata() {
  * say that the Ghetto is the quarter to be in. That answer is what the
  * search finds, and the partner hand-off stays underneath it, on our pages.
  *
+ * THERE IS NO SEPARATE "EXPLORE" LIST ANY MORE. One was added back when
+ * Featured showed six DESTINATIONS, to give the sections a way in from the
+ * page everybody lands on. When Featured became the six sections themselves,
+ * that list quietly turned into a second copy of the cards directly above it
+ * — the same six names, in the same order, as underlined text. Two of its
+ * eight links were not duplicates (About, Verification) and are in the footer
+ * now, which is where somebody deciding whether to trust the site looks.
+ *
  * FEATURED IS THE SITE'S SIX MAIN SECTIONS. It used to be six destinations
  * ranked by what people opened; the owner asked for the shape of the site
  * instead — what to do, where to stay, what to eat, the heritage, the map and
@@ -223,40 +231,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---- 4. Explore ---------------------------------------------------
-          The front page had been cut back to a search, six places and three
-          doors, which is a clean opening and a poor map: things to do, where
-          to stay, kosher food, heritage, the map, the directory, who this is
-          and how it checks what it prints were all real parts of the site
-          with no way in from the page everybody lands on. This is a plain
-          list of names — no pictures, no counts, no sales copy — so it adds a
-          way through without adding weight. */}
-      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Explore</h2>
-        <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">
-          {(
-            [
-              { label: "Things to do", href: "/things-to-do" },
-              { label: "Where to stay", href: "/hotels" },
-              { label: "Kosher food", href: "/kosher" },
-              { label: "Jewish heritage", href: "/heritage" },
-              { label: "Map", href: "/map" },
-              { label: "Directory", href: "/directory" },
-              { label: "About", href: "/about" },
-              { label: "Verification", href: "/verification" },
-            ] as const
-          ).map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className="flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold-light)] underline-offset-4 transition hover:decoration-[var(--gold)]"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
 
       {inlinePromotions.length ? (
         <section className="mx-auto max-w-7xl px-5 pb-8 sm:px-8">

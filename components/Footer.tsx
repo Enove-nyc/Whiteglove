@@ -25,6 +25,13 @@ import { brandForHost } from "@/lib/site-brand-core";
  * customer pages is furniture for one person put in front of everybody else.
  */
 const KOSHER_LINKS = [
+  // About and Verification came off the front page, where they sat in an
+  // "Explore" list whose other six links were an exact copy of the Featured
+  // cards above them. They are not front-page decisions; they are the two
+  // pages somebody looks for when deciding whether to trust what they read,
+  // which is what a footer is for.
+  { label: "About", href: "/about" },
+  { label: "Verification", href: "/verification" },
   { label: "Contact", href: "/contact" },
   { label: "Advertise", href: "/contact?reason=advertise" },
   { label: "Sources", href: "/sources" },
