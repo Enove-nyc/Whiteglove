@@ -59,7 +59,7 @@ export default async function AdminSecurityPage() {
       {/* Above the report table: what is blocked matters, but who can get in
           at all matters more, and this screen is where somebody looks for it. */}
       {twoFactorStorageAvailable() ? (
-        <TwoFactorPanel enrolled={enrolled} who={doorLabel} />
+        <TwoFactorPanel enrolled={enrolled} who={doorLabel} shared={door === SHARED_DOOR} />
       ) : (
         <div className="border border-[var(--gold-light)] bg-white p-6">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Two-factor</p>

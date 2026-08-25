@@ -20,7 +20,7 @@ import { useState } from "react";
 
 type Stage = "idle" | "setup" | "codes";
 
-export default function TwoFactorPanel({ enrolled, who }: { enrolled: boolean; who: string }) {
+export default function TwoFactorPanel({ enrolled, who, shared }: { enrolled: boolean; who: string; shared: boolean }) {
   const [on, setOn] = useState(enrolled);
   const [stage, setStage] = useState<Stage>("idle");
   const [secret, setSecret] = useState("");
@@ -99,11 +99,35 @@ export default function TwoFactorPanel({ enrolled, who }: { enrolled: boolean; w
       <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
         {on ? "A code is required to get in" : "A password is the only thing in the way"}
       </h2>
+      {/* WHICH DOOR, SAID BEFORE THE BUTTON IS PRESSED — not only afterwards.
+          The first version named it only once two-factor was already on, so
+          somebody signed in with the shared password could turn it on without
+          being told that everybody else holding that password would need a
+          code from THEIR phone from then on. That is a decision, and it has
+          to be in front of them while it is still a decision. */}
       <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
         {on
-          ? `Signing in as ${who} needs the six digits from your authenticator app as well as the password.`
+          ? `${shared ? "Signing in with the shared admin password" : `Signing in as ${who}`} needs the six digits from your authenticator app as well as the password.`
           : `Behind this password is the money, every visitor's email and phone number, every shomer's number, and the switch that closes the site. Adding a code from your phone means a password on its own no longer opens any of it.`}
       </p>
+      {!on && (
+        <p className="mt-3 max-w-2xl border-l-4 border-[var(--gold)] bg-[var(--cream)] px-4 py-3 text-sm leading-6 text-[var(--navy)]">
+          {shared ? (
+            <>
+              This would secure <strong className="font-semibold">the shared admin password</strong> — the door you came
+              in through. Everybody else who has that password would need a code from{" "}
+              <strong className="font-semibold">your</strong> phone from then on, so anyone helping you today would be
+              locked out until you gave them one of your recovery codes. To protect only yourself instead, sign out and
+              come back in through <strong className="font-semibold">Open the admin area</strong> on your account page.
+            </>
+          ) : (
+            <>
+              This would secure <strong className="font-semibold">{who}</strong> — your own account, and nobody else&rsquo;s
+              way in.
+            </>
+          )}
+        </p>
+      )}
 
       {stage === "setup" && (
         <div className="mt-6 border-t border-[var(--gold-light)] pt-6">
