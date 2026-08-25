@@ -28,6 +28,44 @@ const PRECACHE = ["/", "/offline", "/icon-192.png", "/icon-512.png"];
 const OFFLINE_DOCS = "wg-offline-docs-v1";
 const ATTACHMENTS = "/api/account/attachments";
 
+/**
+ * Pages that belong to one signed-in person, and must not outlive their session.
+ *
+ * Every successful navigation is cached (see networkFirst below), which is what
+ * makes a trip readable at a gate with no signal — and also meant a rendered
+ * itinerary, with its flight numbers, hotel and client's name, stayed on the
+ * device after they signed out. That was true long before any boarding pass
+ * was ever cached on purpose: the page LISTING the passes was already there.
+ *
+ * These prefixes are swept on sign-out, alongside the documents. Public pages
+ * are left alone — a cached destination guide is nobody's business but the
+ * site's, and clearing the whole cache would take the offline shell with it.
+ */
+const PRIVATE_PREFIXES = [
+  "/command-center",
+  "/itinerary",
+  "/my-route",
+  "/account",
+  "/app",
+  "/library",
+  "/forms",
+  "/form/",
+  "/pipeline",
+  "/payments",
+  "/pay/",
+  "/proposal",
+  "/i/",
+  "/f/",
+  "/p/",
+  "/t/",
+];
+
+function isPrivatePath(pathname) {
+  return PRIVATE_PREFIXES.some((prefix) =>
+    prefix.endsWith("/") ? pathname.startsWith(prefix) : pathname === prefix || pathname.startsWith(prefix + "/"),
+  );
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).catch(() => {}));
   self.skipWaiting();
@@ -73,7 +111,7 @@ function networkFirst(req) {
  * uploaded the file — an unauthenticated fetch would cache a 401 and hand it
  * back at the airport as though it were the pass. Only a real 200 is stored.
  */
-async function keepDocuments(urls) {
+async function keepDocuments(urls, pages) {
   const cache = await caches.open(OFFLINE_DOCS);
   let kept = 0;
   for (const url of urls || []) {
@@ -87,7 +125,42 @@ async function keepDocuments(urls) {
       // One unreachable file must not abandon the rest.
     }
   }
+
+  // The page that lists them, too — otherwise the files are on the device and
+  // there is no way to reach them. Kept in the SAME cache as the documents, so
+  // "remove them" and signing out take the itinerary with the passes rather
+  // than leaving half of it behind. Its own failure is not counted against
+  // `kept`, which is about the documents somebody asked for.
+  for (const page of pages || []) {
+    try {
+      const response = await fetch(page, { credentials: "include", cache: "no-store" });
+      if (response && response.ok) await cache.put(page, response.clone());
+    } catch {
+      // The page is already cached by ordinary navigation in most cases.
+    }
+  }
+
   return { kept, asked: (urls || []).length };
+}
+
+/**
+ * Sweep everything belonging to the session that has just ended.
+ *
+ * Both caches: the documents somebody chose to keep, and the private pages the
+ * ordinary navigation cache picked up on its own without anybody choosing
+ * anything.
+ */
+async function forgetPrivate() {
+  await caches.delete(OFFLINE_DOCS);
+  try {
+    const cache = await caches.open(CACHE);
+    const requests = await cache.keys();
+    await Promise.all(
+      requests.filter((req) => isPrivatePath(new URL(req.url).pathname)).map((req) => cache.delete(req)),
+    );
+  } catch {
+    // A browser that will not open the cache has nothing in it to leak.
+  }
 }
 
 self.addEventListener("message", (event) => {
@@ -100,7 +173,7 @@ self.addEventListener("message", (event) => {
 
   if (data.type === "wg-offline-keep") {
     event.waitUntil(
-      keepDocuments(data.urls).then(
+      keepDocuments(data.urls, data.pages).then(
         (result) => reply({ ok: true, ...result }),
         () => reply({ ok: false }),
       ),
@@ -112,7 +185,7 @@ self.addEventListener("message", (event) => {
   // left in the cache after somebody signs out on a borrowed laptop is the
   // whole risk this feature carries.
   if (data.type === "wg-offline-forget") {
-    event.waitUntil(caches.delete(OFFLINE_DOCS).then(() => reply({ ok: true }), () => reply({ ok: false })));
+    event.waitUntil(forgetPrivate().then(() => reply({ ok: true }), () => reply({ ok: false })));
   }
 });
 
