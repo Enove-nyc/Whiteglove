@@ -155,6 +155,33 @@ describe("enrolment cannot reach across doors", () => {
   });
 });
 
+describe("the screen says which door it is about to lock", () => {
+  const PANEL = readFileSync("components/admin/TwoFactorPanel.tsx", "utf8");
+  const PAGE = readFileSync("app/admin/settings/security/page.tsx", "utf8");
+
+  it("names the door BEFORE it is turned on, not only after", () => {
+    // The first version named it only once two-factor was already on. Somebody
+    // signed in with the shared password could therefore turn it on without
+    // being told that everybody else holding that password would then need a
+    // code from THEIR phone — a decision, made without being shown it.
+    const before = PANEL.slice(PANEL.indexOf("{!on && ("));
+    assert.ok(before.length > 0, "there must be a not-yet-enrolled explanation at all");
+    assert.match(before, /the shared admin password/);
+    assert.match(before, /locked out/);
+  });
+
+  it("says 'with' the shared password, not 'as' it", () => {
+    // "Signing in as the shared admin password" is not a sentence.
+    assert.match(PANEL, /Signing in with the shared admin password/);
+    assert.doesNotMatch(PANEL, /Signing in as \$\{who\} needs/);
+  });
+
+  it("is told which door by the page, which reads it from the session", () => {
+    assert.match(PAGE, /shared=\{door === SHARED_DOOR\}/);
+    assert.match(PAGE, /currentAdmin\(\)/);
+  });
+});
+
 describe("the shared door is keyed apart from any account", () => {
   it("cannot collide with an email", () => {
     assert.equal(twoFactorKeyFor(SHARED_DOOR), SHARED_DOOR);
