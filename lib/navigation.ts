@@ -140,7 +140,7 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
       // the same failure the "Before you go" column was added for. It belongs
       // under Travel: everything else here is a thing you arrange, and this is
       // the people who arrange it.
-      { label: "Directory", href: "/directory" },
+      { label: "Local help", href: "/directory" },
     ],
   },
 ] as const;
