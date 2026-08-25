@@ -12,8 +12,9 @@ import {
   tripAccessFor,
 } from "@/lib/account-store";
 import { withoutAttachments } from "@/lib/attachments";
-import { sendTripEditedEmail } from "@/lib/email";
+import { sendTripChangedForCollaboratorEmail, sendTripEditedEmail } from "@/lib/email";
 import { isPhoneIdentity } from "@/lib/identity";
+import { othersToTell, readCollaborators } from "@/lib/trip-roles";
 import { describeEdits } from "@/lib/shared-trip-edit";
 
 /**
@@ -191,13 +192,10 @@ async function tellTheOwner(owner: string, editor: string, summary: string, requ
     const title = data.itinerary?.title || "your trip";
     const shareId = data.itineraryShareId;
 
+    const tripUrl = new URL(shareId ? `/i/${shareId}` : "/itinerary", request.nextUrl.origin).toString();
+
     if (!isPhoneIdentity(owner)) {
-      await sendTripEditedEmail(owner, {
-        fromName: name,
-        tripTitle: title,
-        summary,
-        url: new URL(shareId ? `/i/${shareId}` : "/itinerary", request.nextUrl.origin).toString(),
-      });
+      await sendTripEditedEmail(owner, { fromName: name, tripTitle: title, summary, url: tripUrl });
     }
 
     // And the phone, where they asked to be told about their own trips —
@@ -209,6 +207,24 @@ async function tellTheOwner(owner: string, editor: string, summary: string, requ
       body: summary,
       url: "/itinerary",
     });
+
+    /**
+     * And the other people building it with them.
+     *
+     * Editors and commenters only — see othersToTell. Somebody given "can
+     * view" was shown a plan and did not ask to hear each time a stop was
+     * renamed; somebody given a role that lets them contribute is helping
+     * build this and wants to know it moved under them.
+     *
+     * One at a time, each failure swallowed, so a bad address halfway down
+     * the list does not stop the rest.
+     */
+    for (const person of othersToTell(readCollaborators(data.itineraryCollaborators), owner, editor)) {
+      if (isPhoneIdentity(person)) continue;
+      await sendTripChangedForCollaboratorEmail(person, { fromName: name, tripTitle: title, summary, url: tripUrl }).catch(
+        () => undefined,
+      );
+    }
   } catch {
     // The edit is saved. That is the part that mattered.
   }

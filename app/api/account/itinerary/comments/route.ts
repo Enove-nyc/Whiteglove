@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getAccountData, getAccountRecord, getShareOwnerEmail, readSessionEmail, tripAccessFor } from "@/lib/account-store";
-import { sendTripNoteEmail } from "@/lib/email";
+import { sendTripChangedForCollaboratorEmail, sendTripNoteEmail } from "@/lib/email";
+import { othersToTell, readCollaborators } from "@/lib/trip-roles";
 import { isPhoneIdentity } from "@/lib/identity";
 import { addComment, commentStoreAvailable, deleteComment, findComment, readComments, setCommentDone } from "@/lib/trip-comment-store";
 import { type TripComment, commentProblem, mayDelete, mayResolve, whoWrote } from "@/lib/trip-comments";
@@ -91,7 +92,6 @@ export async function POST(request: NextRequest) {
  */
 async function notifyOwner(owner: string, from: string, comment: TripComment, request: NextRequest) {
   try {
-    if (isPhoneIdentity(owner)) return; // Nowhere to send it.
     const [data, writer] = await Promise.all([getAccountData(owner), getAccountRecord(from)]);
     const shareId = data.itineraryShareId;
     if (!shareId) return;
@@ -99,13 +99,43 @@ async function notifyOwner(owner: string, from: string, comment: TripComment, re
       ? [...(data.itinerary?.flights ?? []), ...(data.itinerary?.lodging ?? []), ...(data.itinerary?.activities ?? [])]
           .find((item) => item.id === comment.about)
       : null;
-    await sendTripNoteEmail(owner, {
-      fromName: writer?.name?.trim() || whoWrote(comment),
-      tripTitle: data.itinerary?.title || "your trip",
-      note: comment.body,
-      about: about && "name" in about ? (about.name as string) : undefined,
-      url: new URL(`/i/${shareId}`, request.nextUrl.origin).toString(),
-    });
+    const fromName = writer?.name?.trim() || whoWrote(comment);
+    const tripTitle = data.itinerary?.title || "your trip";
+    const url = new URL(`/i/${shareId}`, request.nextUrl.origin).toString();
+    const onWhat = about && "name" in about ? (about.name as string) : undefined;
+
+    // Nowhere to send it — an owner signed in with a phone number has no
+    // address. The others below may still have one, so this is no longer a
+    // reason to stop before reaching them.
+    if (!isPhoneIdentity(owner)) {
+      await sendTripNoteEmail(owner, { fromName, tripTitle, note: comment.body, about: onWhat, url });
+    }
+
+    /**
+     * And the other people building the trip.
+     *
+     * A note is a question — "can we not do Uman on the Friday?" — and it was
+     * only ever put to the owner, so on a trip three people are planning
+     * together the other two never knew it had been asked. Editors and
+     * commenters only, per othersToTell: somebody given "can view" was shown a
+     * plan and is an audience.
+     *
+     * THE NOTE'S OWN WORDS ARE NOT FORWARDED. The owner gets them because it
+     * is their trip; everybody else gets that a note was left and on what, and
+     * opens the trip to read it — a note can be a question about somebody's
+     * money or their family, and quietly copying it to everybody who was ever
+     * added to the trip is not what writing it in one place meant.
+     */
+    const summary = onWhat ? `a note on ${onWhat}` : "a note";
+    for (const person of othersToTell(readCollaborators(data.itineraryCollaborators), owner, from)) {
+      if (isPhoneIdentity(person)) continue;
+      await sendTripChangedForCollaboratorEmail(person, {
+        fromName,
+        tripTitle,
+        summary: `${fromName} left ${summary}`,
+        url,
+      }).catch(() => undefined);
+    }
   } catch {
     // The note is saved. That is the part that mattered.
   }

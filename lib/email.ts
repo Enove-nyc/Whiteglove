@@ -481,6 +481,38 @@ export async function sendTripEditedEmail(
   return result.ok;
 }
 
+/**
+ * The same news, to somebody who is not the owner.
+ *
+ * Worded differently on purpose. The owner's version says "you gave them
+ * permission to edit" and offers to take it back, which is true for them and
+ * nonsense to a fellow collaborator — they cannot change anybody's access and
+ * telling them they can is worse than saying nothing.
+ */
+export async function sendTripChangedForCollaboratorEmail(
+  to: string,
+  opts: { fromName: string; tripTitle: string; summary: string; url: string },
+): Promise<boolean> {
+  const who = escapeHtml(opts.fromName || "Somebody");
+  const title = escapeHtml(opts.tripTitle || "the trip");
+  const summary = escapeHtml(opts.summary);
+  const url = escapeHtml(opts.url);
+  const result = await postResend(
+    {
+      to,
+      subject: `${opts.fromName || "Somebody"} changed "${opts.tripTitle}"`,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} changed a trip you are working on</h2>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">On <strong>${title}</strong>: ${summary}.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">See the trip →</a></p>`,
+      text: `${opts.fromName || "Somebody"} changed "${opts.tripTitle}", a trip you are working on: ${opts.summary}.\n\nSee the trip: ${opts.url}`,
+    },
+    to,
+    "trip changed",
+  );
+  return result.ok;
+}
+
 export async function sendPasswordResetEmail(email: string, code: string) {
   const result = await postResend(
     {
