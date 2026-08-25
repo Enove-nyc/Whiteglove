@@ -95,7 +95,7 @@ export default function ChabadDirectory({ listings }: { listings: ChabadListing[
               onChange={(event) => setCountry(event.target.value)}
               className="min-h-11 w-full rounded-full border border-[var(--gold-light)] bg-[var(--surface)] px-4 text-sm text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)]"
             >
-              <option value="">All countries ({listings.length})</option>
+              <option value="">All countries</option>
               {countries.map((item) => (
                 <option key={item} value={item}>
                   {item}
