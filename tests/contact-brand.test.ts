@@ -108,3 +108,31 @@ describe("the pages read the brand rather than the built-in words", () => {
     assert.ok(source.includes("page?.edited"));
   });
 });
+
+/**
+ * What a phone writes under the icon.
+ *
+ * The itineraries deployment settles this from NEXT_PUBLIC_SITE_BRAND at build
+ * time (Whiteglove-Itineraries#10). HERE IT STAYS NEUTRAL, and that is a
+ * decision rather than an omission: this root layout is a static metadata
+ * export shared by both domains and inherited by every one of the prerendered
+ * pages, and every real page sets its own brand-aware title through
+ * pageMetadata() anyway. app/manifest.ts — which is what an installed icon is
+ * actually labelled from — reads the request's brand properly.
+ */
+describe("the root layout does not name one brand for both domains", () => {
+  const layout = readFileSync("app/layout.tsx", "utf8");
+
+  it("keeps the fallback to the name both brands share", () => {
+    assert.ok(layout.includes('applicationName: "White Glove"'));
+    assert.ok(!/applicationName: "White Glove Kosher Travel"/.test(layout));
+    assert.ok(!/applicationName: "White Glove Itineraries"/.test(layout));
+  });
+
+  it("leaves the installed name to the manifest, which can read the request", () => {
+    const manifest = readFileSync("app/manifest.ts", "utf8");
+    assert.ok(manifest.includes("await currentBrand()"));
+    assert.ok(manifest.includes("White Glove Itineraries"));
+    assert.ok(manifest.includes("White Glove Kosher Travel"));
+  });
+});
