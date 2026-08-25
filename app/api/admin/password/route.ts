@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 import { setAccessPassword, verifyAccessPassword } from "@/lib/access-passwords";
+import { recordAdminAction } from "@/lib/admin-actions-store";
 
 function isAdmin(request: NextRequest) {
   return isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value);
@@ -43,5 +44,10 @@ export async function POST(request: NextRequest) {
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.error.includes("database") ? 503 : 400 });
   }
+  // WHICH password, never the password. A log naming the scope answers "who
+  // changed the admin code last Tuesday"; one carrying the value would be a
+  // list of every password the site has ever had, sitting in the store.
+  const which = { admin: "the admin password", site: "the website code", preview: "the five-minute code" }[scope];
+  await recordAdminAction({ kind: "password-changed", subject: which }, request.headers);
   return NextResponse.json({ ok: true });
 }
