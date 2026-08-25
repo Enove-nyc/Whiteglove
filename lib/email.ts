@@ -513,6 +513,104 @@ export async function sendTripChangedForCollaboratorEmail(
   return result.ok;
 }
 
+/**
+ * The email that says a trip needs looking at before it leaves.
+ *
+ * WHY EMAIL AS WELL AS A NOTIFICATION. A push has to be turned on, on a
+ * device, by somebody who thought to. Email reaches whoever has an account.
+ * These are the two alerts that get worse the longer nobody notices — a stop
+ * planned for Shabbos, loose ends as departure closes — so the channel that
+ * needs no setup is the one that must not be missing.
+ *
+ * ONCE PER ALERT, NOT PER DAY. The caller records each alert's key before
+ * sending, so nobody is emailed twice about the same Shabbos clash; see
+ * app/api/cron/trip-alerts/route.ts.
+ */
+export async function sendTripAlertsEmail(
+  to: string,
+  opts: { tripTitle: string; leaving?: string; alerts: Array<{ headline: string; detail?: string }>; url: string },
+): Promise<boolean> {
+  const title = escapeHtml(opts.tripTitle || "your trip");
+  const url = escapeHtml(opts.url);
+  const when = opts.leaving ? ` — ${escapeHtml(opts.leaving)}` : "";
+  const rows = opts.alerts
+    .map(
+      (alert) =>
+        `<li style="margin-bottom:10px;"><strong>${escapeHtml(alert.headline)}</strong>` +
+        (alert.detail ? `<br><span style="color:#555;">${escapeHtml(alert.detail)}</span>` : "") +
+        `</li>`,
+    )
+    .join("");
+  const result = await postResend(
+    {
+      to,
+      subject:
+        opts.alerts.length === 1
+          ? `${opts.alerts[0].headline} — "${opts.tripTitle}"`
+          : `${opts.alerts.length} things to look at before "${opts.tripTitle}"`,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">Before you go</h2>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;"><strong>${title}</strong>${when}.</p>` +
+        `<ul style="font-family:Arial,sans-serif;font-size:14px;color:#333;padding-left:18px;">${rows}</ul>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open your trip →</a></p>`,
+      text:
+        `Before you go — ${opts.tripTitle}${opts.leaving ? ` (${opts.leaving})` : ""}:\n\n` +
+        opts.alerts.map((alert) => `• ${alert.headline}${alert.detail ? `\n  ${alert.detail}` : ""}`).join("\n") +
+        `\n\nOpen your trip: ${opts.url}`,
+    },
+    to,
+    "trip alerts",
+  );
+  return result.ok;
+}
+
+/**
+ * The email that says something the site depends on has stopped working.
+ *
+ * Sent ON CHANGE — the night a thing breaks, and the night it comes back.
+ * Never nightly: an email every evening saying everything is fine is one
+ * somebody filters, and the night it says something else it is filtered too.
+ */
+export async function sendHealthChangeEmail(
+  to: string,
+  opts: { broke: Array<{ what: string; detail: string; without: string }>; fixed: string[]; url: string },
+): Promise<boolean> {
+  const url = escapeHtml(opts.url);
+  const brokeRows = opts.broke
+    .map(
+      (item) =>
+        `<li style="margin-bottom:10px;"><strong>${escapeHtml(item.what)} stopped working.</strong>` +
+        `<br><span style="color:#555;">${escapeHtml(item.detail)}</span>` +
+        `<br><span style="color:#555;">${escapeHtml(item.without)}</span></li>`,
+    )
+    .join("");
+  const fixedRows = opts.fixed.map((what) => `<li>${escapeHtml(what)} is working again.</li>`).join("");
+  const subject = opts.broke.length
+    ? opts.broke.length === 1
+      ? `${opts.broke[0].what} stopped working`
+      : `${opts.broke.length} things stopped working`
+    : "Back to normal";
+  const result = await postResend(
+    {
+      to,
+      subject,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${escapeHtml(subject)}</h2>` +
+        (brokeRows ? `<ul style="font-family:Arial,sans-serif;font-size:14px;color:#333;padding-left:18px;">${brokeRows}</ul>` : "") +
+        (fixedRows ? `<ul style="font-family:Arial,sans-serif;font-size:14px;color:#333;padding-left:18px;">${fixedRows}</ul>` : "") +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open the connections screen →</a></p>`,
+      text:
+        `${subject}\n\n` +
+        opts.broke.map((item) => `• ${item.what} stopped working. ${item.detail} ${item.without}`).join("\n") +
+        (opts.fixed.length ? `\n${opts.fixed.map((what) => `• ${what} is working again.`).join("\n")}` : "") +
+        `\n\n${opts.url}`,
+    },
+    to,
+    "health change",
+  );
+  return result.ok;
+}
+
 export async function sendPasswordResetEmail(email: string, code: string) {
   const result = await postResend(
     {

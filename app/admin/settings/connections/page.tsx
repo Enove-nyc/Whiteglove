@@ -4,6 +4,8 @@ import ContentExportPanel from "@/components/ContentExportPanel";
 import ConnectionsPanel from "@/components/ConnectionsPanel";
 import DuffelKeyTest from "@/components/DuffelKeyTest";
 import { CONNECTIONS, readConnectionsProperly } from "@/lib/connections";
+import HealthPanel from "@/components/admin/HealthPanel";
+import { readHealth } from "@/lib/health-store";
 import { duffelTokenHelp, inspectConfiguredDuffelToken } from "@/lib/duffel-token";
 import MapKeyStatus from "@/components/MapKeyStatus";
 import RoutingKeyTest from "@/components/RoutingKeyTest";
@@ -12,7 +14,11 @@ import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
-export default function ConnectionSettings() {
+export default async function ConnectionSettings() {
+  // What the nightly job found. The list below says whether a variable has a
+  // value; this says whether the thing on the other end answered.
+  const health = await readHealth();
+
   // Named one by one, because Next replaces `process.env.X` by name.
   const ENV: Record<string, string | undefined> = {
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
@@ -101,6 +107,13 @@ export default function ConnectionSettings() {
           — with one deliberate exception, the map key, which is public by design and explained in its own panel.
         </p>
       </header>
+
+      {/* Above the variable list, because "set" is the weaker fact. A key that
+          expired last Tuesday still has a value in it and reads as set forever;
+          this says whether the thing on the other end actually answered. */}
+      <div className="mt-8">
+        <HealthPanel state={health} />
+      </div>
 
       {/* Every variable read by name: Next substitutes these at build time, so
           a whole-object read is not the same thing. Only emptiness is ever

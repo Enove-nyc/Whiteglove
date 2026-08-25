@@ -31,6 +31,15 @@ export type StopFacts = {
   contacts: Array<{ label: string; phone?: string; note?: string }>;
   /** True when this stop is a beis hachaim rather than a town or a hotel. */
   isKever: boolean;
+  /**
+   * The country this stop is in, where it is known.
+   *
+   * From the itinerary where the traveller or the planner recorded one, and
+   * from the beis hachaim's own record otherwise. Used to say what the state
+   * department is currently saying about the places this trip actually goes —
+   * see lib/trip-advisories.ts.
+   */
+  country?: string;
   /** Whether the town it is in has any published kosher food. */
   hasKosherFood?: boolean;
   /** Whether it has anywhere published to stay. */

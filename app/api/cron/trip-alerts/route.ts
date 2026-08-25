@@ -9,6 +9,9 @@ import {
 import { stopsForTrip } from "@/lib/command-center-data";
 import { tripReadiness } from "@/lib/command-center";
 import { pushableAlerts, tripAlerts, type TripAlert } from "@/lib/trip-alerts";
+import { daysUntil } from "@/lib/command-center";
+import { sendTripAlertsEmail } from "@/lib/email";
+import { isPhoneIdentity } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
@@ -88,15 +91,27 @@ export async function GET(request: NextRequest) {
   }
 
   const today = new Date().toISOString().slice(0, 10);
+  const origin = request.nextUrl.origin;
   let considered = 0;
   let pushed = 0;
+  let emailed = 0;
 
   for (const account of await listAllAccounts()) {
     const data = await getAccountData(account.email);
-    // Nobody has asked to be told. Skip before doing any of the work below —
-    // reading a trip's stops means a database read per kever, and there is no
-    // point paying it to compute alerts that have nowhere to go.
-    if (!data.pushSubscriptions?.length) continue;
+    /**
+     * No way to reach them at all. Skip before doing any of the work below —
+     * reading a trip's stops costs a database read per kever, and there is no
+     * point paying it to compute alerts with nowhere to go.
+     *
+     * This used to mean "no push subscription", which was right while a phone
+     * was the only channel. Email needs nothing turned on, so the test is now
+     * whether there is ANY door: a device they subscribed, or an address. Only
+     * somebody signed in with a phone number has neither, and they are the
+     * one case this still skips for the same reason as before.
+     */
+    const canPush = Boolean(data.pushSubscriptions?.length);
+    const canEmail = !isPhoneIdentity(account.email);
+    if (!canPush && !canEmail) continue;
 
     for (const trip of withTrips(data).trips) {
       const startDate = trip.itinerary?.startDate;
@@ -163,8 +178,31 @@ export async function GET(request: NextRequest) {
             : payloadFor(name, fresh)),
         url: "/command-center",
       });
+
+      /**
+       * And by email, which needs nothing turned on.
+       *
+       * Both channels rather than one or the other: a notification is easy to
+       * dismiss on a lock screen and gone, and these are the two alerts that
+       * get worse the longer nobody notices. The keys above make it once per
+       * alert whatever the channel, so a trip raises a handful over its whole
+       * life rather than a message a day.
+       *
+       * The readiness alerts only. A trip starting tomorrow is a good enough
+       * reason to buzz a phone and not a good enough reason to send somebody
+       * an email about a date they chose.
+       */
+      if (canEmail && fresh.length) {
+        const sent = await sendTripAlertsEmail(account.email, {
+          tripTitle: name,
+          leaving: daysUntil(startDate, today) ?? undefined,
+          alerts: fresh.map((alert) => ({ headline: alert.headline, detail: alert.detail })),
+          url: new URL("/command-center", origin).toString(),
+        }).catch(() => false);
+        if (sent) emailed += 1;
+      }
     }
   }
 
-  return NextResponse.json({ ok: true, considered, pushed });
+  return NextResponse.json({ ok: true, considered, pushed, emailed });
 }

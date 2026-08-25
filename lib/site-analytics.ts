@@ -43,14 +43,70 @@ function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * How long a day's page counts are kept, and how far back a report may look.
+ *
+ * WHY BOTH NUMBERS. The reports screen could always say a page had been opened
+ * 40 times — and never whether that was last week or two years ago. "111 towns
+ * with nothing published" is a list to work through; "which of them are people
+ * opening NOW" is the order to work through it in, and a since-forever counter
+ * cannot answer it. A page that was busy in 2024 and is dead today looks
+ * identical to one people are opening this morning.
+ *
+ * Kept for a little longer than the window that reads them, so the oldest day
+ * in a 30-day view is still there when it is asked for.
+ */
+const PAGE_KEY_PREFIX = "white-glove:pages";
+export const RECENT_DAYS = 30;
+const PAGE_BUCKET_TTL_SECONDS = (RECENT_DAYS + 5) * 24 * 60 * 60;
+/** Set once, the first time a day bucket is written. See countingPagesSince. */
+const PAGES_SINCE_KEY = "white-glove:pages:since";
+
+function pageDayKey(daysAgo = 0) {
+  return `${PAGE_KEY_PREFIX}:${new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}`;
+}
+
 export async function trackPageView(pathname: string) {
   const path = cleanLabel(pathname, 120);
   if (!path.startsWith("/")) return;
+  const dayKey = pageDayKey();
   await Promise.all([
     redis(`incr/white-glove:visits:all`),
     redis(`incr/white-glove:visits:${todayKey()}`),
     redis(`zincrby/white-glove:pages/1/${encodeURIComponent(path)}`),
+    // The day this started counting, written once and never overwritten, so
+    // the screen can say how far back its "recently" actually reaches rather
+    // than showing a zero that reads as "nobody came".
+    redis(`setnx/${PAGES_SINCE_KEY}/${todayKey()}`),
   ]);
+  // Sequential on purpose: EXPIRE on a key that does not exist yet is a no-op,
+  // so the increment has to land first. Same as the destination buckets above.
+  await redis(`zincrby/${dayKey}/1/${encodeURIComponent(path)}`);
+  await redis(`expire/${dayKey}/${PAGE_BUCKET_TTL_SECONDS}`);
+}
+
+/** The day the day-by-day counting began, or null before anything is counted. */
+export async function countingPagesSince(): Promise<string | null> {
+  if (!analyticsIsConfigured()) return null;
+  const held = await redis<string>(`get/${PAGES_SINCE_KEY}`);
+  const value = typeof held?.result === "string" ? held.result : null;
+  return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+}
+
+/**
+ * Page opens over the trailing `days`, busiest first.
+ *
+ * The same shape as the since-forever list, so a screen can show them side by
+ * side without either having to be converted into the other.
+ */
+export async function visitedPathsOverDays(days = RECENT_DAYS): Promise<Array<{ label: string; count: number }>> {
+  if (!analyticsIsConfigured()) return [];
+  const buckets = await Promise.all(
+    Array.from({ length: Math.max(1, days) }, (_, daysAgo) =>
+      redis<unknown>(`zrange/${pageDayKey(daysAgo)}/0/-1/WITHSCORES`),
+    ),
+  );
+  return mergeDayCounts(buckets.map((bucket) => pairs(bucket?.result)));
 }
 
 /**
@@ -129,16 +185,25 @@ export async function trackDestinationOpen(slug: string) {
  * Ties break alphabetically rather than by whichever bucket answered first,
  * so the same week of data always produces the same front page.
  */
-export function mergeDestinationDayBuckets(
+export function mergeDayCounts(
   days: ReadonlyArray<ReadonlyArray<{ label: string; count: number }>>,
-): string[] {
+): Array<{ label: string; count: number }> {
   const totals = new Map<string, number>();
   for (const day of days) {
     for (const { label, count } of day) totals.set(label, (totals.get(label) ?? 0) + count);
   }
   return [...totals.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([slug]) => slug);
+    .map(([label, count]) => ({ label, count }));
+}
+
+export function mergeDestinationDayBuckets(
+  days: ReadonlyArray<ReadonlyArray<{ label: string; count: number }>>,
+): string[] {
+  // One merge, expressed twice rather than written twice — the front page
+  // wants the order and the reports screen wants the numbers, and a second
+  // copy of the tie-breaking is how the two quietly start disagreeing.
+  return mergeDayCounts(days).map((entry) => entry.label);
 }
 
 /** Most-opened destination slugs over the trailing `days`, busiest first. */
