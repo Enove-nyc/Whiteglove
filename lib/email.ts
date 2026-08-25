@@ -38,15 +38,15 @@ const TEST_SENDER = "White Glove <onboarding@resend.dev>";
  * job has no request and reads as kosher, which is the same default the rest
  * of the site uses and the right one: those jobs are the guide's.
  */
-const BRAND_SENDER_VARS: Record<SiteBrand, string> = {
-  kosher: "RESEND_FROM_EMAIL",
-  itineraries: "RESEND_FROM_EMAIL_ITINERARIES",
-};
-
 export function senderForBrand(brand: SiteBrand): string {
-  const own = process.env[BRAND_SENDER_VARS[brand]]?.trim();
-  if (own) return own;
-  return process.env.RESEND_FROM_EMAIL?.trim() || TEST_SENDER;
+  // NAMED ONE BY ONE, never process.env[someVariable]. Next substitutes these
+  // by literal name at build time, so an indexed read is not the same thing —
+  // and tests/connections.test.ts, which reads the source to make sure no
+  // variable is invisible, cannot see one either. The first draft of this used
+  // an index and the guard caught it.
+  const shared = process.env.RESEND_FROM_EMAIL?.trim();
+  const own = brand === "itineraries" ? process.env.RESEND_FROM_EMAIL_ITINERARIES?.trim() : shared;
+  return own || shared || TEST_SENDER;
 }
 
 function resendConfig(from?: string) {

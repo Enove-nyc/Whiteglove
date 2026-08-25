@@ -3,7 +3,7 @@ import EmailDeliveryTest from "@/components/EmailDeliveryTest";
 import ContentExportPanel from "@/components/ContentExportPanel";
 import ConnectionsPanel from "@/components/ConnectionsPanel";
 import DuffelKeyTest from "@/components/DuffelKeyTest";
-import { CONNECTIONS, readConnectionsProperly } from "@/lib/connections";
+import { CONNECTIONS, DEPLOYMENT_SETTINGS, readConnectionsProperly } from "@/lib/connections";
 import HealthPanel from "@/components/admin/HealthPanel";
 import { readHealth } from "@/lib/health-store";
 import { duffelTokenHelp, inspectConfiguredDuffelToken } from "@/lib/duffel-token";
@@ -31,6 +31,8 @@ export default async function ConnectionSettings() {
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    RESEND_FROM_EMAIL_ITINERARIES: process.env.RESEND_FROM_EMAIL_ITINERARIES,
+    NEXT_PUBLIC_SITE_BRAND: process.env.NEXT_PUBLIC_SITE_BRAND,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     STRIPE_PAYMENTS_WEBHOOK_SECRET: process.env.STRIPE_PAYMENTS_WEBHOOK_SECRET,
@@ -118,7 +120,7 @@ export default async function ConnectionSettings() {
       {/* Every variable read by name: Next substitutes these at build time, so
           a whole-object read is not the same thing. Only emptiness is ever
           looked at — no value reaches the browser. */}
-      <ConnectionsPanel readings={readConnectionsProperly(Object.fromEntries(CONNECTIONS.flatMap((c) => c.vars).map((name) => [name, ENV[name]])))} />
+      <ConnectionsPanel readings={readConnectionsProperly(Object.fromEntries([...CONNECTIONS, ...DEPLOYMENT_SETTINGS].flatMap((c) => c.vars).map((name) => [name, ENV[name]])))} />
 
       <div className="mt-8 space-y-5">
         <EmailDeliveryTest />
