@@ -96,11 +96,43 @@ const ENTITIES: Array<[RegExp, string]> = [
   [/&nbsp;/g, " "],
 ];
 
+/**
+ * The labels a scraped block runs on into. A harvester that took a listing's
+ * whole text node keeps going past the address and swallows the opening hours,
+ * the website and the blurb with it — so a customer reads
+ * "9806 Hillcroft Ave. Houston, TX 77096 Hours: Sunday-Thursday 11am-8pm…" as
+ * though it were one address. Everything from the first label onward belongs
+ * to a field this record does not have.
+ */
+const RUN_ON_LABEL = /\s+(?:Website|Hours|Tel|Telephone|Phone|Fax|Email|E-mail|Address|Open|Kashrut|Kashrus|Supervision)\s*:/i;
+
 /** A scraped name as it should have been stored. Never changes a clean one. */
 export function cleanListingName(name: string): string {
   let out = name;
   for (const [pattern, replacement] of ENTITIES) out = out.replace(pattern, replacement);
+  // One harvested name ran on into its own labels: "Dino's Mediterranean
+  // Cuisine Phone: 832-667-8592 Address:".
+  out = out.split(RUN_ON_LABEL)[0] ?? out;
   return out.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * A scraped address with the rest of the page cut off it, or "" when what is
+ * left is not an address at all.
+ *
+ * BLANK RATHER THAN WRONG. One record's address begins "0823 Website: …" — the
+ * tail of a phone number the harvester started mid-way through. Cutting at the
+ * label leaves "0823", which is worse than nothing: a reader would try to
+ * navigate by it. KosherEatery.address is optional and every renderer guards
+ * on it, so an absent address simply does not draw, and the listing keeps its
+ * name, its city and its source.
+ */
+export function trimScrapedAddress(address: string): string {
+  const cut = address.split(RUN_ON_LABEL)[0] ?? address;
+  const tidy = cut.replace(/\s+/g, " ").replace(/[,\s]+$/, "").trim();
+  // A street address has words in it. Digits alone are a fragment of something.
+  if (tidy.length < 6 || !/[a-z]/i.test(tidy)) return "";
+  return tidy;
 }
 
 /**
@@ -109,12 +141,17 @@ export function cleanListingName(name: string): string {
  * Generic over anything carrying a name, so the kosher directory and any later
  * scraped set can share one door.
  */
-export function withoutScrapedJunk<T extends { name: string }>(rows: readonly T[]): T[] {
+export function withoutScrapedJunk<T extends { name: string; address?: string }>(rows: readonly T[]): T[] {
   const kept: T[] = [];
   for (const row of rows) {
     if (notABusinessReason(row.name)) continue;
     const name = cleanListingName(row.name);
-    kept.push(name === row.name ? row : { ...row, name });
+    const address = row.address === undefined ? undefined : trimScrapedAddress(row.address) || undefined;
+    if (name === row.name && address === row.address) {
+      kept.push(row);
+      continue;
+    }
+    kept.push({ ...row, name, ...(row.address === undefined ? {} : { address }) });
   }
   return kept;
 }

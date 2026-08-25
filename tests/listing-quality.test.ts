@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { cleanListingName, notABusinessReason, withoutScrapedJunk } from "@/data/listing-quality";
+import { cleanListingName, notABusinessReason, trimScrapedAddress, withoutScrapedJunk } from "@/data/listing-quality";
 import { kosherEateries } from "@/data/kosher-eateries";
 
 describe("page furniture is not a kosher restaurant", () => {
@@ -86,6 +86,40 @@ describe("a scraped name is shown as words, not entities", () => {
   });
 });
 
+describe("an address stops where the address stops", () => {
+  it("cuts the opening hours the harvester ran on into", () => {
+    assert.equal(
+      trimScrapedAddress("9806 Hillcroft Ave. Houston, TX 77096 Hours: Sunday-Thursday 11am-8pm Friday 9am-4pm"),
+      "9806 Hillcroft Ave. Houston, TX 77096",
+    );
+  });
+
+  it("cuts a website, and the blurb that followed it", () => {
+    assert.equal(
+      trimScrapedAddress("2355 Blue Bonnet Blvd Houston Texas 77030 Website: http://x.com, Houston, TX"),
+      "2355 Blue Bonnet Blvd Houston Texas 77030",
+    );
+  });
+
+  it("leaves a clean address exactly as it is", () => {
+    const clean = "Via del Portico d\u2019Ottavia 57, Rome";
+    assert.equal(trimScrapedAddress(clean), clean);
+    assert.equal(trimScrapedAddress("4747 Collins Ave, Miami Beach, FL 33140"), "4747 Collins Ave, Miami Beach, FL 33140");
+  });
+
+  it("returns nothing rather than a fragment somebody would try to navigate by", () => {
+    // This record really began "0823 Website: …" — the tail of a phone number
+    // the harvester started part-way through. "0823" is worse than no address.
+    assert.equal(trimScrapedAddress("0823 Website: http://www.thegrillecatering.com Treat your family"), "");
+    assert.equal(trimScrapedAddress("77096"), "");
+    assert.equal(trimScrapedAddress(""), "");
+  });
+
+  it("a name that ran on into its own labels is cut too", () => {
+    assert.equal(cleanListingName("Dino\u2019s Mediterranean Cuisine Phone: 832-667-8592 Address:"), "Dino\u2019s Mediterranean Cuisine");
+  });
+});
+
 describe("the filter keeps the rest of the record intact", () => {
   it("drops junk, cleans names, and passes clean rows through untouched", () => {
     const before = [
@@ -113,5 +147,17 @@ describe("nothing junk reaches the public kosher food finder", () => {
   it("no published name still carries an HTML entity", () => {
     const raw = kosherEateries.filter((e) => /&#\d+;|&amp;|&quot;|&nbsp;/.test(e.name));
     assert.deepEqual(raw.map((e) => e.name), []);
+  });
+
+  it("no published address has a page's opening hours or website glued to it", () => {
+    const RUN_ON = /\s(?:Website|Hours|Tel|Phone|Email|Fax|Open|Kashrut|Supervision)\s*:/i;
+    const bad = kosherEateries.filter((e) => RUN_ON.test(e.address || ""));
+    assert.deepEqual(bad.map((e) => `${e.name}: ${e.address}`), []);
+  });
+
+  it("and cutting them cost no listing — only the one address that was a fragment", () => {
+    assert.ok(kosherEateries.length > 1400);
+    const missing = kosherEateries.filter((e) => !e.address);
+    assert.ok(missing.length <= 2, `${missing.length} listings lost their address`);
   });
 });
