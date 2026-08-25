@@ -17,6 +17,8 @@
  * line should be checking the town's own times, and the wording says that.
  */
 
+import { parseCoordinates } from "@/lib/zmanim";
+
 const DEGREES = Math.PI / 180;
 
 /** Minutes before sunset that candles are lit. The widespread custom. */
@@ -66,14 +68,16 @@ export function sunsetMinutesUtc(date: Date, latitude: number, longitude: number
   return 720 + 4 * (ha - longitude) - eqTime;
 }
 
-function parseCoordinates(coordinates?: string | null): { lat: number; lon: number } | null {
-  const match = coordinates?.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
-  if (!match) return null;
-  const lat = Number(match[1]);
-  const lon = Number(match[2]);
-  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
-  return { lat, lon };
-}
+/**
+ * ONE COORDINATE PARSER, lib/zmanim.ts's.
+ *
+ * This file kept a private copy, and the two had drifted in the way that
+ * matters: the copy here accepted "0,0", which is what a stop with two empty
+ * coordinate fields parses to. A Shabbos warning built on it quoted a
+ * candle-lighting time for a point in the Atlantic, and did it confidently.
+ * The zmanim parser rejects Null Island for exactly that reason, so this uses
+ * it rather than keeping a second, laxer opinion about what a position is.
+ */
 
 /** YYYY-MM-DD → a UTC date, or null. Noon, so no timezone can roll the day. */
 function parseDate(date: string): Date | null {
@@ -158,6 +162,71 @@ export function shabbosWarning(
     };
   }
   return null;
+}
+
+/**
+ * WHEN THE PLANNER'S FRIDAY FINISHES, against when candles are lit.
+ *
+ * shabbosWarning above asks about ONE STOP. This asks about the whole day,
+ * which is the question an advisor is actually answering on a Friday: the
+ * client's last activity ends at some hour, and the only thing that matters is
+ * whether there is room between that and candle-lighting to get back, change
+ * and be ready.
+ *
+ * WHY THIS WAS MISSING AND WORTH ADDING. The route dashboard has warned about
+ * Shabbos since lib/shabbos.ts existed; the day-by-day planner — the thing an
+ * advisor builds for a client and prints — never did. On a kosher travel site
+ * that is the one deadline that cannot move, and the planner said nothing.
+ *
+ * Returns null when there is nothing to say: not a Friday, no coordinates to
+ * compute from, or a finish comfortably clear of the line. A margin the
+ * planner cannot stand behind is worse than silence.
+ */
+export type FridayFinish = {
+  /** Minutes between the day's last activity ending and candles. Negative means after. */
+  marginMinutes: number;
+  candleLighting: string;
+  message: string;
+};
+
+/** How close to candle-lighting is close enough to say something. */
+const FRIDAY_MARGIN_MINUTES = 120;
+
+export function fridayFinishWarning(input: {
+  date: string;
+  /** Minutes after local midnight that the day's last activity ends. */
+  endMinutes: number;
+  /** Coordinates of the last stop, "50.06,19.94". */
+  coordinates?: string;
+}): FridayFinish | null {
+  if (!isFriday(input.date)) return null;
+  const day = parseDate(input.date);
+  const point = parseCoordinates(input.coordinates);
+  if (!day || !point) return null;
+
+  const sunsetUtc = sunsetMinutesUtc(day, point.lat, point.lon);
+  if (sunsetUtc === null) return null;
+  const candles = sunsetUtc + longitudeOffsetMinutes(point.lon) - CANDLE_LIGHTING_MINUTES;
+  const candleLighting = clock(candles);
+  // Whole minutes: sunset comes back fractional, and "47 minutes" is a
+  // sentence somebody acts on while "47.18 minutes" is one they distrust.
+  const marginMinutes = Math.round(candles - input.endMinutes);
+  if (marginMinutes > FRIDAY_MARGIN_MINUTES) return null;
+
+  if (marginMinutes < 0) {
+    return {
+      marginMinutes,
+      candleLighting,
+      message: `This day is still running at candle-lighting. The last stop finishes around ${clock(input.endMinutes)}, and candles are lit about ${candleLighting} — move something to another day.`,
+    };
+  }
+  return {
+    marginMinutes,
+    candleLighting,
+    // The exact figure, not a rounded reassurance: 47 minutes and 20 minutes
+    // are different decisions, and the advisor is the one who knows which.
+    message: `This day finishes about ${clock(input.endMinutes)}, ${marginMinutes} minutes before candle-lighting at about ${candleLighting}. That is the time left to get back, change and be ready — check it against where they are staying.`,
+  };
 }
 
 /** Roughly how far a town's clock sits from UTC, from its longitude alone. */

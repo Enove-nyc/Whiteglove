@@ -4,6 +4,7 @@
 import { AIRPORTS } from "@/data/airports";
 import { bandFor, BUILT_IN_ASSUMPTIONS, clockToMins, type PlannerAssumptions, usableDayHours } from "@/data/planner-assumptions";
 import { coordinatesToPoint } from "@/data/route-utils";
+import { fridayFinishWarning } from "@/lib/shabbos";
 
 /**
  * What an itinerary holds about a file, which is deliberately not the file.
@@ -462,6 +463,15 @@ export function formatKm(km: number | null): string | null {
 }
 
 // ---- Day-by-day assembly + checks ------------------------------------
+
+/**
+ * When a day's driving is worth remarking on by itself.
+ *
+ * Four hours: under that is a normal day with a transfer in it; past it the
+ * day is a drive with stops attached, whether or not the hours technically
+ * fit. The audit that asked for this used "4 hr 52 min" as its example.
+ */
+const LONG_DRIVE_MINUTES = 240;
 
 export type DayActivity = ItinActivity & {
   distanceFromPrev: number | null;
@@ -1163,6 +1173,19 @@ export function buildDays(
     const dayEnd = clock;
 
     const warnings: string[] = [];
+
+    // FRIDAY, AGAINST CANDLE-LIGHTING. The one deadline on this site that
+    // cannot move, and until now the planner said nothing about it — the route
+    // dashboard warned and the day-by-day plan an advisor prints for a client
+    // did not. Computed from the last stop that has a position, since that is
+    // where the day actually ends; with no position anywhere in the day there
+    // is nothing to compute from and it stays quiet rather than guessing.
+    const lastPlaced = [...dayActs].reverse().find((a) => coordinatesToPoint(a.coordinates));
+    const friday = dayActs.length
+      ? fridayFinishWarning({ date, endMinutes: dayEnd, coordinates: lastPlaced?.coordinates })
+      : null;
+    if (friday) warnings.push(friday.message);
+
     // A red-eye IS the night's accommodation.
     const overnightFlight = overnightFlightFor(itin, date, journeys);
     // Missing place to sleep (skip the last day — you usually fly home).
@@ -1254,6 +1277,17 @@ export function buildDays(
     if (crossings.length) {
       warnings.push(
         `This day crosses a border (${crossings.join(", ")}). The driving times below do not include waiting at the crossing, which can add anywhere from minutes to several hours — check the current wait before you commit to the day's timings.`,
+      );
+    }
+
+    // A LONG DRIVING DAY THAT IS NOT OVER-PACKED. The over-packed warning below
+    // only fires when the stops plus the driving exceed the usable day; a day
+    // with two stops and five hours of road between them fits comfortably and
+    // is still a day mostly spent in a car. That is worth saying on its own,
+    // because it is the thing a client remembers about the trip.
+    if (travelMins >= LONG_DRIVE_MINUTES && committed <= usableDay) {
+      warnings.push(
+        `About ${formatDuration(travelMins)} of driving on this day. It fits, but it is most of the day in the car — worth checking that is what was wanted.`,
       );
     }
 
