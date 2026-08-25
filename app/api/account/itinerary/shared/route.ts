@@ -73,13 +73,43 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "You can look at this trip but not change it." }, { status: 403 });
   }
 
-  const body = (await request.json().catch(() => null)) as { itinerary?: Itinerary } | null;
+  const body = (await request.json().catch(() => null)) as
+    | { itinerary?: Itinerary; expectedUpdatedAt?: string }
+    | null;
   if (!body?.itinerary) return NextResponse.json({ error: "Provide an itinerary." }, { status: 400 });
 
   // Saved WITHOUT attachments, because the copy an editor was given had none.
   // Writing back what they hold would strip the owner's own boarding passes
   // off his trip — the one way this feature could destroy something.
   const kept = await getAccountData(found.owner);
+
+  /**
+   * THE TRIP MUST NOT HAVE MOVED UNDER THEM.
+   *
+   * Two people can be in one trip at once — that is the whole point of an
+   * editor. Without this, whoever presses save last silently wins: the owner
+   * spends an evening adding four stops, an editor saves a copy fetched before
+   * any of it, and the four stops are gone with nothing said to either of
+   * them. Every other destructive path in this file is guarded (attachments
+   * are merged back rather than overwritten); this is the same danger through
+   * the front door.
+   *
+   * Refused rather than merged, deliberately: merging two itineraries without
+   * being asked is guesswork about somebody's trip. Reloading and redoing a
+   * few edits is a small cost; a silently deleted evening is not.
+   *
+   * A caller that sends no expectation is not refused — the field is new and
+   * an older client should not start failing — but the panel always sends it.
+   */
+  if (body.expectedUpdatedAt && kept.itinerary?.updatedAt && kept.itinerary.updatedAt !== body.expectedUpdatedAt) {
+    return NextResponse.json(
+      {
+        error: "This trip changed while you were editing. Reload to see the newest version, then make your changes again.",
+        staleCopy: true,
+      },
+      { status: 409 },
+    );
+  }
   const merged = mergeKeepingAttachments(kept.itinerary, body.itinerary);
   const saved = await saveAccountItinerary(found.owner, merged);
   if (!saved) return NextResponse.json({ error: "Could not save the trip." }, { status: 503 });
