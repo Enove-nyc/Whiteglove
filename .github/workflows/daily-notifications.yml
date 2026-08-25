@@ -109,3 +109,33 @@ jobs:
             echo "The trip-alerts run did not succeed."
             exit 1
           fi
+
+  # Whether the things the site depends on are actually working. Independent of
+  # the two above: a bad night for a provider is not a reason to skip somebody's
+  # boarding-pass reminder, and vice versa.
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the health endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whiteglovekoshertravel.com' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET is not set on this repository — nothing can be checked."
+            exit 1
+          fi
+
+          body=$(mktemp)
+          code=$(curl -sS --max-time 120 -o "$body" -w "%{http_code}" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/cron/health")
+
+          echo "HTTP $code"
+          cat "$body"
+          echo
+
+          if [ "$code" != "200" ]; then
+            echo "The health run did not succeed."
+            exit 1
+          fi

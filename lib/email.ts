@@ -564,6 +564,53 @@ export async function sendTripAlertsEmail(
   return result.ok;
 }
 
+/**
+ * The email that says something the site depends on has stopped working.
+ *
+ * Sent ON CHANGE — the night a thing breaks, and the night it comes back.
+ * Never nightly: an email every evening saying everything is fine is one
+ * somebody filters, and the night it says something else it is filtered too.
+ */
+export async function sendHealthChangeEmail(
+  to: string,
+  opts: { broke: Array<{ what: string; detail: string; without: string }>; fixed: string[]; url: string },
+): Promise<boolean> {
+  const url = escapeHtml(opts.url);
+  const brokeRows = opts.broke
+    .map(
+      (item) =>
+        `<li style="margin-bottom:10px;"><strong>${escapeHtml(item.what)} stopped working.</strong>` +
+        `<br><span style="color:#555;">${escapeHtml(item.detail)}</span>` +
+        `<br><span style="color:#555;">${escapeHtml(item.without)}</span></li>`,
+    )
+    .join("");
+  const fixedRows = opts.fixed.map((what) => `<li>${escapeHtml(what)} is working again.</li>`).join("");
+  const subject = opts.broke.length
+    ? opts.broke.length === 1
+      ? `${opts.broke[0].what} stopped working`
+      : `${opts.broke.length} things stopped working`
+    : "Back to normal";
+  const result = await postResend(
+    {
+      to,
+      subject,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${escapeHtml(subject)}</h2>` +
+        (brokeRows ? `<ul style="font-family:Arial,sans-serif;font-size:14px;color:#333;padding-left:18px;">${brokeRows}</ul>` : "") +
+        (fixedRows ? `<ul style="font-family:Arial,sans-serif;font-size:14px;color:#333;padding-left:18px;">${fixedRows}</ul>` : "") +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">Open the connections screen →</a></p>`,
+      text:
+        `${subject}\n\n` +
+        opts.broke.map((item) => `• ${item.what} stopped working. ${item.detail} ${item.without}`).join("\n") +
+        (opts.fixed.length ? `\n${opts.fixed.map((what) => `• ${what} is working again.`).join("\n")}` : "") +
+        `\n\n${opts.url}`,
+    },
+    to,
+    "health change",
+  );
+  return result.ok;
+}
+
 export async function sendPasswordResetEmail(email: string, code: string) {
   const result = await postResend(
     {
