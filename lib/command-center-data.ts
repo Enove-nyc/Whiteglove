@@ -36,6 +36,7 @@ async function factsFor(activity: ItinActivity): Promise<StopFacts> {
     address: activity.address,
     contacts: activity.phone ? [{ label: "On the itinerary", phone: activity.phone }] : [],
     isKever: Boolean(activity.keverSlug),
+    ...(activity.country?.trim() ? { country: activity.country.trim() } : {}),
   };
 
   if (!activity.keverSlug) return base;
@@ -57,6 +58,10 @@ async function factsFor(activity: ItinActivity): Promise<StopFacts> {
     href: activity.href || `/cemeteries/${record.slug}`,
     coordinates: activity.coordinates || record.coordinates,
     address: activity.address || record.address,
+    // The itinerary first, then the record — a traveller who typed a country
+    // on their own stop meant it, and a built-in record is the fallback rather
+    // than the override.
+    ...(activity.country?.trim() || record.country ? { country: activity.country?.trim() || record.country } : {}),
     contacts: [
       ...base.contacts,
       ...(record.accessContacts ?? []).map((c) => ({ label: c.label, phone: c.phone, note: c.note })),
