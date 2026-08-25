@@ -1,4 +1,17 @@
-# Send the day's automatic client reminders.
+# The day's two sending jobs, on one clock.
+#
+#   REMINDERS — an ADVISOR's message to their CLIENT: "your trip leaves in 3
+#   days", "a balance is still due". Into the trip's chat thread, and pushed
+#   to the client's phone. Gated on the plan that lets somebody serve clients.
+#
+#   ALERTS — the ACCOUNT OWNER told about their OWN trip: a stop that falls on
+#   Shabbos, loose ends as departure gets close. To their own phone, and open
+#   to anybody signed in who turned it on at /command-center.
+#
+# Two audiences, two gates, two endpoints — kept as separate jobs so a failure
+# in one is visible on its own and neither can quietly start gating the other.
+# They share this file because they share a clock and a secret, and a second
+# workflow would be a second place to look when a night goes wrong.
 #
 # WHY THIS EXISTS AS A WORKFLOW. app/api/cron/trip-reminders is the endpoint
 # that actually sends them — "your trip leaves in 3 days", "a balance is still
@@ -19,7 +32,7 @@
 # endpoint checks that mark before sending anything, so a re-run on a bad day
 # repeats nothing.
 
-name: Trip reminders
+name: Daily notifications
 
 on:
   schedule:
@@ -31,7 +44,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: trip-reminders
+  group: daily-notifications
   cancel-in-progress: false
 
 jobs:
@@ -64,5 +77,35 @@ jobs:
 
           if [ "$code" != "200" ]; then
             echo "The reminders run did not succeed."
+            exit 1
+          fi
+
+  # The traveller's own trip alerts. Independent of the job above — a bad night
+  # for one is not a reason to skip the other, so this does not `needs:` it.
+  alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the trip-alerts endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whiteglovekoshertravel.com' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET is not set on this repository — nothing can be sent."
+            echo "Add it under Settings → Secrets and variables → Actions, matching the value on Railway."
+            exit 1
+          fi
+
+          body=$(mktemp)
+          code=$(curl -sS --max-time 300 -o "$body" -w "%{http_code}" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/cron/trip-alerts")
+
+          echo "HTTP $code"
+          cat "$body"
+          echo
+
+          if [ "$code" != "200" ]; then
+            echo "The trip-alerts run did not succeed."
             exit 1
           fi
