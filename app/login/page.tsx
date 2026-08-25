@@ -58,6 +58,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <h1 id="login-title" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Your personal travel book.</h1>
           <p className="mt-2 text-sm text-stone-600">Creating an account is free — it is what keeps your trip on every device.</p>
           <LoginForm
+            // This page is called log in. A returning visitor was landing on
+            // the sign-up form and had to spot a tab to get to the one they
+            // came for — and password recovery sits on that tab too, so it
+            // was a screen further away than it looked. Creating an account
+            // is one tap, and the eyebrow above still offers it.
+            initialMode="login"
             phoneSignupAvailable={smsConfigured()}
             next={back}
             googleAvailable={Boolean(googleConfig({ GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET }))}

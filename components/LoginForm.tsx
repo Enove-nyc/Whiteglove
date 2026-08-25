@@ -69,6 +69,7 @@ export default function LoginForm({
   googleAvailable = false,
   googleProblem,
   onSuccess,
+  initialMode = "signup",
 }: {
   phoneSignupAvailable?: boolean;
   /** Where to go once they are in — set when they were sent here mid-task. */
@@ -84,6 +85,20 @@ export default function LoginForm({
    * that signing in worked.
    */
   onSuccess?: () => void;
+  /**
+   * Which tab the form opens on.
+   *
+   * /login OPENS ON LOG IN, because that is what the page is called and what
+   * somebody typing it is there to do — a returning visitor was landing on a
+   * registration form and had to notice a tab to get past it. The password
+   * recovery link lives under the password on that tab too, so it was a
+   * screen behind as well.
+   *
+   * The sign-in GATE keeps signing up as its default: it appears when
+   * somebody without an account tries to save something, where creating one
+   * is the likelier next step. Two situations, two answers, one component.
+   */
+  initialMode?: "signup" | "login";
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -95,7 +110,7 @@ export default function LoginForm({
   // A way to reach them, not a way to sign in. Never required.
   const [contactPhone, setContactPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">("signup");
+  const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">(initialMode);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
