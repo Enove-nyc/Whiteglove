@@ -25,15 +25,24 @@ import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
 import { getAppPrefs } from "@/lib/app-prefs-store";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
+import { BRAND_NAME } from "@/lib/site-brand-core";
 
 // One person's trip, on one person's phone. Nothing here belongs in a search
 // result, and the gate below means most visitors never see it at all.
-export const metadata = pageMetadata({
-  title: "The White Glove app",
-  description: "The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal.",
-  path: "/app",
-  noIndex: true,
-});
+// Brand-aware: this is the itineraries product's own page, and on that domain
+// its tab must not read "White Glove Kosher Travel". The page is already
+// force-dynamic below, so reading the brand costs nothing.
+export async function generateMetadata() {
+  const brand = await currentBrand();
+  return pageMetadata({
+    title: `The ${BRAND_NAME[brand]} app`,
+    description: "The trip in your pocket — a day at a time, with a travel wallet kept for when there is no signal.",
+    path: "/app",
+    noIndex: true,
+    brand,
+  });
+}
 
 // The plan and the trip are read fresh each time.
 export const dynamic = "force-dynamic";
