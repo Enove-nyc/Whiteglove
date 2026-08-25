@@ -33,8 +33,11 @@ const KOSHER_LINKS = [
 ];
 
 // The itineraries site is the planner; Advertise and Sources belong to the
-// kosher guide, so its footer carries only the three everyone needs.
+// kosher guide. Pricing leads because it was the thing a visitor could not
+// reach at all: what the planner costs lived behind a sign-in, so anybody
+// weighing the tool up had to open an account to find out.
 const ITINERARIES_LINKS = [
+  { label: "Pricing", href: "/pricing" },
   { label: "Contact", href: "/contact" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },

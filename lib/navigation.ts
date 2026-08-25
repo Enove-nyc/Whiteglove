@@ -205,6 +205,7 @@ export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
     label: "The app",
     links: [
       { label: "The White Glove app", href: "/app", description: "The trip in your client's pocket" },
+      { label: "Plans and pricing", href: "/pricing", description: "What it does, and what it costs" },
     ],
   },
 ] as const;
