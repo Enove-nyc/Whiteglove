@@ -192,3 +192,85 @@ describe("the owner's devices are kept apart from a client's", () => {
     assert.match(fn, /catch \(error\) \{[^]*?return 0;/);
   });
 });
+
+describe("the evening before", () => {
+  const ROUTE = readFileSync("app/api/cron/trip-alerts/route.ts", "utf8");
+
+  it("is not a readiness alert, and never appears on the command centre as one", () => {
+    // tripAlerts is about things that are WRONG. A trip starting is the
+    // opposite, and putting it there would draw it as a warning box beside the
+    // Shabbos clash — next to a countdown already saying the same thing in the
+    // right voice.
+    const alerts = readFileSync("lib/trip-alerts.ts", "utf8");
+    // The key, not the word: "tomorrow" appears there legitimately, in the
+    // check that decides whether leaving soon is urgent. What must not exist
+    // there is an alert kind for a trip beginning.
+    assert.doesNotMatch(alerts, /starts-tomorrow/);
+    assert.doesNotMatch(alerts, /kind: "(starting|departure|countdown)/);
+    assert.match(ROUTE, /starts-tomorrow/);
+  });
+
+  it("fires on the calendar day before, not on a rolling day", () => {
+    // `away` is whole days between two dates, so this is the evening before
+    // departure rather than "within twenty-four hours", which would land at
+    // an arbitrary hour and sometimes twice.
+    assert.match(ROUTE, /const eve = away === 1 && !already\["starts-tomorrow"\]/);
+  });
+
+  it("goes once, marked like every other line", () => {
+    assert.match(ROUTE, /if \(eve\) keys\.push\("starts-tomorrow"\)/);
+    assert.match(ROUTE, /markAlertsPushed\(account\.email, trip\.id, keys, today\)/);
+  });
+
+  it("wakes the phone once when the trip both starts tomorrow and has loose ends", () => {
+    // Two notifications on the one evening somebody can still act on either is
+    // how people turn notifications off.
+    const body = ROUTE.slice(ROUTE.indexOf("pushed += await pushToAccountSubscribers"));
+    assert.equal((body.match(/pushToAccountSubscribers/g) ?? []).length, 1);
+    assert.match(body, /eve && !fresh\.length/);
+    assert.match(body, /: eve\s*\?/);
+  });
+
+  it("says something the traveller does not already know", () => {
+    // "Your trip starts tomorrow" on its own tells somebody a thing they are
+    // thinking about. The first stop is the question they actually have.
+    assert.match(ROUTE, /function startsTomorrowBody/);
+    assert.match(ROUTE, /First stop: \$\{first\}/);
+  });
+
+  it("still runs when the trip is otherwise clean", () => {
+    // The bug this prevents: `if (!fresh.length) continue` skipping the eve
+    // notification on a trip with nothing wrong with it — which is most of
+    // them, and exactly the ones worth a quiet word the night before.
+    assert.match(ROUTE, /if \(!fresh\.length && !eve\) continue;/);
+  });
+});
+
+describe("the countdown on the shared link", () => {
+  const SHARED = readFileSync("app/i/[shareId]/page.tsx", "utf8");
+
+  it("shows the strip, which is what the person travelling actually opens", () => {
+    assert.match(SHARED, /import TripProgressStrip/);
+    assert.match(SHARED, /<TripProgressStrip startDate=\{itin\.startDate\} endDate=\{itin\.endDate\} days=\{days\} \/>/);
+  });
+
+  it("hands it no documents and no trip id", () => {
+    // A shared trip is served through withoutAttachments, so a boarding pass
+    // never reaches this page — the holder of the link is not even told one
+    // exists. Leaving the prop off keeps that true rather than relying on the
+    // array happening to be empty. And rating how White Glove did belongs to
+    // whoever's trip it is, not to everybody they sent it to.
+    const tag = SHARED.slice(SHARED.indexOf("<TripProgressStrip"), SHARED.indexOf("/>", SHARED.indexOf("<TripProgressStrip")));
+    assert.doesNotMatch(tag, /documentsToday/);
+    assert.doesNotMatch(tag, /tripId/);
+  });
+
+  it("is not on the printed copy, and that is the decision", () => {
+    // A countdown on paper is wrong the day after it is printed, and "you
+    // leave tomorrow" on a sheet found in a drawer next year is worse than
+    // nothing. The printed cover states the dates instead, which stays true.
+    assert.doesNotMatch(readFileSync("components/PrintableItinerary.tsx", "utf8"), /TripProgressStrip/);
+    assert.doesNotMatch(readFileSync("app/itinerary/print/page.tsx", "utf8"), /TripProgressStrip/);
+    assert.match(readFileSync("components/PrintableItinerary.tsx", "utf8"), /label: "When", value: dates/);
+  });
+});
