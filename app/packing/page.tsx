@@ -2,31 +2,34 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PackingListPanel from "@/components/PackingListPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { requireSignedIn } from "@/lib/require-signed-in";
+import { isSignedIn } from "@/lib/require-signed-in";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
 import { AMAZON_DISCLOSURE, isAmazonLink } from "@/lib/travel-extras";
 import { gearShownToVisitors } from "@/lib/travel-gear";
 import { readGear } from "@/lib/travel-gear-store";
 
-// Brand-aware, signed-in only: /packing is one of the itineraries domain's
-// own pages, the same as /itinerary and /my-route — a personal-travel tool,
-// not a client-facing one, so no plan gate here.
+// Brand-aware and OPEN. This used to be signed-in only, and a visitor who
+// wanted to know what to pack met the login door instead of an answer. It now
+// opens with the starter list (data/packing-basics.ts) for everybody, and a
+// signed-in visitor with a trip in the planner gets the list generated from
+// that trip in its place. No plan gate either: a personal-travel tool, the
+// same as /itinerary and /my-route.
 export async function generateMetadata() {
   const itineraries = (await currentBrand()) === "itineraries";
   return pageMetadata({
     title: itineraries ? "Packing list — White Glove Itineraries" : "Packing list — White Glove Kosher Travel",
-    description: "An AI-suggested packing list for the trip in your planner right now.",
+    description: "What to pack for a kosher trip — documents, Shabbos, food, and the rest. Build a trip and the list is made for it.",
     path: "/packing",
-    noIndex: true,
   });
 }
 
 export const dynamic = "force-dynamic";
 
 export default async function PackingPage() {
-  await requireSignedIn("/packing");
-
+  // Whether to ask the account for a trip at all. A signed-out visitor gets
+  // the starter list without a round trip that could only return a 401.
+  const signedIn = await isSignedIn();
   // The gear shelf, read once here and handed to the list. A packing line
   // that names something on the shelf gets a quiet link to it — the one place
   // on the site where a traveller is already reading a list of things they
@@ -44,10 +47,10 @@ export default async function PackingPage() {
         <PageHeader
           eyebrow="Packing list"
           title="What to pack"
-          description="Suggested from this trip's destinations, dates and planned stops — check items off as you pack, and regenerate any time the trip changes."
+          description="A starting list for a kosher trip, to check off as you pack. With a trip in the planner it is built from where you are going, when, and what you have planned."
         />
         <div className="mt-8">
-          <PackingListPanel gear={shelf} />
+          <PackingListPanel gear={shelf} signedIn={signedIn} />
         </div>
         {amazon && <p className="mt-8 text-xs leading-5 text-stone-500">{AMAZON_DISCLOSURE}</p>}
       </section>

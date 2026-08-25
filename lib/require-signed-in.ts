@@ -18,10 +18,20 @@ import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@
  * round trip through sign-in.
  */
 export async function requireSignedIn(next: string): Promise<void> {
-  const cookie = (await cookies()).get(accountCookieName())?.value;
-  const account = await getCurrentAccountSummary(cookie);
-  const sessionEmail = readSessionEmail(cookie);
-  if (!account && !sessionEmail) {
+  if (!(await isSignedIn())) {
     redirect(`/login?next=${encodeURIComponent(next)}`);
   }
+}
+
+/**
+ * The same question without the redirect, for a page that is OPEN but shows
+ * more to somebody signed in — /packing, which gives every visitor a starter
+ * list and a member's own trip list in its place. Sharing the rule is the
+ * point: a page that decides "signed in" its own way is a page that disagrees
+ * with the guard sooner or later.
+ */
+export async function isSignedIn(): Promise<boolean> {
+  const cookie = (await cookies()).get(accountCookieName())?.value;
+  const account = await getCurrentAccountSummary(cookie);
+  return Boolean(account) || Boolean(readSessionEmail(cookie));
 }

@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 /**
- * The gear links on the packing list are affiliate links on a signed-in page.
- * Two things about them are not style choices, so they are pinned here rather
- * than left to whoever edits the component next.
+ * The gear links on the packing list are affiliate links, and the page is now
+ * open to everybody. Two things about them are not style choices, so they are
+ * pinned here rather than left to whoever edits the component next.
  */
 
 const PAGE = readFileSync("app/packing/page.tsx", "utf8");
@@ -42,7 +42,44 @@ describe("the shelf reaches the page without a detour", () => {
   });
 
   it("the panel is handed the shelf rather than fetching it again", () => {
-    assert.match(PANEL, /gear = \[\] \}: \{ gear\?: GearLink\[\] \}/);
+    assert.match(PANEL, /gear = \[\], signedIn = false \}/);
     assert.doesNotMatch(PANEL, /fetch\((["'`])[^"'`]*travel-gear/);
+  });
+});
+
+describe("the page answers a visitor who is not signed in", () => {
+  it("nobody is sent to the login door for a packing list", () => {
+    // It was signed-in only, so the one page whose whole subject is a list of
+    // things to go and buy was reachable only by people who already had an
+    // account.
+    assert.doesNotMatch(PAGE, /requireSignedIn/);
+  });
+
+  it("the starter list is what an empty screen shows, rather than a dead end", () => {
+    assert.match(PANEL, /PACKING_BASICS/);
+    // "Open a trip in the planner first." was the whole of the old page for a
+    // visitor with no trip.
+    assert.doesNotMatch(PANEL, /Open a trip in the planner first/);
+  });
+
+  it("a signed-out visitor is never asked the account a question it would refuse", () => {
+    assert.match(PANEL, /if \(!signedIn\) return;/);
+  });
+
+  it("a trip with no list yet is not reported as an error", () => {
+    // 404 from the packing route means \"no trip yet\", which is an ordinary
+    // state and not something to say out loud.
+    assert.match(PANEL, /res\.status === 404/);
+  });
+
+  it("it is a page search engines may keep, now that it holds an answer", () => {
+    assert.doesNotMatch(PAGE, /noIndex/);
+  });
+
+  it("a visitor can find it — it is linked, not only reachable from an account", () => {
+    const footer = readFileSync("components/Footer.tsx", "utf8");
+    const gear = readFileSync("app/travel-gear/page.tsx", "utf8");
+    assert.match(footer, /href: "\/packing"/);
+    assert.match(gear, /href: "\/packing"/);
   });
 });

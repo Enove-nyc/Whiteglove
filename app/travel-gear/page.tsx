@@ -17,6 +17,7 @@ export const metadata = pageMetadata({
 });
 
 const ALSO_BEFORE_YOU_GO = [
+  { href: "/packing", label: "What to pack", detail: "A list to check off, and one built from your trip." },
   { href: "/travel-guide", label: "Travel guide", detail: "Documents, advisories and how to pay." },
   { href: "/transfers", label: "Airport transfers", detail: "A car between the airport and where you stay." },
   { href: "/esim", label: "eSIMs and data", detail: "A data plan for the country you are going to." },

@@ -32,6 +32,9 @@ const KOSHER_LINKS = [
   // which is what a footer is for.
   { label: "About", href: "/about" },
   { label: "Verification", href: "/verification" },
+  // Open to everybody since the starter list arrived; before that it was a
+  // signed-in page and there was nothing to link a visitor to.
+  { label: "What to pack", href: "/packing" },
   { label: "Contact", href: "/contact" },
   { label: "Advertise", href: "/contact?reason=advertise" },
   { label: "Sources", href: "/sources" },
@@ -45,6 +48,7 @@ const KOSHER_LINKS = [
 // weighing the tool up had to open an account to find out.
 const ITINERARIES_LINKS = [
   { label: "Pricing", href: "/pricing" },
+  { label: "What to pack", href: "/packing" },
   { label: "Contact", href: "/contact" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
