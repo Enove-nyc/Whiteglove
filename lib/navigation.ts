@@ -106,6 +106,9 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
   {
     label: "Kosher",
     links: [
+      // First, because it is the question somebody asks once the hotel is
+      // booked: what is walkable from it, before Shabbos.
+      { label: "Near where you are staying", href: "/near" },
       { label: "Food", href: "/kosher" },
       { label: "Stays", href: "/hotels" },
       { label: "Shuls", href: "/shuls" },

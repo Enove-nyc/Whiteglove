@@ -4,18 +4,8 @@ import { describe, it } from "node:test";
 import { planCards, whatThisAdds } from "@/data/plan-comparison";
 import { PLAN_FEATURES } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
+import { codeOf as code } from "./helpers/source";
 
-/**
- * Comments stripped first. Both files EXPLAIN in prose why a price must not be
- * hardcoded, and quote one to make the point — so a naive read of the source
- * catches the explanation and not the thing it warns against. What matters is
- * what reaches the page.
- */
-function code(path: string): string {
-  return readFileSync(path, "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
-}
 
 describe("the pricing page never invents a price", () => {
   const PAGE = code("app/pricing/page.tsx");

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { codeOf } from "./helpers/source";
 
 /**
  * The front page listed its six sections twice: once as the Featured picture
@@ -12,12 +13,9 @@ import { describe, it } from "node:test";
  */
 
 const PAGE = readFileSync("app/page.tsx", "utf8");
-/**
- * The page's own comments RECORD these decisions in prose — "No 'trending',
- * no counts" — so a naive read finds the note and not a breach of it. Checks
- * about what the page renders read this instead.
- */
-const RENDERED = PAGE.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+// The page's own comments RECORD these decisions in prose — "No 'trending',
+// no counts" — so a naive read finds the note, not a breach of it.
+const RENDERED = codeOf("app/page.tsx");
 const FOOTER = readFileSync("components/Footer.tsx", "utf8");
 
 /** Every href the front page links to, in order. */

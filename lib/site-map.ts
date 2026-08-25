@@ -108,6 +108,9 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/esim", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-gear", priority: 0.5, changeFrequency: "monthly" },
+  // Near where you are staying. Nothing about it is per-destination, so it is
+  // one static entry rather than one per place.
+  { path: "/near", priority: 0.7, changeFrequency: "monthly" },
   // What the planner costs — the page a visitor could not reach without an
   // account, so the one most worth being findable.
   { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
