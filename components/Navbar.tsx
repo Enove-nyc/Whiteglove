@@ -8,6 +8,7 @@ import SitePromotions from "@/components/SitePromotions";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
+import { forgetOfflineDocuments } from "@/lib/offline-documents";
 import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
 import { brandForHost } from "@/lib/site-brand-core";
 import AccountMenu, { ACCOUNT_PLACES, advisorPlacesFor } from "@/components/AccountMenu";
@@ -224,6 +225,8 @@ export default function Navbar({ brand: brandProp = "kosher", minimal = false }:
 
   async function signOut() {
     await fetch("/api/account/logout", { method: "POST" }).catch(() => undefined);
+    // Any boarding pass saved onto this device goes with the session.
+    await forgetOfflineDocuments();
     setSignedIn(false);
     router.push("/");
     router.refresh();

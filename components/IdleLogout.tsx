@@ -1,5 +1,6 @@
 "use client";
 
+import { forgetOfflineDocuments } from "@/lib/offline-documents";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -31,6 +32,10 @@ export default function IdleLogout({
 
     async function logout() {
       await fetch(endpoint, { method: "POST" }).catch(() => undefined);
+      // The likeliest place this feature ever hurts somebody: a session left
+      // open in a hotel business centre, timing out on its own, with boarding
+      // passes still cached on the machine. They go with the session.
+      await forgetOfflineDocuments();
       if (cancelled) return;
       if (redirectTo) router.push(redirectTo);
       router.refresh();
