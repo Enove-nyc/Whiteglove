@@ -4,11 +4,14 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import MixedText from "@/components/MixedText";
 import CommandCenterNotify from "@/components/CommandCenterNotify";
+import TripAdvisories from "@/components/TripAdvisories";
 import TripDocuments from "@/components/TripDocuments";
 import { accountCookieName, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
 import { daysUntil, tripReadiness, type StopReadiness } from "@/lib/command-center";
 import { stopsForTrip } from "@/lib/command-center-data";
 import { tripAlerts } from "@/lib/trip-alerts";
+import { fetchAdvisories } from "@/lib/travel-advisories";
+import { tripAdvisories } from "@/lib/trip-advisories";
 import { tripDocuments } from "@/lib/trip-documents";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
@@ -71,6 +74,12 @@ export default async function CommandCenterPage() {
   // references the itinerary already holds, and each one opens only for the
   // account that uploaded it.
   const documents = tripDocuments(trip?.itinerary);
+
+  // The one thing on this page that leaves the server. It fails fast and says
+  // so on the screen rather than rendering an empty list, which would read as
+  // "nothing to report" when it means "nobody could check".
+  const feed = await fetchAdvisories();
+  const advisories = tripAdvisories(stops, feed.available ? feed.advisories : []);
   const alerts = tripAlerts({
     stops,
     readiness,
@@ -195,6 +204,15 @@ export default async function CommandCenterPage() {
             by which stop they were filed on. The planner's shape is right for
             building a trip; this one is right at half past five at the
             airport. */}
+        {/* Where the trip actually goes, said once for the whole trip. The
+            advisory already showed on a beis hachaim's own page one country at
+            a time, which answers "what about Ukraine" for somebody who opens
+            the Ukraine page and never answered "is there anything I should
+            know about my trip". */}
+        <div className="mt-12 border-t border-[var(--gold-light)] pt-10">
+          <TripAdvisories roll={advisories} unavailable={feed.available ? undefined : feed.reason} />
+        </div>
+
         <div className="mt-12 border-t border-[var(--gold-light)] pt-10">
           <TripDocuments documents={documents} today={today} />
         </div>
