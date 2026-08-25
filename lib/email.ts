@@ -14,12 +14,44 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 // EVERY email this file sends, from both brands, whenever RESEND_FROM_EMAIL is
 // unset — so it cannot say "Kosher Travel" without telling an itineraries
 // visitor's inbox which other site this one is.
+import { currentBrand } from "@/lib/site-brand";
+
 const TEST_SENDER = "White Glove <onboarding@resend.dev>";
 
-function resendConfig() {
+/**
+ * WHO THE MAIL COMES FROM, PER BRAND.
+ *
+ * One RESEND_FROM_EMAIL served both domains, which meant every email the
+ * itineraries site sent — a sign-in code, a trip note, a reminder to somebody
+ * else's client — arrived from an address at whiteglovekoshertravel.com. The
+ * recipient never asked about kosher travel, has quite possibly never heard of
+ * it, and is now being told there is another business behind the one they
+ * signed up to. It also fails the plainest test of a brand: the name on the
+ * envelope is not the name on the door.
+ *
+ * So the itineraries brand gets its own sender when one is configured, and
+ * falls back to the shared one when it is not — a deployment that has not
+ * verified a second domain in Resend keeps working exactly as it did rather
+ * than silently sending nothing.
+ *
+ * THE BRAND COMES FROM THE REQUEST BEING SERVED. Mail sent from a background
+ * job has no request and reads as kosher, which is the same default the rest
+ * of the site uses and the right one: those jobs are the guide's.
+ */
+export function senderForBrand(brand: SiteBrand): string {
+  // NAMED ONE BY ONE, never process.env[someVariable]. Next substitutes these
+  // by literal name at build time, so an indexed read is not the same thing —
+  // and tests/connections.test.ts, which reads the source to make sure no
+  // variable is invisible, cannot see one either. The first draft of this used
+  // an index and the guard caught it.
+  const shared = process.env.RESEND_FROM_EMAIL?.trim();
+  const own = brand === "itineraries" ? process.env.RESEND_FROM_EMAIL_ITINERARIES?.trim() : shared;
+  return own || shared || TEST_SENDER;
+}
+
+function resendConfig(from?: string) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL || TEST_SENDER;
-  return apiKey ? { apiKey, from } : null;
+  return apiKey ? { apiKey, from: from || process.env.RESEND_FROM_EMAIL?.trim() || TEST_SENDER } : null;
 }
 
 // Where notifications are delivered.
@@ -78,7 +110,10 @@ export function lastEmailFailure() {
 
 /** POST one email to Resend and report exactly what happened. Never throws. */
 async function postResend(payload: Record<string, unknown>, to: string, kind = "email"): Promise<SendResult> {
-  const config = resendConfig();
+  // Resolved here rather than threaded through twenty call sites: currentBrand
+  // reads the request being served and answers "kosher" when there is no
+  // request at all, so a background job keeps the behaviour it always had.
+  const config = resendConfig(senderForBrand(await currentBrand()));
   if (!config) {
     const result: SendResult = { ok: false, error: "RESEND_API_KEY is not set on the deployment, so no email can be sent." };
     lastFailure = { ...result, at: new Date().toISOString(), to };
