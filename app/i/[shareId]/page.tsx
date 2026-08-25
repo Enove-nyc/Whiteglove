@@ -5,6 +5,7 @@ import TripGroupTools from "@/components/TripGroupTools";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
+import TripProgressStrip from "@/components/TripProgressStrip";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LinkButton } from "@/components/ui/Button";
@@ -119,6 +120,27 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
 
           <SharedItineraryActions itinerary={itin} shareId={shareId} />
         </Card>
+
+        {/* HOW LONG UNTIL IT, THEN HOW FAR INTO IT — the same strip the owner
+            sees on their own trip.
+ 
+            This page was the one most likely to be read by the person actually
+            travelling: it is what gets sent, and the link is what somebody
+            opens on the third morning in Kraków. It said the same thing that
+            morning as it did four months earlier.
+
+            NO DOCUMENTS PASSED, and not merely because there are none to pass.
+            A shared trip is served through withoutAttachments (lib/account-store.ts),
+            so a boarding pass never reaches this page at all — the person
+            holding the link is not told one exists. Leaving the prop off keeps
+            that true here rather than relying on the array happening to be
+            empty, and no tripId is passed either: rating how White Glove did
+            belongs to whoever's trip it is, not to everyone they sent it to. */}
+        {days.length > 0 && (
+          <div className="mt-6">
+            <TripProgressStrip startDate={itin.startDate} endDate={itin.endDate} days={days} />
+          </div>
+        )}
 
         {/* The empty state carries main's fuller copy — it names who shared the
             trip and offers a way back — through this branch's shared primitive. */}
