@@ -117,14 +117,18 @@ describe("the sending job", () => {
     assert.ok(mark < push, "the alert must be marked before it is pushed");
   });
 
-  it("skips an account nobody has subscribed on, before doing the expensive part", () => {
+  it("skips an account it cannot reach at all, before doing the expensive part", () => {
     // stopsForTrip reads the database once per kever. Paying that to compute
     // alerts with nowhere to send them would make a nightly job across every
     // account in the database far more expensive than it needs to be.
-    const skip = ROUTE.indexOf("if (!data.pushSubscriptions?.length) continue;");
+    //
+    // The guard was once "no push subscription" and is now "no push AND no
+    // address", because email needs nothing turned on — see the email tests
+    // at the foot of this file. What it protects is unchanged.
+    const skip = ROUTE.indexOf("if (!canPush && !canEmail) continue;");
     const work = ROUTE.indexOf("await stopsForTrip");
     assert.ok(skip > 0 && work > 0);
-    assert.ok(skip < work, "the subscription check must come before the reads");
+    assert.ok(skip < work, "the reachability check must come before the reads");
   });
 
   it("only looks at trips actually coming up", () => {
@@ -272,5 +276,68 @@ describe("the countdown on the shared link", () => {
     assert.doesNotMatch(readFileSync("components/PrintableItinerary.tsx", "utf8"), /TripProgressStrip/);
     assert.doesNotMatch(readFileSync("app/itinerary/print/page.tsx", "utf8"), /TripProgressStrip/);
     assert.match(readFileSync("components/PrintableItinerary.tsx", "utf8"), /label: "When", value: dates/);
+  });
+});
+
+describe("the alerts reach somebody who never turned notifications on", () => {
+  const ROUTE = readFileSync("app/api/cron/trip-alerts/route.ts", "utf8");
+  const EMAIL = readFileSync("lib/email.ts", "utf8");
+
+  it("emails them as well as pushing", () => {
+    // A push has to be turned on, on a device, by somebody who thought to.
+    // These are the two alerts that get worse the longer nobody notices, so
+    // the channel that needs no setup is the one that must not be missing.
+    assert.match(ROUTE, /sendTripAlertsEmail\(account\.email,/);
+    assert.match(EMAIL, /export async function sendTripAlertsEmail/);
+  });
+
+  it("no longer skips an account just because it has no phone subscribed", () => {
+    // The old guard was "no push subscription", right while a phone was the
+    // only channel. Left alone, adding email would have changed nothing for
+    // exactly the people it was added for.
+    assert.match(ROUTE, /const canPush = Boolean\(data\.pushSubscriptions\?\.length\)/);
+    assert.match(ROUTE, /const canEmail = !isPhoneIdentity\(account\.email\)/);
+    assert.match(ROUTE, /if \(!canPush && !canEmail\) continue;/);
+  });
+
+  it("still skips before the expensive part when there is no way to reach them", () => {
+    // stopsForTrip is a database read per kever. Paying it to compute alerts
+    // with nowhere to go is the cost this guard exists to avoid, and it has to
+    // stay ahead of the reads.
+    const skip = ROUTE.indexOf("if (!canPush && !canEmail) continue;");
+    const work = ROUTE.indexOf("await stopsForTrip");
+    assert.ok(skip > 0 && work > 0);
+    assert.ok(skip < work);
+  });
+
+  it("emails only the readiness alerts, never the countdown", () => {
+    // A trip starting tomorrow is a good enough reason to buzz a phone and not
+    // a good enough reason to email somebody about a date they chose.
+    assert.match(ROUTE, /if \(canEmail && fresh\.length\) \{/);
+  });
+
+  it("counts as sent only what actually sent, and cannot fail the run", () => {
+    assert.match(ROUTE, /\.catch\(\(\) => false\)/);
+    assert.match(ROUTE, /if \(sent\) emailed \+= 1;/);
+    assert.match(ROUTE, /\{ ok: true, considered, pushed, emailed \}/);
+  });
+
+  it("is still once per alert, whatever the channel", () => {
+    // The keys are marked before either channel is used, so somebody with a
+    // phone AND an address is told once about a Shabbos clash rather than
+    // every morning in two places.
+    const mark = ROUTE.indexOf("markAlertsPushed(account.email");
+    const push = ROUTE.indexOf("pushToAccountSubscribers(account.email");
+    const mail = ROUTE.indexOf("sendTripAlertsEmail(account.email");
+    assert.ok(mark > 0 && push > 0 && mail > 0);
+    assert.ok(mark < push && mark < mail, "the keys must be recorded before anything is sent");
+  });
+
+  it("escapes what a traveller typed", () => {
+    // A stop's name and note go into the HTML body.
+    const fn = EMAIL.slice(EMAIL.indexOf("export async function sendTripAlertsEmail"), EMAIL.indexOf("export async function sendPasswordResetEmail"));
+    assert.match(fn, /escapeHtml\(alert\.headline\)/);
+    assert.match(fn, /escapeHtml\(alert\.detail\)/);
+    assert.match(fn, /escapeHtml\(opts\.tripTitle/);
   });
 });
