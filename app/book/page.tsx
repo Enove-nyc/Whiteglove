@@ -125,6 +125,10 @@ export default async function BookPage({
   // the comment on NOT_YET: this is the reason it cannot be left behind again.
   const essentials = await readTravelEssentials();
   const notYet = NOT_YET.filter(([, , , needs]) => !needs || !essentialIsBookable(needs, essentials));
+  // /heritage is guide-only (GUIDE_ONLY_PREFIXES in middleware.ts) and does
+  // not exist on the itineraries domain — offered here it silently lands the
+  // visitor on the kosher site. See the same note on /plan.
+  const itineraries = (await currentBrand()) === "itineraries";
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
   // Trimmed and capped rather than printed as given: it lands in a text field
   // as though the visitor had typed it, and a link is not a trustworthy author.
@@ -182,16 +186,18 @@ export default async function BookPage({
           {/* Under the search, where it is read by somebody who has finished
               typing. The owner's line: /admin/settings/words. */}
           <p className="mt-6 max-w-2xl leading-7 text-stone-600">{words.bookingNotice}</p>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
-            Planning a heritage journey?{" "}
-            <Link
-              href="/heritage"
-              className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
-            >
-              These booking tools work for that too
-            </Link>
-            .
-          </p>
+          {!itineraries && (
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">
+              Planning a heritage journey?{" "}
+              <Link
+                href="/heritage"
+                className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+              >
+                These booking tools work for that too
+              </Link>
+              .
+            </p>
+          )}
         </div>
       </section>
 

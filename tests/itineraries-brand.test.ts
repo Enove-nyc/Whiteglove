@@ -102,6 +102,48 @@ describe("a page body never hands out a bare guide link on the itineraries domai
     assert.match(src, /brandForHost\(window\.location\.hostname\)/);
     assert.match(src, /\$\{BRAND_ORIGIN\.kosher\}\/heritage/);
   });
+
+  // The same bug, found later on the four places that INVITE a visitor into
+  // the guide rather than linking one page of it: /plan's two closing
+  // buttons, /book's heritage aside, the empty search page's "browse
+  // destinations", and step three's "Browse destinations first". Each read
+  // as an ordinary in-site button and then left the brand entirely. The
+  // decision was to hide them here rather than hand them the kosher origin:
+  // the guide belongs to the kosher site, and this brand does not advertise
+  // what it does not have.
+
+  it("/plan does not offer the guide on the itineraries brand", () => {
+    const src = readFileSync("app/plan/page.tsx", "utf8");
+    assert.match(src, /const itineraries = \(await currentBrand\(\)\) === "itineraries"/);
+    // The whole closing band is behind the check, so neither button renders.
+    const band = src.slice(src.indexOf("{!itineraries && ("));
+    assert.match(band, /href="\/destinations"/);
+    assert.match(band, /href="\/heritage"/);
+  });
+
+  it("/book does not offer the heritage guide on the itineraries brand", () => {
+    const src = readFileSync("app/book/page.tsx", "utf8");
+    assert.match(src, /const itineraries = \(await currentBrand\(\)\) === "itineraries"/);
+    assert.match(src, /\{!itineraries && \(\s*<p[^]*?href="\/heritage"/);
+  });
+
+  it("search offers neither the browse nor the no-result doors on the itineraries brand", () => {
+    const src = readFileSync("components/SearchResults.tsx", "utf8");
+    // Told by the server page, which already knows the brand — not settled
+    // from window.location, which would render the wrong thing first.
+    assert.match(src, /itineraries\?: boolean;/);
+    assert.match(readFileSync("app/search/page.tsx", "utf8"), /itineraries=\{\(await currentBrand\(\)\) === "itineraries"\}/);
+    // The empty-query card returns nothing at all rather than an empty box.
+    assert.match(src, /if \(itineraries\) return null;/);
+    // And every one of NO_RESULT_DOORS is a guide path, so that block goes too.
+    assert.match(src, /\{!itineraries && \(\s*<>\s*<p[^]*?Try instead/);
+  });
+
+  it("the planner's third step does not end on the guide, on the itineraries brand", () => {
+    const src = readFileSync("components/TripStartFlow.tsx", "utf8");
+    const card = src.slice(src.indexOf("{!itineraries && ("), src.indexOf("the optional half"));
+    assert.match(card, /Browse destinations first/);
+  });
 });
 
 describe("the itineraries domain's own pages never title themselves 'Kosher Travel'", () => {

@@ -57,6 +57,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           results={response.results}
           interpretedAs={response.interpretedAs}
           heritageIntent={response.heritageIntent}
+          itineraries={(await currentBrand()) === "itineraries"}
         />
       </section>
       <Footer />

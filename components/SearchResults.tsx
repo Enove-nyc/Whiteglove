@@ -60,11 +60,19 @@ export default function SearchResults({
   results,
   interpretedAs,
   heritageIntent,
+  itineraries = false,
 }: {
   query: string;
   results: SiteHit[];
   interpretedAs?: string;
   heritageIntent: boolean;
+  /**
+   * True on the itineraries domain. Passed down rather than settled here from
+   * window.location: /search is a server page that already knows the brand, so
+   * asking it costs nothing and avoids a first paint that offers a browse this
+   * brand does not have.
+   */
+  itineraries?: boolean;
 }) {
   // BY LABEL, NOT BY KIND. Two kinds read as "Where to stay" — a hotel and a
   // neighbourhood — so filtering by kind put the same word on two chips beside
@@ -84,6 +92,9 @@ export default function SearchResults({
     .filter((label, index, all) => all.indexOf(label) === index);
 
   if (!query) {
+    // The whole card is that one invitation, so on the itineraries brand it
+    // goes rather than becoming an empty bordered box.
+    if (itineraries) return null;
     return (
       <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] px-6 py-10 text-center">
         <Link href="/destinations" className="inline-block text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
@@ -104,19 +115,27 @@ export default function SearchResults({
         <p className="mt-2 text-sm leading-6 text-stone-600">
           Check the spelling, or try a city or country on its own — Rome, Switzerland, Antwerp.
         </p>
-        <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Try instead</p>
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {NO_RESULT_DOORS.map((door) => (
-            <li key={door.href}>
-              <Link
-                href={door.href}
-                className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold-light)] bg-white px-4 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
-              >
-                {door.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {/* Every one of these doors is a guide-only path, so on the
+            itineraries brand the whole "Try instead" block goes. The sentence
+            above it still helps; five buttons that each leave the brand do
+            not. */}
+        {!itineraries && (
+          <>
+            <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Try instead</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {NO_RESULT_DOORS.map((door) => (
+                <li key={door.href}>
+                  <Link
+                    href={door.href}
+                    className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold-light)] bg-white px-4 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
+                  >
+                    {door.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
     );
   }
