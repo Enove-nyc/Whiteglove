@@ -158,3 +158,35 @@ export function describeRole(role: TripRole | null, ownerName: string): string {
   if (role === "commenter") return `${ownerName} shared this with you. You can leave notes on it, but not change it.`;
   return `${ownerName} shared this with you to look at.`;
 }
+
+/**
+ * The other people on a trip who should hear that it changed.
+ *
+ * WHY NOT EVERYBODY. Telling every collaborator about every change is how a
+ * useful notification becomes something people filter. The line drawn here is
+ * the one the roles already draw: somebody given a role that lets them
+ * CONTRIBUTE — an editor or a commenter — is helping build this trip and wants
+ * to know it moved under them. Somebody given "can view" was shown a plan;
+ * they are an audience, and an audience did not ask to be told each time a
+ * stop was renamed.
+ *
+ * The owner is never in this list. They are told separately and by name, on
+ * their own trip, whether or not they contribute to it.
+ *
+ * And never the person who just did it: an email telling somebody what they
+ * themselves have this moment done is the fastest way to teach them to ignore
+ * the next one.
+ */
+export function othersToTell(collaborators: readonly Collaborator[], owner: string, actor: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const entry of collaborators) {
+    const person = entry.person.trim().toLowerCase();
+    if (!person || person === owner.trim().toLowerCase() || person === actor.trim().toLowerCase()) continue;
+    if (entry.role === "viewer") continue;
+    if (seen.has(person)) continue;
+    seen.add(person);
+    out.push(entry.person);
+  }
+  return out;
+}
