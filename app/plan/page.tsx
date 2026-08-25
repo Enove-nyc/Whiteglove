@@ -51,6 +51,13 @@ export default async function PlanPage({
   // field as though the visitor had typed it.
   const destination = slug ? await getVacationDestinationBySlug(slug) : undefined;
   const initialKind = (TRIP_KINDS.find((entry) => entry.value === kind)?.value ?? "") as TripKind | "";
+  // /plan is one of the itineraries domain's own pages, but /destinations and
+  // /heritage are guide-only (GUIDE_ONLY_PREFIXES in middleware.ts) and do not
+  // exist there. Offered on this brand they look like ordinary buttons and
+  // then silently land the visitor on the kosher site — a different name and
+  // a different logo — which also breaks out of an installed itineraries app.
+  // The guide is the kosher site's; this brand simply does not advertise it.
+  const itineraries = (await currentBrand()) === "itineraries";
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -76,24 +83,29 @@ export default async function PlanPage({
         <StartingPoints omit={["/plan"]} heading="Or start somewhere else" />
       </section>
 
-      <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-14">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-5">
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/destinations"
-              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
-            >
-              Browse vacation ideas
-            </Link>
-            <Link
-              href="/heritage"
-              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.secondary}`}
-            >
-              Planning a heritage journey
-            </Link>
+      {/* Both of these are guide-only paths — see the note above. The whole
+          band goes on the itineraries brand rather than the two buttons
+          inside it, since an empty bordered strip is worse than no strip. */}
+      {!itineraries && (
+        <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-14">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-5">
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/destinations"
+                className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
+              >
+                Browse vacation ideas
+              </Link>
+              <Link
+                href="/heritage"
+                className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.secondary}`}
+              >
+                Planning a heritage journey
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <Footer />
     </main>

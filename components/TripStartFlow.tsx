@@ -464,17 +464,25 @@ export default function TripStartFlow({
               <span className="mt-3 leading-7 text-slate-200">Your answers are already in it.</span>
             </button>
 
-            <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>
-              <p className="mt-2 leading-7 text-stone-600">Your answers stay in this browser.</p>
-              <button
-                type="button"
-                onClick={() => choose("unsure")}
-                className="mt-4 inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
-              >
-                Browse destinations first
-              </button>
-            </div>
+            {/* "Browse destinations first" leads to /destinations, which is
+                guide-only (see the note beside `itineraries` above) and does
+                not exist on this brand. Offering it here would end the flow on
+                the kosher site, out of the app the visitor started in — so the
+                itineraries brand is left with the planner, which is its whole
+                point. */}
+            {!itineraries && (
+              <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>
+                <p className="mt-2 leading-7 text-stone-600">Your answers stay in this browser.</p>
+                <button
+                  type="button"
+                  onClick={() => choose("unsure")}
+                  className="mt-4 inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+                >
+                  Browse destinations first
+                </button>
+              </div>
+            )}
 
             {/* ---- the optional half ------------------------------------------
                 CLOSED BY DEFAULT, AND AFTER THE CHOICE, not before it. These

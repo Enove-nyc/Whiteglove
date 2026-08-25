@@ -3,12 +3,26 @@
 Two review scans, in one list, with what has actually been built marked as
 such. Nothing here is marked done unless it is done and was checked.
 
+**THIS DOCUMENT GOES STALE, AND A STALE ENTRY HERE COSTS REAL TIME.** On
+2026-08-25 three of its claims were wrong at once: it said the migration had
+never been run when every deploy had been applying it for months, it described
+the retired Traveler/Pro/Business pricing, and it said
+`whitegloveitineraries.com` redirects to the kosher domain — which sent a
+session hunting for a redirect that does not exist. Two items were marked
+**Blocked** on the strength of the first. So: **check a claim against the code
+before you act on it**, and when you find one wrong, fix the entry in the same
+change rather than working around it. Where this table and `AGENTS.md`
+disagree, `AGENTS.md` wins — that is the file the owner's decisions are
+recorded in, and it is loaded every session.
+
 Status words mean exactly this:
 
 - **Done** — built, tested, merged.
 - **Part** — some of it is built; the rest is named.
 - **Blocked** — cannot start without a decision or a database migration.
 - **Open** — not started.
+- **Superseded** — the thing it describes was replaced. Kept, struck through,
+  so the next reader does not go looking for something that is gone.
 
 ---
 
@@ -19,15 +33,15 @@ Status words mean exactly this:
 | 1 | Consolidate `/book` and `/booking` | **Done** | #145 |
 | 2 | Real phone and tablet testing, fix breakpoints | **Done** | #147 · `npm run audit:ui` |
 | 3 | Form labels, focus states, touch targets | **Done** | #147 |
-| 4 | One destination schema and public template | **Part** | template already shared; the extra fields need the migration below |
+| 4 | One destination schema and public template | **Part** | template already shared; the extra fields are live (the migration below is applied) — what is left is filling them in |
 | 5 | Completeness and verification workflow in the admin | **Done** | #149 |
-| 6 | Finish Uman and the most-visited guides | **Blocked** | needs the migration below |
+| 6 | Finish Uman and the most-visited guides | **Open** | was marked Blocked on a migration that had in fact already run. Nothing technical is in the way; this is writing the content |
 | 7 | Connect destination pages to routes and itineraries | **Done** | #150 |
 | 8 | Unique metadata, canonicals, social cards, structured data | **Done** | #151 — **needs `NEXT_PUBLIC_SITE_URL` set** |
 | 9 | Account verification, recovery, rate limiting | **Done** | #152 |
 | 10 | Route optimization, saving, sharing, printing | **Part** | #153 — map preview and drag-and-drop still open |
 | 11 | Directory filtering and large-list performance | **Done** | #154 |
-| 12 | Provider verification and listing management | **Done** | a number is published only on consent or a public source of their own; a checked date and response time show when set; both admin screens can record consent. **Needs the migration run.** |
+| 12 | Provider verification and listing management | **Done** | a number is published only on consent or a public source of their own; a checked date and response time show when set; both admin screens can record consent. The migration this once waited on is applied |
 | 13 | Sponsored-content experience | **Open** | |
 | 14 | Performance, accessibility and cross-browser QA | **Part** | audit script exists; Safari still needs a real device |
 
@@ -70,7 +84,7 @@ sections with an honest status, so nothing is quietly assumed to be done.
 | The tab icon (owner request, not in either scan) | **Done** | six goes at this, and the first five were each rightly complained about — a navy tile behind it, a gold smudge, the compass rose standing in for the whole mark, and then a hand-drawn hand-and-compass, first in navy and then in gold. The last two were legible and were **not the mark**. It is now built from the artwork itself: `public/logo-mark.png` is the logo, and `scripts/build-icons.mjs` makes every icon the site ships from it. What lets fine line-work shrink is not redrawing it but two steps that keep it — **the white is lifted by solving for coverage** rather than keyed out, so edges get a real alpha instead of the pale fringe a smudge is made of; and **the ink is thickened before shrinking**, more the smaller the frame, so a stroke has a pixel to land on. The tab icon is framed a little tighter than the app icons, dropping the “N” above the compass, which is the sparsest part and the first to vanish anyway — losing it lets everything else be bigger. At 32px and above it reads clearly as the gloved hand holding the compass, which is what a modern display actually draws; at 16px it is soft, and that is the honest limit of the artwork rather than a choice. Tests check the artwork is in the repo, that the redrawn SVG has not come back (a browser prefers an SVG over everything), that every frame is RGBA and really transparent, and that the frames are all the same shape. |
 
 | Signing in with Google (owner request, not in either scan) | **Done** | one button instead of an email and a password. **The owner's decision, and the whole of it: it is the SAME ACCOUNT.** Somebody who signed up with a password and later presses the Google button lands in the account they already have — their trips, their notes, their boarding passes — having skipped typing the password. Not a second account and not a second identity. **The one thing that makes that safe is `email_verified`.** Linking by address means whoever proves they hold an address gets the account behind it, so the proof has to be real, and Google's is not always — a Workspace account on a custom domain can carry an address nobody confirmed. Those are **refused outright** and told to use their password, because accepting one would hand a stranger somebody else's saved trips and look exactly like an ordinary sign-in. Every other claim is checked too: issued for this site and not another, issued by Google, not expired, and answering the sign-in this browser actually started. **A Google sign-in also verifies the account** — an account still waiting on our six-digit code is verified by it, because Google checking the address is better evidence than a code sitting unread in the same inbox, and the pending code is spent rather than left live. **An account opened by Google has no password**, not one nobody chose: the hash is random bytes that nothing can match, and "forgotten password" sets a real one by the ordinary path. **Off unless both keys are set**, and off is the right default — a half-configured button sends somebody to a Google error page. Asks for the address and the name and nothing else, and asks for no offline access, so no long-lived credential is kept for a site that does nothing while you are away. Setup is step 9 of docs/setup-walkthrough.md. |
-| Pro and Business accounts (owner request, not in either scan) | **Done** | an account is now a **Traveler**, **Pro** or **Business**, and a person can ask for a different one from their own account page. **Nothing is behind any of them, deliberately** — what Pro eventually includes is the owner's to decide, and writing it down now would put promises on the website nobody has agreed to keep. So the rule the code holds to: **a plan never decides what anybody can do.** Nothing reads it to allow or refuse anything, and a test says so, so wiring a gate to a plan fails a build rather than quietly taking something away from a traveller who had it yesterday. **And nothing is charged** — there is no payment anywhere on this site, no card is taken, no subscription starts, and both the account page and the admin queue say so in as many words rather than looking like a checkout that is not one. Asking records interest and tells the owner; it never grants itself. One open request per account, so somebody who changes their mind is one person waiting rather than three. A Business request has to name the business, checked on the server as well as the screen — the point of one is that it belongs to a business somebody can find in the directory. The owner answers at `/admin/accounts`, and can also set any account's plan directly from the list, which is the only way one comes back off. Granting **sets the plan first and marks the request second**, so the worst case is an account on the right plan with a request still showing open. Every account made before this is a Traveler with no field written, which is exactly what it was. **Still open:** what Pro and Business are actually for. |
+| ~~Pro and Business accounts~~ → **the paid plans** (owner request, not in either scan) | **Superseded** | **This entry described the retired Traveler / Pro / Business ladder, in which nothing was behind a plan and nothing was charged. Both halves stopped being true.** The plans are now **free**, **One Trip** ($15 once, one trip ever), **Advisor Starter** ($29/mo) and **Advisor Pro** ($49/mo), they are paid for through Stripe with a 14-day trial for a first-time subscriber, and a plan very much does decide what somebody can do — `lib/account-limits.ts` is the one place that decides it. Advisor Pro additionally carries **Agency**: several advisor logins on one subscription, seats bought upfront, sharing one letterhead and one set of trip templates while each advisor's trips stay their own. **AGENTS.md is the record for all of this**, not this table — read its "Settled decisions" before touching pricing, since several of those decisions (Agency deferred as a paid tier, Enterprise staying "talk to us") are deliberate and were settled with the owner. |
 | 23. What you typed but had not saved | **Done** | the history above covers a save that went wrong. It could not cover the twenty minutes that never became a save at all: the forms write on the button and not before, so an overview somebody spent an evening on lived nowhere until they pressed it, and a closed tab took it with nothing left to say it had existed. What is typed is now kept **in that person's own browser** — never sent anywhere, never in the database, never seen by anybody else — and offered back on the next visit: "You typed something here 8 minutes ago and did not save it", with **Put it back** or **Throw it away**. It is thrown away by itself the moment a save succeeds, and after a week, because week-old words put back over a record somebody else has since edited would be a quiet overwrite rather than a rescue. **Nothing is put back without being asked** — the page shows what is actually saved until the button is pressed. **A draft is kept only while the form differs from what it was loaded with**, so typing a letter and deleting it leaves nothing behind and nobody is offered work they do not have; clearing a field on purpose is a change and is kept. **A draft never carries which record it is** — not the slug, not the id, and not React's own hidden action fields, which name which action a Save runs and what is bound to it. That is the one mistake here that could damage something other than the form it came from, so it is refused on the way in as well as on the way out: storage is an outside thing, and an older version of this code may have written what is in it. Each form on a screen keeps its own, including **the add-a-contact and add-a-listing forms, which are the ones with nothing in the database to fall back on**. **Still open:** the same net on the page and itinerary editors. |
 | Recently deleted (owner request, not in either scan) | **Done** | every "Remove" in the admin sat next to "Edit" and was final. A shomer's number took a phone call to get; one mis-tap and there was nothing anywhere that said it had ever existed — the row was simply not in the list, and nobody could tell a deletion from something never entered. A deletion now leaves the record behind for **30 days** at `/admin/recycle`, with the day it happened, how long is left, and a way to put it back **as itself** — the same id, not a copy, so nothing that referred to it is looking at a different row. Covers contacts, shomer numbers, kevarim, listings, businesses and advertisements. **The record is written back first and taken out of the bin second**, because the other order leaves a moment where it exists nowhere at all; the worst case is a stale entry, and pressing it again says "already there" rather than making two. A kever whose beis hachaim was deleted afterwards is refused in plain words and stays in the bin. The bin lives in the private store rather than the database — the point is to survive a mistake made IN the database. **Pictures are deliberately not kept**: a photograph is stored as the picture itself, and a month of deleted ones would fill the store; the screen says so rather than leaving somebody to find out. **Still open:** undo for an edit, as opposed to a deletion. |
 | 17. Travel documents and confirmations | **Part** | **Scoped down by decision: no passport or identity-document storage**, and the upload says so rather than only being told not to. What a traveller genuinely hands over now lives on the stop it belongs to: a **boarding pass** on the flight, a **ticket** on the stop, a **booking confirmation** on the hotel. PDF or a picture, up to 600KB, six per item; SVG refused for the same reason the hechsher marks refuse it. **A boarding pass is treated as sensitive**, because a full name and a booking reference are enough to change a flight: it is kept in its own store with the uploading account's email against it, served only to that account, never cached, sandboxed by CSP, and refused with the same 404 for "not yours" as for "not there". It is **stripped entirely from a shared trip** and never rendered in the printed copy — the reference alone would fetch nothing, but the person holding the link is not even told a pass exists. Uploading needs an account, and the reason is given: 600KB in a browser's own storage breaks the trip it was meant to help. **Every document on a trip is now readable in one place**, by the day it is needed rather than by which stop it was filed on — the planner's shape is right for building a trip, and the wrong one at half past five at the airport. On the command centre as "On your phone", grouped by day with today marked; and on the trip strip in the planner, today's passes as chips one tap from the top of the page. A flight's pass is filed under the day it **leaves**, not the day it lands: a red-eye is boarded on the 10th and a pass filed forward is a pass on the day after it was needed. Anything on a stop with no date is listed under its own heading rather than dropped or guessed at. **Still open:** offline access on the day. |
@@ -110,12 +124,18 @@ sections with an honest status, so nothing is quietly assumed to be done.
 
 ---
 
-## The migration — written, not yet run
+## The migration — run, and in use
 
-The schema can now hold everything the items above were waiting for. The
-migrations are on record and were checked against a real PostgreSQL 16; see
-**[docs/migrations.md](./migrations.md)** for what they do and how to apply
-them.
+**This section said "written, not yet run" long after it had been run, and
+several items above were marked Blocked on the strength of it. They were not
+blocked. Checked against the live deployment on 2026-08-25: `prisma migrate
+deploy` is the service's pre-deploy command (`railway.json`), so every deploy
+applies anything outstanding, and the deploy log reads "17 migrations found in
+prisma/migrations / No pending migrations to apply." There is nothing here for
+anybody to go and do.**
+
+What the migrations added, all of it live; see
+**[docs/migrations.md](./migrations.md)** for the detail.
 
 - Six new `PlaceCategory` values — `TEFILLOS`, `SHABBOS`, `HOSPITAL`,
   `EMERGENCY`, `GROCERY`, `PARKING`. In their own migration, because
@@ -128,19 +148,18 @@ them.
 - A catch-up migration for four tables that had been added to the schema
   without one: `DirectoryProvider`, `Attraction`, `KosherStay`, `KosherArea`.
 
-**Two ways to run it.** In the admin: Towns → "Set up database & import
-destinations", which now brings an older database up to date as well as
-creating a new one — checked against a real PostgreSQL 16 from empty, from an
-April-era database, and pressed twice, all three landing exactly on the schema.
-Or `npm run db:migrate` in a terminal, after one `prisma migrate resolve
---applied 0_init`; that is still the record, and the only one that writes the
-migration bookkeeping.
+**How it gets applied.** On its own, on every deploy — `preDeployCommand` in
+`railway.json` runs `npm run db:migrate`. A new migration is live the moment
+the deploy carrying it finishes; nobody has to remember anything. By hand it is
+still `npm run db:migrate`, or the admin's Towns → "Set up database & import
+destinations", which also brings an older database up to date.
 
-**Also still to do: use it.** This migration only makes room. Reading and
-writing the new fields — the destination manager (§4), the provider consent
-flags (scan 1 item 12), the photo library (§7) — is the next piece of work,
-and `lib/verification.ts` still counts Tefillos, Shabbos, Hospital, Emergency
-and Photos as untracked because the *record type it reads* has not changed yet.
+**And it is used.** The fields are read and written, not merely present:
+`lib/verification.ts` counts Tefillos, Shabbos, Hospital and Emergency as
+tracked sections and photos as a tracked fact — the note that used to sit here,
+saying it still counted them as untracked, was wrong. The destination manager
+(§4) edits all thirteen sections, and the provider consent flag (scan 1 item
+12) is recorded on both admin screens.
 
 ---
 
@@ -287,11 +306,20 @@ so that this stays reviewable.
 - ~~**`NEXT_PUBLIC_SITE_URL` is unset.**~~ — **set by the owner.** Because it
   is resolved at BUILD time for prerendered pages, the next deploy has to be
   without the build cache for canonicals and share images to pick it up.
-- ~~**Two domains serve the same site.**~~ — **settled.** The site now lives on
-  `whiteglovekoshertravel.com`; the former `whitegloveitineraries.com` redirects
-  to it, and the older enove domain (a different business's) was given up
-  entirely. The terms and privacy pages name this site from a single constant,
-  and a test holds that so it cannot drift back.
+- ~~**Two domains serve the same site.**~~ — **settled twice, and this entry
+  described the first settlement long after the second.** It said
+  `whitegloveitineraries.com` redirects to `whiteglovekoshertravel.com`. It has
+  not for some time, and believing it cost a session real time chasing a
+  redirect that does not exist. What is true as of 2026-08-25: the two domains
+  are **two brands and two deployments**. `whiteglovekoshertravel.com` is the
+  guide — the browsable directory of destinations, kosher information and
+  heritage. `whitegloveitineraries.com` is the planner, served by its own
+  Railway service from its own repository (`Enove-nyc/Whiteglove-Itineraries`),
+  sharing this one's database, Redis and Stripe so an account is the same
+  account on both. Guide paths reached on the itineraries domain are redirected
+  to the kosher one — `GUIDE_ONLY_PREFIXES` in `middleware.ts`, which is the
+  list to read before assuming where a path lives. The older enove domain (a
+  different business's) was given up entirely.
 - ~~**What "Featured" means in the provider directory.**~~ — **decided.** Two
   reasons, recorded per listing in the admin: service found consistently good,
   or sponsored placement. The badge is the same for both and a visitor is not
