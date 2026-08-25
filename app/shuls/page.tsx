@@ -4,6 +4,7 @@ import PageBlocks from "@/components/PageBlocks";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import StructuredData from "@/components/StructuredData";
 import { IconLink } from "@/components/icons/IconAction";
+import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { listPublishedShuls } from "@/lib/shuls";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
@@ -83,6 +84,20 @@ export default async function ShulsPage() {
                         >
                           {listing.href.startsWith("http") ? "Visit" : "Destination"}
                         </a>
+                      </div>
+                      {/* The same one action, in the same words, as the food
+                          and the attractions carry — a shul is a place you go
+                          on a trip like any other. */}
+                      <div className="mt-3">
+                        <AddToItineraryButton
+                          place={{
+                            id: listing.id,
+                            name: listing.name,
+                            address: listing.address ?? undefined,
+                            coordinates: listing.coordinates ?? undefined,
+                          }}
+                          className="text-sm"
+                        />
                       </div>
                     </li>
                   ))}

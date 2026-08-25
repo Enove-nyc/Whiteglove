@@ -179,7 +179,7 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
                   coordinates: a.coordinates,
                   href: `/things-to-do#${a.slug}`,
                 }}
-                label="Add to my route"
+                label="Add to Route"
               />
               {/* The route is the driving order; the itinerary is the trip.
                   The card offered only the first, so a place you wanted on

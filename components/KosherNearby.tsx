@@ -157,7 +157,7 @@ export default function KosherNearby({
                       }
                       className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
                     >
-                      {added[place.id] ? "Added ✓" : "Add to my trip"}
+                      {added[place.id] ? "Added ✓" : "Add to my itinerary"}
                     </button>
                   )}
                 </div>

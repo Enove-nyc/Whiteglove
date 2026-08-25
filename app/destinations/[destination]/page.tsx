@@ -518,7 +518,7 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
                   coordinates: attraction.coordinates,
                   href: `/things-to-do#${attraction.slug}`,
                 }}
-                label="Add to my route"
+                label="Add to Route"
               />
               {/* The route is the driving order; the itinerary is the trip.
                   Somebody reading about the Forum wants one or the other and

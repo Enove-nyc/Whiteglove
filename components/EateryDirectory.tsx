@@ -107,7 +107,7 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
             <div className="mt-3">
               <AddToItineraryButton
                 place={{ id: e.slug, name: e.name, address: e.address, coordinates: e.coordinates }}
-                label="Add to my trip"
+                label="Add to my itinerary"
                 className="text-sm"
               />
             </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import RateExperienceLink from "@/components/RateExperienceLink";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
+import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { staySearchHref } from "@/lib/stay-search";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
@@ -285,6 +286,17 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
               >
                 Things to do in {s.city} →
               </Link>
+              {/* A traveller could put a restaurant and a museum on their trip
+                  and not the hotel they were sleeping in. Same button, same
+                  words, same behaviour as everywhere else — the work is in
+                  components/useAddToItinerary.tsx. The stay has no coordinates
+                  of its own — it carries the quarter it is anchored to, which
+                  is what this site already measures its distances from, so
+                  that is what goes on the trip with it. */}
+              <AddToItineraryButton
+                place={{ id: s.slug, name: s.name, address: `${s.anchor.name}, ${s.city}`, coordinates: s.anchor.coordinates }}
+                className="text-sm"
+              />
               <RateExperienceLink kind="listing" refId={s.slug} label={s.name} />
               <SuggestEditPanel targetType="accommodation" targetId={s.slug} title={s.name} compact />
             </div>

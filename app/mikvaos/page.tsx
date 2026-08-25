@@ -9,6 +9,7 @@ import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/structured-data";
 import { placeMapUrl } from "@/data/route-utils";
+import AddToItineraryButton from "@/components/AddToItineraryButton";
 
 // Not force-dynamic. listPublishedMikvaos (lib/mikvaos.ts) is a tagged
 // unstable_cache now, busted the moment a practical listing is actually
@@ -148,6 +149,20 @@ export default async function MikvaosPage() {
                         >
                           Destination
                         </Link>
+                      </div>
+                      {/* The same one action, in the same words, as the food
+                          and the attractions carry — a mikvah is a place you
+                          go on a trip like any other. */}
+                      <div className="mt-3">
+                        <AddToItineraryButton
+                          place={{
+                            id: listing.id,
+                            name: listing.name,
+                            address: listing.address ?? undefined,
+                            coordinates: listing.coordinates ?? undefined,
+                          }}
+                          className="text-sm"
+                        />
                       </div>
                     </li>
                   ))}
