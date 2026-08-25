@@ -75,6 +75,18 @@ export default async function AdminReportsPage() {
                           {gap.visits}
                         </span>
                         <span className="block text-[11px] uppercase tracking-[0.1em] text-stone-400">opens</span>
+                        {/* WHEN, not just how many. A page opened forty times
+                            two years ago and one people are opening this
+                            morning read identically as a single total, and
+                            they are not the same job. Shown only once there is
+                            a window to speak for — a zero here before counting
+                            began would say "nobody comes" when it means
+                            "nobody was counting". */}
+                        {report.recentSince && (
+                          <span className="mt-1 block text-[11px] tabular-nums text-stone-500">
+                            {report.recentByPath.get(gap.path) ?? 0} in {report.recentDays} days
+                          </span>
+                        )}
                       </span>
                       <Link
                         href={gap.editHref}
@@ -86,6 +98,23 @@ export default async function AdminReportsPage() {
                   </li>
                 ))}
               </ul>
+            )}
+
+            {/* How far back "recently" reaches, said plainly. Day-by-day
+                counting started when it started; before that there is nothing,
+                and a screen that quietly showed zeros would be inventing an
+                absence rather than reporting one. */}
+            {report.counting && !report.recentSince && (
+              <p className="mt-3 text-sm leading-6 text-stone-500">
+                Opens are counted day by day from today, so the {report.recentDays}-day figures start filling in
+                tomorrow. The totals above have been counting all along.
+              </p>
+            )}
+            {report.recentSince && (
+              <p className="mt-3 text-sm leading-6 text-stone-500">
+                The {report.recentDays}-day figures reach back to {report.recentSince} — the day this began counting day
+                by day. The totals beside them go back further.
+              </p>
             )}
 
             {/* Said, never ranked. Nobody having opened a page is not a
