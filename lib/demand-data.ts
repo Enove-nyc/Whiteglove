@@ -2,7 +2,7 @@ import { destinationHref, destinations } from "@/data/destinations";
 import { getCemeteryList } from "@/lib/cemeteries-view";
 import { NOTHING_ENTERED, readCemeteryFacts, readDestinationFacts } from "@/lib/completeness-source";
 import { type DemandReport, type Held, demandReport, keverMissing, townMissing } from "@/lib/demand";
-import { analyticsIsConfigured, getEmptySearches, getTopVisitedPaths } from "@/lib/site-analytics";
+import { RECENT_DAYS, analyticsIsConfigured, countingPagesSince, getEmptySearches, getTopVisitedPaths, visitedPathsOverDays } from "@/lib/site-analytics";
 
 /**
  * Everything the demand report needs, gathered.
@@ -16,10 +16,25 @@ import { analyticsIsConfigured, getEmptySearches, getTopVisitedPaths } from "@/l
  * that quietly shortens itself is the failure mode this codebase has been
  * bitten by before.
  */
-export async function buildDemandReport(): Promise<DemandReport & { visitsCounted: number }> {
+export async function buildDemandReport(): Promise<
+  DemandReport & {
+    visitsCounted: number;
+    /** Opens in the trailing window, by path. Absent from the map means none. */
+    recentByPath: Map<string, number>;
+    recentDays: number;
+    /** The day day-by-day counting began, or null before anything was counted. */
+    recentSince: string | null;
+  }
+> {
   const counting = analyticsIsConfigured();
-  const [visitedRaw, emptySearches, townFacts, keverFacts, cemeteries] = await Promise.all([
+  const [visitedRaw, recentRaw, since, emptySearches, townFacts, keverFacts, cemeteries] = await Promise.all([
     getTopVisitedPaths(400),
+    // The same opens, but only the trailing month. A since-forever count says
+    // a page has been opened 40 times and never whether that was last week or
+    // two years ago — which is the difference between a list to work through
+    // and the order to work through it in.
+    visitedPathsOverDays(RECENT_DAYS),
+    countingPagesSince(),
     getEmptySearches(40),
     readDestinationFacts(),
     readCemeteryFacts(),
@@ -61,8 +76,15 @@ export async function buildDemandReport(): Promise<DemandReport & { visitsCounte
   }
 
   const visited = visitedRaw.map((row) => ({ path: row.path, visits: row.count }));
+  const recentByPath = new Map(recentRaw.map((row) => [row.label, row.count]));
   return {
     ...demandReport({ counting, held, visited, emptySearches }),
     visitsCounted: visited.reduce((sum, row) => sum + row.visits, 0),
+    recentByPath,
+    recentDays: RECENT_DAYS,
+    // Null until the first day bucket is written. The screen says so rather
+    // than showing zeros, which would read as "nobody came" when it means
+    // "nobody was counting yet".
+    recentSince: since,
   };
 }
