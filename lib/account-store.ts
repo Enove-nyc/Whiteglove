@@ -154,6 +154,16 @@ export type SavedTrip = {
   advisor?: string;
   itinerary: Itinerary;
   route: SavedPlace[];
+  /**
+   * Which readiness alerts have already been sent to the owner's own phone,
+   * by lib/trip-alerts.ts's `key`, with the day each went.
+   *
+   * The alerts themselves are computed fresh every time and stored nowhere —
+   * right for a page, useless for a daily job, which would otherwise send the
+   * same Shabbos clash every morning until somebody either fixed it or turned
+   * notifications off. This is the only thing that makes it once.
+   */
+  alertsPushed?: Record<string, string>;
   /** Public read-only token, when this particular trip is shared. */
   shareId?: string;
   /**
@@ -351,6 +361,17 @@ export type AccountData = {
    * writes here any more.
    */
   templates?: SavedTemplate[];
+  /**
+   * The traveller's OWN devices, for the alerts about their own trip.
+   *
+   * Kept on the account rather than on a trip, which is the opposite of
+   * SavedTrip.pushSubscriptions and deliberately so. A client has no account
+   * at all — only the per-trip link they were sent — so their phone can only
+   * belong to that one trip. The person who owns the account is the other way
+   * round: they have several trips and one phone, and a device they turned on
+   * once should not have to be turned on again for next year's trip.
+   */
+  pushSubscriptions?: PushSubscriptionRecord[];
   updatedAt?: string;
 };
 
