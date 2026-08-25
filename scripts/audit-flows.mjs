@@ -20,6 +20,19 @@
 //
 // Console errors and failed requests are collected per page and reported, since
 // "no red in the console" is one of the acceptance criteria.
+//
+// WHY THE PARTNER CHECKS SKIP IN THE BUILD SANDBOX. Not because the machine is
+// offline — it is not. Outbound HTTPS goes through a local proxy, and curl
+// reaches stay22, tp.media, emrldco and travelpayouts through it. Chromium
+// cannot: launched with that proxy it gets ERR_CONNECTION_RESET on every
+// external host, example.com included. So the six hand-off checks are
+// unrunnable here for a browser reason, and pass on any machine whose browser
+// has ordinary internet. Run this there before a launch.
+//
+// The hand-off URLs themselves were checked another way, through the site's own
+// /go route against a local production build: hotel redirects to booking.com,
+// flight to aviasales.com, car to kayak.com, and all three partners accepted
+// the URL we send. tests/affiliate-links.test.ts pins how those URLs are built.
 
 import { chromium } from "playwright";
 
@@ -38,8 +51,8 @@ let browser;
 /**
  * A check can pass, fail, or be UNRUNNABLE, and the third is not the second.
  *
- * The partner hand-offs need stay22 and travelpayouts to actually load. On a
- * machine with no route to the open internet they never do, so those checks
+ * The partner hand-offs need stay22 and travelpayouts to actually load. Where
+ * the browser has no route to them they never do, so those checks
  * time out — and reporting eight timeouts as failures is how a suite stops
  * being read. A skip is never counted as a pass; it is counted and named
  * separately, so nothing is quietly excused.
