@@ -32,6 +32,7 @@
 
 import type { HechsherStatus } from "@/data/hechsherim";
 import { directoryEateries } from "@/data/kosher-eateries-directory";
+import { withoutScrapedJunk } from "@/data/listing-quality";
 
 export type EateryKind =
   | "Restaurant"
@@ -979,7 +980,22 @@ const curatedEateries: KosherEatery[] = [
  * source and the same "confirm supervision" caution, and nothing invented on
  * top of what the source says.
  */
-export const kosherEateries: KosherEatery[] = [...curatedEateries, ...directoryEateries];
+/**
+ * THE ONE DOOR EVERYTHING KOSHER-FOOD COMES THROUGH, so the junk filter cannot
+ * be walked around by a page importing the directory array directly.
+ *
+ * withoutScrapedJunk drops what is not a business at all — a "Need Help?"
+ * support box, a cookie "Close" button, a newsletter form — and tidies the
+ * HTML entities a scraped name arrives carrying. Ten harvested rows in the
+ * directory set were page furniture, each wrapped by the generator in a
+ * sentence asserting a named certifier lists it as kosher. See
+ * data/listing-quality.ts for why the test is deliberately conservative.
+ *
+ * This is a fail-safe, not the only guard: the import pack's own validator now
+ * refuses the same shape, so a future harvest fails at the source rather than
+ * being quietly filtered here forever.
+ */
+export const kosherEateries: KosherEatery[] = withoutScrapedJunk([...curatedEateries, ...directoryEateries]);
 
 /** Everything in one country, for the country filters. */
 export function eateriesIn(country: string) {
