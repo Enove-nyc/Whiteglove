@@ -14,8 +14,16 @@
 //      in exactly ONE place with no copy anywhere, no export, and no way to get
 //      it out except by querying the database by hand.
 //
-//   3. UPSTASH REDIS — accounts, sessions, the site lock, analytics counters.
-//      Operational rather than content, and deliberately not exported.
+//   3. UPSTASH REDIS — accounts, trips, itineraries, chat threads, proposals,
+//      client forms, agency records, subscriptions, sessions, the site lock and
+//      analytics counters. This is NOT exported here, and the reason has
+//      changed: it used to be operational only, so leaving it out cost nothing.
+//      The advisor product was then built on top of it, and everything a
+//      customer owns now lives there. It stays out of THIS file because this
+//      file is a content export, held in the open — customers' own data must
+//      not be in it. It is backed up separately, encrypted, in the private
+//      Enove-nyc/whiteglove-backups repository (nightly, scripts/dump-redis.mjs
+//      there). If that ever stops running, none of it is copied anywhere.
 //
 // So this builds a single JSON file holding the whole corpus — the built-in
 // content and the owner-added content merged into one — that can be kept
