@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import MixedText from "@/components/MixedText";
+import CommandCenterNotify from "@/components/CommandCenterNotify";
 import TripDocuments from "@/components/TripDocuments";
 import { accountCookieName, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
 import { daysUntil, tripReadiness, type StopReadiness } from "@/lib/command-center";
@@ -113,6 +114,10 @@ export default async function CommandCenterPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
+        {/* Everything below waits to be opened. This is the one thing on the
+            page that offers not to. */}
+        <CommandCenterNotify />
+
         {/* Above everything, because these are the ones that get worse the
             longer nobody notices — and Shabbos above those. */}
         {alerts.length > 0 && (
