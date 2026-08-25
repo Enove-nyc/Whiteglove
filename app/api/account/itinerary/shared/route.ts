@@ -4,12 +4,18 @@ import type { Itinerary } from "@/data/itinerary";
 import {
   accountCookieName,
   getAccountData,
+  getAccountRecord,
   getShareOwnerEmail,
+  pushToAccountSubscribers,
   readSessionEmail,
   saveAccountItinerary,
   tripAccessFor,
 } from "@/lib/account-store";
 import { withoutAttachments } from "@/lib/attachments";
+import { sendTripChangedForCollaboratorEmail, sendTripEditedEmail } from "@/lib/email";
+import { isPhoneIdentity } from "@/lib/identity";
+import { othersToTell, readCollaborators } from "@/lib/trip-roles";
+import { describeEdits } from "@/lib/shared-trip-edit";
 
 /**
  * Reading and changing a trip that belongs to somebody else.
@@ -111,8 +117,15 @@ export async function POST(request: NextRequest) {
     );
   }
   const merged = mergeKeepingAttachments(kept.itinerary, body.itinerary);
+  const summary = describeEdits(kept.itinerary ?? merged, merged);
   const saved = await saveAccountItinerary(found.owner, merged);
   if (!saved) return NextResponse.json({ error: "Could not save the trip." }, { status: 503 });
+
+  // Told, not merely done. Until this endpoint had a screen, nobody could
+  // change somebody else's trip at all; the moment they could, the owner
+  // needed telling. Awaited so the notification is attempted before the
+  // response, but it can never fail the save — see tellTheOwner.
+  await tellTheOwner(found.owner, found.asker, summary, request);
   return NextResponse.json({ ok: true });
 }
 
@@ -147,4 +160,72 @@ function mergeKeepingAttachments(before: Itinerary | undefined, after: Itinerary
     lodging: restore(after.lodging),
     activities: restore(after.activities),
   };
+}
+
+/**
+ * Tell the owner that somebody changed their trip.
+ *
+ * A note is a message and can wait to be read. An edit is the plan itself
+ * moving — a stop taken out, a morning rearranged — and the owner may be about
+ * to print it, send it to a client, or drive it. That is worth both an email
+ * and, where they have turned notifications on, their phone.
+ *
+ * NOT WHEN THEY DID IT THEMSELVES. An owner can open their own share link, and
+ * the role check calls them an owner, who may edit. Emailing somebody about
+ * their own change is how people stop reading the emails.
+ *
+ * BEST EFFORT, LIKE EVERY OTHER NOTIFICATION HERE. The trip is already saved
+ * before this runs, and nothing it does can fail that: no email key, an owner
+ * signed in with a phone number and nowhere to send to, a provider refusing —
+ * none of those is a reason the person who made the edit sees an error, or a
+ * reason to lose an edit that is already stored.
+ */
+async function tellTheOwner(owner: string, editor: string, summary: string, request: NextRequest) {
+  try {
+    if (owner === editor) return;
+    // Nothing changed is not news. Saving an untouched trip should not send
+    // anybody an email saying so.
+    if (summary === "Nothing changed yet") return;
+
+    const [data, who] = await Promise.all([getAccountData(owner), getAccountRecord(editor)]);
+    const name = who?.name?.trim() || editor;
+    const title = data.itinerary?.title || "your trip";
+    const shareId = data.itineraryShareId;
+
+    const tripUrl = new URL(shareId ? `/i/${shareId}` : "/itinerary", request.nextUrl.origin).toString();
+
+    if (!isPhoneIdentity(owner)) {
+      await sendTripEditedEmail(owner, { fromName: name, tripTitle: title, summary, url: tripUrl });
+    }
+
+    // And the phone, where they asked to be told about their own trips —
+    // see the account's own push subscriptions. The name is on it, because
+    // "your trip changed" without saying who is a notification that makes
+    // somebody open a page to find out one word.
+    await pushToAccountSubscribers(owner, {
+      title: `${name} changed ${title}`,
+      body: summary,
+      url: "/itinerary",
+    });
+
+    /**
+     * And the other people building it with them.
+     *
+     * Editors and commenters only — see othersToTell. Somebody given "can
+     * view" was shown a plan and did not ask to hear each time a stop was
+     * renamed; somebody given a role that lets them contribute is helping
+     * build this and wants to know it moved under them.
+     *
+     * One at a time, each failure swallowed, so a bad address halfway down
+     * the list does not stop the rest.
+     */
+    for (const person of othersToTell(readCollaborators(data.itineraryCollaborators), owner, editor)) {
+      if (isPhoneIdentity(person)) continue;
+      await sendTripChangedForCollaboratorEmail(person, { fromName: name, tripTitle: title, summary, url: tripUrl }).catch(
+        () => undefined,
+      );
+    }
+  } catch {
+    // The edit is saved. That is the part that mattered.
+  }
 }
