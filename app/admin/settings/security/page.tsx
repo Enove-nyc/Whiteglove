@@ -3,6 +3,8 @@ import CspClearButton from "@/components/CspClearButton";
 import TwoFactorPanel from "@/components/admin/TwoFactorPanel";
 import { cspReportStoreAvailable, readCspSummary } from "@/lib/csp-reports";
 import { readTwoFactor, SHARED_DOOR, twoFactorStorageAvailable } from "@/lib/admin-2fa-store";
+import { describeAction, isWeighty, KEEP_DAYS } from "@/lib/admin-actions";
+import { adminActionLogAvailable, readAdminActions } from "@/lib/admin-actions-store";
 import { currentAdmin } from "@/lib/admin-current";
 import { PageHeader } from "@/components/ui/PageHeader";
 
@@ -29,6 +31,8 @@ export default async function AdminSecurityPage() {
   const door = identity?.how === "account" ? identity.email : SHARED_DOOR;
   const doorLabel = identity?.how === "account" ? identity.email : "the shared admin password";
   const enrolled = twoFactorStorageAvailable() ? (await readTwoFactor(door)) !== null : false;
+
+  const actions = adminActionLogAvailable() ? await readAdminActions() : [];
 
   return (
     <>
@@ -68,6 +72,45 @@ export default async function AdminSecurityPage() {
           </p>
         </div>
       )}
+
+      {/* WHO CHANGED THE LOCKS. The sign-in log says who came in and the change
+          log says what the content says; neither says that an account was
+          granted the finances, a password was changed, or two-factor was
+          turned off — which are the actions somebody takes when they should
+          not be there at all. There is no button to empty this: a record the
+          recorded party can erase is not a record. */}
+      <section aria-labelledby="admin-actions-heading" className="border border-[var(--gold-light)] bg-white p-6">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Who changed the locks</p>
+        <h2 id="admin-actions-heading" className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
+          {actions.length === 0 ? "Nothing has been changed" : "Every change to who can get in"}
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          {actions.length === 0
+            ? "Access granted or taken away, a password changed, the site closed, two-factor turned on or off — each will be recorded here as it happens."
+            : `Access granted or taken away, passwords changed, the site closed or opened, two-factor turned on or off. Kept for ${KEEP_DAYS} days, and there is deliberately no way to clear this from in here.`}
+        </p>
+
+        {actions.length > 0 && (
+          <ul className="mt-5 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
+            {actions.map((action, index) => (
+              <li key={`${action.at}-${index}`} className="flex flex-wrap items-baseline justify-between gap-3 py-3">
+                <span className="min-w-0 text-sm leading-6 text-stone-700">
+                  {/* The ones worth noticing read differently, rather than
+                      making somebody read the whole list to find one. */}
+                  <span className={isWeighty(action.kind) ? "font-semibold text-[var(--navy)]" : undefined}>
+                    {describeAction(action)}
+                  </span>
+                  {action.detail && <span className="block text-stone-500">{action.detail}</span>}
+                </span>
+                <span className="flex-none text-xs text-stone-500">
+                  {new Date(action.at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                  {action.city || action.country ? ` · ${[action.city, action.country].filter(Boolean).join(", ")}` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="mx-auto mt-10 max-w-4xl">
         {!cspReportStoreAvailable() ? (

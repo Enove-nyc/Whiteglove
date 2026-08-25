@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
+import { recordAdminAction } from "@/lib/admin-actions-store";
 import { clearSignIns, revokeAllAccess } from "@/lib/signin-log";
 
 function isAdmin(request: NextRequest) {
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest) {
     if (generation === null) {
       return NextResponse.json({ error: "This needs the private store connected." }, { status: 503 });
     }
+    await recordAdminAction({ kind: "sessions-revoked" }, request.headers);
     return NextResponse.json({
       ok: true,
       generation,
@@ -34,9 +36,12 @@ export async function POST(request: NextRequest) {
 
   if (body?.action === "clear-log") {
     const ok = await clearSignIns();
-    return ok
-      ? NextResponse.json({ ok: true, message: "The log is empty." })
-      : NextResponse.json({ error: "This needs the private store connected." }, { status: 503 });
+    if (!ok) return NextResponse.json({ error: "This needs the private store connected." }, { status: 503 });
+    // Emptying the sign-in log is itself recorded, in the log that cannot be
+    // emptied from in here. Otherwise the one action that erases the evidence
+    // is the one action that leaves none.
+    await recordAdminAction({ kind: "signin-log-cleared" }, request.headers);
+    return NextResponse.json({ ok: true, message: "The log is empty." });
   }
 
   return NextResponse.json({ error: "Say what to do." }, { status: 400 });
