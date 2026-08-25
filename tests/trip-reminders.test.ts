@@ -220,7 +220,7 @@ describe("something actually calls the reminders endpoint on a schedule", () => 
   // vercel.json, nothing deploys this repository to Vercel, and the reminders
   // silently never fired. A feature that fails by doing nothing, with no
   // error anywhere, is the kind this test exists to catch.
-  const WORKFLOW = readFileSync(".github/workflows/trip-reminders.yml", "utf8");
+  const WORKFLOW = readFileSync(".github/workflows/daily-notifications.yml", "utf8");
   const VERCEL = readFileSync("vercel.json", "utf8");
 
   it("runs on a schedule, not only when somebody presses it", () => {
@@ -232,6 +232,18 @@ describe("something actually calls the reminders endpoint on a schedule", () => 
     assert.match(WORKFLOW, /\/api\/cron\/trip-reminders/);
     assert.match(WORKFLOW, /Authorization: Bearer \$CRON_SECRET/);
     assert.match(WORKFLOW, /secrets\.CRON_SECRET/);
+  });
+
+  it("also calls the traveller's own alerts endpoint, as its own job", () => {
+    // Two audiences with two different gates. As separate jobs, a bad night
+    // for one is visible on its own and does not stop the other; folded into
+    // one script, the first curl's exit would silently skip the second.
+    assert.match(WORKFLOW, /\/api\/cron\/trip-alerts/);
+    assert.match(WORKFLOW, /^  alerts:$/m);
+    assert.match(WORKFLOW, /^  send:$/m);
+    // The YAML key, anchored — the prose above it in the file explains why
+    // there is no `needs:` and would otherwise match.
+    assert.doesNotMatch(WORKFLOW, /^\s+needs:/m, "the two jobs should not depend on each other");
   });
 
   it("FAILS LOUDLY rather than reporting success on a refused run", () => {

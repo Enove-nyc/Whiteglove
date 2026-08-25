@@ -154,6 +154,16 @@ export type SavedTrip = {
   advisor?: string;
   itinerary: Itinerary;
   route: SavedPlace[];
+  /**
+   * Which readiness alerts have already been sent to the owner's own phone,
+   * by lib/trip-alerts.ts's `key`, with the day each went.
+   *
+   * The alerts themselves are computed fresh every time and stored nowhere —
+   * right for a page, useless for a daily job, which would otherwise send the
+   * same Shabbos clash every morning until somebody either fixed it or turned
+   * notifications off. This is the only thing that makes it once.
+   */
+  alertsPushed?: Record<string, string>;
   /** Public read-only token, when this particular trip is shared. */
   shareId?: string;
   /**
@@ -351,6 +361,17 @@ export type AccountData = {
    * writes here any more.
    */
   templates?: SavedTemplate[];
+  /**
+   * The traveller's OWN devices, for the alerts about their own trip.
+   *
+   * Kept on the account rather than on a trip, which is the opposite of
+   * SavedTrip.pushSubscriptions and deliberately so. A client has no account
+   * at all — only the per-trip link they were sent — so their phone can only
+   * belong to that one trip. The person who owns the account is the other way
+   * round: they have several trips and one phone, and a device they turned on
+   * once should not have to be turned on again for next year's trip.
+   */
+  pushSubscriptions?: PushSubscriptionRecord[];
   updatedAt?: string;
 };
 
@@ -2470,6 +2491,97 @@ export async function removePushSubscription(shareId: string, endpoint: string):
   const next = trip.pushSubscriptions.filter((s) => s.endpoint !== endpoint);
   const nextTrips = trips.map((t) => (t.id === resolved.tripId ? { ...t, pushSubscriptions: next, updatedAt: new Date().toISOString() } : t));
   return Boolean(await writeTrips(resolved.ownerEmail, nextTrips, activeId));
+}
+
+// ---- The account owner's own devices --------------------------------------
+//
+// The two blocks above are a CLIENT's phone, on a trip they reached by a
+// link. This is the person whose account it is, and their own trip's
+// readiness alerts — the Shabbos clash, the loose ends before departure that
+// /command-center shows anyone who opens it. Kept on the account, so a device
+// turned on once covers every trip they will ever plan.
+
+/** A traveller's own device asking to be told about their own trips. Signed in, always — see app/api/account/push/route.ts. */
+export async function saveAccountPushSubscription(email: string, subscription: PushSubscriptionRecord): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const existing = (data.pushSubscriptions ?? []).filter((s) => s.endpoint !== subscription.endpoint);
+  const next: AccountData = {
+    ...data,
+    // Same rule as a client's: a phone re-subscribing after clearing its site
+    // data replaces its old entry rather than piling up under one endpoint.
+    pushSubscriptions: [...existing, subscription].slice(-MAX_PUSH_SUBSCRIPTIONS),
+    updatedAt: new Date().toISOString(),
+  };
+  return await writeJson(dataKey(normalized), next);
+}
+
+/** Turning them back off on one device. Nothing to remove is not a failure. */
+export async function removeAccountPushSubscription(email: string, endpoint: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  if (!data.pushSubscriptions?.length) return true;
+  const next: AccountData = {
+    ...data,
+    pushSubscriptions: data.pushSubscriptions.filter((s) => s.endpoint !== endpoint),
+    updatedAt: new Date().toISOString(),
+  };
+  return await writeJson(dataKey(normalized), next);
+}
+
+/**
+ * Push to the account owner's own devices, and forget the endpoints the push
+ * service says are gone.
+ *
+ * The same best-effort contract as pushToTripSubscribers: the caller has
+ * already recorded whatever this announces, this never throws into it, and
+ * its result never decides any bookkeeping.
+ */
+export async function pushToAccountSubscribers(email: string, payload: PushPayload): Promise<number> {
+  try {
+    const normalized = normalizeId(email);
+    const data = await getAccountData(normalized);
+    if (!data.pushSubscriptions?.length) return 0;
+
+    const { sent, expired } = await sendPushToSubscriptions(data.pushSubscriptions, payload);
+    if (!expired.length) return sent;
+
+    const fresh = await getAccountData(normalized);
+    if (!fresh.pushSubscriptions?.length) return sent;
+    const next: AccountData = {
+      ...fresh,
+      pushSubscriptions: fresh.pushSubscriptions.filter((s) => !expired.includes(s.endpoint)),
+      updatedAt: new Date().toISOString(),
+    };
+    await writeJson(dataKey(normalized), next);
+    return sent;
+  } catch (error) {
+    console.error("[account-store] account push failed:", error);
+    return 0;
+  }
+}
+
+/**
+ * Remember that these readiness alerts have gone to the owner's phone.
+ *
+ * Keys come from lib/trip-alerts.ts and are deliberately stable across days,
+ * so "the Shabbos clash you already know about" does not arrive again every
+ * morning. Recorded per trip rather than per account: two trips can hold the
+ * same key ("leaving-soon") and mean different things.
+ */
+export async function markAlertsPushed(email: string, tripId: string, keys: readonly string[], day: string): Promise<boolean> {
+  if (!hasAccountStorage() || !keys.length) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  const pushed = { ...(trip.alertsPushed ?? {}) };
+  for (const key of keys) pushed[key] = day;
+  const nextTrips = trips.map((t) => (t.id === tripId ? { ...t, alertsPushed: pushed } : t));
+  return Boolean(await writeTrips(normalized, nextTrips, activeId));
 }
 
 // ---- Client forms ---------------------------------------------------------
