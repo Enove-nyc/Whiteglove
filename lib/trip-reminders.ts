@@ -62,3 +62,40 @@ export function balanceDueReminderText(trip: ReminderTrip): string {
   const greeting = trip.client ? `Hi ${trip.client} — a` : "A";
   return `${greeting} balance of ${amount} is still due${trip.startDate ? ` before your trip leaves on ${trip.startDate}` : ""}. Let us know if you have any questions about it.`;
 }
+
+/**
+ * THE SAME REMINDER, AS A NOTIFICATION — and deliberately not the same words.
+ *
+ * A message in the thread is read by somebody who has opened their trip. A
+ * push notification is read off a lock screen, in a queue, on a train, by
+ * whoever is standing there. Two things follow, and they are the whole reason
+ * these are separate functions rather than a call to the *Text ones:
+ *
+ *   NO GREETING BY NAME. "Hi Chaya —" on a lock screen tells the person
+ *   behind you who owns the phone. Harmless in a thread they had to unlock to
+ *   reach; not something to broadcast.
+ *
+ *   NO AMOUNT OF MONEY. The balance reminder says a balance is due and stops.
+ *   What somebody owes for their trip is theirs, and a figure on a lock screen
+ *   is shown to the room. The number is one tap away in the app, where it was
+ *   always going to be read anyway.
+ *
+ * The departure reminder keeps its date: a date is not private in the way a
+ * name or a sum is, and a notification that will not say when is not worth
+ * sending.
+ */
+export type ReminderPush = { title: string; body: string };
+
+export function departureReminderPush(trip: ReminderTrip): ReminderPush {
+  return {
+    title: `Leaving in ${DEPARTURE_REMINDER_DAYS} days`,
+    body: `${trip.name}${trip.startDate ? ` starts ${trip.startDate}` : ""}. Open your trip for the details.`,
+  };
+}
+
+export function balanceDueReminderPush(trip: ReminderTrip): ReminderPush {
+  return {
+    title: "A balance is still due",
+    body: `${trip.name}${trip.startDate ? ` leaves ${trip.startDate}` : ""}. Open your trip to see what is outstanding.`,
+  };
+}

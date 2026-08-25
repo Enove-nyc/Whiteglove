@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { appendChat, type CompanionChatMessage } from "@/lib/companion-chat-store";
-import { getAccountData, listAllAccounts, markReminderSent, withTrips } from "@/lib/account-store";
+import { getAccountData, listAllAccounts, markReminderSent, pushToTripSubscribers, withTrips } from "@/lib/account-store";
 import {
   balanceDueReminderDue,
+  balanceDueReminderPush,
   balanceDueReminderText,
   departureReminderDue,
+  departureReminderPush,
   departureReminderText,
+  type ReminderPush,
 } from "@/lib/trip-reminders";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +33,18 @@ async function wasDelivered(shareId: string, message: CompanionChatMessage): Pro
 /**
  * Sends the automatic client reminders lib/trip-reminders.ts decides are
  * due — "you're leaving soon", "a balance is still due" — into each trip's
- * own chat thread, the same one the advisor and client already talk in.
+ * own chat thread, the same one the advisor and client already talk in, AND
+ * pushes them to any device that asked to be told.
+ *
+ * THE THREAD IS THE DELIVERY; THE PUSH IS THE NUDGE. A reminder that only
+ * sits in the thread is a reminder the client sees whenever they next open
+ * their trip, which for "you leave in three days" may be after they have
+ * left. So each one that lands is also pushed to the phones subscribed to
+ * that trip (savePushSubscription in lib/account-store.ts). The order
+ * matters: the message is stored and marked sent FIRST, and only then
+ * pushed. A push that fails changes nothing — the reminder is already
+ * delivered and waiting — whereas marking on the push would mean a client
+ * whose phone was off never gets the reminder at all.
  *
  * RUN ONCE A DAY BY A GITHUB ACTIONS WORKFLOW, NEVER BY A BROWSER — see
  * .github/workflows/trip-reminders.yml, which calls this with the shared
@@ -56,6 +70,7 @@ export async function GET(request: NextRequest) {
 
   const today = new Date().toISOString().slice(0, 10);
   let sent = 0;
+  let pushed = 0;
 
   const accounts = await listAllAccounts();
   for (const account of accounts.filter((a) => mayServeCompanionClients(a.plan))) {
@@ -77,28 +92,29 @@ export async function GET(request: NextRequest) {
         balance: trip.balance,
         remindersSent: trip.remindersSent,
       };
-      if (!trip.shareId) continue;
+      const shareId = trip.shareId;
+      if (!shareId) continue;
+
+      /** Store it, mark it, then push it — in that order, and only ever that order. */
+      const deliver = async (kind: "departure" | "balanceDue", text: string, push: ReminderPush) => {
+        const message: CompanionChatMessage = { from: "advisor", kind: "text", text, at: new Date().toISOString() };
+        if (!(await wasDelivered(shareId, message))) {
+          console.error(`[cron] trip-reminders: ${kind} reminder did not save, will retry next run`, { account: account.email, tripId: trip.id });
+          return;
+        }
+        await markReminderSent(account.email, trip.id, kind, today);
+        sent += 1;
+        pushed += await pushToTripSubscribers(account.email, trip.id, push);
+      };
 
       if (departureReminderDue(reminderTrip, today)) {
-        const message: CompanionChatMessage = { from: "advisor", kind: "text", text: departureReminderText(reminderTrip), at: new Date().toISOString() };
-        if (await wasDelivered(trip.shareId, message)) {
-          await markReminderSent(account.email, trip.id, "departure", today);
-          sent += 1;
-        } else {
-          console.error("[cron] trip-reminders: departure reminder did not save, will retry next run", { account: account.email, tripId: trip.id });
-        }
+        await deliver("departure", departureReminderText(reminderTrip), departureReminderPush(reminderTrip));
       }
       if (balanceDueReminderDue(reminderTrip, today)) {
-        const message: CompanionChatMessage = { from: "advisor", kind: "text", text: balanceDueReminderText(reminderTrip), at: new Date().toISOString() };
-        if (await wasDelivered(trip.shareId, message)) {
-          await markReminderSent(account.email, trip.id, "balanceDue", today);
-          sent += 1;
-        } else {
-          console.error("[cron] trip-reminders: balance-due reminder did not save, will retry next run", { account: account.email, tripId: trip.id });
-        }
+        await deliver("balanceDue", balanceDueReminderText(reminderTrip), balanceDueReminderPush(reminderTrip));
       }
     }
   }
 
-  return NextResponse.json({ ok: true, sent });
+  return NextResponse.json({ ok: true, sent, pushed });
 }
