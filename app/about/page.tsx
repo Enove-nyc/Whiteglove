@@ -18,14 +18,23 @@ import { contactEmailFor } from "@/lib/site-words";
 export async function generateMetadata() {
   const [page, brand] = await Promise.all([resolvePage("about"), currentBrand()]);
   const name = BRAND_NAME[brand];
+  // The stored seoTitle is the owner's own words and stays his to write — but
+  // it is one string shown on both domains, so it must not be what decides
+  // which domain this page is canonical on. Hence the explicit brand below.
+  //
+  // AND IT IS ONLY HIS WHEN HE HAS WRITTEN IT. resolvePage returns the
+  // BUILT-IN page when he has not, and every built-in seoTitle is kosher copy
+  // that names that brand outright — "About White Glove Kosher Travel — who we
+  // are and how we work". Read unconditionally it is the right title on the
+  // kosher brand and the wrong company on the other, in the tab, the search
+  // result, the share card, and og:site_name, which pageMetadata settles from
+  // whichever name the title carries. So: his edit on either brand, the
+  // built-in only on the brand it was written for.
+  const written = page?.edited || brand === "kosher" ? page : null;
   return pageMetadata({
-    // The stored seoTitle is the owner's own words and stays his to write —
-    // but it is one string shown on both domains, so it must not be what
-    // decides which domain this page is canonical on. Hence the explicit
-    // brand below.
-    title: page?.seoTitle ?? `About — ${name}`,
+    title: written?.seoTitle ?? `About — ${name}`,
     description:
-      page?.seoDescription ??
+      written?.seoDescription ??
       `Who is behind ${name}, how the practical detail on this site is put together, and how to reach a person.`,
     path: "/about",
     brand,
