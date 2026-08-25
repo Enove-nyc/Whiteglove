@@ -2,10 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { byCategory, type PackingList } from "@/data/packing-list";
+import { matchGearToItems, type GearLink } from "@/data/packing-gear-match";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-export default function PackingListPanel() {
+/**
+ * The travel-gear shelf is read on the server (app/packing/page.tsx) and
+ * handed down, rather than fetched again from here: it is the same shelf for
+ * every visitor, it is already cached there, and a list of product names is
+ * nothing this component needs a round trip for.
+ */
+export default function PackingListPanel({ gear = [] }: { gear?: GearLink[] }) {
   const [tripId, setTripId] = useState("");
   const [list, setList] = useState<PackingList | null>(null);
   const [stale, setStale] = useState(false);
@@ -70,6 +77,10 @@ export default function PackingListPanel() {
     }).catch(() => undefined);
   }
 
+  // Only the lines that name something on the shelf outright — see
+  // data/packing-gear-match.ts for why this refuses far more than it links.
+  const gearFor = list ? matchGearToItems(list.items, gear) : {};
+
   if (loading) return <p className="text-sm text-stone-500">Loading…</p>;
   if (!tripId) return <p className="text-sm text-stone-500">Open a trip in the planner first.</p>;
 
@@ -110,6 +121,18 @@ export default function PackingListPanel() {
                         />
                         <span className={item.checked ? "text-stone-400 line-through" : ""}>{item.label}</span>
                       </label>
+                      {gearFor[item.id] && !item.checked && (
+                        <a
+                          href={gearFor[item.id].url}
+                          target="_blank"
+                          // "sponsored" is what an affiliate link is, and the
+                          // one rel search engines ask for by name.
+                          rel="sponsored nofollow noopener noreferrer"
+                          className="ml-6 text-xs font-semibold text-[var(--gold-ink)] underline underline-offset-2"
+                        >
+                          Where to get one →
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>

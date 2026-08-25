@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
+import { BRAND_NAME, BRAND_ORIGIN, type SiteBrand } from "@/lib/site-brand-core";
 
 /**
  * Page metadata, in one place.
@@ -12,8 +13,10 @@ import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
  * Twitter card — from the page's own words, so a page says what it is.
  */
 
-export const SITE_NAME = "White Glove Kosher Travel";
-const ITINERARIES_SITE_NAME = "White Glove Itineraries";
+// Both names come from lib/site-brand-core.ts, so the brand a page is served
+// as and the brand its metadata claims cannot drift apart.
+export const SITE_NAME = BRAND_NAME.kosher;
+const ITINERARIES_SITE_NAME = BRAND_NAME.itineraries;
 
 export { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
 const CANONICAL_HOST = new URL(CANONICAL_ORIGIN).hostname;
@@ -111,6 +114,33 @@ if (process.env.NODE_ENV === "production" && !siteOrigin()) {
   );
 }
 
+/**
+ * THE CANONICAL URL HAS TO NAME THE BRAND'S OWN DOMAIN, NOT THIS DEPLOYMENT'S.
+ *
+ * One app answers on two domains. `metadataBase` in the root layout is a
+ * single build-time origin — necessarily the kosher one — and a relative
+ * canonical resolves against it. So every itineraries page was shipping
+ * <link rel="canonical" href="https://www.whiteglovekoshertravel.com/...">:
+ * an instruction to Google that the page is a duplicate and the kosher domain
+ * is the original. That is the one tag that can keep a whole domain out of the
+ * index, and it was on every itineraries page but the home page.
+ *
+ * A page's brand is already known here — withSiteName reads it off the title
+ * to decide openGraph.siteName — so the canonical is built from the same
+ * answer. Tab title, share-card site name and canonical host now cannot
+ * disagree, because all three come from one decision.
+ *
+ * A page whose title names no brand still resolves to the kosher origin, which
+ * is right twice over: it is the default this site has always had, and a
+ * kosher-travel page that happens to be reachable on both domains SHOULD point
+ * its canonical at the kosher one. Consolidating a genuine duplicate is what
+ * the tag is for. The bug was never that pages pointed somewhere — it was that
+ * itineraries pages pointed at the wrong somewhere.
+ */
+function originForSiteName(siteName: string): string {
+  return siteName === ITINERARIES_SITE_NAME ? BRAND_ORIGIN.itineraries : BRAND_ORIGIN.kosher;
+}
+
 export type PageMetadata = {
   /** Shown in the tab, the search result and the share card. */
   title: string;
@@ -121,6 +151,13 @@ export type PageMetadata = {
   image?: { url: string; width?: number; height?: number; alt?: string };
   /** Set for pages that should exist but not be indexed. */
   noIndex?: boolean;
+  /**
+   * The brand this page is being served as, when the caller knows it at
+   * request time. Overrides whatever the title happens to say — a page that
+   * reads currentBrand() should hand in the answer rather than let a stored
+   * CMS title decide its canonical domain.
+   */
+  brand?: SiteBrand;
 };
 
 /**
@@ -190,11 +227,16 @@ export function withSiteName(title: string, siteName: string = SITE_NAME): strin
   return `${base || effectiveName} | ${effectiveName}`;
 }
 
-export function pageMetadata({ title, description, path, image, noIndex }: PageMetadata): Metadata {
-  const canonical = path.startsWith("/") ? path : `/${path}`;
+export function pageMetadata({ title, description, path, image, noIndex, brand }: PageMetadata): Metadata {
+  const relative = path.startsWith("/") ? path : `/${path}`;
   // The same brand withSiteName settled on decides openGraph.siteName too —
-  // a page's tab title and its share-card site name must never disagree.
-  const siteName = detectedSiteName(title.trim()) ?? SITE_NAME;
+  // a page's tab title and its share-card site name must never disagree. An
+  // explicit brand from the caller outranks the title, since the title may be
+  // an admin-entered override written for the other brand.
+  const siteName = brand ? BRAND_NAME[brand] : detectedSiteName(title.trim()) ?? SITE_NAME;
+  // Absolute, so it cannot be resolved against the single build-time
+  // metadataBase and land on the wrong domain. See originForSiteName above.
+  const canonical = new URL(relative, originForSiteName(siteName)).toString();
   const images = [image ?? { ...SOCIAL_IMAGE, alt: siteName }];
   const fullTitle = withSiteName(title, siteName);
   return {

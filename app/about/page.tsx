@@ -15,13 +15,19 @@ import { currentBrand } from "@/lib/site-brand";
 import { BRAND_NAME } from "@/lib/site-brand-core";
 
 export async function generateMetadata() {
-  const [page, name] = await Promise.all([resolvePage("about"), currentBrand().then((b) => BRAND_NAME[b])]);
+  const [page, brand] = await Promise.all([resolvePage("about"), currentBrand()]);
+  const name = BRAND_NAME[brand];
   return pageMetadata({
+    // The stored seoTitle is the owner's own words and stays his to write —
+    // but it is one string shown on both domains, so it must not be what
+    // decides which domain this page is canonical on. Hence the explicit
+    // brand below.
     title: page?.seoTitle ?? `About — ${name}`,
     description:
       page?.seoDescription ??
       `Who is behind ${name}, how the practical detail on this site is put together, and how to reach a person.`,
     path: "/about",
+    brand,
   });
 }
 

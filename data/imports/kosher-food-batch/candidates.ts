@@ -9,6 +9,7 @@ import {
   type KosherFoodCandidate,
 } from "./schema";
 import { sourceCatalog } from "./sources";
+import { notABusinessReason } from "@/data/listing-quality";
 
 type Row = {
   market: string;
@@ -491,9 +492,17 @@ const handDraft: KosherFoodCandidate[] = [
   }),
 ];
 
+// A harvester walking a certifier page's rows picks up the page's own
+// furniture as readily as its listings — a "Need Help?" support box, a
+// newsletter form, a "Latest Tours" sidebar, a cookie notice's "Close". Those
+// are dropped here, before dedupe, so they never reach the review queue and
+// never reach the generated directory. data/listing-quality.ts says why the
+// test is conservative: a real bakery called "Home Sweet Challah" must survive
+// it. validate.ts asserts the same thing, so a future harvest fails loudly.
 const harvestedDraft = (harvestedRows as HarvestedRow[])
   .map(harvestedFood)
-  .filter((row): row is KosherFoodCandidate => Boolean(row));
+  .filter((row): row is KosherFoodCandidate => Boolean(row))
+  .filter((row) => !notABusinessReason(row.name));
 
 const kosherFoodBatchDraft: readonly KosherFoodCandidate[] = [...handDraft, ...harvestedDraft];
 const collapsed = collapseKosherFoodDraft(kosherFoodBatchDraft);
