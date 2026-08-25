@@ -31,6 +31,18 @@ function daysBetween(date: string | undefined, today: string): number | null {
   return Math.round((to - from) / 86_400_000);
 }
 
+/**
+ * What to say on the evening before, when there is nothing wrong to report.
+ *
+ * The first stop, because "where am I meant to be" is the only question that
+ * evening, and a notification saying merely "your trip starts tomorrow" tells
+ * somebody something they already know.
+ */
+function startsTomorrowBody(stops: readonly { name: string }[]): string {
+  const first = stops[0]?.name;
+  return first ? `First stop: ${first}. Everything is in the app.` : "Everything is in the app.";
+}
+
 /** One notification, however many alerts this trip turned up. */
 function payloadFor(tripName: string, alerts: readonly TripAlert[]) {
   if (alerts.length === 1) return { title: alerts[0].headline, body: tripName };
@@ -108,15 +120,47 @@ export async function GET(request: NextRequest) {
       );
       const already = trip.alertsPushed ?? {};
       const fresh = alerts.filter((alert) => !already[alert.key]);
-      if (!fresh.length) continue;
+
+      /**
+       * "Your trip starts tomorrow."
+       *
+       * Not a readiness alert and deliberately not one: tripAlerts is about
+       * things that are WRONG, and a trip starting is the opposite. Putting it
+       * there would draw it on the command centre as a warning box beside the
+       * Shabbos clash, next to a countdown already saying the same thing in
+       * the right voice.
+       *
+       * It is here because this is the job that already knows how far away
+       * every trip is and already has somewhere to send it — and because the
+       * countdown, until now, only ever spoke to somebody who opened the page.
+       * The night before is the one evening it is worth saying without being
+       * asked.
+       *
+       * Keyed like everything else, so it goes once. `away` is whole days from
+       * today, so this is the calendar day before departure rather than a
+       * rolling twenty-four hours.
+       */
+      const eve = away === 1 && !already["starts-tomorrow"];
+      if (!fresh.length && !eve) continue;
 
       // Marked first, then pushed — the same order as the client reminders,
       // and for the same reason. A push that fails costs one notification; a
       // mark that waited on it and never happened would send this alert again
       // tomorrow, and every morning after.
-      await markAlertsPushed(account.email, trip.id, fresh.map((a) => a.key), today);
+      const name = trip.name || trip.itinerary.title || "Your trip";
+      const keys = fresh.map((a) => a.key);
+      if (eve) keys.push("starts-tomorrow");
+      await markAlertsPushed(account.email, trip.id, keys, today);
+
+      // One notification, not two. Somebody whose trip starts tomorrow AND
+      // still has a stop with nobody to let them in should be woken once, with
+      // both facts, on the evening they can still do something about either.
       pushed += await pushToAccountSubscribers(account.email, {
-        ...payloadFor(trip.name || trip.itinerary.title || "Your trip", fresh),
+        ...(eve && !fresh.length
+          ? { title: `${name} starts tomorrow`, body: startsTomorrowBody(stops) }
+          : eve
+            ? { title: `${name} starts tomorrow`, body: fresh.map((a) => a.headline).join(" ") }
+            : payloadFor(name, fresh)),
         url: "/command-center",
       });
     }
