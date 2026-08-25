@@ -48,6 +48,7 @@ describe("a real business is never mistaken for furniture", () => {
     "Sharegold Deli",
     "More Than Bagels",
     "Bagel Boss (Miami Beach)",
+    "Cookielada",
   ];
 
   for (const name of REAL) {
@@ -61,6 +62,24 @@ describe("a real business is never mistaken for furniture", () => {
     assert.equal(notABusinessReason("Close to Home Catering"), null);
     assert.ok(notABusinessReason("Home"));
     assert.equal(notABusinessReason("Home Sweet Challah"), null);
+  });
+
+  it("a phrase rule never eats a longer word that starts the same way", () => {
+    // "Cookielada" is a real bakery. It arrived in the directory after this
+    // filter shipped, and a bare "cookie" prefix rule dropped it on sight.
+    assert.equal(notABusinessReason("Cookielada"), null);
+    assert.equal(notABusinessReason("Contacts Deli"), null);
+    assert.equal(notABusinessReason("Termsina Cafe"), null);
+  });
+
+  it("a cookie banner is named outright, so a bakery is not caught by it", () => {
+    // A banner is always "Cookie policy" / "Cookie notice" / "Cookie
+    // settings" — never a bare word somebody would name a shop.
+    assert.equal(notABusinessReason("Cookie Corner"), null);
+    assert.equal(notABusinessReason("Cookie Jar Bakery"), null);
+    assert.equal(notABusinessReason("Cookies"), null);
+    assert.ok(notABusinessReason("Cookie policy"));
+    assert.ok(notABusinessReason("Cookie Settings"));
   });
 
   it("trailing punctuation does not let furniture through", () => {

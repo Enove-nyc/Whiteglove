@@ -49,9 +49,20 @@ const UI_WORD = new Set([
   "more",
 ]);
 
-/** Phrases no restaurant, bakery or grocery is called. Matched as a prefix. */
+/**
+ * Phrases no restaurant, bakery or grocery is called. Matched as a prefix, but
+ * only where the phrase ENDS on a word boundary — the trailing (?![a-z]) is
+ * not decoration. Without it "cookie" swallowed "Cookielada", a real bakery,
+ * the day it was added to the directory. A prefix rule with no boundary is a
+ * rule that eats a longer word starting with the same letters.
+ *
+ * And a cookie banner is never called just "Cookie" — it is "Cookie policy",
+ * "Cookie notice", "Cookie settings". So the entry names those outright,
+ * because "Cookie Corner" is a bakery and this filter must not decide
+ * otherwise.
+ */
 const UI_PHRASE =
-  /^(need help|join our newsletter|latest tours|latest news|read more|learn more|click here|contact us|about us|view all|see all|sign up|log ?in|back to top|follow us|skip to content|toggle navigation|privacy policy|terms of|cookie)/i;
+  /^(need help|join our newsletter|latest tours|latest news|read more|learn more|click here|contact us|about us|view all|see all|sign up|log ?in|back to top|follow us|skip to content|toggle navigation|privacy policy|terms of|cookie (?:policy|notice|settings|preferences|consent))(?![a-z])/i;
 
 /** A name carrying markup or script is not a name at all. */
 const CODE = /[<>{}]|\|\||=>|function\s*\(|window\.|document\.|src=|href=|height=|width=/;
