@@ -32,7 +32,7 @@ import { accountCookieName, createAccountSession, parseAccountSession } from "@/
 import { templateFromTrip, tripFromTemplate } from "@/lib/trip-templates";
 import { readTemplatesStore, writeTemplatesStore, type SavedTemplate } from "@/lib/trip-templates-store";
 import type { PushSubscriptionRecord } from "@/data/push-subscriptions";
-import { sendPushToSubscriptions } from "@/lib/push-notify";
+import { sendPushToSubscriptions, type PushPayload } from "@/lib/push-notify";
 
 type RedisResult<T> = { result?: T };
 
@@ -2112,41 +2112,68 @@ export async function checkTripFlightStatus(email: string, tripId: string): Prom
   // knowing, rather than only finding out the next time the app happens to
   // be opened. Best-effort: nothing here is allowed to fail the check itself.
   if (newAlerts.length && trip.pushSubscriptions?.length) {
-    await notifySubscribers(normalized, tripId, trip.pushSubscriptions, trip.shareId, newAlerts).catch((error) =>
-      console.error("[account-store] push notify failed:", error),
-    );
+    await notifySubscribers(normalized, tripId, newAlerts);
   }
 
   return newAlerts;
 }
 
-/** One push, summarizing however many alerts a single check turned up. */
-async function notifySubscribers(
+/**
+ * Push one notification to every device subscribed to a trip, and forget the
+ * endpoints the push service says are gone.
+ *
+ * BEST EFFORT, ALWAYS, AND NEVER THE RECORD. Every caller has already stored
+ * whatever this announces — an alert on the trip, a message in the thread —
+ * before it gets here. A notification is how somebody finds out today instead
+ * of the next time they happen to open the app; it is not where the thing
+ * lives. So this never throws into its caller and its result never decides
+ * any bookkeeping: a client whose phone was off still has the message waiting
+ * when they open their trip, and must never be marked as un-reminded because
+ * a push service was down for ten seconds.
+ *
+ * Returns how many devices were actually reached, for logging.
+ */
+export async function pushToTripSubscribers(
   ownerEmail: string,
   tripId: string,
-  subscriptions: PushSubscriptionRecord[],
-  shareId: string | undefined,
-  alerts: TripAlert[],
-): Promise<void> {
+  payload: PushPayload,
+): Promise<number> {
+  try {
+    const normalized = normalizeId(ownerEmail);
+    const before = await getAccountData(normalized);
+    const trip = withTrips(before).trips.find((t) => t.id === tripId);
+    if (!trip?.pushSubscriptions?.length) return 0;
+
+    const { sent, expired } = await sendPushToSubscriptions(trip.pushSubscriptions, {
+      ...payload,
+      ...(trip.shareId ? { url: `/i/${trip.shareId}/app` } : {}),
+    });
+    if (!expired.length) return sent;
+
+    // Endpoints the push service itself says are gone — pruned in their own
+    // write, read fresh, so a slow send never overwrites something saved
+    // while it was in flight.
+    const data = await getAccountData(normalized);
+    const { trips, activeId } = withTrips(data);
+    const current = trips.find((t) => t.id === tripId);
+    if (!current?.pushSubscriptions?.length) return sent;
+    const kept = current.pushSubscriptions.filter((s) => !expired.includes(s.endpoint));
+    const nextTrips = trips.map((t) => (t.id === tripId ? { ...t, pushSubscriptions: kept } : t));
+    await writeTrips(normalized, nextTrips, activeId);
+    return sent;
+  } catch (error) {
+    console.error("[account-store] push notify failed:", error);
+    return 0;
+  }
+}
+
+/** One push, summarizing however many alerts a single check turned up. */
+async function notifySubscribers(ownerEmail: string, tripId: string, alerts: TripAlert[]): Promise<void> {
   const payload =
     alerts.length === 1
       ? { title: alerts[0].title, body: alerts[0].note }
       : { title: `${alerts.length} changes on your trip`, body: alerts.map((a) => a.title).join(" · ") };
-  const { expired } = await sendPushToSubscriptions(subscriptions, {
-    ...payload,
-    ...(shareId ? { url: `/i/${shareId}/app` } : {}),
-  });
-  if (!expired.length) return;
-
-  // Endpoints the push service itself says are gone — pruned in their own
-  // write so a slow or failed send never risks the alerts just recorded.
-  const data = await getAccountData(ownerEmail);
-  const { trips, activeId } = withTrips(data);
-  const trip = trips.find((t) => t.id === tripId);
-  if (!trip?.pushSubscriptions?.length) return;
-  const kept = trip.pushSubscriptions.filter((s) => !expired.includes(s.endpoint));
-  const nextTrips = trips.map((t) => (t.id === tripId ? { ...t, pushSubscriptions: kept } : t));
-  await writeTrips(ownerEmail, nextTrips, activeId);
+  await pushToTripSubscribers(ownerEmail, tripId, payload);
 }
 
 /** Every alert recorded on this trip so far, oldest first — read fresh after checkTripFlightStatus so a just-created alert is included. */
