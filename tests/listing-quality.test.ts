@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { cleanListingName, notABusinessReason, trimScrapedAddress, withoutScrapedJunk } from "@/data/listing-quality";
+import { cleanListingName, notABusinessReason, phoneInAddress, trimScrapedAddress, withoutScrapedJunk } from "@/data/listing-quality";
 import { kosherEateries } from "@/data/kosher-eateries";
 
 describe("page furniture is not a kosher restaurant", () => {
@@ -139,6 +139,54 @@ describe("an address stops where the address stops", () => {
   });
 });
 
+describe("a phone number in the address field is a phone number", () => {
+  it("finds the ones this data actually has", () => {
+    assert.equal(phoneInAddress("020 3667 1200, United Kingdom"), "020 3667 1200");
+    assert.equal(phoneInAddress("07582 080521, United Kingdom"), "07582 080521");
+    assert.equal(phoneInAddress("214-641-0693, Dallas, TX, United States"), "214-641-0693");
+    assert.equal(phoneInAddress("+44 20 8202 2327"), "+44 20 8202 2327");
+  });
+
+  it("NEVER mistakes a street address that opens with a house number", () => {
+    // The expensive direction. A looser rule flagged 199 of these — every US
+    // address begins with a number — and blanking them would have deleted the
+    // one useful field on a couple of hundred good listings.
+    for (const real of [
+      "1666 79th Street Causeway, Suite 102, North Bay Village, FL 33141",
+      "18110 Collins Ave, Sunny Isles Beach, FL 33160",
+      "4747 Collins Ave, Miami Beach, FL 33140",
+      "28 Kazinczy utca, Budapest, Hungary",
+      "ul. Grzybowska 2, 1st floor, 00-131 Warszawa",
+    ]) {
+      assert.equal(phoneInAddress(real), null, `${real} is a street address, not a phone number`);
+    }
+  });
+
+  it("ignores anything too short to be a number worth calling", () => {
+    assert.equal(phoneInAddress("33140"), null);
+    assert.equal(phoneInAddress("77096, Houston"), null);
+    assert.equal(phoneInAddress(""), null);
+    assert.equal(phoneInAddress(undefined), null);
+  });
+
+  it("moves it to the phone field and clears the address", () => {
+    const [row] = withoutScrapedJunk([
+      { name: "Cohens Bakery", address: "020 3667 1200, United Kingdom" } as { name: string; address?: string; phone?: string },
+    ]);
+    assert.equal(row.phone, "020 3667 1200");
+    assert.equal(row.address, undefined);
+  });
+
+  it("never overwrites a number the listing already had", () => {
+    // The address is the doubtful copy, not the authority.
+    const [row] = withoutScrapedJunk([
+      { name: "Somewhere", address: "020 3667 1200, United Kingdom", phone: "020 1111 2222" },
+    ]);
+    assert.equal(row.phone, "020 1111 2222");
+    assert.equal(row.address, "020 3667 1200, United Kingdom");
+  });
+});
+
 describe("the filter keeps the rest of the record intact", () => {
   it("drops junk, cleans names, and passes clean rows through untouched", () => {
     const before = [
@@ -174,9 +222,19 @@ describe("nothing junk reaches the public kosher food finder", () => {
     assert.deepEqual(bad.map((e) => `${e.name}: ${e.address}`), []);
   });
 
-  it("and cutting them cost no listing — only the one address that was a fragment", () => {
+  it("no published address is a phone number, and each became a callable one", () => {
+    assert.deepEqual(kosherEateries.filter((e) => phoneInAddress(e.address)).map((e) => e.name), []);
+    assert.ok(kosherEateries.filter((e) => e.phone).length >= 5, "the numbers went nowhere");
+  });
+
+  it("no listing was dropped, and every missing address is missing for a known reason", () => {
     assert.ok(kosherEateries.length > 1400);
     const missing = kosherEateries.filter((e) => !e.address);
-    assert.ok(missing.length <= 2, `${missing.length} listings lost their address`);
+    // Two reasons, both deliberate: the source published a phone number
+    // instead of a street (it is now a callable number), or what was there
+    // was a fragment of a phone number nobody could navigate by.
+    const unexplained = missing.filter((e) => !e.phone && e.name !== "The Grille Catering");
+    assert.deepEqual(unexplained.map((e) => e.name), [], "a listing lost its address for no recorded reason");
+    assert.ok(missing.length <= 8, `${missing.length} listings have no address — more than the known cases`);
   });
 });

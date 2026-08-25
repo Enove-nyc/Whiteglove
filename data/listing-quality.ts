@@ -146,23 +146,71 @@ export function trimScrapedAddress(address: string): string {
   return tidy;
 }
 
+
+/**
+ * A phone number sitting where the street should be.
+ *
+ * Five harvested listings carry an address of "020 3667 1200, United Kingdom"
+ * — the source published a number and no street, and the harvester put what it
+ * found into the address field. A customer reading that gets neither: it is
+ * not somewhere to navigate to, and it is not a number they can press.
+ *
+ * The number is real and worth keeping, and KosherEatery already has a `phone`
+ * field with a Call button behind it, so this is a MOVE rather than a
+ * deletion. Whatever follows the number is a country or a city, which the
+ * listing already carries in its own fields, so nothing is lost by dropping
+ * the remainder with it.
+ *
+ * DELIBERATELY NARROW. The test is that everything before the first comma is
+ * digits and phone punctuation with no letters at all — because a US street
+ * address begins with a house number, and a looser rule flagged 199 perfectly
+ * good ones like "1666 79th Street Causeway, Suite 102". Five is the real
+ * count.
+ */
+export function phoneInAddress(address: string | null | undefined): string | null {
+  const first = (address ?? "").split(",")[0].trim();
+  if (!first || /[a-z]/i.test(first)) return null;
+  if (!/^[+\d][\d\s\-().+]*$/.test(first)) return null;
+  const digits = (first.match(/\d/g) ?? []).length;
+  // Seven is a local number. Fewer than that is a house number or a postcode.
+  if (digits < 7) return null;
+  return first;
+}
+
 /**
  * Keep only what is a real business, with its name tidied.
  *
  * Generic over anything carrying a name, so the kosher directory and any later
  * scraped set can share one door.
  */
-export function withoutScrapedJunk<T extends { name: string; address?: string }>(rows: readonly T[]): T[] {
+export function withoutScrapedJunk<T extends { name: string; address?: string; phone?: string }>(
+  rows: readonly T[],
+): T[] {
   const kept: T[] = [];
   for (const row of rows) {
     if (notABusinessReason(row.name)) continue;
     const name = cleanListingName(row.name);
-    const address = row.address === undefined ? undefined : trimScrapedAddress(row.address) || undefined;
-    if (name === row.name && address === row.address) {
+
+    // A phone number in the address field becomes a phone number. Never
+    // overwrites one the listing already has — the address is the doubtful
+    // copy, not the authority.
+    const strandedPhone = row.phone ? null : phoneInAddress(row.address);
+    const address = strandedPhone
+      ? undefined
+      : row.address === undefined
+        ? undefined
+        : trimScrapedAddress(row.address) || undefined;
+
+    if (name === row.name && address === row.address && !strandedPhone) {
       kept.push(row);
       continue;
     }
-    kept.push({ ...row, name, ...(row.address === undefined ? {} : { address }) });
+    kept.push({
+      ...row,
+      name,
+      ...(row.address === undefined && !strandedPhone ? {} : { address }),
+      ...(strandedPhone ? { phone: strandedPhone } : {}),
+    });
   }
   return kept;
 }
