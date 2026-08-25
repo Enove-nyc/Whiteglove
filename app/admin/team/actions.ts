@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { removeTeamMember, saveTeamMember } from "@/lib/admin-roles";
+import { listTeam, removeTeamMember, saveTeamMember } from "@/lib/admin-roles";
+import { recordAdminAction } from "@/lib/admin-actions-store";
 import { isValidAccessToken } from "@/lib/secure-access";
 
 export type ActionResult = { ok: boolean; message: string };
@@ -34,21 +35,40 @@ export async function saveTeamMemberAction(_prev: ActionResult | null, formData:
     return { ok: false, message: "Choose at least one part of the admin for them, or untick “run the admin area”." };
   }
 
+  const email = str(formData, "email");
+  // Read BEFORE the write, so a new grant and a changed one can be told apart.
+  // "gave somebody the finances" and "adjusted what they already had" are
+  // different lines, and afterwards they look identical.
+  const existed = (await listTeam()).some((member) => member.email === email.trim().toLowerCase());
+
   const result = await saveTeamMember({
-    email: str(formData, "email"),
+    email,
     name: str(formData, "name") || undefined,
     note: str(formData, "note") || undefined,
     admin,
     areas,
     siteAccess,
   });
-  if (result.ok) revalidatePath("/admin/team");
+  if (result.ok) {
+    await recordAdminAction({
+      kind: existed ? "access-changed" : "access-granted",
+      subject: email,
+      detail: [admin ? `admin: ${areas.join(", ") || "everything"}` : null, siteAccess ? "can see the closed site" : null]
+        .filter(Boolean)
+        .join(" · "),
+    });
+    revalidatePath("/admin/team");
+  }
   return result;
 }
 
 export async function removeTeamMemberAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
   if (!(await requireAdmin())) return { ok: false, message: "Please sign in as an administrator." };
-  const result = await removeTeamMember(str(formData, "email"));
-  if (result.ok) revalidatePath("/admin/team");
+  const email = str(formData, "email");
+  const result = await removeTeamMember(email);
+  if (result.ok) {
+    await recordAdminAction({ kind: "access-removed", subject: email });
+    revalidatePath("/admin/team");
+  }
   return result;
 }

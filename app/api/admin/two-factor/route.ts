@@ -8,6 +8,7 @@ import {
   SHARED_DOOR,
   twoFactorStorageAvailable,
 } from "@/lib/admin-2fa-store";
+import { recordAdminAction } from "@/lib/admin-actions-store";
 import { otpauthUri } from "@/lib/totp";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -83,18 +84,24 @@ export async function POST(request: NextRequest) {
     }
     const result = await confirmTwoFactor(door.who, body.secret.trim(), body.code.trim());
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+    await recordAdminAction({ kind: "two-factor-on", subject: door.label }, request.headers);
     return NextResponse.json({ ok: true, recoveryCodes: result.recoveryCodes });
   }
 
   if (body?.action === "regenerate") {
     const result = await regenerateRecoveryCodes(door.who);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+    await recordAdminAction({ kind: "recovery-codes-new", subject: door.label }, request.headers);
     return NextResponse.json({ ok: true, recoveryCodes: result.recoveryCodes });
   }
 
   if (body?.action === "disable") {
     const cleared = await clearTwoFactor(door.who);
     if (!cleared) return NextResponse.json({ error: "Could not turn it off. Nothing was changed." }, { status: 400 });
+    // The single most important line this log carries. A second factor that
+    // anybody through the door can quietly remove, with nothing recording it,
+    // is half a control.
+    await recordAdminAction({ kind: "two-factor-off", subject: door.label }, request.headers);
     return NextResponse.json({ ok: true });
   }
 
