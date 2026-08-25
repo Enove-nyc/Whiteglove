@@ -99,7 +99,7 @@ const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: strin
   { label: "Kosher food", blurb: "Restaurants, bakeries and groceries.", href: "/kosher" },
   { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage" },
   { label: "Map", blurb: "Everything on the site, placed.", href: "/map" },
-  { label: "Directory", blurb: "Drivers, guides and local services.", href: "/directory" },
+  { label: "Local help", blurb: "Drivers, guides and agencies — their businesses, not ours.", href: "/directory" },
 ];
 
 export default async function Home() {

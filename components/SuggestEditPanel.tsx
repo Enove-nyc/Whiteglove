@@ -64,14 +64,38 @@ export default function SuggestEditPanel({
   }
 
   const trigger = compact
-    ? "inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-stone-600 transition hover:text-[var(--navy)]"
+    ? "inline-flex min-h-11 min-w-11 items-center justify-center text-stone-500 transition hover:text-[var(--navy)]"
     : "inline-flex min-h-11 items-center gap-2 rounded-md border border-[var(--gold-light)] px-3 text-sm font-semibold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]";
 
   return (
     <div className={compact ? "inline-block" : "mt-6"}>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} title="Suggest edit" className={trigger}>
+      {/* COMPACT IS THE PENCIL ALONE. A card row repeats this control once per
+          listing, and the kosher food finder alone runs to well over a
+          thousand of them — the words after every entry were most of what the
+          eye had to wade through to read the list. The pencil carries it, the
+          tooltip says what it does on hover, and aria-label keeps it readable
+          to a screen reader. The full-width button stays wherever there is one
+          per page, where it shouts at nobody.
+
+          ARIA-LABEL AND NOT AN sr-only SPAN. Both was the first go, and the
+          span was dead weight: an aria-label replaces the button's contents
+          for assistive technology, so the hidden words were never read — and
+          this page renders the control once per listing, so it was fifteen
+          hundred copies of a string nothing could reach.
+
+          The label NAMES THE LISTING, which the words never did: a screen
+          reader moving through this page used to hear "Suggest edit" a
+          thousand times over with nothing to tell one from the next. */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        title="Suggest an edit"
+        aria-label={compact ? `Suggest an edit to ${title}` : undefined}
+        className={trigger}
+      >
         <Icon name="pencil" className="h-4 w-4" />
-        Suggest edit
+        {compact ? null : "Suggest edit"}
       </button>
 
       {open && (

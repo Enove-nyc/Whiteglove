@@ -40,7 +40,7 @@ import { resolvePage } from "@/lib/pages";
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
-  title: "Directory — White Glove Kosher Travel",
+  title: "Local help — drivers, guides and agencies | White Glove Kosher Travel",
   description: "Look up tour operators, vacation planners, travel agencies, guides and drivers for kosher and Jewish heritage travel.",
   path: "/directory",
 });
@@ -58,12 +58,13 @@ export default async function DirectoryPage() {
       ) : (
         <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-7xl">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">White Glove directory</p>
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Local help</p>
             <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl lg:text-6xl">
               Find the people who make the trip happen.
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">
-              Tour operators, planners, agencies, guides and drivers — by name, region or specialty.
+              Drivers, guides, tour operators and travel agencies — independent businesses, not White Glove. Search by
+              name, region or specialty.
             </p>
           </div>
         </section>
