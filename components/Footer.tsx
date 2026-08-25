@@ -43,12 +43,14 @@ const KOSHER_LINKS = [
 ];
 
 // The itineraries site is the planner; Advertise and Sources belong to the
-// kosher guide. Pricing leads because it was the thing a visitor could not
+// kosher guide. Note that whitegloveitineraries.com is served by its own
+// deployment, not this one, so this list is what an itineraries-branded page
+// OF THIS APP would show — /packing is deliberately not in it, because that
+// path does not exist on the site the brand names. Pricing leads because it was the thing a visitor could not
 // reach at all: what the planner costs lived behind a sign-in, so anybody
 // weighing the tool up had to open an account to find out.
 const ITINERARIES_LINKS = [
   { label: "Pricing", href: "/pricing" },
-  { label: "What to pack", href: "/packing" },
   { label: "Contact", href: "/contact" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
