@@ -5,6 +5,7 @@ import TripGroupTools from "@/components/TripGroupTools";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
+import SharedTripEditor from "@/components/SharedTripEditor";
 import TripProgressStrip from "@/components/TripProgressStrip";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -141,6 +142,14 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
             <TripProgressStrip startDate={itin.startDate} endDate={itin.endDate} days={days} />
           </div>
         )}
+
+        {/* "Can edit" was offered on the sharing screen, honoured by the
+            server, and reachable from nowhere — somebody granted it was told
+            they could change the trip and handed the same read-only page a
+            viewer gets. This is the panel that was missing. It renders nothing
+            unless the server says this person may edit; it never assumes it
+            from anything the browser holds. */}
+        <SharedTripEditor shareId={shareId} ownerName={sharedByName} />
 
         {/* The empty state carries main's fuller copy — it names who shared the
             trip and offers a way back — through this branch's shared primitive. */}
