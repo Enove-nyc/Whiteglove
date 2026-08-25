@@ -134,6 +134,84 @@ describe("signing out takes them with it", () => {
   });
 });
 
+describe("the page goes with the files", () => {
+  it("caches the page that lists them, not only the documents", () => {
+    // Documents on a device with no page to reach them from is not offline
+    // access, it is a folder nobody can open. The page is where they are
+    // arranged by the day they are needed, which is the shape that makes them
+    // usable at an airport at all.
+    assert.match(CONTROL, /pages: \[window\.location\.pathname\]/);
+    const keep = SW.slice(SW.indexOf("async function keepDocuments"), SW.indexOf("async function forgetPrivate"));
+    assert.match(keep, /for \(const page of pages \|\| \[\]\)/);
+  });
+
+  it("puts the page in the SAME cache as the documents", () => {
+    // So "remove them" and signing out take the itinerary with the passes,
+    // rather than clearing half of it and leaving the other half behind.
+    const keep = SW.slice(SW.indexOf("async function keepDocuments"), SW.indexOf("async function forgetPrivate"));
+    const pageLoop = keep.slice(keep.indexOf("for (const page of"));
+    assert.match(pageLoop, /cache\.put\(page/);
+    assert.doesNotMatch(pageLoop, /caches\.open\(/, "the page must go into the documents cache already opened above");
+  });
+});
+
+describe("private pages do not outlive the session either", () => {
+  // FOUND WHILE FINISHING THE FEATURE ABOVE, and older than it. Every
+  // successful navigation is cached by networkFirst — which is what lets a
+  // trip open at a gate with no signal, and also meant a rendered itinerary,
+  // with its flight numbers, hotel and client's name, stayed on the device
+  // after somebody signed out. Nothing deliberate put it there: visiting the
+  // page was enough. Guarding the boarding passes while the page listing them
+  // sat uncleared would have been most of the appearance of care and none of
+  // the substance.
+
+  it("the worker sweeps them on forget", () => {
+    const sweep = SW.slice(SW.indexOf("async function forgetPrivate"), SW.indexOf('self.addEventListener("message"'));
+    assert.match(sweep, /caches\.delete\(OFFLINE_DOCS\)/);
+    assert.match(sweep, /isPrivatePath\(new URL\(req\.url\)\.pathname\)/);
+    assert.match(sweep, /cache\.delete\(req\)/);
+  });
+
+  it("the page sweeps them too, for when the worker is not awake", () => {
+    assert.match(HELPER, /async function sweepPrivatePages/);
+    assert.match(HELPER, /caches\.open\("wg-cache-v2"\)/);
+  });
+
+  it("both lists of private paths agree, exactly", () => {
+    // Two copies on purpose — the worker may be asleep at the moment somebody
+    // signs out, and a page definitely is not. Duplication that drifts is how
+    // one of them ends up clearing a path the other keeps, so it is compared
+    // rather than trusted.
+    const listFrom = (src: string) => {
+      const start = src.indexOf("PRIVATE_PREFIXES = [");
+      const body = src.slice(start, src.indexOf("]", start));
+      return (body.match(/"([^"]+)"/g) ?? []).map((entry) => entry.replace(/"/g, "")).sort();
+    };
+    const fromWorker = listFrom(SW);
+    const fromPage = listFrom(HELPER);
+    assert.ok(fromWorker.length >= 10, `expected the worker's list, found ${fromWorker.length}`);
+    assert.deepEqual(fromPage, fromWorker, "the two private-path lists have drifted apart");
+  });
+
+  it("covers the trip, the account and every share link", () => {
+    const listed = (SW.match(/"(\/[^"]*)"/g) ?? []).join(" ");
+    for (const path of ["/command-center", "/itinerary", "/account", "/app", "/i/", "/payments"]) {
+      assert.ok(listed.includes(`"${path}"`), `${path} should be swept on sign-out`);
+    }
+  });
+
+  it("leaves the public site cached", () => {
+    // A cached destination guide is nobody's business but the site's, and
+    // emptying the whole cache would take the offline shell with it — so
+    // somebody who signs out and loses signal would lose even /offline.
+    const start = SW.indexOf("PRIVATE_PREFIXES = [");
+    const body = SW.slice(start, SW.indexOf("]", start));
+    for (const publicPath of ["/destinations", "/cemeteries", "/kosher", "/offline"]) {
+      assert.ok(!body.includes(`"${publicPath}"`), `${publicPath} is public and should stay cached`);
+    }
+  });
+});
+
 describe("what the traveller is told", () => {
   it("is off until they choose it", () => {
     assert.match(CONTROL, /useState<State>\("off"\)/);

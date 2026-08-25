@@ -70,7 +70,11 @@ export default function OfflineDocuments({ ids }: { ids: string[] }) {
     setMessage("");
     try {
       const urls = ids.map((id) => `/api/account/attachments?id=${encodeURIComponent(id)}`);
-      const result = await tell("wg-offline-keep", { urls });
+      // The page itself as well as the files. Documents on the device with no
+      // page to reach them from is not offline access, it is a folder nobody
+      // can open — and this page is where they are listed by the day they are
+      // needed, which is the whole shape that makes them usable at an airport.
+      const result = await tell("wg-offline-keep", { urls, pages: [window.location.pathname] });
       if (!result.ok || !result.kept) {
         setState("error");
         setMessage("Could not save them. Check your connection and try again.");
@@ -115,7 +119,7 @@ export default function OfflineDocuments({ ids }: { ids: string[] }) {
           </p>
           <p className="mt-1 text-sm leading-6 text-stone-600">
             {on
-              ? "Your passes and tickets are saved on this device and will open at the gate with no connection. They stay until you turn this off or sign out."
+              ? "This page and your passes are saved on this device and will open at the gate with no connection. They stay until you turn this off or sign out."
               : "An airport at half past five is the likeliest place on the whole trip to have no signal, and the likeliest moment to need a boarding pass. Saving them here means they open anyway."}
           </p>
           {!on && (
