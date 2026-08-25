@@ -443,6 +443,44 @@ export async function sendTripNoteEmail(
   return result.ok;
 }
 
+/**
+ * The email that says somebody has CHANGED the trip, not merely written on it.
+ *
+ * A note is a message and can wait to be read. An edit is the plan itself
+ * moving — a stop taken out, a morning rearranged — and the owner may be about
+ * to print it, send it, or drive it. Until the editor role had a screen this
+ * could not happen at all; the moment it could, the owner needed telling.
+ *
+ * WHAT CHANGED, NOT THAT SOMETHING DID. "Somebody edited your trip" makes a
+ * person open a page to find out something that would have fitted in the
+ * sentence they just read — the same rule the note email already follows by
+ * quoting the note itself.
+ */
+export async function sendTripEditedEmail(
+  to: string,
+  opts: { fromName: string; tripTitle: string; summary: string; url: string },
+): Promise<boolean> {
+  const who = escapeHtml(opts.fromName || "Somebody");
+  const title = escapeHtml(opts.tripTitle || "your trip");
+  const summary = escapeHtml(opts.summary);
+  const url = escapeHtml(opts.url);
+  const result = await postResend(
+    {
+      to,
+      subject: `${opts.fromName || "Somebody"} changed "${opts.tripTitle}"`,
+      html:
+        `<h2 style="font-family:Georgia,serif;color:#1e2a44;">${who} changed your trip</h2>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333;">On <strong>${title}</strong>: ${summary}.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:13px;color:#666;">You gave them permission to edit. Turn it back to “can view” on the trip’s sharing settings if you would rather they did not.</p>` +
+        `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${url}" style="display:inline-block;background:#1e2a44;color:#fff;text-decoration:none;padding:12px 20px;font-weight:bold;">See the trip →</a></p>`,
+      text: `${opts.fromName || "Somebody"} changed "${opts.tripTitle}": ${opts.summary}.\n\nYou gave them permission to edit. Turn it back to "can view" on the trip's sharing settings if you would rather they did not.\n\nSee the trip: ${opts.url}`,
+    },
+    to,
+    "trip edited",
+  );
+  return result.ok;
+}
+
 export async function sendPasswordResetEmail(email: string, code: string) {
   const result = await postResend(
     {

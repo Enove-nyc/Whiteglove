@@ -257,3 +257,61 @@ describe("the panel and the endpoint", () => {
     assert.match(ROUTE, /status: 403/);
   });
 });
+
+describe("the owner is told when somebody changes their trip", () => {
+  const ROUTE = readFileSync("app/api/account/itinerary/shared/route.ts", "utf8");
+  const EMAIL = readFileSync("lib/email.ts", "utf8");
+
+  it("tells them at all — which was impossible until the editor had a screen", () => {
+    // A note is a message and can wait to be read. An edit is the plan itself
+    // moving, and the owner may be about to print it, send it to a client, or
+    // drive it.
+    assert.match(ROUTE, /async function tellTheOwner/);
+    assert.match(ROUTE, /await tellTheOwner\(found\.owner, found\.asker, summary, request\)/);
+    assert.match(ROUTE, /sendTripEditedEmail/);
+    assert.match(ROUTE, /pushToAccountSubscribers\(owner,/);
+  });
+
+  it("says WHAT changed, not that something did", () => {
+    // "Somebody edited your trip" makes a person open a page to find out
+    // something that would have fitted in the sentence they just read — the
+    // rule the note email already follows by quoting the note.
+    assert.match(ROUTE, /const summary = describeEdits\(/);
+    assert.match(EMAIL, /export async function sendTripEditedEmail/);
+    const fn = EMAIL.slice(EMAIL.indexOf("export async function sendTripEditedEmail"), EMAIL.indexOf("export async function sendPasswordResetEmail"));
+    assert.match(fn, /\$\{summary\}/);
+    assert.match(fn, /escapeHtml\(opts\.summary\)/, "the summary is somebody's stop names — it goes through escapeHtml");
+  });
+
+  it("reads what changed BEFORE the save, or it would compare a trip against itself", () => {
+    const summary = ROUTE.indexOf("const summary = describeEdits(");
+    const save = ROUTE.indexOf("await saveAccountItinerary(found.owner, merged)");
+    assert.ok(summary > 0 && save > 0);
+    assert.ok(summary < save, "the comparison must happen before the new version is stored");
+  });
+
+  it("does not email somebody about their own edit", () => {
+    // An owner can open their own share link, and the role check calls them an
+    // owner, who may edit. Emailing them about their own change is how people
+    // stop reading the emails.
+    assert.match(ROUTE, /if \(owner === editor\) return;/);
+  });
+
+  it("sends nothing when nothing changed", () => {
+    assert.match(ROUTE, /if \(summary === "Nothing changed yet"\) return;/);
+  });
+
+  it("has nowhere to send to, and does not try", () => {
+    // An owner signed in with a phone number has no address.
+    assert.match(ROUTE, /if \(!isPhoneIdentity\(owner\)\)/);
+  });
+
+  it("cannot fail the edit it is announcing", () => {
+    // The trip is already saved before this runs. No email key, a provider
+    // refusing, a push service having a bad minute — none of them is a reason
+    // the person who made the edit sees an error.
+    const fn = ROUTE.slice(ROUTE.indexOf("async function tellTheOwner"));
+    assert.match(fn, /try \{/);
+    assert.match(fn, /\} catch \{/);
+  });
+});
