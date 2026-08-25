@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { accessToken, sameOrigin } from "@/lib/secure-access";
 import { hasStoredPassword, identifySiteCode, passwordStorageAvailable, verifyAccessPassword } from "@/lib/access-passwords";
 import { recordFailedAttempt, tooManyAttempts } from "@/lib/access-attempts";
+import { checkSecondFactor, SHARED_DOOR, twoFactorRequired } from "@/lib/admin-2fa-store";
 import { accessGeneration, recordSignIn, whereFrom } from "@/lib/signin-log";
 import { mintSiteAccess, PREVIEW_MINUTES, SITE_COOKIE } from "@/lib/site-access";
 
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
 
-  const body = (await request.json().catch(() => null)) as { scope?: "admin" | "site"; password?: string } | null;
+  const body = (await request.json().catch(() => null)) as { scope?: "admin" | "site"; password?: string; code?: string } | null;
   if (!body || (body.scope !== "admin" && body.scope !== "site")) {
     return NextResponse.json({ error: "That password is not correct." }, { status: 401 });
   }
@@ -50,6 +51,29 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json({ error: "That password is not correct." }, { status: 401 });
     }
+    // SECOND FACTOR ON THE SHARED DOOR.
+    //
+    // This is the weaker of the two ways in and the reason this feature
+    // exists: one password, handed out over years, never taken back, and no
+    // account behind it to disable. A code cannot fix that on its own — but
+    // it does mean the password alone stops being enough, which is the only
+    // thing that helps against a copy somebody still has from a year ago.
+    //
+    // Checked only AFTER the password, so a wrong password is never told
+    // whether a second factor is even configured.
+    if (await twoFactorRequired(SHARED_DOOR)) {
+      const code = body.code?.trim();
+      if (!code) return NextResponse.json({ needsCode: true }, { status: 401 });
+      const second = await checkSecondFactor(SHARED_DOOR, code);
+      if (!second.ok) {
+        await recordFailedAttempt(request, "admin");
+        return NextResponse.json({ needsCode: true, error: second.error }, { status: 401 });
+      }
+      if (second.usedRecoveryCode) {
+        console.warn("[admin] shared-door recovery code used", { left: second.recoveryCodesLeft });
+      }
+    }
+
     const token = accessToken("admin");
     // No signing secret means no cookie can be trusted, so none is issued.
     if (!token) return noSecret;
