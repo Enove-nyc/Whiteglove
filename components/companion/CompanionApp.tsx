@@ -660,13 +660,82 @@ export default function CompanionApp({
   });
 
   // ── screens ─────────────────────────────────────────────────────────────
+  /**
+   * WHAT IS HAPPENING NEXT, AT THE TOP OF THE SCREEN.
+   *
+   * The planner is dense on purpose — an advisor is deciding things. The
+   * traveller's app is the opposite: somebody opens it standing on a pavement
+   * in a city they do not know, and the only question is what happens now and
+   * how do I reach it. That answer was on this screen already, but as a
+   * highlighted row part-way down a list, under a 196-pixel decorative
+   * panel — so the first thing the phone showed during a trip was a picture
+   * of a suitcase.
+   *
+   * So while a trip is actually running and there is something timed left in
+   * the day, that panel gives way to the thing itself, with the actions that
+   * belong to it — call it, walk to it, open its confirmation — on the same
+   * screen rather than one tap further in. Before the trip, after it, and on
+   * a day with no timed stops there is no "next", and the panel stays.
+   */
+  const nowOrNext = nowIdx !== null ? items[nowIdx] : nextIdx !== null ? items[nextIdx] : null;
+  const nowOrNextIsNow = nowIdx !== null;
+  const showNextCard = Boolean(sel.today) && !trip.tripFinished && Boolean(nowOrNext);
+
+  const nextCard = nowOrNext && (
+    <button
+      type="button"
+      onClick={() => openActivity(st.selDay, nowOrNextIsNow ? nowIdx! : nextIdx!)}
+      className="wg-press"
+      style={{ display: "block", width: "calc(100% - 28px)", textAlign: "left", margin: "14px 14px 0", padding: "18px 20px", borderRadius: 20, background: `linear-gradient(155deg, ${GOLD} 0%, #8f6c3a 100%)`, color: CREAM, border: 0, cursor: "pointer" }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ width: 9, height: 9, borderRadius: 14, background: CREAM, animation: nowOrNextIsNow ? "wgPulse 1.8s ease-in-out infinite" : "none" }} />
+        <span style={{ ...kicker(CREAM), opacity: 0.92 }}>{nowOrNextIsNow ? "Happening now" : "Next"}</span>
+      </div>
+      <div style={{ marginTop: 10, display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+        {nowOrNext.time && <span style={{ font: `400 30px/1 ${serif}`, letterSpacing: "-.02em" }}>{nowOrNext.time}</span>}
+        <span style={{ font: `400 21px/1.15 ${serif}` }}>{nowOrNext.title}</span>
+      </div>
+      {nowOrNext.place && <p style={{ margin: "7px 0 0", fontSize: 13.5, lineHeight: 1.5, opacity: 0.9 }}>{nowOrNext.place}</p>}
+    </button>
+  );
+
+  /* The actions for it, outside the button — a link inside a button is not a
+     thing a browser or a screen reader can make sense of. */
+  const nextActions = nowOrNext && (
+    <div style={{ margin: "10px 14px 0", display: "flex", gap: 9, flexWrap: "wrap" }}>
+      {nowOrNext.phone && (
+        <a href={`tel:${nowOrNext.phone.replace(/[^\d+]/g, "")}`} className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a", textDecoration: "none" }}>
+          Call
+        </a>
+      )}
+      {nowOrNext.place && nowOrNext.kind !== "travel" && (
+        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nowOrNext.place)}`} target="_blank" rel="noopener noreferrer" className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a", textDecoration: "none" }}>
+          Directions
+        </a>
+      )}
+      {nowOrNext.href && (
+        <a href={nowOrNext.href} target="_blank" rel="noopener noreferrer" className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a", textDecoration: "none" }}>
+          Confirmation
+        </a>
+      )}
+    </div>
+  );
+
   const homeScreen = (
     <div style={{ animation: "wgIn .28s ease both" }}>
-      <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: `linear-gradient(155deg, ${GOLD} 0%, #8f6c3a 100%)`, color: CREAM }}>
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.22 }}>
-          <Icon name="suitcase" className="h-20 w-20" strokeWidth={1.1} />
+      {showNextCard ? (
+        <>
+          {nextCard}
+          {nextActions}
+        </>
+      ) : (
+        <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: `linear-gradient(155deg, ${GOLD} 0%, #8f6c3a 100%)`, color: CREAM }}>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.22 }}>
+            <Icon name="suitcase" className="h-20 w-20" strokeWidth={1.1} />
+          </div>
         </div>
-      </div>
+      )}
       <div style={{ padding: "16px 20px 0", display: "flex", flexDirection: "column", gap: 7 }}>
         {/* Skipped when it would just repeat the header above it word for
             word — a trip with no name of its own reads as "Family trip" in
