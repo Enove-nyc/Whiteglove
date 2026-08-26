@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AreaMap from "@/components/AreaMap";
 import { MAP_STYLE } from "@/lib/map-icons";
+import { MAP_KINDS, MAP_KIND_LABEL, readMapView, type MapKind } from "@/lib/map-links";
 import { pointFrom, withinArea, type MapMarker, type Point } from "@/lib/map-markers";
 
 export type MapKever = {
@@ -36,16 +38,37 @@ export default function MapExplorer({
   stays: MapStay[];
   shuls: MapShul[];
 }) {
-  // Null means nobody has searched, and the map opens on everything.
-  //
-  // It used to open on Kraków at 50 km, which showed a handful of the site's
-  // content and none of the rest — somebody who did not already know to type a
-  // town saw one corner of Poland and concluded that was all there was.
-  const [center, setCenter] = useState<Point | null>(null);
-  const [name, setName] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [radius, setRadius] = useState(50);
+  /**
+   * WHERE THE MAP OPENS. Null means nobody has asked for anywhere, and it opens
+   * on everything.
+   *
+   * It used to open on Kraków at 50 km, which showed a handful of the site's
+   * content and none of the rest — somebody who did not already know to type a
+   * town saw one corner of Poland and concluded that was all there was.
+   *
+   * A LINK MAY ASK FOR A PLACE, and now does: another page that already knows
+   * where somebody is looking hands over the point, the name and the kinds
+   * worth showing (lib/map-links.ts). Read once, as the initial state, rather
+   * than kept in step with the URL — after that the controls on this screen are
+   * the ones in charge, and a search that fought the address bar for authority
+   * would lose a filter every time somebody pressed Back.
+   */
+  const params = useSearchParams();
+  const [asked] = useState(() =>
+    readMapView({
+      at: params.get("at"),
+      name: params.get("name"),
+      km: params.get("km"),
+      kinds: params.get("kinds"),
+    }),
+  );
+
+  const [center, setCenter] = useState<Point | null>(asked.center);
+  const [name, setName] = useState<string | null>(asked.name);
+  const [query, setQuery] = useState(asked.name ?? "");
+  const [radius, setRadius] = useState(asked.radius);
   const [status, setStatus] = useState("");
+  const [kinds, setKinds] = useState<MapKind[]>(asked.kinds);
 
   function search(value: string, coords?: string) {
     const label = value.trim();
@@ -104,6 +127,18 @@ export default function MapExplorer({
     setName(null);
     setQuery("");
     setStatus("");
+    // The kinds go back too: "everything" that still hid three of the five
+    // would be the map disagreeing with its own button.
+    setKinds([...MAP_KINDS]);
+  }
+
+  function toggleKind(kind: MapKind) {
+    setKinds((current) => {
+      const next = current.includes(kind) ? current.filter((k) => k !== kind) : [...current, kind];
+      // Turning the last one off would leave an empty map and no way to read
+      // why, so the last one stays on.
+      return next.length === 0 ? current : next;
+    });
   }
 
   /** Everything the site can plot, before any search narrows it. */
@@ -175,13 +210,14 @@ export default function MapExplorer({
   }, [kevarim, attractions, stays, shuls, airports]);
 
   const markers = useMemo<MapMarker[]>(() => {
-    const inArea = withinArea(everything, center, radius);
+    const chosen = everything.filter((marker) => kinds.includes(marker.kind as MapKind));
+    const inArea = withinArea(chosen, center, radius);
     if (!center || !name) return inArea;
     return [
       { id: "center", name, lat: center.lat, lng: center.lng, kind: "center", subtitle: "What you searched for" },
       ...inArea,
     ];
-  }, [everything, center, name, radius]);
+  }, [everything, center, name, radius, kinds]);
 
   const nearby = useMemo(
     () => markers.filter((m) => m.kind === "kever" || m.kind === "attraction" || m.kind === "stay" || m.kind === "shul").sort((a, b) => (a.km ?? 0) - (b.km ?? 0)),
@@ -222,6 +258,35 @@ export default function MapExplorer({
           Show me
         </button>
       </div>
+
+      {/* WHICH KINDS. The map carries five sets at once, and until this row
+          existed there was no way to say "just the shuls" — a person looking
+          for somewhere to daven read past every airport in Europe to find
+          them. Pressed, not chosen from a dropdown, because on a phone the
+          whole point is one tap per kind. */}
+      <fieldset className="mt-4">
+        <legend className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-500">Show</legend>
+        <div className="mt-1.5 flex flex-wrap gap-2">
+          {MAP_KINDS.map((kind) => {
+            const on = kinds.includes(kind);
+            return (
+              <button
+                key={kind}
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggleKind(kind)}
+                className={`inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-bold uppercase tracking-[0.1em] transition ${
+                  on
+                    ? "border-[var(--navy)] bg-[var(--navy)] text-white"
+                    : "border-[var(--gold-light)] bg-white text-[var(--navy)]"
+                }`}
+              >
+                {MAP_KIND_LABEL[kind]}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
 
       {center && (
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
