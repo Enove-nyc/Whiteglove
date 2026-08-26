@@ -27,6 +27,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "borders",
   "content",
   "countries",
+  "data-health",
   "destinations",
   "directory",
   "directory-listings",

@@ -116,6 +116,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/photos", label: "Photos", blurb: "Pictures waiting for you." },
       { href: "/admin/ratings", label: "Ratings", blurb: "Reviews and private ratings." },
       { href: "/admin/inventory", label: "Checklist", blurb: "What is still unfinished." },
+      { href: "/admin/data-health", label: "Data health", blurb: "What the listings are missing." },
     ],
   },
   {
