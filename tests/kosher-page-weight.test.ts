@@ -125,3 +125,20 @@ describe("a search over the network has failure modes a filter did not", () => {
     assert.match(DIRECTORY, /empty=\{rows\.length === 0 && !busy && !failed\}/);
   });
 });
+
+describe("the endpoint's own defaults", () => {
+  const ROUTE = codeOf("app/api/kosher/search/route.ts");
+
+  it("an absent parameter is absent, not zero", () => {
+    // Number(null) is 0, not NaN. Omitting `limit` read as a valid zero, which
+    // clamped to one: /api/kosher/search?q=dinitz answered with a single row
+    // and claimed there was more. The page hid it by always sending a limit.
+    assert.match(ROUTE, /if \(raw === null \|\| raw\.trim\(\) === ""\) return undefined;/);
+    assert.doesNotMatch(ROUTE, /const raw = Number\(params\.get\(name\)\);/);
+  });
+
+  it("a page asked for with no limit is a page, not one row", () => {
+    // The data layer's default, which the route now actually reaches.
+    assert.equal(searchEateries(kosherEateries, { query: "" }).rows.length, 60);
+  });
+});

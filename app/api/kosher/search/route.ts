@@ -31,9 +31,18 @@ export async function GET(request: NextRequest) {
   }
 
   const params = request.nextUrl.searchParams;
+  /**
+   * A number, or undefined when the parameter is absent — and ABSENT IS NOT
+   * ZERO, which is the trap this fell into: Number(null) is 0, not NaN, so an
+   * omitted limit read as a perfectly valid zero, clamped up to one, and
+   * /api/kosher/search?q=dinitz answered with a single row and "there is more".
+   * The page never saw it because the page always sends a limit.
+   */
   const number = (name: string) => {
-    const raw = Number(params.get(name));
-    return Number.isFinite(raw) ? Math.trunc(raw) : undefined;
+    const raw = params.get(name);
+    if (raw === null || raw.trim() === "") return undefined;
+    const value = Number(raw);
+    return Number.isFinite(value) ? Math.trunc(value) : undefined;
   };
 
   // searchEateries clamps the limit itself (MAX_PAGE); named here so the cap is
