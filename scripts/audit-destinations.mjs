@@ -83,8 +83,18 @@ async function main() {
     if (!text.includes(textOf(destination.overview).slice(0, 60).trim())) problems.push("the summary is not in the first response");
     if (missingSections.length) problems.push(`missing sections: ${missingSections.join(", ")}`);
     if (/name="robots"[^>]*noindex/.test(html)) problems.push("noindex");
-    if (!html.includes(`rel="canonical" href="${BASE}${path}"`) && !html.includes(`rel="canonical" href="${path}"`)) {
-      problems.push("no self-canonical");
+    // THE PATH, NOT THE ORIGIN. A canonical is absolute and points at the
+    // live domain wherever the page is served from — that is what a canonical
+    // is for. Comparing it against the address this audit happens to be
+    // pointed at reported all 21 destinations as missing one when every one of
+    // them had it, which is the sort of finding that teaches somebody to stop
+    // reading the audit. So: it must be there, and it must be this page.
+    const canonical = /<link rel="canonical" href="([^"]+)"/.exec(html)?.[1];
+    if (!canonical) {
+      problems.push("no canonical");
+    } else {
+      const canonicalPath = canonical.startsWith("/") ? canonical : new URL(canonical).pathname;
+      if (canonicalPath.replace(/\/$/, "") !== path) problems.push(`canonical points at ${canonicalPath}`);
     }
 
     if (problems.length) {

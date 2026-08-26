@@ -141,13 +141,13 @@ export default function KosherNearby({
                       href={placeMapUrl(place.address, coordinatesForMap)}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
+                      className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2"
                     >
                       Open in Maps →
                     </a>
                   )}
-                  {place.phone && <a href={`tel:${place.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Call {place.phone}</a>}
-                  {place.website && <a href={place.website} target="_blank" rel="noreferrer" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Website →</a>}
+                  {place.phone && <a href={`tel:${place.phone.replace(/[^\d+]/g, "")}`} className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Call {place.phone}</a>}
+                  {place.website && <a href={place.website} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">Website →</a>}
                   {showAddToTrip && (
                     <button
                       type="button"
