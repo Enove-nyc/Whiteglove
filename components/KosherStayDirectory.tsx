@@ -144,8 +144,8 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
             value: kosher,
             onChange: (value) => { setFilters({ kosher: value }); setLimit(PAGE); },
             options: [
-              { value: "confirmed", label: "Kashrus confirmed with the source" },
-              { value: "reported", label: "Kashrus reported to us" },
+              { value: "confirmed", label: "Kashrus confirmed" },
+              { value: "reported", label: "Kashrus reported" },
               { value: "none", label: "Ordinary hotel, well placed" },
             ],
             allLabel: "Any",

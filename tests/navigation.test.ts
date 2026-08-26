@@ -8,7 +8,7 @@ import { bookingLink } from "@/lib/booking-access";
  * The bar is the positioning, so the rules about it are tests rather than a
  * comment somebody can read past.
  *
- * Rewritten for the four-dropdown header (Destinations, Kosher, Plan,
+ * Rewritten for the four-dropdown header (Categories, Kosher, Plan,
  * Travel — booking inside Travel) plus the icon row (Search, Route,
  * Itinerary, Account). The bar this
  * replaces read Destinations · Things to Do · Kosher Travel · Heritage Travel
@@ -21,14 +21,18 @@ const NAVBAR = readFileSync("components/Navbar.tsx", "utf8");
 const ALL_LINKS = NAV_CATEGORIES.flatMap((category) => category.links);
 
 describe("what the bar leads with", () => {
-  it("OPENS WITH WHERE TO GO, not with a form", () => {
-    assert.equal(NAV_CATEGORIES[0].label, "Destinations");
+  it("OPENS WITH THE TYPE OF TRIP, not with a form", () => {
+    // "Categories" not "Destinations", at the owner's word: the first menu
+    // holds Beach, Cities, Mountains, Family, Couples, Short Trips, Heritage
+    // alongside All Destinations and the Map, so "Categories" says plainly that
+    // this is where you choose the kind of trip.
+    assert.equal(NAV_CATEGORIES[0].label, "Categories");
   });
 
   it("is the four categories, in order", () => {
     assert.deepEqual(
       NAV_CATEGORIES.map((category) => category.label),
-      ["Destinations", "Kosher", "Plan", "Travel"],
+      ["Categories", "Kosher", "Plan", "Travel"],
     );
   });
 

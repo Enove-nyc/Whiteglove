@@ -88,18 +88,18 @@ export default function SendPlaceIn({
               Thank you — it has been sent.
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-600">
-              Somebody will look at it before anything goes on the site. Your trip is unchanged.
+              We&apos;ll review it before it appears on the site. Your trip is unchanged.
             </p>
           </>
         ) : (
           <>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Not on the site yet</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Add your own place</p>
             <h2 id="send-place-in-title" className="mt-2 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">
               {offerTitle(place)}
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-600">
-              We do not have this one. Would you send it in, so the next person planning the same trip finds it?
-              It is yours — nothing goes unless you say so.
+              Send it in, so the next person planning the same trip finds it.
+              It is yours — nothing is shared unless you say so.
             </p>
 
             <div className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
