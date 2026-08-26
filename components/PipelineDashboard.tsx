@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { pipelineStats, TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
 import { formatCents } from "@/data/trip-payments";
 import { clientKey } from "@/data/clients";
+import { actionForReminder } from "@/lib/needs-attention";
 import type { TripReminder } from "@/data/trip-reminders";
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { followAlong, tripProgress, type FollowStop } from "@/lib/trip-progress";
@@ -241,12 +242,29 @@ function RowCard({
       )}
       {row.reminders.length > 0 && (
         <ul className="mt-2 flex flex-col gap-1">
-          {row.reminders.map((r) => (
+          {row.reminders.map((r) => {
+            // EVERY REASON GETS ITS ONE ACTION. Five of the six used to be a
+            // sentence with a flag in front of it: "2 add-ons still waiting on
+            // an answer", agreed, and then work out for yourself which screen
+            // answers add-ons. See lib/needs-attention.ts.
+            const action = actionForReminder(r.reason);
+            return (
             <li key={r.reason} className="text-xs font-semibold text-[var(--gold-ink)]">
               ⚑ {r.message}
-              {r.reason === "trip_completed_no_rating_sent" && <RatingRequestAction tripId={row.id} />}
+              {action.kind === "open" ? (
+                <button
+                  type="button"
+                  onClick={() => onOpen(action.path)}
+                  className="ml-2 inline-flex min-h-11 items-center text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 sm:min-h-0"
+                >
+                  {action.label}
+                </button>
+              ) : (
+                <RatingRequestAction tripId={row.id} />
+              )}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
       <div className="mt-3 flex flex-wrap gap-3">
