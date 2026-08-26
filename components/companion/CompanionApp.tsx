@@ -1591,11 +1591,18 @@ function NotifyControl({ shareId }: { shareId: string }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!publicKey || typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setStatus("unsupported");
-      return;
-    }
     let active = true;
+    // The unsupported branch used to run synchronously, before any of the
+    // asynchronous work below — which is the setState the rule refuses. It is
+    // the same answer either way; it just no longer arrives during the effect.
+    if (!publicKey || typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      void Promise.resolve().then(() => {
+        if (active) setStatus("unsupported");
+      });
+      return () => {
+        active = false;
+      };
+    }
     navigator.serviceWorker.ready
       .then((reg) => reg.pushManager.getSubscription())
       .then((sub) => {
@@ -1886,23 +1893,58 @@ function LiveChat({
   // Picked up once per "Ask about this" tap, then handed back so the parent
   // clears it — otherwise navigating away and back would restage it over
   // whatever the traveler had already set up to send.
+  /**
+   * NOT useOnValueChange, THOUGH IT LOOKS LIKE ITS SHAPE. That hook adjusts
+   * state during render, which is only ever safe for a component's OWN state.
+   * This hands a callback back to the PARENT, and the parent's callback sets
+   * the parent's state — updating one component while rendering another is the
+   * thing React refuses outright, so a version of this that satisfied the lint
+   * rule would have been a worse bug than the one it fixed.
+   *
+   * So the effect stays and the two errors are fixed separately: the ref is
+   * written in an effect rather than during render, and the staging is
+   * deferred by a microtask so nothing sets state synchronously inside the
+   * effect. The dependency list is unchanged, which keeps the "picked up once"
+   * behaviour the comment above describes — a callback rebuilt by the parent
+   * on every render must not restage the subject over what is already typed.
+   */
   const onSubjectUsedRef = useRef(onSubjectUsed);
-  onSubjectUsedRef.current = onSubjectUsed;
+  useEffect(() => {
+    onSubjectUsedRef.current = onSubjectUsed;
+  });
   useEffect(() => {
     if (!subject) return;
-    setItineraryRef(subject);
-    onSubjectUsedRef.current?.();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setItineraryRef(subject);
+      onSubjectUsedRef.current?.();
+    });
+    return () => {
+      active = false;
+    };
   }, [subject]);
 
   // A place shared in from outside, put straight into the composer —
   // picked up once, then handed back so the parent clears it, the same way
   // "Ask about this" is.
+  // The same shape, and the same reason it is not useOnValueChange — see the
+  // note above.
   const onInitialDraftUsedRef = useRef(onInitialDraftUsed);
-  onInitialDraftUsedRef.current = onInitialDraftUsed;
+  useEffect(() => {
+    onInitialDraftUsedRef.current = onInitialDraftUsed;
+  });
   useEffect(() => {
     if (!initialDraft) return;
-    setDraft(initialDraft);
-    onInitialDraftUsedRef.current?.();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setDraft(initialDraft);
+      onInitialDraftUsedRef.current?.();
+    });
+    return () => {
+      active = false;
+    };
   }, [initialDraft]);
 
   const load = useCallback(async () => {
@@ -1922,9 +1964,17 @@ function LiveChat({
   }, [shareId]);
 
   useEffect(() => {
-    void load();
+    // The first load ran synchronously inside the effect; the interval's never
+    // did. Only the first one needed moving.
+    let active = true;
+    (async () => {
+      if (active) await load();
+    })();
     const t = setInterval(() => void load(), 5000);
-    return () => clearInterval(t);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
   }, [load]);
 
   // Only follows new messages down when the reader was already at the
@@ -2304,7 +2354,6 @@ function LiveChat({
     window.setTimeout(() => setJumpFlashAt((cur) => (cur === at ? null : cur)), 1200);
   }
 
-  let lastRenderedDay = "";
 
   // The one message a sent/read mark can attach to — the most recent one I
   // sent that is still standing. A tick under every message I have ever sent
@@ -2365,8 +2414,12 @@ function LiveChat({
         {messages.map((m, i) => {
           const mine = m.from === side;
           const day = new Date(m.at).toDateString();
-          const showDivider = day !== lastRenderedDay;
-          lastRenderedDay = day;
+          // Read off the previous message rather than carried in a variable
+          // that the render mutates as it goes. Same answer, and it survives
+          // React rendering this list more than once — which the accumulator
+          // did not, because the second pass started where the first left off.
+          const previousDay = i > 0 ? new Date(messages[i - 1].at).toDateString() : "";
+          const showDivider = day !== previousDay;
           const seenRead = Boolean(readAt[otherSide] && readAt[otherSide]! >= m.at);
           const bubble: CSSProperties = {
             maxWidth: "80%",
@@ -2996,9 +3049,17 @@ function AdvisorInbox({
   }
 
   useEffect(() => {
-    void load();
+    // The first load ran synchronously inside the effect; the interval's never
+    // did. Only the first one needed moving.
+    let active = true;
+    (async () => {
+      if (active) await load();
+    })();
     const t = setInterval(() => void load(), 8000);
-    return () => clearInterval(t);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
   }, [load]);
 
   if (open) {

@@ -51,8 +51,18 @@ describe("a shared place waits for the advisor to pick a client, then lands in t
   });
 
   it("LiveChat puts a shared draft straight into the composer, then hands the callback back", () => {
-    const effect = APP.slice(APP.indexOf("A place shared in from outside, put straight"), APP.indexOf("A place shared in from outside, put straight") + 400);
+    const effect = APP.slice(APP.indexOf("A place shared in from outside, put straight"), APP.indexOf("A place shared in from outside, put straight") + 900);
     assert.match(effect, /setDraft\(initialDraft\)/);
     assert.match(effect, /onInitialDraftUsedRef\.current\?\.\(\)/);
+    // AND IT MUST STAY AN EFFECT. The callback sets state in the PARENT, so
+    // the render-time pattern used elsewhere in this repo for the same-looking
+    // shape would update one component while rendering another — which React
+    // refuses. The ref is written in its own effect rather than during render,
+    // and the staging is deferred, so the two lint errors are fixed without
+    // moving this into render.
+    assert.match(effect, /useEffect\(/);
+    // The CALL, not the word — the comment above it necessarily names the hook
+    // it explains not using.
+    assert.doesNotMatch(effect, /useOnValueChange\(/);
   });
 });
