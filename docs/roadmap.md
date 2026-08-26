@@ -24,6 +24,12 @@ against the code showing which of its items already exist. Read that
 reconciliation before implementing from it — several things it asks to build
 are already built, and Part E of the brief itself forbids rebuilding them.
 
+The four items that reconciliation listed as genuinely not built — Current
+updates (A4), Nearby (A5), Seasonal discovery (A3) and Group trips (B9) — were
+built on 26 August 2026 and are merged. B8, listed alongside them, turned out
+to have been built all along. The reconciliation section now says so, file by
+file; read it rather than the list of item numbers.
+
 Status words mean exactly this:
 
 - **Done** — built, tested, merged.

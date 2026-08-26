@@ -31,17 +31,54 @@ filed. Check it again before acting: it will go stale too.
 | B11 Forms | `app/api/client-form/[shareId]`, `app/api/account/client-form` |
 | B13 Companion app | `/app`, `components/PrintableItinerary.tsx`, the offline document cache in `public/sw.js` |
 
-### Genuinely not built
+### Was not built, and now is
 
-- **B8 Options / client decisions.** Nothing. No decision model, no client
-  comparison view. This is the one that removes email chains, and it is the
-  largest piece of new product in the scan that is not already half-there.
-- **B9 Group trips.** Nothing — no group model, no per-party isolation.
-- **A4 Current Updates.** Nothing. A dated, expiring, attachable update record
-  does not exist.
-- **A3 Seasonal discovery.** Nothing structured. Season appears only as loose
-  wording inside unrelated files.
-- **A5 Nearby without GPS.** No `/nearby`, no search-around-a-place.
+All four of these were built on 26 August 2026 and are merged. Do not build
+them again; read the file named beside each one before changing how it works,
+because each carries the reasoning for a decision that is easy to undo by
+accident.
+
+- **A4 Current Updates.** `data/current-updates.ts`, `lib/current-updates-store.ts`,
+  `/admin/updates`, `components/CurrentUpdatesNotice.tsx` on the destination
+  page. Every update carries a required end date and drops off the page the day
+  it lapses. The list is cached; today is not cached with it. No source line and
+  no dates on screen.
+- **A5 Nearby.** `lib/near-anchors.ts` (airports, Jewish quarters, things to do
+  — every position the site already owns), `app/api/near/where`, and
+  `components/NearbyExplorer.tsx`, which replaced `NearMyHotel`. A city, a
+  street or a postcode falls through to OpenStreetMap. The metered hotel lookup
+  is a button, not a keystroke. Location is one door of three, asked for only
+  inside the handler of the button that says so.
+- **A3 Seasonal discovery.** `data/seasonal-spotlight.ts`,
+  `lib/seasonal-calendar.ts` (Pesach and Sukkos off the Jewish calendar through
+  kosher-zmanim), `lib/seasonal-windows-store.ts`, `/admin/seasons`. One prompt
+  at a time, only inside its window, only when the category holds at least two
+  destinations. Yeshiva week has no computed window on purpose. Distinct from
+  the older "Featured this season" row, which is destination chips for the
+  meteorological season and is unchanged.
+- **B9 Group trips.** `data/trip-parties.ts`, `app/api/account/parties`,
+  `/group`. Derived from the travelers already on the trip — no group record,
+  no per-family copy of the itinerary. A party carries no form answers at all,
+  and a response is attributed to a family by an exact, unambiguous name or not
+  at all.
+
+### The one in that list that was already built
+
+- **B8 Options / client decisions.** The earlier reading of this was wrong.
+  `data/proposal.ts` holds options with components and prices,
+  `components/ProposalClientView.tsx` is the client's comparison view at
+  `/p/[shareId]`, the statuses include `changes_requested` and `approved`, and
+  `proposalOptionToStops()` converts the agreed option into ordinary itinerary
+  rows. What was missing was the nudge when an approved proposal has not been
+  converted, and that now fires (`proposal_approved_not_converted`).
+
+### Still not built
+
+- **Mikvaos in the nearby distances.** Not one mikvah record carries a
+  coordinate, so an empty mikvah section would read as "there are none near
+  you" — a different and untrue statement. Pinned by
+  `tests/near-me-fences.test.ts`. If mikvaos ever gain coordinates, that test
+  fails and says so.
 
 ### Partly built, and the work is the joining rather than the building
 
