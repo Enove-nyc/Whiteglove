@@ -32,7 +32,8 @@ export const ACCOUNT_PLACES = [
 ] as const;
 
 /**
- * The advisor tools — Pipeline, Proposal, Library, Forms, Payments, Agency —
+ * The advisor tools — Pipeline, Proposal, Library, Forms, Payments, Group,
+ * Agency —
  * had no home in navigation anywhere: a Starter or Pro advisor reached them
  * only by remembering the address or scrolling a long paragraph on /account.
  * Named here, gated by the same lib/account-limits functions the pages
@@ -44,6 +45,7 @@ const ADVISOR_PLACES = [
   { label: "Content library", href: "/library", need: "clients" },
   { label: "Client forms", href: "/forms", need: "clients" },
   { label: "Payments", href: "/payments", need: "clients" },
+  { label: "Group trip", href: "/group", need: "clients" },
   { label: "Agency", href: "/agency", need: "brand" },
 ] as const;
 
