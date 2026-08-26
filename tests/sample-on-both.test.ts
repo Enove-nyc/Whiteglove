@@ -107,7 +107,9 @@ describe("the printed sample carries the brand of the site showing it", () => {
   const source = readFileSync("app/sample-itinerary/page.tsx", "utf8");
 
   it("passes the brand rather than taking the default", () => {
-    assert.match(source, /<PrintableItinerary[^>]*siteBrand=\{brand\}/s);
+    // No /s flag: it needs ES2018, this project targets ES2017, and the
+    // pattern has no "." for dotAll to widen — [^>]* already crosses lines.
+    assert.match(source, /<PrintableItinerary[^>]*siteBrand=\{brand\}/);
   });
 
   it("every caller that prints a document names its brand", () => {
