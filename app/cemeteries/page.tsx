@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import SubBrandBanner, { SubBrandCrest } from "@/components/SubBrand";
 import { getPublicCemeteryList } from "@/lib/cemeteries-view";
 import { listAllHeritageCemeteries } from "@/lib/heritage-cemeteries";
+import { cemeteryCountries, PAGE, searchCemeteryList } from "@/data/cemetery-list";
 import StructuredData from "@/components/StructuredData";
 import { pageMetadata } from "@/lib/seo";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
@@ -29,6 +30,11 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
   // The Nesiya Tova located set, trimmed to what the one directory needs — the
   // detail page carries the rest (directions, the forward to Nesiya Tova).
   const heritage = heritageCemeteries.map((h) => ({ slug: h.slug, city: h.city, country: h.country, address: h.address }));
+  // The first page, chosen by the server: the page arrives whole and
+  // indexable, and a visitor who reads what is in front of them makes no
+  // request at all. Later searches ask /api/cemeteries/list.
+  const first = searchCemeteryList({ guides: cemeteries, heritage }, { country: initialCountry, limit: PAGE });
+  const countries = cemeteryCountries({ guides: cemeteries, heritage });
   const page = await resolvePage("cemeteries");
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -71,7 +77,14 @@ export default async function CemeteriesPage({ searchParams }: { searchParams: P
       )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-        <CemeteryDirectory cemeteries={cemeteries} heritage={heritage} initialCountry={initialCountry} />
+        <CemeteryDirectory
+          initial={first.rows}
+          initialMore={first.more}
+          initialNarrowed={first.narrowed}
+          countries={countries}
+          hasHeritage={heritage.length > 0}
+          initialCountry={initialCountry}
+        />
       </section>
 
       <Footer />
