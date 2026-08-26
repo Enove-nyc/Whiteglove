@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
@@ -92,13 +93,20 @@ export default async function MapPage() {
 
       <section className="px-5 py-10 sm:px-8">
         <div className="mx-auto max-w-5xl">
-          <MapExplorer
-            kevarim={kevarim}
-            airports={airports}
-            attractions={attractions}
-            stays={stays}
-            shuls={shuls}
-          />
+          {/* The explorer reads the URL — a link from anywhere else on the site
+              may ask it to open on a town, at a radius, showing only some of
+              the five kinds. Behind a Suspense boundary so this page stays
+              prerendered: the parameters are applied in the browser rather than
+              turning every visit into a server render of 3,000 points. */}
+          <Suspense fallback={<p className="text-sm text-stone-500">Loading the map…</p>}>
+            <MapExplorer
+              kevarim={kevarim}
+              airports={airports}
+              attractions={attractions}
+              stays={stays}
+              shuls={shuls}
+            />
+          </Suspense>
         </div>
       </section>
 

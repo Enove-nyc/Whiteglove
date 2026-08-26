@@ -6,6 +6,7 @@ import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { Button } from "@/components/ui/Button";
 import { useDebouncedSearch } from "@/components/useDebouncedSearch";
 import { placeDirectionsUrl } from "@/data/route-utils";
+import { mapHref } from "@/lib/map-links";
 import type { NearAnchor } from "@/lib/near-anchors";
 
 /**
@@ -316,7 +317,16 @@ export default function NearbyExplorer() {
         <div className="flex flex-col gap-8">
           <p className="text-sm leading-6 text-stone-600">
             From <span className="font-semibold text-[var(--navy)]">{anchor.label}</span>
-            {anchor.hint ? `, ${anchor.hint}` : ""}.
+            {anchor.hint ? `, ${anchor.hint}` : ""}.{" "}
+            {/* The same answer, drawn rather than listed. The map opens on this
+                point rather than on the whole world, which is what the link
+                exists for. */}
+            <Link
+              href={mapHref({ at: anchor.at, name: anchor.label, radius: 25 })}
+              className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+            >
+              See this on the map
+            </Link>
           </p>
 
           {nothing ? (
