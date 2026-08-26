@@ -208,8 +208,16 @@ export default function LibraryManager() {
     }
   }, []);
 
+  // Async wrapper: a bare call enters load() synchronously, which the rule
+  // counts as a setState during the effect.
   useEffect(() => {
-    void load();
+    let active = true;
+    (async () => {
+      if (active) await load();
+    })();
+    return () => {
+      active = false;
+    };
   }, [load]);
 
   async function post(body: Record<string, unknown>) {

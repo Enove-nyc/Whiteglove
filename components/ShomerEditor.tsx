@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
+import { useOnValueChange } from "@/components/useOnValueChange";
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { removeShomerAction, retireShomerAction, saveShomerAction, type ActionResult } from "@/app/admin/shomrim/actions";
@@ -72,13 +74,9 @@ export default function ShomerEditor({ cemeteries }: { cemeteries: ShomerCemeter
   }, [selected]);
 
   // A save, remove or retire that went through closes the pop-up.
-  useEffect(() => {
-    if (saveState?.ok || removeState?.ok || retireState?.ok) setEditing(null);
-  }, [saveState, removeState, retireState]);
+  useOnActionSuccess([saveState, removeState, retireState], () => setEditing(null));
   // Switching beis hachaim closes a pop-up that belonged to the old one.
-  useEffect(() => {
-    setEditing(null);
-  }, [slug]);
+  useOnValueChange(slug, () => setEditing(null));
 
   const row = editing === "new" ? null : editing;
   const initial = row

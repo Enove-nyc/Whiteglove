@@ -65,7 +65,35 @@ describe("the six screens use it rather than their own copy", () => {
     "components/FlatFileListEditor.tsx",
     "components/MikvaosEditor.tsx",
     "components/CaseStudiesForm.tsx",
+    "components/AirportAdmin.tsx",
+    "components/KeverEditor.tsx",
+    "components/ShomerEditor.tsx",
+    "components/TeamEditor.tsx",
   ];
+
+  const withValueChange = [
+    "components/KeverEditor.tsx",
+    "components/ShomerEditor.tsx",
+    "components/TeamEditor.tsx",
+  ];
+
+  for (const file of withValueChange) {
+    it(`${file} resets through useOnValueChange when its subject changes`, () => {
+      // These close a pop-up that belonged to the PREVIOUS beis hachaim or
+      // person. As an effect, React painted once with the new subject and the
+      // old pop-up still open — one person's details under another person's
+      // heading, for a frame.
+      const source = readFileSync(file, "utf8");
+      assert.ok(source.includes("useOnValueChange("), `${file} no longer uses the hook`);
+    });
+  }
+
+  it("useOnValueChange keeps its comparison state too", () => {
+    const hook = readFileSync("components/useOnValueChange.ts", "utf8");
+    assert.match(hook, /const \[seen, setSeen\] = useState\(value\)/);
+    assert.match(hook, /if \(value !== seen\)/);
+    assert.doesNotMatch(hook, /useEffect/);
+  });
 
   for (const file of screens) {
     it(`${file} closes its form through the hook`, () => {

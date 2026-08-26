@@ -1,6 +1,7 @@
 "use client";
 
-import { type ReactNode, useActionState, useEffect, useState } from "react";
+import { type ReactNode, useActionState, useState } from "react";
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import type { AddedAirport, AddedMetro } from "@/lib/airport-admin";
 import { describeMetro, isBuiltInMetro } from "@/lib/airport-admin";
@@ -97,12 +98,8 @@ export default function AirportAdmin({
   const [airportModal, setAirportModal] = useState<AddedAirport | "new" | null>(null);
   const [metroModal, setMetroModal] = useState<AddedMetro | "new" | null>(null);
 
-  useEffect(() => {
-    if (airportState?.ok || removeState?.ok) setAirportModal(null);
-  }, [airportState, removeState]);
-  useEffect(() => {
-    if (metroState?.ok || removeState?.ok) setMetroModal(null);
-  }, [metroState, removeState]);
+  useOnActionSuccess([airportState, removeState], () => setAirportModal(null));
+  useOnActionSuccess([metroState, removeState], () => setMetroModal(null));
 
   if (!storeReady) {
     return (

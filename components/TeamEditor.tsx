@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
+import { useOnValueChange } from "@/components/useOnValueChange";
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { removeTeamMemberAction, saveTeamMemberAction, type ActionResult } from "@/app/admin/team/actions";
 import { ADMIN_AREAS, AREA_LABELS, describeAreas, grantedAreas } from "@/lib/admin-permissions";
@@ -46,13 +48,9 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
 
   // Opening the pop-up seeds the "run the admin area" tick from the person
   // being edited, so the areas list appears already reflecting what they hold.
-  useEffect(() => {
-    setAdminChecked(member ? member.admin : false);
-  }, [member]);
+  useOnValueChange(member, () => setAdminChecked(member ? member.admin : false));
 
-  useEffect(() => {
-    if (saveState?.ok || removeState?.ok) setEditing(null);
-  }, [saveState, removeState]);
+  useOnActionSuccess([saveState, removeState], () => setEditing(null));
 
   const granted = member ? grantedAreas(member.areas) : null; // null = all areas
   const areaChecked = (area: string) => (member ? granted === null || granted.includes(area as (typeof ADMIN_AREAS)[number]) : true);
