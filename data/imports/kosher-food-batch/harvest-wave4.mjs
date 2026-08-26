@@ -10,7 +10,6 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, "_harvested.json");
-const RAW = path.join(__dirname, "_raw");
 const UA = "Mozilla/5.0 (compatible; WhiteGloveKosherResearch/1.0)";
 const TIMEOUT_MS = 15000;
 const SKIP_NAME = /kosher[-\s]?style|israeli[-\s]?style|jewish[-\s]?style|type_text|color_link|filter by/i;

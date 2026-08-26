@@ -146,7 +146,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // pressed.
   const askedForList = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("list");
   const [mode, setMode] = useState<"list" | "edit" | null>(null);
-  const [tripCount, setTripCount] = useState(0);
   useEffect(() => {
     let active = true;
     fetch("/api/account/trips", { cache: "no-store" })
@@ -158,7 +157,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           setMode((m) => m ?? "edit");
           return;
         }
-        setTripCount(d.trips.length);
         setMode((m) => (m === null ? (askedForList || d.trips.length >= 2 ? "list" : "edit") : m));
       })
       .catch(() => {

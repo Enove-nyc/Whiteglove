@@ -122,8 +122,10 @@ export default function TravelAssistantBox({
     return () => clearTimeout(timer);
     // `ask` is deliberately not a dependency. It is redefined on every render,
     // and this effect must run once for one arriving question — the ref above
-    // is what guarantees that, not the dependency list.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // is what guarantees that, not the dependency list. (The disable that used
+    // to sit here is gone: the rule stopped objecting once the ref made the
+    // dependency honest, and a directive for a problem that no longer exists
+    // is itself a warning.)
   }, [initialAsk]);
 
   const visible = showMoreExamples ? EXAMPLES : EXAMPLES.slice(0, VISIBLE_EXAMPLES);

@@ -98,7 +98,6 @@ function parseFlowiz(html, sourceKey, agency, locality, country) {
 
 function parseKlbd(html) {
   const rows = [];
-  const listingUrl = "https://www.kosher.org.uk/directory/restaurants";
   for (const m of html.matchAll(/<a[^>]+href="((?:https?:\/\/www\.kosher\.org\.uk)?\/directory\/[^"]+)"[^>]*>([^<]{3,80})<\/a>/gi)) {
     const href = m[1].startsWith("http") ? m[1] : `https://www.kosher.org.uk${m[1]}`;
     const name = decode(m[2]);

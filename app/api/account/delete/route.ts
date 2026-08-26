@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { accountCookieName, deleteAccount, readSessionEmail } from "@/lib/account-store";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(accountCookieName())?.value;
   const email = readSessionEmail(cookie);

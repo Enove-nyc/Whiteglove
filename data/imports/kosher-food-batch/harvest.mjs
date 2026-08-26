@@ -67,19 +67,6 @@ function categoryFrom(text) {
   return "Restaurant";
 }
 
-const US_STATE = {
-  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
-  CO: "Colorado", CT: "Connecticut", DC: "District of Columbia", DE: "Delaware",
-  FL: "Florida", GA: "Georgia", HI: "Hawaii", IA: "Iowa", ID: "Idaho",
-  IL: "Illinois", IN: "Indiana", KS: "Kansas", KY: "Kentucky", LA: "Louisiana",
-  MA: "Massachusetts", MD: "Maryland", ME: "Maine", MI: "Michigan", MN: "Minnesota",
-  MO: "Missouri", MS: "Mississippi", MT: "Montana", NC: "North Carolina",
-  ND: "North Dakota", NE: "Nebraska", NH: "New Hampshire", NJ: "New Jersey",
-  NM: "New Mexico", NV: "Nevada", NY: "New York", OH: "Ohio", OK: "Oklahoma",
-  OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
-  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VA: "Virginia",
-  VT: "Vermont", WA: "Washington", WI: "Wisconsin", WV: "West Virginia", WY: "Wyoming",
-};
 
 function parsePlace(address, hintLocality = "", hintCountry = "") {
   const raw = decode(address).replace(/<br\s*\/?>/gi, ", ");
@@ -518,7 +505,6 @@ async function harvestKlbd() {
   for (const url of urls) {
     const r = await tryFetch(`klbd-${url}`, url);
     if (!r?.ok) continue;
-    const re = /<a[^>]+href="(https?:\/\/[^"]+)"[^>]*>([^<]{3,80})<\/a>/g;
     // Prefer structured address blocks if present.
     const addrBlocks = [...r.text.matchAll(/<h[23][^>]*>([^<]+)<\/h[23]>[\s\S]{0,400}?(\d[^<]{8,80})/gi)].slice(0, 400);
     for (const m of addrBlocks) {

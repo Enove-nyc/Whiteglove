@@ -5,7 +5,7 @@ import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import PipelineDashboard from "@/components/PipelineDashboard";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { LinkButton } from "@/components/ui/Button";
+
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail, resolveBusinessOwner } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";

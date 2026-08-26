@@ -12,7 +12,6 @@ const UA = "Mozilla/5.0 (compatible; WhiteGloveKosherResearch/1.0)";
 const SKIP_NAME = /kosher[-\s]?style|israeli[-\s]?style|jewish[-\s]?style|party equipment/i;
 const SHUL_ONLY = /^(chabad|synagogue|shul)\b/i;
 const FOOD_HINT = /restaurant|kitchen|dining|bakery|grocery|butcher|cafe|pizza|grill|deli|market|cater|sushi|fish|food|meat|dairy|take/i;
-const TYPE_WORD = /^(meat|dairy|pizza|bakery|cafe|sushi|grocery|supermarket|butcher|fish|catering|take out|ice cream|juice|confectionary|events|assisted living|nursing homes|misc|pareve|japanese)$/i;
 const STREET = /\d|street|st\.|avenue|ave|road|rd\.|blvd|drive|dr\.|lane|ln\.|place|pl\.|tpke|turnpike|mill rd/i;
 
 function decode(value) {
