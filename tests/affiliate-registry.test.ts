@@ -54,6 +54,17 @@ const ON_KAYAK: AffiliateConfig = {
   stay22: NO_STAY22,
 };
 
+/**
+ * A FLIGHT DATE HAS TO BE IN THE FUTURE, so it cannot be typed by hand.
+ *
+ * resolveLink returns null for a flight that has already left — correctly —
+ * and the sibling affiliate-links suite broke in five places the morning its
+ * hand-typed departure date became yesterday. These are computed instead.
+ */
+const isoInDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+const OUT = isoInDays(30);
+const BACK = isoInDays(37);
+
 const HOTEL = { product: "hotel" as const, destination: "Rome", checkIn: "2026-07-05", checkOut: "2026-07-12", adults: 2 };
 
 describe("who pays and where the traveler lands", () => {
@@ -84,7 +95,7 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(flights.destinationLabel, "Kayak");
     assert.equal(flights.earns, false);
     assert.match(flights.note, /earn nothing/i);
-    const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: "2026-09-05" }, NOTHING);
+    const link = resolveLink({ product: "flight", from: "JFK", to: "FCO", checkIn: OUT }, NOTHING);
     assert.ok(link, "an unconfigured flight search stopped working entirely");
     assert.match(link.url, /kayak\.com\/flights\//i);
   });
@@ -100,7 +111,7 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(route.network, "stay22");
     assert.equal(route.destinationLabel, "Kayak");
     const resolved = resolveLink(
-      { product: "flight", from: "JFK", to: "FCO", checkIn: "2026-09-01", checkOut: "2026-09-08" },
+      { product: "flight", from: "JFK", to: "FCO", checkIn: OUT, checkOut: BACK },
       viaAid,
     );
     assert.ok(resolved);
@@ -108,7 +119,7 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(url.host, "www.stay22.com");
     assert.equal(url.pathname, "/allez/kayak");
     assert.equal(url.searchParams.get("aid"), "whiteglove");
-    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/flights\/JFK-FCO\/2026-09-01\/2026-09-08/);
+    assert.ok((url.searchParams.get("link") ?? "").includes(`kayak.com/flights/JFK-FCO/${OUT}/${BACK}`), url.searchParams.get("link") ?? "");
   });
 
   it("sends Kayak cars through Stay22 from the ID, without a pasted wrap or Travelpayouts", () => {
@@ -142,7 +153,7 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(route.network, "stay22");
     assert.equal(route.earns, true);
     const resolved = resolveLink(
-      { product: "flight", from: "JFK", to: "KRK", checkIn: "2026-09-01" },
+      { product: "flight", from: "JFK", to: "KRK", checkIn: OUT },
       both,
     );
     assert.match(resolved!.url, /^https:\/\/www\.stay22\.com\/allez\/kayak/);

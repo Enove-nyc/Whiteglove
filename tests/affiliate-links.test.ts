@@ -208,29 +208,23 @@ describe("the whole journey survives the hand-off", () => {
 describe("a link that names its own partner", () => {
   const MARKER = "761677";
   const kayakConfig = { travelpayouts: {}, stay22: NO_STAY22, marker: MARKER, partners: { flights: "kayak" } as never };
-
   /**
-   * DATES RELATIVE TO TODAY, NOT WRITTEN OUT — and this is the bug it fixes,
-   * not a style preference.
+   * DATES THAT DO NOT WALK INTO THE PAST.
    *
-   * The departure was pinned to "2026-08-25", the day this block was written.
-   * resolveLink refuses a flight that has already left, so at midnight UTC the
-   * pinned date became yesterday and five assertions here started failing —
-   * on the calendar rolling over, with nothing in the code having changed.
-   * A suite that goes red overnight is worse than one that never passed: the
-   * next person reads the failure as their own and goes looking for it in
-   * their diff.
+   * This block was pinned to a departure of 2026-08-25, and on 2026-08-26 all
+   * five of its tests broke at once — not because anything regressed, but
+   * because the site correctly refuses a flight that has already left, so the
+   * request stopped parsing and every `resolved!` in here dereferenced null.
+   * A fixture dated by hand is a test with an expiry date on it.
    *
-   * The encoded date in the URL is derived from the SAME value the request was
-   * built from, so this still proves the DDMM encoding rather than agreeing
-   * with itself about a constant.
+   * A month out, always, and the expectations are computed from the same two
+   * values rather than typed beside them.
    */
-  const iso = (daysFromNow: number) =>
-    new Date(Date.now() + daysFromNow * 86_400_000).toISOString().slice(0, 10);
-  const ddmm = (isoDate: string) => isoDate.slice(8, 10) + isoDate.slice(5, 7);
-
-  const OUT = iso(7);
-  const BACK = iso(14);
+  const isoInDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+  const OUT = isoInDays(30);
+  const BACK = isoInDays(37);
+  /** Aviasales writes a date in its route as DDMM. */
+  const ddmm = (iso: string) => `${iso.slice(8, 10)}${iso.slice(5, 7)}`;
   const legs = [{ from: "JFK", to: "PRG", date: OUT }];
   const resolve = (href: string, config = kayakConfig) =>
     resolveLink(readAffiliateRequest(new URLSearchParams(href.slice(href.indexOf("?") + 1)))!, config);
@@ -300,7 +294,7 @@ describe("a link that names its own partner", () => {
     const hotel = resolve(goHref({ product: "hotel", partner: "aviasales" as never, destination: "Prague" }));
     assert.match(hotel!.url, /^https:\/\/www\.booking\.com\//);
     const car = resolve(
-      goHref({ product: "car", partner: "aviasales" as never, destination: "Prague", checkIn: "2026-08-25", checkOut: "2026-09-01" }),
+      goHref({ product: "car", partner: "aviasales" as never, destination: "Prague", checkIn: OUT, checkOut: BACK }),
     );
     assert.match(car!.url, /^https:\/\/www\.kayak\.com\/cars\//);
   });

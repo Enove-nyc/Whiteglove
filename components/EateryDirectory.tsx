@@ -13,6 +13,33 @@ import type { KosherEatery } from "@/data/kosher-eateries";
 // The curated kosher listings. The food finder filters this same White Glove
 // collection, so every public card has the same editorial boundary.
 
+/**
+ * HOW MANY CARDS ARE DRAWN AT ONCE — not how many are searched.
+ *
+ * The page used to paint every listing it holds: 1,466 cards, each carrying
+ * two interactive components (add-to-trip and suggest-an-edit), for 3.5MB of
+ * HTML and a megabyte of duplicated data beside it. This is the page an
+ * Orthodox traveller opens on hotel wifi in a city they do not know, and it
+ * was the heaviest page on the site by twenty times.
+ *
+ * Nobody scrolls 1,466 cards; they search. So the SEARCH still looks through
+ * every listing — that is the point of the page and it is unchanged — and only
+ * the first slice of the RESULT is drawn, with the rest a button away. A
+ * filtered search that returns eleven places draws eleven cards, exactly as
+ * before.
+ *
+ * Sixty is roughly two phone screens of scrolling past the fold: enough that
+ * an unfiltered browse does not feel truncated, small enough that the page
+ * arrives.
+ *
+ * NO "SHOWING 60 OF 1,466" UNDER THE BUTTON, though it is the obvious thing to
+ * write. Every public list on this site refuses to print totals — the shared
+ * toolbar has no count props at all and tests/list-toolbar.test.ts holds all
+ * five directories to it. The button says there is more; the number is not the
+ * visitor's problem.
+ */
+const FIRST_DRAW = 60;
+
 function toneFor(state: string) {
   if (state === "certified") return "border-emerald-500 bg-emerald-50 text-emerald-900";
   if (state === "none") return "border-stone-300 bg-stone-50 text-stone-600";
@@ -23,6 +50,15 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("");
   const [kind, setKind] = useState("");
+  const [drawn, setDrawn] = useState(FIRST_DRAW);
+
+  // Any change to what is being searched starts the count again — otherwise a
+  // visitor who pressed "Show more" once keeps a long draw for every later
+  // search, which is the cost this exists to avoid.
+  const narrow = <T,>(set: (value: T) => void) => (value: T) => {
+    setDrawn(FIRST_DRAW);
+    set(value);
+  };
 
   const countries = useMemo(
     () =>
@@ -63,18 +99,18 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
 
       <ListToolbar
         query={query}
-        onQuery={setQuery}
+        onQuery={narrow(setQuery)}
         placeholder="Rome, bakery, meat, Antwerp…"
         searchLabel="Search kosher listings"
         empty={shown.length === 0}
         filters={[
-          { label: "Country", value: country, onChange: setCountry, options: countries, allLabel: "Everywhere" },
-          { label: "Kind", value: kind, onChange: setKind, options: kinds, allLabel: "Anything" },
+          { label: "Country", value: country, onChange: narrow(setCountry), options: countries, allLabel: "Everywhere" },
+          { label: "Kind", value: kind, onChange: narrow(setKind), options: kinds, allLabel: "Anything" },
         ]}
       />
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
-        {shown.map((e) => (
+        {shown.slice(0, drawn).map((e) => (
           <article key={e.slug} id={e.slug} className="min-w-0 scroll-mt-24 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">
               {[e.city, e.country, e.kind, e.diet].filter(Boolean).join(" · ")}
@@ -114,6 +150,19 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
           </article>
         ))}
       </div>
+
+      {shown.length > drawn && (
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={() => setDrawn((n) => n + FIRST_DRAW)}
+            className="min-h-11 border border-[var(--gold)] bg-white px-6 py-2.5 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--surface)]"
+          >
+            Show more
+          </button>
+          <p className="mt-3 text-xs text-stone-500">Or search by city, country, kind or name to narrow it down.</p>
+        </div>
+      )}
     </>
   );
 }
