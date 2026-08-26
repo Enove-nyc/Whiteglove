@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
 import SearchMemory from "@/components/SearchMemory";
+import SeasonalSpotlight from "@/components/SeasonalSpotlight";
 import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
@@ -12,6 +13,7 @@ import { Icon } from "@/components/icons/Icon";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
+import { currentSpotlight } from "@/lib/seasonal-spotlight-view";
 import { website } from "@/lib/structured-data";
 import { DEFAULT_PHOTO } from "@/lib/default-photo";
 import ItinerariesHome from "@/components/ItinerariesHome";
@@ -112,12 +114,16 @@ export default async function Home() {
   }
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, caseStudies, booking] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, caseStudies, booking, spotlight] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
     // Genuine, permitted, approved only — section renders nothing when empty.
     readPublicCaseStudies(),
     readBookingLink(),
+    // Null for most of the year, and then the section below is not there at
+    // all — a seasonal prompt that is always on the front page is not
+    // seasonal, it is furniture.
+    currentSpotlight(),
   ]);
 
   return (
@@ -151,6 +157,12 @@ export default async function Home() {
           )}
         </div>
       </section>
+
+      {spotlight && (
+        <section className="mx-auto max-w-7xl px-5 pt-8 sm:px-8">
+          <SeasonalSpotlight window={spotlight} />
+        </section>
+      )}
 
       {/* ---- 2. Featured --------------------------------------------------
           The six main sections of the site, as cards — not individual places.

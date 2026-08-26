@@ -108,6 +108,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/reports", label: "Reports", blurb: "Which empty pages people open." },
       { href: "/admin/growth", label: "Growth", blurb: "Searches, clicks and conversion." },
       { href: "/admin/updates", label: "Current updates", blurb: "Dated notices on a destination page." },
+      { href: "/admin/seasons", label: "Seasons", blurb: "When the Yom Tov prompts show." },
       { href: "/admin/alerts", label: "Alerts", blurb: "Destination and seasonal signups." },
       { href: "/admin/alerts/send", label: "Send an update", blurb: "Write to the people who asked." },
       { href: "/admin/history", label: "Audit log", blurb: "Edits, and how to undo them." },

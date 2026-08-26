@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
 import SeasonalFeaturedRow from "@/components/SeasonalFeaturedRow";
+import SeasonalSpotlight from "@/components/SeasonalSpotlight";
 import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { resolvePage } from "@/lib/pages";
@@ -10,6 +11,8 @@ import { pageMetadata } from "@/lib/seo";
 import { heritageCards } from "@/lib/destination-directory";
 import { asDirectoryCards, asHeritageCards, cardModels, featuredThisSeason } from "@/lib/vacation-ideas";
 import { loadVacationSources } from "@/lib/vacation-sources";
+import { readSeasonalWindows } from "@/lib/seasonal-windows-store";
+import { spotlightFrom } from "@/lib/seasonal-spotlight-view";
 import StructuredData from "@/components/StructuredData";
 import { breadcrumbs, collectionPage } from "@/lib/structured-data";
 
@@ -39,12 +42,16 @@ export default async function VacationIdeasPage({
   searchParams: Promise<{ kind?: string; season?: string }>;
 }) {
   const { kind, season } = await searchParams;
-  const [page, sources, destinations] = await Promise.all([
+  // The server's date, so the prompt and the front page agree about what is
+  // open rather than each asking the browser.
+  const today = new Date().toISOString().slice(0, 10);
+  const [page, sources, destinations, seasonalWindows] = await Promise.all([
     resolvePage("getaways"),
     loadVacationSources(),
     // Read through the view, not the data file, so a destination the owner
     // adds or edits in the admin is on this hub without a deploy.
     getVacationDestinations(),
+    readSeasonalWindows(today),
   ]);
   /**
    * ONE DIRECTORY. The holiday destinations and the heritage towns are the
@@ -92,6 +99,13 @@ export default async function VacationIdeasPage({
           ("Destinations"), and it is the one the owner can edit; a second
           heading here said the same word twice. */}
       <section id="browse" className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
+        {/* Two different things, deliberately in this order: the seasonal
+            prompt is a question about the time of year and points at a filter;
+            the row underneath is the destinations the owner has featured for
+            the season. Neither shows unless it has something to say. */}
+        <div className="mb-6 empty:hidden">
+          <SeasonalSpotlight window={spotlightFrom(seasonalWindows, destinations, today)} />
+        </div>
         <SeasonalFeaturedRow destinations={featuredThisSeason(destinations)} />
         <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
       </section>
