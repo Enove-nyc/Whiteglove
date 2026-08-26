@@ -15,7 +15,10 @@ change rather than working around it. Where this table and `AGENTS.md`
 disagree, `AGENTS.md` wins — that is the file the owner's decisions are
 recorded in, and it is loaded every session.
 
-**The current brief is `docs/product-pass-2026-08-26.md`**, not this file. It
+**The current brief is `docs/product-pass-2026-08-26.md`**, not this file.
+`docs/handover-strategy-chat-2026-08-26.md` carries the open items from the
+strategy chat alongside it — the repo-wide lint backlog, the browser checks that
+have never run outside the sandbox, and what was deliberately not done. It
 is the owner's combined product and UX pass, filed with a reconciliation
 against the code showing which of its items already exist. Read that
 reconciliation before implementing from it — several things it asks to build
