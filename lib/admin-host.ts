@@ -52,6 +52,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "ratings",
   "recycle",
   "reports",
+  "seasons",
   "settings",
   "shomrim",
   "shuls",
