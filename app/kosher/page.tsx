@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import EateryDirectory from "@/components/EateryDirectory";
 import { kosherEateries } from "@/data/kosher-eateries";
+import { eateryFacets, searchEateries } from "@/data/eatery-search";
 import { resolvePage } from "@/lib/pages";
 
 export async function generateMetadata() {
@@ -21,6 +22,11 @@ export async function generateMetadata() {
 // content, so it stays in code.
 export default async function KosherPage() {
   const page = (await resolvePage("kosher"))!;
+  // The first page of listings, rendered by the server: the page arrives whole
+  // and indexable, and a visitor who only reads what is in front of them never
+  // touches the network. Later searches ask /api/kosher/search.
+  const first = searchEateries(kosherEateries, { limit: 60 });
+  const facets = eateryFacets(kosherEateries);
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -31,7 +37,7 @@ export default async function KosherPage() {
           finder: it searches those listings by city, country, kind or name,
           shows the fuller card, and puts a place on the trip. */}
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <EateryDirectory eateries={kosherEateries} />
+        <EateryDirectory initial={first.rows} initialMore={first.more} countries={facets.countries} kinds={facets.kinds} />
       </section>
       <Footer />
     </main>

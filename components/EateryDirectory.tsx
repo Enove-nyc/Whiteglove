@@ -1,44 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
-import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
+import ListToolbar from "@/components/ListToolbar";
 import { IconLink } from "@/components/icons/IconAction";
-import { extraSpellings } from "@/lib/place-search";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { hechsherLabel } from "@/data/hechsherim";
-import type { KosherEatery } from "@/data/kosher-eateries";
-
-// The curated kosher listings. The food finder filters this same White Glove
-// collection, so every public card has the same editorial boundary.
+import type { EateryCard } from "@/data/eatery-search";
 
 /**
- * HOW MANY CARDS ARE DRAWN AT ONCE — not how many are searched.
+ * The curated kosher listings. The food finder filters this same White Glove
+ * collection, so every public card has the same editorial boundary.
  *
- * The page used to paint every listing it holds: 1,466 cards, each carrying
- * two interactive components (add-to-trip and suggest-an-edit), for 3.5MB of
- * HTML and a megabyte of duplicated data beside it. This is the page an
- * Orthodox traveller opens on hotel wifi in a city they do not know, and it
- * was the heaviest page on the site by twenty times.
+ * WHERE THE SEARCH HAPPENS. On the server — see data/eatery-search.ts. This
+ * page used to hold all 1,466 listings in the browser and filter them there,
+ * which meant a megabyte of records, notes and summaries downloaded to draw
+ * sixty cards, by somebody on hotel wifi looking for one restaurant. Now the
+ * first page is rendered by the server and every later search asks
+ * /api/kosher/search for exactly what it will draw.
  *
- * Nobody scrolls 1,466 cards; they search. So the SEARCH still looks through
- * every listing — that is the point of the page and it is unchanged — and only
- * the first slice of the RESULT is drawn, with the rest a button away. A
- * filtered search that returns eleven places draws eleven cards, exactly as
- * before.
+ * The matcher is unchanged (lib/list-search.ts, shared with every other list
+ * here), so a query finds what it always found.
  *
- * Sixty is roughly two phone screens of scrolling past the fold: enough that
- * an unfiltered browse does not feel truncated, small enough that the page
- * arrives.
- *
- * NO "SHOWING 60 OF 1,466" UNDER THE BUTTON, though it is the obvious thing to
- * write. Every public list on this site refuses to print totals — the shared
- * toolbar has no count props at all and tests/list-toolbar.test.ts holds all
- * five directories to it. The button says there is more; the number is not the
- * visitor's problem.
+ * WHAT THIS COSTS, HONESTLY: typing now waits on a round trip where it used to
+ * be instant. That is why the box is debounced rather than fired per keystroke,
+ * why the previous results stay on screen while the next ones come, and why
+ * the first sixty arrive with the page already drawn — the common case, a
+ * visitor who reads what is in front of them, touches the network not at all.
  */
-const FIRST_DRAW = 60;
+
+const PAGE = 60;
+/** Long enough that a typed city name is one request, short enough to feel live. */
+const SETTLE_MS = 250;
 
 function toneFor(state: string) {
   if (state === "certified") return "border-emerald-500 bg-emerald-50 text-emerald-900";
@@ -46,47 +40,66 @@ function toneFor(state: string) {
   return "border-amber-400 bg-amber-50 text-amber-900";
 }
 
-export default function EateryDirectory({ eateries }: { eateries: KosherEatery[] }) {
+export default function EateryDirectory({
+  initial,
+  initialMore,
+  countries,
+  kinds,
+}: {
+  initial: EateryCard[];
+  initialMore: boolean;
+  countries: string[];
+  kinds: string[];
+}) {
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("");
   const [kind, setKind] = useState("");
-  const [drawn, setDrawn] = useState(FIRST_DRAW);
+  const [rows, setRows] = useState<EateryCard[]>(initial);
+  const [more, setMore] = useState(initialMore);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  // Any change to what is being searched starts the count again — otherwise a
-  // visitor who pressed "Show more" once keeps a long draw for every later
-  // search, which is the cost this exists to avoid.
-  const narrow = <T,>(set: (value: T) => void) => (value: T) => {
-    setDrawn(FIRST_DRAW);
-    set(value);
-  };
+  // Which request the answer on screen belongs to. A slow first request must
+  // not overwrite the results of a later, faster one — the classic way a
+  // search box ends up showing the answer to a question nobody asked last.
+  const asked = useRef(0);
+  // The first render already has the server's answer for the empty search;
+  // fetching it again on mount would be a wasted round trip on every visit.
+  const mounted = useRef(false);
 
-  const countries = useMemo(
-    () =>
-      [...new Set(eateries.map((e) => e.country))].sort().map((value) => ({
-        value,
-        label: value,
-      })),
-    [eateries],
-  );
-  const kinds = useMemo(
-    () => [...new Set(eateries.map((e) => e.kind))].sort().map((value) => ({ value, label: value })),
-    [eateries],
-  );
+  async function load(next: { query: string; country: string; kind: string; offset: number }) {
+    const mine = ++asked.current;
+    setBusy(true);
+    setFailed(false);
+    try {
+      const params = new URLSearchParams({ limit: String(PAGE), offset: String(next.offset) });
+      if (next.query) params.set("q", next.query);
+      if (next.country) params.set("country", next.country);
+      if (next.kind) params.set("kind", next.kind);
+      const res = await fetch(`/api/kosher/search?${params}`, { cache: "no-store" });
+      const data = (await res.json()) as { rows?: EateryCard[]; more?: boolean };
+      if (mine !== asked.current) return;
+      if (!res.ok || !data.rows) {
+        setFailed(true);
+        return;
+      }
+      setRows((prev) => (next.offset ? [...prev, ...data.rows!] : data.rows!));
+      setMore(Boolean(data.more));
+    } catch {
+      if (mine === asked.current) setFailed(true);
+    } finally {
+      if (mine === asked.current) setBusy(false);
+    }
+  }
 
-  // Notes and alternate spellings count here as much as anywhere: somebody
-  // types "Villeurbanne" or "Wien" or "badatz", and all three live in the
-  // notes rather than the name.
-  const shown = eateries
-    .filter(
-      (e) =>
-        (!country || e.country === country) &&
-        (!kind || e.kind === kind) &&
-        listMatches(
-          [e.name, e.city, e.country, e.kind, e.diet, e.summary, (e.notes ?? []).join(" "), e.nearQuarter ?? "", extraSpellings([e.slug, e.city])].join(" "),
-          query,
-        ),
-    )
-    .sort((a, b) => listRank(query, a.city, a.name) - listRank(query, b.city, b.name));
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    const timer = setTimeout(() => void load({ query, country, kind, offset: 0 }), SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [query, country, kind]);
 
   return (
     <>
@@ -99,18 +112,24 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
 
       <ListToolbar
         query={query}
-        onQuery={narrow(setQuery)}
+        onQuery={setQuery}
         placeholder="Rome, bakery, meat, Antwerp…"
         searchLabel="Search kosher listings"
-        empty={shown.length === 0}
+        empty={rows.length === 0 && !busy && !failed}
         filters={[
-          { label: "Country", value: country, onChange: narrow(setCountry), options: countries, allLabel: "Everywhere" },
-          { label: "Kind", value: kind, onChange: narrow(setKind), options: kinds, allLabel: "Anything" },
+          { label: "Country", value: country, onChange: setCountry, options: countries.map((value) => ({ value, label: value })), allLabel: "Everywhere" },
+          { label: "Kind", value: kind, onChange: setKind, options: kinds.map((value) => ({ value, label: value })), allLabel: "Anything" },
         ]}
       />
 
-      <div className="mt-8 grid gap-5 md:grid-cols-2">
-        {shown.slice(0, drawn).map((e) => (
+      {failed && (
+        <p role="status" className="mt-5 border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          The search could not be reached just now. Try again in a moment.
+        </p>
+      )}
+
+      <div className={`mt-8 grid gap-5 md:grid-cols-2 ${busy ? "opacity-60" : ""}`}>
+        {rows.map((e) => (
           <article key={e.slug} id={e.slug} className="min-w-0 scroll-mt-24 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">
               {[e.city, e.country, e.kind, e.diet].filter(Boolean).join(" · ")}
@@ -151,14 +170,15 @@ export default function EateryDirectory({ eateries }: { eateries: KosherEatery[]
         ))}
       </div>
 
-      {shown.length > drawn && (
+      {more && (
         <div className="mt-8 text-center">
           <button
             type="button"
-            onClick={() => setDrawn((n) => n + FIRST_DRAW)}
-            className="min-h-11 border border-[var(--gold)] bg-white px-6 py-2.5 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--surface)]"
+            disabled={busy}
+            onClick={() => void load({ query, country, kind, offset: rows.length })}
+            className="min-h-11 border border-[var(--gold)] bg-white px-6 py-2.5 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--surface)] disabled:opacity-60"
           >
-            Show more
+            {busy ? "Loading…" : "Show more"}
           </button>
           <p className="mt-3 text-xs text-stone-500">Or search by city, country, kind or name to narrow it down.</p>
         </div>
