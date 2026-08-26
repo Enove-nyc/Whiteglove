@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NewSiteNotice from "@/components/NewSiteNotice";
+import SearchPalette from "@/components/SearchPalette";
 import SiteAssistant from "@/components/SiteAssistant";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
 import { SignInGateProvider } from "@/components/SignInGate";
@@ -121,6 +122,9 @@ export default async function RootLayout({
             is not part of the page's own content and must not land in the
             middle of the tab order of whatever page somebody is reading. */}
         <SiteAssistant />
+        {/* Keyboard only, and nothing on the page: "/" or ⌘K opens the search
+            the header already carries. See components/SearchPalette.tsx. */}
+        <SearchPalette />
         {/* VERCEL SPEED INSIGHTS WAS HERE, and it went when the site did.
             The component asks for /_vercel/speed-insights/script.js, which
             only exists on Vercel's edge — served from Railway it is a 404 on

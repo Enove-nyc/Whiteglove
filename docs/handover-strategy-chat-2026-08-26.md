@@ -74,7 +74,14 @@ the lint batch should know it was seen and skipped on purpose, not missed.
   → `npm test` → `timeout 500 npx next build` → commit → merge to main → verify live.
 - Current state at handover: 4509/4509 tests pass, typecheck clean, build green.
 
-## OPEN ITEM 1 — 50 lint errors, 25 warnings across the repo
+## OPEN ITEM 1 — 50 lint errors, 25 warnings across the repo — DONE
+
+Cleared on 26 August 2026 across eight small pull requests with the full
+suite green between each. `npx eslint .` is clean. Three shared hooks came
+out of it — `components/useOnActionSuccess.ts`, `useOnValueChange.ts` and
+`useDebouncedSearch.ts` — and the last of those fixed a real bug six search
+boxes shared: the previous query's results sat under the current text for a
+full debounce and round trip. What follows is the original entry.
 
 `npx eslint .` fails on 29 files. 41 of the 50 errors are the SAME rule:
 `react-hooks/set-state-in-effect` (a synchronous setState inside useEffect).
@@ -111,6 +118,22 @@ flight → aviasales.com (200), car → kayak.com (200).
 What is still needed: one run of `npm run audit:flows` from a machine whose
 browser has ordinary internet, ideally against the live site, before launch.
 
+STILL OPEN, AND IT IS THE OWNER'S MACHINE THAT HAS TO DO IT. He was walked as
+far as `npm install` on 26 August and stopped there because the audit takes the
+machine over for several minutes — it drives a real browser through every
+journey at two widths. It is waiting for a moment when he does not need the
+computer. The four lines, in the project folder:
+
+    npx playwright install chromium
+    npm run build
+    npx next start -p 3130          # leave this running
+    node scripts/audit-flows.mjs    # in a second terminal
+
+The other audits have all been run since and are clean: `audit:ui` is down to
+19 findings, all of them the site notice's tab order, which is a settled
+decision; `audit:destinations` 21/21; `audit:admin` 0; `audit:outage` 0 — every
+page still answers 200 with the private store unreachable.
+
 ## OPEN ITEM 3 — searching "flights" alone
 
 `/api/search?q=flights` returns "Search booking partners" and "Travel
@@ -126,14 +149,27 @@ smarter approach than a global edit budget.
 
 ## OPEN ITEM 4 — audit priorities never started (product decisions, not bugs)
 
-From the owner's 30-priority site audit, these were never begun and need HIS
-decision on scope before any work: Trip Mode, split payments, change history,
-team features, adviser command centre, inbox quick actions, wallet expansion,
-map↔list view, contextual AI, search command centre, mobile bottom navigation,
-destination-page simplification, the admin "Needs Review" screen (priority 2),
-and the Data Health dashboard (priority 29).
+From the owner's 30-priority site audit. Worked through on 26 August, and most
+of the list turned out not to be a list of gaps.
 
-Do not start these unprompted. Ask which one he wants and what it should do.
+ALREADY BUILT, AND LEFT ALONE: split payments (`data/trip-payments.ts`), team
+features (`components/TeamMembersPanel.tsx`, `/team/join`), the admin "Needs
+Review" screen (`/admin/imports/needs-review`), inbox quick actions (reply,
+mark answered, reopen on `/admin/messages`), mobile bottom navigation
+(`components/MobileBottomBar.tsx`), change history on both sides (`/admin/history`
+with undo, and the app's own Changes tab), Trip Mode (the app opens on today,
+follows the clock through the day and carries a Now/Next card), and the adviser
+home (`/pipeline`).
+
+BUILT THEN: the Data Health dashboard (`/admin/data-health`), the map view
+(kind filters and a linkable view, `lib/map-links.ts`), and the contextual
+assistant (`lib/assistant-context.ts`).
+
+STILL OPEN, AND EACH IS A QUESTION ABOUT WHAT HE WANTS RATHER THAN A GAP:
+wallet expansion — what else belongs in it; destination-page simplification —
+what to cut from a page with eight sections. A keyboard search palette was the
+third; it was built as a shortcut into the search the site already has, with
+nothing added to the page.
 
 ## DEFERRED AT THE OWNER'S WORD — do not build without him asking
 
