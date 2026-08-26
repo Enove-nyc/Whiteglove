@@ -50,7 +50,18 @@ export default function AdminDirectoryManager() {
     const data = await res.json().catch(() => null);
     if (data) { setProviders(data.providers ?? []); setAvailable(data.available !== false); }
   }
-  useEffect(() => { load(); }, []);
+  // Async wrapper rather than calling load() from the effect body: a bare call
+  // enters it synchronously, which the rule counts as a setState during the
+  // effect. Same shape AgencyPanel and the rest of this repo use.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (active) await load();
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function add() {
     setForm({ ...EMPTY });

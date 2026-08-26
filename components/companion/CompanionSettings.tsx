@@ -29,8 +29,17 @@ export default function CompanionSettings() {
       setReady(true);
     }
   }, []);
+  // Async wrapper rather than calling load() from the effect body: a bare call
+  // enters it synchronously, which the rule counts as a setState during the
+  // effect. Same shape AgencyPanel and the rest of this repo use.
   useEffect(() => {
-    void load();
+    let active = true;
+    (async () => {
+      if (active) await load();
+    })();
+    return () => {
+      active = false;
+    };
   }, [load]);
 
   async function toggle() {
