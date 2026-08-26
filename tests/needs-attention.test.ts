@@ -51,6 +51,25 @@ describe("every reason a trip needs attention leads somewhere", () => {
     assert.equal(action.kind, "inline");
   });
 
+  it("tells the planner the client said yes, and what to do about it", () => {
+    // The worse of the two silences: tripStage moves an approved trip straight
+    // to "Confirmed", so the board reads as settled while the agreed option is
+    // still not on the itinerary — and the itinerary is what the traveler
+    // opens. Nothing on the pipeline said so.
+    const action = actionForReminder("proposal_approved_not_converted");
+    assert.equal(action.kind, "open");
+    if (action.kind === "open") {
+      assert.equal(action.path, "/proposal");
+      assert.match(action.label, /convert/i);
+    }
+  });
+
+  it("gives the changes-requested badge something to press", () => {
+    const action = actionForReminder("proposal_changes_requested");
+    assert.equal(action.kind, "open");
+    if (action.kind === "open") assert.equal(action.path, "/proposal");
+  });
+
   it("sends the add-on chase to the proposal, where add-ons are answered", () => {
     const action = actionForReminder("addon_pending");
     assert.equal(action.kind, "open");
@@ -72,6 +91,9 @@ describe("the reasons and their actions cannot drift apart", () => {
       { stage: "proposal" as const, proposal: { status: "viewed", sentAt: "2026-08-25T00:00:00Z", expiresAt: "2026-08-27" } as never },
       { stage: "planning" as const, startDate: "2026-09-01" },
       { stage: "completed" as const, endDate: "2026-08-20" },
+      // The client has acted, and until now neither said so on the pipeline.
+      { stage: "confirmed" as const, proposal: { status: "approved", options: [{ id: "a" }] } as never },
+      { stage: "awaiting_approval" as const, proposal: { status: "changes_requested", options: [{ id: "a" }] } as never },
     ]) {
       for (const reminder of tripReminders(trip, today)) {
         seen += 1;
@@ -95,5 +117,53 @@ describe("the reasons and their actions cannot drift apart", () => {
       !source.includes('r.reason === "trip_completed_no_rating_sent" && <RatingRequestAction'),
       "one reason is special-cased again and the other five have nothing to press",
     );
+  });
+});
+
+/**
+ * The two client actions the pipeline used to swallow.
+ *
+ * Driven through tripReminders itself, because the point is not that the
+ * action table has an entry — it is that the reminder fires at all.
+ */
+describe("a client acting on a proposal reaches the planner", () => {
+  const today = "2026-08-26";
+  const options = [{ id: "a", name: "Option A", components: [] }];
+
+  it("fires when they approved and nobody has converted it", () => {
+    const reasons = tripReminders(
+      { stage: "confirmed", proposal: { id: "p", status: "approved", options, comments: [], createdAt: today, updatedAt: today } },
+      today,
+    ).map((r) => r.reason);
+    assert.ok(reasons.includes("proposal_approved_not_converted"), `got ${JSON.stringify(reasons)}`);
+  });
+
+  it("stops once it has been converted", () => {
+    // convertProposalToItinerary moves the proposal to "confirmed". The
+    // reminder must go with it, or it nags for ever after the work is done.
+    const reasons = tripReminders(
+      { stage: "confirmed", proposal: { id: "p", status: "confirmed", options, comments: [], createdAt: today, updatedAt: today } },
+      today,
+    ).map((r) => r.reason);
+    assert.ok(!reasons.includes("proposal_approved_not_converted"));
+  });
+
+  it("fires when they asked for changes", () => {
+    const reasons = tripReminders(
+      { stage: "awaiting_approval", proposal: { id: "p", status: "changes_requested", options, comments: [], createdAt: today, updatedAt: today } },
+      today,
+    ).map((r) => r.reason);
+    assert.ok(reasons.includes("proposal_changes_requested"), `got ${JSON.stringify(reasons)}`);
+  });
+
+  it("says nothing while it is still with the client", () => {
+    for (const status of ["draft", "sent", "viewed"] as const) {
+      const reasons = tripReminders(
+        { stage: "awaiting_approval", proposal: { id: "p", status, options, comments: [], createdAt: today, updatedAt: today } },
+        today,
+      ).map((r) => r.reason);
+      assert.ok(!reasons.includes("proposal_approved_not_converted"), `${status} nagged about converting`);
+      assert.ok(!reasons.includes("proposal_changes_requested"), `${status} nagged about changes`);
+    }
   });
 });

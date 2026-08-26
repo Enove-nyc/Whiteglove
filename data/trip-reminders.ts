@@ -23,6 +23,8 @@ import type { TripStage } from "@/data/trip-pipeline";
 export type ReminderReason =
   | "proposal_stale"
   | "proposal_expiring"
+  | "proposal_changes_requested"
+  | "proposal_approved_not_converted"
   | "payment_due_soon"
   | "addon_pending"
   | "trip_soon_unconfirmed"
@@ -74,6 +76,34 @@ export function tripReminders(
     if (proposal.expiresAt && proposal.expiresAt >= today && daysBetween(today, proposal.expiresAt) <= EXPIRING_PROPOSAL_DAYS) {
       out.push({ reason: "proposal_expiring", message: `Expires ${proposal.expiresAt === today ? "today" : `in ${daysBetween(today, proposal.expiresAt)} days`}.` });
     }
+  }
+
+  /**
+   * THE TWO THINGS A CLIENT DOES, AND WHAT THEY COST WHEN NOBODY IS TOLD.
+   *
+   * The proposal already lets a client compare options, pick one, or ask for
+   * changes; the planner already has a Convert button. What was missing was
+   * the bit in between — the client acts, and nothing on the pipeline says so.
+   *
+   * APPROVED IS THE WORSE OF THE TWO, because it does not look like a problem.
+   * tripStage() moves an approved trip straight to "Confirmed", so the board
+   * reads as settled while convertProposalToItinerary has never run: the
+   * agreed option is not on the itinerary, and the itinerary is what the
+   * traveler actually opens. A trip that says Confirmed and carries the
+   * pre-agreement plan is worse than one that says it needs attention.
+   *
+   * CHANGES REQUESTED had a badge and nothing to press. Same reason, said out
+   * loud, so it arrives with the action beside it like everything else.
+   */
+  if (proposal?.status === "approved") {
+    out.push({
+      reason: "proposal_approved_not_converted",
+      message: "Approved — the agreed option is not on the itinerary yet.",
+    });
+  }
+
+  if (proposal?.status === "changes_requested") {
+    out.push({ reason: "proposal_changes_requested", message: "Changes requested — waiting on you." });
   }
 
   if (trip.balance) {
