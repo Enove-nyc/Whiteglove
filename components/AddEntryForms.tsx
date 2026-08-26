@@ -1,10 +1,11 @@
 "use client";
 
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import ListingCategoryField from "@/components/ListingCategoryField";
 
 import Link from "next/link";
-import { type ReactNode, useActionState, useEffect, useState } from "react";
+import { type ReactNode, useActionState, useState } from "react";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { type ActionResult, addAttractionAction, addCemeteryAction, addInfoPageAction, addKosherStayAction } from "@/app/admin/add/actions";
 
@@ -75,7 +76,7 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
 
   // A save that went through closes the pop-up and leaves its confirmation on
   // the chooser, so it is not hidden behind the form that is no longer needed.
-  useEffect(() => { if (cemState?.ok || attrState?.ok || stayState?.ok || pageState?.ok) setOpen(null); }, [cemState, attrState, stayState, pageState]);
+  useOnActionSuccess([cemState, attrState, stayState, pageState], () => setOpen(null));
 
   const lastMessage = [cemState, attrState, stayState, pageState].filter((s) => s?.ok).slice(-1)[0];
 

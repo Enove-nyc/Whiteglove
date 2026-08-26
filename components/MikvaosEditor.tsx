@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import { useFocusTrap } from "@/components/useFocusTrap";
 
 /**
@@ -62,9 +63,7 @@ export default function MikvaosEditor({
   const [query, setQuery] = useState("");
   const dialogRef = useFocusTrap<HTMLDivElement>(Boolean(editing), () => setEditing(null));
 
-  useEffect(() => {
-    if (saveState?.ok || removeState?.ok) setEditing(null);
-  }, [saveState, removeState]);
+  useOnActionSuccess([saveState, removeState], () => setEditing(null));
 
   const shown = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("en");

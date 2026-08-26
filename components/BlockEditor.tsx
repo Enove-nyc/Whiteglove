@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { resetPageAction, savePageAction, type ActionResult } from "@/app/admin/pages/actions";
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import PageBlocks from "@/components/PageBlocks";
 import {
   BLOCK_LABELS,
@@ -243,9 +244,7 @@ export default function BlockEditor({ page }: { page: Page }) {
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  useEffect(() => {
-    if (saveState?.ok) setDirty(false);
-  }, [saveState]);
+  useOnActionSuccess([saveState], () => setDirty(false));
 
   const change = (next: PageBlock[]) => {
     setBlocks(next);

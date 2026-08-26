@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import {
   deleteBlastAction,
@@ -115,9 +116,7 @@ export default function BlastComposer({
 
   // A save that went through puts the composer away; the list behind it has
   // already been refreshed by the action's own revalidate.
-  useEffect(() => {
-    if (saveState?.ok) setComposing(false);
-  }, [saveState]);
+  useOnActionSuccess([saveState], () => setComposing(false));
 
   /** Start a new message, or load a saved one — either way, in the composer. */
   function compose(blast?: EmailBlast) {
