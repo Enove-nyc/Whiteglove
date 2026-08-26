@@ -88,6 +88,28 @@ describe("the six screens use it rather than their own copy", () => {
     });
   }
 
+  it("useDebouncedSearch keeps the question with the answer", () => {
+    // The property that makes six hand-written search boxes into one: rows are
+    // shown only when they answer what is in the box right now. Without the
+    // stored query, the box shows the PREVIOUS query's rows for a debounce
+    // plus a round trip on every keystroke — which is what all six did.
+    const hook = readFileSync("components/useDebouncedSearch.ts", "utf8");
+    assert.match(hook, /answered\.query === trimmed/);
+    assert.match(hook, /searching = !tooShort && answered\.query !== trimmed/);
+    // A failed lookup must answer, not leave the box spinning.
+    assert.match(hook, /catch \{[\s\S]*?setAnswered\(\{ query: trimmed, rows: \[\] \}\)/);
+  });
+
+  it("the four itinerary pickers share it rather than repeating it", () => {
+    const source = readFileSync("components/ItineraryBuilder.tsx", "utf8");
+    assert.equal((source.match(/useDebouncedSearch</g) ?? []).length, 4);
+    // Their lookups must stay at module scope: one rebuilt per render would
+    // restart the debounce every render.
+    for (const name of ["searchLodging", "searchPlaceLodging", "searchKevarim", "searchAttractions"]) {
+      assert.match(source, new RegExp(`^const ${name} = `, "m"), `${name} is no longer module-scope`);
+    }
+  });
+
   it("useOnValueChange keeps its comparison state too", () => {
     const hook = readFileSync("components/useOnValueChange.ts", "utf8");
     assert.match(hook, /const \[seen, setSeen\] = useState\(value\)/);
