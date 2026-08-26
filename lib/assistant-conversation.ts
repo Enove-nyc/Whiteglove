@@ -29,6 +29,13 @@ export type AssistantTurn = {
   sources?: Array<{ title: string; href: string }>;
   /** True when the site had nothing and the traveler was handed over. */
   notCovered?: boolean;
+  /**
+   * The place the answer was read in the light of — the page they were on when
+   * they asked, when the site knows that place. Shown so a Vienna-flavoured
+   * answer explains itself rather than looking like a guess about where they
+   * are. Only ever on an assistant turn.
+   */
+  about?: string;
 };
 
 export type AssistantConversation = { turns: AssistantTurn[]; updatedAt: string };
@@ -74,6 +81,11 @@ export function readConversation(value: unknown): AssistantConversation {
       at: typeof turn.at === "string" ? turn.at : new Date().toISOString(),
       ...(sources?.length ? { sources } : {}),
       ...(turn.notCovered === true ? { notCovered: true as const } : {}),
+      // Trimmed like the text: a stored conversation is read back onto a page,
+      // and a place name of unbounded length is a place name nobody wrote.
+      ...(typeof turn.about === "string" && turn.about.trim()
+        ? { about: turn.about.trim().slice(0, 120) }
+        : {}),
     });
   }
   return {
