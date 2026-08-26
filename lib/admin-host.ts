@@ -57,6 +57,7 @@ export const ADMIN_HOST_SEGMENTS = [
   "shuls",
   "team",
   "travel",
+  "updates",
   "users",
   "vacation-destinations",
 ] as const;

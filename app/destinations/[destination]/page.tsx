@@ -18,6 +18,9 @@ import { ReviewSection } from "@/components/reviews/ReviewSection";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
+import CurrentUpdatesNotice from "@/components/CurrentUpdatesNotice";
+import { currentUpdatesFor } from "@/data/current-updates";
+import { readPublishedUpdates } from "@/lib/current-updates-store";
 import { Icon } from "@/components/icons/Icon";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { destinations as heritageDestinations, destinationHref as heritageHref } from "@/data/destinations";
@@ -621,6 +624,20 @@ async function KosherFood({ destination }: { destination: VacationDestination })
   );
 }
 
+/**
+ * The dated notices for this place, if any are current today.
+ *
+ * `today` is the server's date rather than the cache's: readPublishedUpdates
+ * caches the LIST, and which of them is current is decided here, so a notice
+ * does not linger for an hour after it lapses just because nobody saved
+ * anything. See lib/current-updates-store.ts.
+ */
+async function DestinationUpdates({ slug }: { slug: string }) {
+  const updates = await readPublishedUpdates();
+  const today = new Date().toISOString().slice(0, 10);
+  return <CurrentUpdatesNotice updates={currentUpdatesFor(updates, slug, today)} />;
+}
+
 export default async function VacationDestinationPage({ params }: { params: Promise<{ destination: string }> }) {
   const { destination: slug } = await params;
   const destination = await getVacationDestinationBySlug(slug);
@@ -727,6 +744,17 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           </div>
         </div>
       </section>
+
+      {/* FIRST THING AFTER THE HEADING, before the contents list, because a
+          notice about this week is the one thing on the page that stops being
+          true. Behind Suspense with a null fallback: it is a store read, and
+          an empty box holding space for something that may not exist is worse
+          than it simply not being there. */}
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <Suspense fallback={null}>
+          <DestinationUpdates slug={destination.slug} />
+        </Suspense>
+      </div>
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <nav aria-label="On this page" className="border-b border-[var(--gold-light)] py-6">

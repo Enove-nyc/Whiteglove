@@ -71,6 +71,9 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   ["/admin/reports", "content"],
   ["/admin/growth", "content"],
   ["/admin/alerts", "content"],
+  // Dated notices about a destination — editorial work, so the same area as
+  // pages and suggestions rather than settings.
+  ["/admin/updates", "content"],
   ["/admin/history", "content"],
   ["/admin/airports", "directory"],
   ["/admin/borders", "directory"],
