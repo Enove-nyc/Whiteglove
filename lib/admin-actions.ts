@@ -37,6 +37,7 @@ export const ADMIN_ACTION_KINDS = [
   "two-factor-on",
   "two-factor-off",
   "recovery-codes-new",
+  "devices-forgotten",
   "sessions-revoked",
   "signin-log-cleared",
 ] as const;
@@ -54,6 +55,7 @@ export const ADMIN_ACTION_WORDS: Record<AdminActionKind, string> = {
   "two-factor-on": "turned two-factor on for",
   "two-factor-off": "turned two-factor OFF for",
   "recovery-codes-new": "issued new recovery codes for",
+  "devices-forgotten": "stopped trusting every remembered device for",
   "sessions-revoked": "signed everybody out",
   "signin-log-cleared": "cleared the sign-in log",
 };

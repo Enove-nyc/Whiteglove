@@ -13,6 +13,9 @@ const HOW_TONE: Record<SignInEntry["how"], string> = {
   "full code": "border-[var(--gold)] text-[var(--navy)]",
   "five-minute code": "border-amber-400 text-amber-800",
   "admin code": "border-[var(--navy)] text-[var(--navy)]",
+  // Deliberately a different colour from "admin code": the code was not typed
+  // this time, and the log should not make the two look alike.
+  "remembered device": "border-stone-400 text-stone-700",
   // A named administrator, so the line carries an email rather than nothing.
   "admin account": "border-emerald-500 text-emerald-800",
   account: "border-stone-300 text-stone-600",
