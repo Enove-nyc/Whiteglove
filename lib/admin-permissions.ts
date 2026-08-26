@@ -75,6 +75,7 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   // pages and suggestions rather than settings.
   ["/admin/updates", "content"],
   ["/admin/seasons", "content"],
+  ["/admin/data-health", "content"],
   ["/admin/history", "content"],
   ["/admin/airports", "directory"],
   ["/admin/borders", "directory"],
