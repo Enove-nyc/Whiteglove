@@ -46,28 +46,47 @@ async function uploadPhoto(file: File): Promise<string | null> {
 
 function DestinationSearch({ onPick }: { onPick: (result: AttractionResult) => void }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<AttractionResult[]>([]);
-  const [searching, setSearching] = useState(false);
+  /**
+   * THE ANSWER, AND THE QUESTION IT ANSWERS, kept together.
+   *
+   * This was two pieces of state — a results array and a `searching` flag —
+   * cleared and raised synchronously at the top of an effect, which is the
+   * setState the lint rule refuses. Moving those two calls behind the debounce
+   * timer would have been the easy fix and the wrong one: results for a query
+   * you had already deleted would linger for 300ms, under whatever you typed
+   * next.
+   *
+   * Storing WHICH query the rows belong to makes both derivable, and makes
+   * them more correct than they were. Rows are shown only when they answer
+   * what is in the box right now — so stale rows cannot appear under a new
+   * query even for a frame — and "Searching…" is simply the state of not yet
+   * having the answer to it, rather than a flag something has to remember to
+   * lower.
+   */
+  const [answered, setAnswered] = useState<{ query: string; rows: AttractionResult[] }>({ query: "", rows: [] });
+  const trimmed = q.trim();
+  const tooShort = trimmed.length < 2;
+  const results = !tooShort && answered.query === trimmed ? answered.rows : [];
+  const searching = !tooShort && answered.query !== trimmed;
 
   useEffect(() => {
-    if (q.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+    // Nothing runs here synchronously any more: the short-query case simply
+    // has no effect to run, because it is answered by `results` above.
+    if (tooShort) return;
     let live = true;
-    setSearching(true);
     const t = window.setTimeout(() => {
-      fetch(`/api/attractions/search?q=${encodeURIComponent(q)}`)
+      fetch(`/api/attractions/search?q=${encodeURIComponent(trimmed)}`)
         .then((r) => (r.ok ? r.json() : null))
-        .then((d) => live && setResults(Array.isArray(d?.results) ? d.results : []))
-        .catch(() => undefined)
-        .finally(() => live && setSearching(false));
+        .then((d) => live && setAnswered({ query: trimmed, rows: Array.isArray(d?.results) ? d.results : [] }))
+        // A failed lookup answers the query with nothing, rather than leaving
+        // "Searching…" on screen for ever with no way to clear it.
+        .catch(() => live && setAnswered({ query: trimmed, rows: [] }));
     }, 300);
     return () => {
       live = false;
       window.clearTimeout(t);
     };
-  }, [q]);
+  }, [trimmed, tooShort]);
 
   return (
     <div>
