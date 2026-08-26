@@ -208,19 +208,42 @@ describe("the whole journey survives the hand-off", () => {
 describe("a link that names its own partner", () => {
   const MARKER = "761677";
   const kayakConfig = { travelpayouts: {}, stay22: NO_STAY22, marker: MARKER, partners: { flights: "kayak" } as never };
-  const legs = [{ from: "JFK", to: "PRG", date: "2026-08-25" }];
+
+  /**
+   * DATES RELATIVE TO TODAY, NOT WRITTEN OUT — and this is the bug it fixes,
+   * not a style preference.
+   *
+   * The departure was pinned to "2026-08-25", the day this block was written.
+   * resolveLink refuses a flight that has already left, so at midnight UTC the
+   * pinned date became yesterday and five assertions here started failing —
+   * on the calendar rolling over, with nothing in the code having changed.
+   * A suite that goes red overnight is worse than one that never passed: the
+   * next person reads the failure as their own and goes looking for it in
+   * their diff.
+   *
+   * The encoded date in the URL is derived from the SAME value the request was
+   * built from, so this still proves the DDMM encoding rather than agreeing
+   * with itself about a constant.
+   */
+  const iso = (daysFromNow: number) =>
+    new Date(Date.now() + daysFromNow * 86_400_000).toISOString().slice(0, 10);
+  const ddmm = (isoDate: string) => isoDate.slice(8, 10) + isoDate.slice(5, 7);
+
+  const OUT = iso(7);
+  const BACK = iso(14);
+  const legs = [{ from: "JFK", to: "PRG", date: OUT }];
   const resolve = (href: string, config = kayakConfig) =>
     resolveLink(readAffiliateRequest(new URLSearchParams(href.slice(href.indexOf("?") + 1)))!, config);
 
   it("lands on the Aviasales results list for the route and dates, with the marker", () => {
     // The failure this replaces: the button opened a second, empty search form
     // and the traveller retyped the trip they had just typed.
-    const href = goHref({ product: "flight", partner: "aviasales", legs, checkOut: "2026-09-01" });
+    const href = goHref({ product: "flight", partner: "aviasales", legs, checkOut: BACK });
     assert.match(href, /partner=aviasales/);
     const resolved = resolve(href);
     const url = new URL(resolved!.url);
     assert.equal(url.hostname, "www.aviasales.com");
-    assert.equal(url.pathname, "/search/JFK2508PRG01091");
+    assert.equal(url.pathname, `/search/JFK${ddmm(OUT)}PRG${ddmm(BACK)}1`);
     assert.equal(url.searchParams.get("marker"), MARKER);
     assert.equal(isAviasalesHref(resolved!.url), true, "the search link is not on the host the fare rows are held to");
     // Recorded as earning, or the owner cannot tell this from a link that works
@@ -241,8 +264,8 @@ describe("a link that names its own partner", () => {
   });
 
   it("keeps the Kayak peer button on Kayak, and priceless", () => {
-    const resolved = resolve(goHref({ product: "flight", partner: "kayak", legs, checkOut: "2026-09-01" }));
-    assert.match(resolved!.url, /^https:\/\/www\.kayak\.com\/flights\/JFK-PRG\/2026-08-25\/2026-09-01/);
+    const resolved = resolve(goHref({ product: "flight", partner: "kayak", legs, checkOut: BACK }));
+    assert.ok(resolved!.url.startsWith(`https://www.kayak.com/flights/JFK-PRG/${OUT}/${BACK}`), resolved!.url);
     assert.equal(resolved!.route.destinationLabel, "Kayak");
     // Even when the owner's own setting is the other partner: a button that
     // says Kayak has to open Kayak.
