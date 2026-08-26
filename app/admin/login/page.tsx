@@ -22,7 +22,11 @@ export default async function AdminLoginPage({
     <main className="flex min-h-screen flex-col bg-[var(--cream)]">
       <div className="grid flex-1 place-items-center px-5 py-16">
         <section className="w-full max-w-md border border-[var(--gold-light)] bg-[#fcfaf6] p-8 shadow-[0_12px_30px_rgba(23,45,82,.08)] sm:p-10">
-          <PageHeader eyebrow="White Glove Kosher Travel" title="Owner's dashboard" />
+          {/* NOT "White Glove Kosher Travel". One dashboard runs both companies —
+              the owner's decision, recorded in AGENTS.md — so its own front door
+              must not claim to be one of them. Every screen inside already says
+              "White Glove admin"; this is the door catching up. */}
+          <PageHeader eyebrow="White Glove admin" title="Owner's dashboard" />
           <p className="mt-5 leading-7 text-stone-600">Private access for website activity and launch controls.</p>
           <AccessForm scope="admin" next={next} />
         </section>
