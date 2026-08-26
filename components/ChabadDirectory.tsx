@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CHABAD_FEATURE_KEYS,
   CHABAD_FEATURE_LABELS,
@@ -66,9 +66,16 @@ export default function ChabadDirectory({ listings }: { listings: ChabadListing[
   // A new search or filter starts back at the first page — otherwise a
   // narrower result set could sit entirely past whatever page you'd already
   // scrolled to, and look empty.
-  useEffect(() => {
+  // Adjusted during render rather than after the commit: as an effect this
+  // painted the old page size against the new results first — briefly showing
+  // rows from a filter that no longer applies — and only then reset. Compared
+  // by identity on the same three values the dep array named; `features` is
+  // replaced wholesale rather than mutated, so identity is the right test.
+  const [seenFilters, setSeenFilters] = useState({ query, country, features });
+  if (seenFilters.query !== query || seenFilters.country !== country || seenFilters.features !== features) {
+    setSeenFilters({ query, country, features });
     setVisibleCount(PAGE_SIZE);
-  }, [query, country, features]);
+  }
 
   const visible = filtered.slice(0, visibleCount);
 

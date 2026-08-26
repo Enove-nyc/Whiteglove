@@ -79,7 +79,13 @@ export default function AirportAutocomplete({
   }, []);
 
   // Sync when the value is set from outside (e.g. after a flight-number lookup).
-  useEffect(() => { setQuery(value); }, [value]);
+  // During render, not after it: as an effect the box showed the old text for
+  // one paint after a lookup had already filled the field.
+  const [seenValue, setSeenValue] = useState(value);
+  if (value !== seenValue) {
+    setSeenValue(value);
+    setQuery(value);
+  }
 
   // ONCE SOMETHING IS PICKED, SEARCH ON ITS CODE. The box then holds the whole
   // label — "New York — all airports (NYC)" — which matches nothing, so the
