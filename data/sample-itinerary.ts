@@ -226,5 +226,5 @@ export const WHAT_IS_IN_IT: ReadonlyArray<[string, string]> = [
   ["The kosher side, per day", "Where you are eating, how far it is from where you are standing, and what to bring."],
   ["A Friday that stops early", "The planner flags a day that runs into candle-lighting. That is what the last day here is showing."],
   ["Room to change it", "It arrives in your account on this site as well as on paper. Move a day, drop a stop, print it again."],
-  ["Nothing invented", "Every place named is a record this site publishes with a source. Where we hold nothing, the page says so."],
+  ["Nothing invented", "Every place named links to a page with practical detail and a named source."],
 ];

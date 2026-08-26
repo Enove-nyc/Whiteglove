@@ -51,14 +51,20 @@ export function trustLabel(section: Pick<PracticalSection, "status" | "lastCheck
       const on = formatDate(section.lastChecked);
       return { level: "verified", text: on ? `Verified on ${on}` : "Verified", glyph: "✓", tone: "verified" };
     }
+    // THE LEVEL IS THE MODEL; THE TEXT IS WHAT A CUSTOMER READS. The level,
+    // glyph and tone are unchanged — the admin and the data still carry the
+    // full verification state. What a traveler sees is a practical instruction
+    // rather than a report on how far our own checking has got: "Partially
+    // verified", "Community-submitted" and "Update in progress" told somebody
+    // standing at a gate nothing they could act on.
     case "partial":
-      return { level: "partial", text: "Partially verified", glyph: "◐", tone: "partial" };
+      return { level: "partial", text: "Confirm current details before your trip", glyph: "◐", tone: "partial" };
     case "community":
-      return { level: "community", text: "Community-submitted", glyph: "◇", tone: "community" };
+      return { level: "community", text: "Confirm before you rely on it", glyph: "◇", tone: "community" };
     case "needs-verification":
-      return { level: "needs-verification", text: "Update in progress", glyph: "…", tone: "pending" };
+      return { level: "needs-verification", text: "Confirm current details before your trip", glyph: "…", tone: "pending" };
     default:
-      return { level: "unavailable", text: "Not published yet", glyph: "—", tone: "empty" };
+      return { level: "unavailable", text: "Not available", glyph: "—", tone: "empty" };
   }
 }
 
@@ -81,11 +87,11 @@ export function destinationTrust(record: DestinationRecord): TrustLabel {
     // verified kever would be wrong.
     const anyCemetery = record.cemeteries.some((cemetery) => cemetery.status === "verified");
     return anyCemetery
-      ? { level: "partial", text: "Partially verified", glyph: "◐", tone: "partial" }
-      : { level: "needs-verification", text: "Update in progress", glyph: "…", tone: "pending" };
+      ? { level: "partial", text: "Confirm current details before your trip", glyph: "◐", tone: "partial" }
+      : { level: "needs-verification", text: "Confirm current details before your trip", glyph: "…", tone: "pending" };
   }
   if (published.some((section) => section.status === "community")) {
-    return { level: "community", text: "Community-submitted", glyph: "◇", tone: "community" };
+    return { level: "community", text: "Confirm before you rely on it", glyph: "◇", tone: "community" };
   }
   const allVerified = published.length === sections.length && published.every((section) => section.status === "verified");
   if (allVerified) {
@@ -95,9 +101,9 @@ export function destinationTrust(record: DestinationRecord): TrustLabel {
     return trustLabel({ status: "verified", lastChecked: dates[0] });
   }
   if (published.some((section) => section.status === "verified")) {
-    return { level: "partial", text: "Partially verified", glyph: "◐", tone: "partial" };
+    return { level: "partial", text: "Confirm current details before your trip", glyph: "◐", tone: "partial" };
   }
-  return { level: "needs-verification", text: "Update in progress", glyph: "…", tone: "pending" };
+  return { level: "needs-verification", text: "Confirm current details before your trip", glyph: "…", tone: "pending" };
 }
 
 /**

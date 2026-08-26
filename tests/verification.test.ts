@@ -41,17 +41,25 @@ describe("what a visitor is told", () => {
   });
 
   it("never puts a date next to something still being checked", () => {
-    // A date beside "in progress" reads as though the checking finished then,
-    // which is the opposite of what it means.
+    // A date beside a not-yet-checked section reads as though the checking
+    // finished then, which is the opposite of what it means.
     const label = trustLabel(section("needs-verification", "2026-03-03"));
-    assert.equal(label.text, "Update in progress");
+    assert.equal(label.level, "needs-verification");
     assert.doesNotMatch(label.text, /2026/);
   });
 
-  it("says which kind of not-yet it is", () => {
-    assert.equal(trustLabel(section("partial")).text, "Partially verified");
-    assert.equal(trustLabel(section("community")).text, "Community-submitted");
-    assert.equal(trustLabel(section("unavailable")).text, "Not published yet");
+  it("says which kind of not-yet it is, as a practical instruction not a workflow report", () => {
+    // The LEVEL still distinguishes each state (and drives the glyph); what the
+    // customer READS is an instruction. No "partially verified", "community-
+    // submitted" or "update in progress" — those narrate our checking, not the
+    // traveler's next move.
+    assert.equal(trustLabel(section("partial")).level, "partial");
+    assert.equal(trustLabel(section("community")).level, "community");
+    assert.equal(trustLabel(section("unavailable")).level, "unavailable");
+    for (const status of ["partial", "community", "needs-verification", "unavailable"] as const) {
+      assert.doesNotMatch(trustLabel(section(status)).text, /verified|submitted|in progress|published/i, status);
+    }
+    assert.match(trustLabel(section("community")).text, /confirm/i);
   });
 
   it("survives a date it cannot read, rather than printing Invalid Date", () => {
@@ -70,7 +78,7 @@ describe("one label for a whole destination", () => {
     // One checked section out of five is not a verified page. Rounding that
     // up is the exact failure these labels exist to prevent.
     const partly = record({ kosherFood: section("verified", "2026-03-03") });
-    assert.equal(destinationTrust(partly).text, "Partially verified");
+    assert.equal(destinationTrust(partly).level, "partial");
   });
 
   it("only says verified when every section is", () => {
@@ -90,16 +98,16 @@ describe("one label for a whole destination", () => {
     const keverOnly = record({
       cemeteries: [{ id: "c", yiddishName: "x", name: "x", arrivalNotes: [], shomerContacts: [], burials: [], status: "verified" }],
     });
-    assert.equal(destinationTrust(keverOnly).text, "Partially verified");
+    assert.equal(destinationTrust(keverOnly).level, "partial");
   });
 
   it("flags community-submitted content even when other sections are checked", () => {
     const mixed = record({ kosherFood: section("verified", "2026-03-03"), minyanim: section("community") });
-    assert.equal(destinationTrust(mixed).text, "Community-submitted");
+    assert.equal(destinationTrust(mixed).level, "community");
   });
 
   it("says an empty record is in progress", () => {
-    assert.equal(destinationTrust(record()).text, "Update in progress");
+    assert.equal(destinationTrust(record()).level, "needs-verification");
   });
 });
 

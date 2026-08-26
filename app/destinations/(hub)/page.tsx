@@ -1,11 +1,9 @@
-import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import VacationIdeasHub from "@/components/VacationIdeasHub";
 import SeasonalFeaturedRow from "@/components/SeasonalFeaturedRow";
 import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
-import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { resolvePage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
@@ -96,33 +94,6 @@ export default async function VacationIdeasPage({
       <section id="browse" className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
         <SeasonalFeaturedRow destinations={featuredThisSeason(destinations)} />
         <VacationIdeasHub cards={cards} initialTheme={initialTheme} initialSeason={initialSeason} />
-      </section>
-
-      <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
-          <div>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
-              Somewhere else in mind
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-600">
-              Ask about somewhere that is not written up yet.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/plan"
-              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
-            >
-              Get recommendations
-            </Link>
-            <Link
-              href="/contact"
-              className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.secondary}`}
-            >
-              Ask about a destination
-            </Link>
-          </div>
-        </div>
       </section>
 
       <Footer />

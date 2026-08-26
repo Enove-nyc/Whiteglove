@@ -209,10 +209,9 @@ export default function DirectoryBrowser({
                 button. Somebody who can see there is a number and cannot see
                 the number knows to use another way; somebody shown nothing
                 assumes there is nothing. */}
-            {p.contactWithheld && (
+            {p.contactWithheld && (p.email || p.website) && (
               <p className="mt-3 text-xs leading-5 text-stone-500">
-                We hold a phone number for them but have not been given permission to publish it.
-                {p.email || p.website ? " Reach them by the buttons above." : " Ask us and we will pass a message on."}
+                Phone number not listed — reach them by the buttons above.
               </p>
             )}
 

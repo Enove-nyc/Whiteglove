@@ -13,7 +13,7 @@ import { AddedToTrip, useAddToItinerary, type TripStop } from "@/components/useA
  */
 export default function AddToItineraryButton({
   place,
-  label = "Add to my itinerary",
+  label = "Add to itinerary",
   className = "",
 }: {
   place: TripStop;
