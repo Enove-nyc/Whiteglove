@@ -159,7 +159,11 @@ export default function SiteAssistant() {
         const response = await fetch("/api/assistant/site", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: text }),
+          // The address, so "is there a mikvah here?" has a here. The server
+          // only uses it if the slug is a page the site actually has, and
+          // never passes any of it to the model as text — see
+          // lib/assistant-context.ts.
+          body: JSON.stringify({ question: text, page: pathname }),
         });
         const data = await response.json();
         const reply: AssistantTurn = data?.covered
@@ -168,6 +172,9 @@ export default function SiteAssistant() {
               text: String(data.text ?? ""),
               at: new Date().toISOString(),
               ...(Array.isArray(data.sources) && data.sources.length ? { sources: data.sources } : {}),
+              // Said back, so a Vienna-flavoured answer explains itself rather
+              // than looking like a guess about where they are.
+              ...(typeof data.about === "string" && data.about ? { about: data.about } : {}),
             }
           : { role: "assistant", text: NOT_COVERED_MESSAGE, at: new Date().toISOString(), notCovered: true };
         setThread((current) => ({ ...current, turns: [...current.turns, reply] }));
@@ -190,7 +197,7 @@ export default function SiteAssistant() {
         setBusy(false);
       }
     },
-    [busy],
+    [busy, pathname],
   );
 
   // All hooks above have already run unconditionally; bailing here, right
@@ -262,6 +269,14 @@ export default function SiteAssistant() {
                   </p>
                 ) : (
                   <div className="w-fit max-w-[92%] rounded-2xl border border-[var(--gold-light)] bg-white px-3 py-2">
+                    {/* Which place it took "here" to mean. An answer shaped by
+                        the page they were on should say so, rather than looking
+                        like a guess about where they are. */}
+                    {turn.about ? (
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-stone-500">
+                        About {turn.about}
+                      </p>
+                    ) : null}
                     <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--navy)]">{turn.text}</p>
                     {turn.notCovered ? (
                       <Link
