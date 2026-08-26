@@ -15,6 +15,16 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
+      "package_name": "com.Whiteglovekoshertravel.app",
+      "sha256_cert_fingerprints": [
+        "1C:34:41:92:1C:08:DA:75:FE:21:1C:1C:62:D6:08:39:E2:F4:D2:47:1C:86:29:34:9C:C1:8D:EC:24:92:44:05"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
       "package_name": "com.whiteglovekoshertravel.app",
       "sha256_cert_fingerprints": [
         "1C:34:41:92:1C:08:DA:75:FE:21:1C:1C:62:D6:08:39:E2:F4:D2:47:1C:86:29:34:9C:C1:8D:EC:24:92:44:05"
