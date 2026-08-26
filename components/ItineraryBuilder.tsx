@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useDebouncedSearch } from "@/components/useDebouncedSearch";
+import { useOnValueChange } from "@/components/useOnValueChange";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 import { bookingHref } from "@/lib/booking-access";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -1517,9 +1519,11 @@ function FlightForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
   const [legBusy, setLegBusy] = useState(false);
   const [legStatus, setLegStatus] = useState("");
 
-  useEffect(() => {
+  // Seeded during render rather than after it: as an effect the date box was
+  // painted empty once before the trip's start date dropped into it.
+  useOnValueChange(startDate, () => {
     if (startDate) setF((prev) => (prev.date ? prev : { ...prev, date: startDate }));
-  }, [startDate]);
+  });
 
   function updateFlight(patch: Partial<ItinFlight>) {
     setF((prev) => ({ ...prev, ...patch }));
@@ -1917,27 +1921,29 @@ function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
 }
 
 // Search-and-pick lodging from the site's researched accommodations.
+/**
+ * The four lookups behind the pickers below. AT MODULE SCOPE ON PURPOSE:
+ * useDebouncedSearch depends on the function it is given, and one rebuilt
+ * every render would restart the debounce every render — the exact failure
+ * debouncing exists to prevent. Declared here, each is the same function
+ * for ever.
+ */
+async function searchJson<T>(url: string): Promise<T[]> {
+  const res = await fetch(url);
+  const data = await res.json();
+  return (data.results ?? []) as T[];
+}
+
+const searchLodging = (q: string) => searchJson<LodgingResult>(`/api/lodging/search?q=${encodeURIComponent(q)}`);
+const searchPlaceLodging = (q: string) => searchJson<PlaceLodgingResult>(`/api/lodging/places-search?q=${encodeURIComponent(q)}`);
+const searchKevarim = (q: string) => searchJson<KeverResult>(`/api/kevarim/search?q=${encodeURIComponent(q)}`);
+const searchAttractions = (q: string) => searchJson<AttractionResult>(`/api/attractions/search?q=${encodeURIComponent(q)}`);
+
 function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<LodgingResult[]>([]);
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const query = q.trim();
-    if (query.length < 2) { setResults([]); return; }
-    let active = true;
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/lodging/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (active) setResults(data.results ?? []);
-      } catch {
-        if (active) setResults([]);
-      }
-    }, 200);
-    return () => { active = false; clearTimeout(timer); };
-  }, [q]);
+  const { results } = useDebouncedSearch<LodgingResult>(q, { minLength: 2, delayMs: 200, search: searchLodging });
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
@@ -1961,7 +1967,7 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
             <li key={`${g.name}-${i}`}>
               <button
                 type="button"
-                onMouseDown={(e) => { e.preventDefault(); onPick(g); setQ(""); setResults([]); setOpen(false); }}
+                onMouseDown={(e) => { e.preventDefault(); onPick(g); setQ(""); setOpen(false); }}
                 className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
               >
                 <span className="text-sm font-semibold text-[var(--navy)]">{g.name}</span>
@@ -1979,29 +1985,15 @@ function LodgingPicker({ onPick }: { onPick: (g: LodgingResult) => void }) {
 // own researched list. See lib/hotel-places.ts.
 function HotelPlacePicker({ onPick }: { onPick: (p: PlaceLodgingResult) => void }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<PlaceLodgingResult[]>([]);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const query = q.trim();
-    if (query.length < 3) { setResults([]); setLoading(false); return; }
-    let active = true;
-    setLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/lodging/places-search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (active) setResults(data.results ?? []);
-      } catch {
-        if (active) setResults([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }, 350);
-    return () => { active = false; clearTimeout(timer); };
-  }, [q]);
+  // `loading` is gone: it is not a thing to raise and lower, it is not yet
+  // having the answer to what is in the box.
+  const { results, searching: loading } = useDebouncedSearch<PlaceLodgingResult>(q, {
+    minLength: 3,
+    delayMs: 350,
+    search: searchPlaceLodging,
+  });
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
@@ -2030,7 +2022,7 @@ function HotelPlacePicker({ onPick }: { onPick: (p: PlaceLodgingResult) => void 
             <li key={`${p.name}-${i}`}>
               <button
                 type="button"
-                onMouseDown={(e) => { e.preventDefault(); onPick(p); setQ(""); setResults([]); setOpen(false); }}
+                onMouseDown={(e) => { e.preventDefault(); onPick(p); setQ(""); setOpen(false); }}
                 className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
               >
                 <span className="text-sm font-semibold text-[var(--navy)]">{p.name}</span>
@@ -2126,25 +2118,9 @@ function ActivityForm({ startDate, units, onAdd, itineraries = false }: {
 // Search-and-pick a kever from the site's own directory; fills the whole form.
 function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<KeverResult[]>([]);
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const query = q.trim();
-    if (query.length < 2) { setResults([]); return; }
-    let active = true;
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/kevarim/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (active) setResults(data.results ?? []);
-      } catch {
-        if (active) setResults([]);
-      }
-    }, 200);
-    return () => { active = false; clearTimeout(timer); };
-  }, [q]);
+  const { results } = useDebouncedSearch<KeverResult>(q, { minLength: 2, delayMs: 200, search: searchKevarim });
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
@@ -2168,7 +2144,7 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
             <li key={k.slug}>
               <button
                 type="button"
-                onMouseDown={(e) => { e.preventDefault(); onPick(k); setQ(""); setResults([]); setOpen(false); }}
+                onMouseDown={(e) => { e.preventDefault(); onPick(k); setQ(""); setOpen(false); }}
                 className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
               >
                 <span className="text-sm font-semibold text-[var(--navy)]">{k.name}</span>
@@ -2189,25 +2165,9 @@ function KeverPicker({ onPick }: { onPick: (k: KeverResult) => void }) {
 // single box searching both would bury one under the other.
 function AttractionPicker({ onPick }: { onPick: (x: AttractionResult) => void }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<AttractionResult[]>([]);
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const query = q.trim();
-    if (query.length < 2) { setResults([]); return; }
-    let active = true;
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/attractions/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (active) setResults(data.results ?? []);
-      } catch {
-        if (active) setResults([]);
-      }
-    }, 200);
-    return () => { active = false; clearTimeout(timer); };
-  }, [q]);
+  const { results } = useDebouncedSearch<AttractionResult>(q, { minLength: 2, delayMs: 200, search: searchAttractions });
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false); };
@@ -2231,7 +2191,7 @@ function AttractionPicker({ onPick }: { onPick: (x: AttractionResult) => void })
             <li key={x.slug}>
               <button
                 type="button"
-                onMouseDown={(e) => { e.preventDefault(); onPick(x); setQ(""); setResults([]); setOpen(false); }}
+                onMouseDown={(e) => { e.preventDefault(); onPick(x); setQ(""); setOpen(false); }}
                 className="block w-full px-3 py-2 text-left hover:bg-[var(--cream)]"
               >
                 <span className="text-sm font-semibold text-[var(--navy)]">{x.name}</span>
