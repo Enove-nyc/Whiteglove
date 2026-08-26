@@ -40,8 +40,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Say where you are staying." }, { status: 400 });
   }
 
-  const strip = <T>(rows: NearbyThing<T>[], shape: (item: T) => Record<string, unknown>) =>
-    rows.map((row) => ({ ...shape(row.item), distance: row.distance, walk: row.walk, walkNote: row.walkNote }));
+  // The coordinate travels with every row on purpose: it is what "Navigate"
+  // hands to a map and what a saved stop keeps, and asking the client to look
+  // it up again would mean shipping four datasets to the browser.
+  const strip = <T>(
+    rows: NearbyThing<T>[],
+    coordinatesOf: (item: T) => string | null | undefined,
+    shape: (item: T) => Record<string, unknown>,
+  ) =>
+    rows.map((row) => ({
+      ...shape(row.item),
+      coordinates: coordinatesOf(row.item) ?? null,
+      distance: row.distance,
+      walk: row.walk,
+      walkNote: row.walkNote,
+    }));
 
   const quarters = nearest(from, kosherAreas, {
     coordinatesOf: (area) => area.coordinates,
@@ -65,14 +78,14 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({
-    quarters: strip(quarters, (area) => ({ name: area.name, city: area.city, note: area.note, href: "/hotels" })),
-    shuls: strip(shuls, (shul) => ({ name: shul.name, address: shul.address, href: shul.href })),
-    thingsToDo: strip(thingsToDo, (attraction) => ({
+    quarters: strip(quarters, (area) => area.coordinates, (area) => ({ name: area.name, city: area.city, note: area.note, href: "/hotels" })),
+    shuls: strip(shuls, (shul) => shul.coordinates, (shul) => ({ name: shul.name, address: shul.address, href: shul.href })),
+    thingsToDo: strip(thingsToDo, (attraction) => attraction.coordinates ?? null, (attraction) => ({
       name: attraction.name,
       city: attraction.city,
       href: `/things-to-do#${attraction.slug}`,
     })),
-    food: strip(food, (eatery) => ({
+    food: strip(food, (eatery) => (eatery as { coordinates?: string }).coordinates ?? null, (eatery) => ({
       name: eatery.name,
       kind: eatery.kind,
       address: eatery.address ?? null,

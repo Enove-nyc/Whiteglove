@@ -10,7 +10,8 @@ import { codeOf } from "./helpers/source";
 // Comments stripped: both files EXPLAIN why there is no mikvah section, and
 // naming the thing they refuse is not the same as doing it. See the helper.
 const ROUTE = codeOf("app/api/near/route.ts");
-const PANEL = codeOf("components/NearMyHotel.tsx");
+const PANEL = codeOf("components/NearbyExplorer.tsx");
+const WHERE = codeOf("app/api/near/where/route.ts");
 
 describe("what this page may claim is what the data can support", () => {
   it("every Jewish quarter has a position — the anchor the page leans on", () => {
@@ -49,20 +50,50 @@ describe("the expensive call is the hotel lookup, and only that", () => {
     assert.match(ROUTE, /rateLimit\(`near:\$\{requesterKey\(request\.headers\)\}`, LIMIT\)/);
   });
 
-  it("the hotel search is debounced rather than fired per keystroke", () => {
-    assert.match(PANEL, /setTimeout\(async \(\) => \{/);
-    assert.match(PANEL, /\}, 350\)/);
+  it("searching for somewhere to measure from touches no metered key either", () => {
+    // The site's own anchors are files in the bundle and OpenStreetMap is
+    // free. That is why this one may run while somebody types.
+    assert.doesNotMatch(WHERE, /googleapis|apiKey|GOOGLE_/);
+    assert.match(WHERE, /rateLimit\(`near-where:/);
+  });
+
+  it("the typing search is debounced rather than fired per keystroke", () => {
+    // useDebouncedSearch owns the timer now, and keeps the question with the
+    // answer so the box never shows the previous query's rows.
+    assert.match(PANEL, /useDebouncedSearch<NearAnchor>/);
+    assert.match(PANEL, /delayMs: 300/);
+  });
+
+  it("the metered hotel lookup is only reachable by a press", () => {
+    // It used to run on every keystroke because it was the only way in. Now
+    // it sits under the free results as a button, and nothing calls it until
+    // somebody presses it.
+    assert.match(PANEL, /onClick=\{\(\) => void findHotel\(typed\)\}/);
+    // The debounced search — the one that runs while somebody types — asks
+    // the free endpoint, and the metered one is named exactly once, inside
+    // the handler.
+    const whileTyping = PANEL.slice(PANEL.indexOf("async function searchAnchors"), PANEL.indexOf("function Card"));
+    assert.match(whileTyping, /\/api\/near\/where/);
+    assert.doesNotMatch(whileTyping, /places-search/);
+    const mentions = [...PANEL.matchAll(/places-search/g)];
+    assert.equal(mentions.length, 1);
+    assert.ok((mentions[0].index ?? 0) > PANEL.indexOf("async function findHotel"));
   });
 
   it("only a hotel with a position is offered, since the rest cannot be measured from", () => {
-    assert.match(PANEL, /\.filter\(\(r: Hotel\) => r\.coordinates\)/);
+    assert.match(PANEL, /\.filter\(\(r\) => r\.coordinates\)/);
   });
 
-  it("it does not ask the browser for the visitor's location", () => {
+  it("never asks the browser for a location on its own", () => {
     // Somebody plans this from home days ahead; their current position is the
-    // answer to a different question, and the permission is not this page's
-    // business.
-    assert.doesNotMatch(PANEL, /geolocation/i);
+    // answer to a different question. So it is offered as one door of three,
+    // asked for only inside the handler of the button that says so, and the
+    // page answers perfectly well when the permission is refused.
+    const asks = [...PANEL.matchAll(/geolocation/g)];
+    assert.ok(asks.length > 0, "the option is gone rather than optional");
+    assert.doesNotMatch(PANEL, /useEffect\([\s\S]*?geolocation/);
+    assert.match(PANEL, /function useMyLocation\(\)/);
+    assert.match(PANEL, /type a city, an airport or a landmark instead/);
   });
 });
 
