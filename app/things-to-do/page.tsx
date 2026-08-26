@@ -7,6 +7,7 @@ import TourBooking from "@/components/TourBooking";
 import TravelEssentials from "@/components/TravelEssentials";
 import { getAttractionList } from "@/lib/attractions-view";
 import { heritageAsAttractions } from "@/lib/heritage-attractions";
+import { attractionFacets, PAGE, searchAttractionList } from "@/data/attraction-list";
 import { resolvePage } from "@/lib/pages";
 
 // Not force-dynamic. getAttractionList (lib/attractions-view.ts) is a tagged
@@ -26,6 +27,11 @@ export default async function AttractionsPage() {
   // that already existed for the 35 hand-picked entries in data/attractions.ts
   // — rather than a separate section elsewhere. See lib/heritage-attractions.ts.
   const attractions = [...(await getAttractionList()), ...heritageAsAttractions()];
+  // The first page, rendered by the server: the page arrives whole and
+  // indexable, and a visitor who reads what is in front of them touches the
+  // network not at all. Later searches ask /api/things-to-do/list.
+  const first = searchAttractionList(attractions, { limit: PAGE });
+  const facets = attractionFacets(attractions);
   const page = await resolvePage("things-to-do");
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -45,7 +51,7 @@ export default async function AttractionsPage() {
       )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-        <AttractionDirectory attractions={attractions} />
+        <AttractionDirectory initial={first.rows} initialMore={first.more} facets={facets} />
       </section>
 
 

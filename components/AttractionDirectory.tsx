@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import RateExperienceLink from "@/components/RateExperienceLink";
@@ -9,11 +9,10 @@ import SaveTripItemButton from "@/components/SaveTripItemButton";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { staySearchHref } from "@/lib/stay-search";
-import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
+import ListToolbar from "@/components/ListToolbar";
 import { useListUrl } from "@/components/useListUrl";
 import { placeDirectionsUrl } from "@/data/route-utils";
-import { extraSpellings } from "@/lib/place-search";
-import type { Attraction } from "@/data/attractions";
+import type { AttractionCard, AttractionFacets } from "@/data/attraction-list";
 
 // What to do on the days that are not kevarim.
 //
@@ -22,26 +21,55 @@ import type { Attraction } from "@/data/attractions";
 
 /** How many cards before the page stops and asks. */
 const PAGE = 24;
+/** Long enough that a typed city name is one request, short enough to feel live. */
+const SETTLE_MS = 250;
 
 const DEFAULTS = { q: "", country: "", kind: "", city: "" };
 
-export default function AttractionDirectory({ attractions }: { attractions: Attraction[] }) {
+/**
+ * WHERE THE SEARCH HAPPENS: on the server, see data/attraction-list.ts. This
+ * page used to hold all 781 attractions to filter them in the browser while
+ * drawing 24, which made it the heaviest page on the site for three per cent
+ * of what it carried. The first page is rendered by the server; every later
+ * search asks /api/things-to-do/list for exactly what it will draw.
+ *
+ * AND THE ANCHOR IS FIXED HERE. /stops and the planner link to
+ * /things-to-do#slug, and that anchor only existed if the entry happened to
+ * be among the drawn 24 — a link to any of the other 757 landed on the top of
+ * a page that did not contain it. A fragment never reaches the server, so the
+ * page asks for that one entry once it is running and shows it first.
+ */
+export default function AttractionDirectory({
+  initial,
+  initialMore,
+  facets,
+}: {
+  initial: AttractionCard[];
+  initialMore: boolean;
+  facets: AttractionFacets;
+}) {
   // In the address bar, so a filtered list is a link somebody can send and
   // survives a press of the back button from an entry. components/useListUrl.ts.
   const [filters, setFilters, reset] = useListUrl(DEFAULTS);
   const { q: query, country, kind, city } = filters;
   const [openNearby, setOpenNearby] = useState<string | null>(null);
-  const [limit, setLimit] = useState(PAGE);
 
-  const countries = useMemo(
-    () =>
-      [...new Set(attractions.map((a) => a.country))].sort().map((value) => ({ value, label: value })),
-    [attractions],
-  );
-  const kinds = useMemo(
-    () => [...new Set(attractions.map((a) => a.kind))].sort().map((value) => ({ value, label: value })),
-    [attractions],
-  );
+  const [rows, setRows] = useState<AttractionCard[]>(initial);
+  const [more, setMore] = useState(initialMore);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  /** The entry an anchor asked for, when it was not on the page already. */
+  const [anchored, setAnchored] = useState<AttractionCard | null>(null);
+
+  // Which request the answer on screen belongs to: a slow early request must
+  // not overwrite a later, faster one.
+  const asked = useRef(0);
+  // The server already rendered the first page; asking for it again on mount
+  // would be a wasted round trip on every visit.
+  const mounted = useRef(false);
+
+  const countries = useMemo(() => facets.countries.map((value) => ({ value, label: value })), [facets]);
+  const kinds = useMemo(() => facets.kinds.map((value) => ({ value, label: value })), [facets]);
   /**
    * The cities of whichever country is chosen, rather than all of them.
    *
@@ -51,56 +79,110 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
    * "the ones in Rome".
    */
   const cities = useMemo(
-    () =>
-      [...new Set(attractions.filter((a) => !country || a.country === country).map((a) => a.city))]
-        .sort()
-        .map((value) => ({ value, label: value })),
-    [attractions, country],
+    () => (country ? facets.citiesByCountry[country] ?? [] : facets.cities).map((value) => ({ value, label: value })),
+    [facets, country],
   );
 
-  // The notes and the alternate spellings are searched too: half of what makes
-  // an entry findable is in its notes ("no kosher food", "pushchair", "toll
-  // road"), and a person looking for Merano may well type Meran.
-  const shown = attractions
-    .filter(
-      (a) =>
-        (!country || a.country === country) &&
-        (!kind || a.kind === kind) &&
-        (!city || a.city === city) &&
-        listMatches(
-          [a.name, a.city, a.country, a.kind, a.summary, (a.notes ?? []).join(" "), extraSpellings([a.slug, a.city])].join(" "),
-          query,
-        ),
-    )
-    .sort((a, b) => listRank(query, a.city, a.name) - listRank(query, b.city, b.name));
-  const visible = shown.slice(0, limit);
+  async function load(next: { q: string; country: string; kind: string; city: string; offset: number }) {
+    const mine = ++asked.current;
+    setBusy(true);
+    setFailed(false);
+    try {
+      const params = new URLSearchParams({ limit: String(PAGE), offset: String(next.offset) });
+      if (next.q) params.set("q", next.q);
+      if (next.country) params.set("country", next.country);
+      if (next.kind) params.set("kind", next.kind);
+      if (next.city) params.set("city", next.city);
+      const res = await fetch(`/api/things-to-do/list?${params}`, { cache: "no-store" });
+      const data = (await res.json()) as { rows?: AttractionCard[]; more?: boolean };
+      if (mine !== asked.current) return;
+      if (!res.ok || !data.rows) {
+        setFailed(true);
+        return;
+      }
+      setRows((prev) => (next.offset ? [...prev, ...data.rows!] : data.rows!));
+      setMore(Boolean(data.more));
+    } catch {
+      if (mine === asked.current) setFailed(true);
+    } finally {
+      if (mine === asked.current) setBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    const timer = setTimeout(() => void load({ q: query, country, kind, city, offset: 0 }), SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [query, country, kind, city]);
+
+  /**
+   * The anchor a link arrived with — /things-to-do#polin-museum.
+   *
+   * Runs once, on arrival. If the entry is already on the page the browser
+   * scrolls to it by itself and there is nothing to do; otherwise it is
+   * fetched and shown first, and then scrolled to.
+   */
+  useEffect(() => {
+    const slug = decodeURIComponent(window.location.hash.replace(/^#/, ""));
+    if (!slug || initial.some((a) => a.slug === slug)) return;
+    let live = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/things-to-do/list?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
+        const data = (await res.json()) as { rows?: AttractionCard[] };
+        const found = data.rows?.[0];
+        if (!live || !found) return;
+        setAnchored(found);
+        // After paint, so the element exists to scroll to.
+        requestAnimationFrame(() => document.getElementById(found.slug)?.scrollIntoView({ block: "start" }));
+      } catch {
+        // A link that cannot be resolved leaves the directory as it is, which
+        // is what happened before this existed.
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [initial]);
+
+  // The anchored entry first, and never twice.
+  const visible = anchored ? [anchored, ...rows.filter((a) => a.slug !== anchored.slug)] : rows;
 
   return (
     <>
       <ListToolbar
         query={query}
-        onQuery={(q) => { setFilters({ q }); setLimit(PAGE); }}
+        onQuery={(q) => setFilters({ q })}
         placeholder="Rome, waterfall, ghetto, something for the children…"
         searchLabel="Search things to do"
-        empty={shown.length === 0}
+        empty={visible.length === 0 && !busy && !failed}
         mapHref="/map"
-        onReset={() => { reset(); setLimit(PAGE); }}
+        onReset={() => reset()}
         filters={[
           {
             label: "Country",
             value: country,
             // Changing the country empties the city, because the city that was
             // chosen is not in the new one.
-            onChange: (value) => { setFilters({ country: value, city: "" }); setLimit(PAGE); },
+            onChange: (value: string) => setFilters({ country: value, city: "" }),
             options: countries,
             allLabel: "Everywhere",
           },
-          { label: "City", value: city, onChange: (value) => { setFilters({ city: value }); setLimit(PAGE); }, options: cities, allLabel: "Any city" },
-          { label: "Category", value: kind, onChange: (value) => { setFilters({ kind: value }); setLimit(PAGE); }, options: kinds, allLabel: "Anything" },
+          { label: "City", value: city, onChange: (value: string) => setFilters({ city: value }), options: cities, allLabel: "Any city" },
+          { label: "Category", value: kind, onChange: (value: string) => setFilters({ kind: value }), options: kinds, allLabel: "Anything" },
         ]}
       />
 
-      <div className="mt-8 grid gap-5 md:grid-cols-2">
+      {failed && (
+        <p role="status" className="mt-5 border-l-4 border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          The search could not be reached just now. Try again in a moment.
+        </p>
+      )}
+
+      <div className={`mt-8 grid gap-5 md:grid-cols-2 ${busy ? "opacity-60" : ""}`}>
         {visible.map((a) => (
           // The id is what /stops and the planner link to — this page is one
           // page with an anchor per entry, not a page each.
@@ -224,12 +306,16 @@ export default function AttractionDirectory({ attractions }: { attractions: Attr
           Numbered
           pages would break the anchor links: /stops and the planner link
           straight to #slug on this page, and an entry on page four of a
-          paginated list is a link that lands nowhere. */}
-      {shown.length > visible.length && (
+          paginated list is a link that lands nowhere. That was true and those
+          links WERE landing nowhere — an entry outside the drawn 24 was not on
+          the page at all. The anchor is fetched and shown first now; see the
+          effect above. */}
+      {more && (
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <button
             type="button"
-            onClick={() => setLimit((current) => current + PAGE)}
+            disabled={busy}
+            onClick={() => void load({ q: query, country, kind, city, offset: rows.length })}
             className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
           >
             Show more
