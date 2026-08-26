@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import DestinationSearch from "@/components/DestinationSearch";
 import SitePromotions from "@/components/SitePromotions";
 import MobileBottomBar from "@/components/MobileBottomBar";
@@ -10,7 +10,7 @@ import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { forgetOfflineDocuments } from "@/lib/offline-documents";
 import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
-import { brandForHost, configuredBrand } from "@/lib/site-brand-core";
+import { useSiteBrand } from "@/components/useSiteBrand";
 import AccountMenu, { ACCOUNT_PLACES, advisorPlacesFor } from "@/components/AccountMenu";
 import type { AccountPlan } from "@/lib/account-plans";
 import { useOpenSignIn } from "@/components/SignInGate";
@@ -35,17 +35,6 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * tools) and sign-out in place and drops only the four public categories.
  */
 
-/**
- * The hostname, as an external store.
- *
- * It never changes, so subscribing is a no-op — but reading it through
- * useSyncExternalStore rather than an effect is what lets the server and the
- * browser disagree HONESTLY: React is told which value the server used and
- * swaps to the client's without a hydration mismatch, and without a render
- * that sets state on itself.
- */
-const NO_CHANGE = () => () => {};
-
 export default function Navbar({ brand: brandProp, minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
   /**
    * WHICH BRAND THIS IS, DECIDED AS EARLY AS IT CAN BE.
@@ -65,13 +54,7 @@ export default function Navbar({ brand: brandProp, minimal = false }: { brand?: 
    * variable on that service removes the correction entirely; leaving it unset
    * leaves the old behaviour exactly as it was.
    */
-  const built = configuredBrand();
-  const fromHost = useSyncExternalStore(
-    NO_CHANGE,
-    () => brandForHost(window.location.hostname),
-    () => built ?? "kosher",
-  );
-  const brand = brandProp ?? built ?? fromHost;
+  const brand = useSiteBrand(brandProp);
   const isItineraries = brand === "itineraries";
   const openSignIn = useOpenSignIn();
   const [searchOpen, setSearchOpen] = useState(false);

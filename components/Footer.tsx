@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { brandForHost } from "@/lib/site-brand-core";
+import { useSiteBrand } from "@/components/useSiteBrand";
 
 /**
  * The bottom of every page — kept extremely small at the owner's word.
@@ -57,11 +56,10 @@ const ITINERARIES_LINKS = [
 ];
 
 export default function Footer({ brand: brandProp }: { brand?: "kosher" | "itineraries" } = {}) {
-  const [brand, setBrand] = useState<"kosher" | "itineraries">(brandProp ?? "kosher");
-  useEffect(() => {
-    if (brandProp) return;
-    if (typeof window !== "undefined") setBrand(brandForHost(window.location.hostname));
-  }, [brandProp]);
+  // It rendered "kosher" and corrected itself in an effect, which React's lint
+  // rule refuses and which ignored the deployment's own brand setting that the
+  // Navbar has always honoured. One hook now answers this for both.
+  const brand = useSiteBrand(brandProp);
   const isItineraries = brand === "itineraries";
   const links = isItineraries ? ITINERARIES_LINKS : KOSHER_LINKS;
 
