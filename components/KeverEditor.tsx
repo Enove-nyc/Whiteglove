@@ -1,7 +1,9 @@
 "use client";
 
+import { useOnValueChange } from "@/components/useOnValueChange";
+import { useOnActionSuccess } from "@/components/useOnActionSuccess";
 import AddressAndCoordinate from "@/components/AddressAndCoordinate";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import type { Photo } from "@prisma/client";
 import MixedText from "@/components/MixedText";
 import PhotoManager from "@/components/PhotoManager";
@@ -193,17 +195,15 @@ export default function KeverEditor({ cemeteries, orphans = [] }: { cemeteries: 
 
   // A save that went through closes the pop-up; the list refreshes from the
   // action's revalidate.
-  useEffect(() => {
-    if (addState?.ok) {
-      setPersonOpen(false);
-      setDraft(null);
-    }
-  }, [addState]);
-  // Switching beis hachaim closes a pop-up that belonged to the old one.
-  useEffect(() => {
+  useOnActionSuccess([addState], () => {
     setPersonOpen(false);
     setDraft(null);
-  }, [slug]);
+  });
+  // Switching beis hachaim closes a pop-up that belonged to the old one.
+  useOnValueChange(slug, () => {
+    setPersonOpen(false);
+    setDraft(null);
+  });
 
   return (
     <div className="space-y-8">
