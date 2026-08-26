@@ -9,6 +9,7 @@ import {
   twoFactorStorageAvailable,
 } from "@/lib/admin-2fa-store";
 import { recordAdminAction } from "@/lib/admin-actions-store";
+import { forgetTrustedDevices } from "@/lib/admin-2fa-store";
 import { otpauthUri } from "@/lib/totp";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -93,6 +94,16 @@ export async function POST(request: NextRequest) {
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     await recordAdminAction({ kind: "recovery-codes-new", subject: door.label }, request.headers);
     return NextResponse.json({ ok: true, recoveryCodes: result.recoveryCodes });
+  }
+
+  if (body?.action === "forget-devices") {
+    // The second factor itself is untouched: the secret, the authenticator and
+    // the recovery codes all keep working. Only the browsers that were told
+    // they need not ask again start asking again.
+    const result = await forgetTrustedDevices(door.who);
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+    await recordAdminAction({ kind: "devices-forgotten", subject: door.label }, request.headers);
+    return NextResponse.json({ ok: true });
   }
 
   if (body?.action === "disable") {

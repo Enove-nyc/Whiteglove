@@ -51,6 +51,17 @@ export type TwoFactorRecord = {
   lastStep?: number;
   /** sha256 of each unused recovery code. Used ones are removed, not marked. */
   recoveryHashes: string[];
+  /**
+   * Bumped to forget every device that has been told it need not ask for a
+   * code again. Absent means 0 — a record written before devices could be
+   * remembered is simply at the first generation, not broken.
+   *
+   * A NEW SECRET ALREADY FORGETS THEM without this, because the device cookie
+   * is signed over the secret (lib/admin-trusted-device.ts). This is for the
+   * other case: a phone lost while the secret stays the same, where forcing a
+   * re-enrolment on every other device would be the wrong cure.
+   */
+  deviceGeneration?: number;
 };
 
 const PREFIX = "white-glove:admin-2fa:";
@@ -106,6 +117,28 @@ async function writeTwoFactor(who: string, record: TwoFactorRecord): Promise<boo
 /** Turning it off again. Only ever by somebody already through the door. */
 export async function clearTwoFactor(who: string): Promise<boolean> {
   return (await redis(`del/${encodeURIComponent(PREFIX + twoFactorKeyFor(who))}`)) !== null;
+}
+
+/**
+ * Stop trusting every device that has been allowed to skip the code.
+ *
+ * The second factor itself is untouched — the secret, the authenticator and
+ * the recovery codes all keep working. Only the "you need not ask this browser
+ * again" cookies stop verifying, so the next sign-in on every device asks for
+ * six digits once more. What a lost phone needs, without making him re-enrol
+ * the authenticator he still has.
+ */
+export async function forgetTrustedDevices(who: string): Promise<{ ok: boolean; error?: string }> {
+  const record = await readTwoFactor(who);
+  if (!record) return { ok: false, error: "There is no second factor on this door." };
+  const next: TwoFactorRecord = { ...record, deviceGeneration: (record.deviceGeneration ?? 0) + 1 };
+  if (!(await writeTwoFactor(who, next))) return { ok: false, error: "Could not save. Try again." };
+  return { ok: true };
+}
+
+/** The generation a device cookie must have been signed at. Absent means the first. */
+export function deviceGenerationOf(record: TwoFactorRecord | null): number {
+  return record?.deviceGeneration ?? 0;
 }
 
 /** Whether this door demands a code at all. Nothing enrolled means nothing demanded. */

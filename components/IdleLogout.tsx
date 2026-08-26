@@ -3,6 +3,7 @@
 import { forgetOfflineDocuments } from "@/lib/offline-documents";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { withReturnPath } from "@/lib/return-path";
 
 /**
  * Signs the user out after a period of inactivity. Any of the listed user
@@ -37,7 +38,12 @@ export default function IdleLogout({
       // passes still cached on the machine. They go with the session.
       await forgetOfflineDocuments();
       if (cancelled) return;
-      if (redirectTo) router.push(redirectTo);
+      if (redirectTo) {
+        // The page they were on, so signing back in returns them to it rather
+        // than to the admin front page. See lib/return-path.ts.
+        const here = typeof window === "undefined" ? null : window.location.pathname + window.location.search;
+        router.push(withReturnPath(redirectTo, here));
+      }
       router.refresh();
     }
 

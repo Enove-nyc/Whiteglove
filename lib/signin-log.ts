@@ -22,8 +22,23 @@ export type SignInEntry = {
    * "admin code" is the shared password and is anonymous by nature — it is the
    * same secret for everybody who has ever held it. "admin account" is a named
    * administrator opening the admin as themselves, and carries `email`.
+   *
+   * "remembered device" is the shared password on a browser that produced a
+   * correct second-factor code within the last month and was told it need not
+   * ask again. It is recorded separately BECAUSE it is weaker: reading this log
+   * back, the owner has to be able to see which sign-ins actually involved the
+   * authenticator and which leaned on a cookie. Rolled up into "admin code" it
+   * would be invisible, which is the wrong thing for a security log to be.
    */
-  how: "full code" | "five-minute code" | "admin code" | "admin account" | "account" | "google" | "invited";
+  how:
+    | "full code"
+    | "five-minute code"
+    | "admin code"
+    | "remembered device"
+    | "admin account"
+    | "account"
+    | "google"
+    | "invited";
   /** The account's email, when there was one. Codes are anonymous by nature. */
   email?: string;
   country?: string;

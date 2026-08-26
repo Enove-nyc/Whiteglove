@@ -29,6 +29,8 @@ export default function TwoFactorPanel({ enrolled, who, shared }: { enrolled: bo
   const [codes, setCodes] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  /** Said once, plainly, after the devices are dropped — it is otherwise invisible. */
+  const [forgotten, setForgotten] = useState(false);
 
   async function call(payload: Record<string, string>) {
     const res = await fetch("/api/admin/two-factor", {
@@ -77,6 +79,12 @@ export default function TwoFactorPanel({ enrolled, who, shared }: { enrolled: bo
       const data = await call({ action: "regenerate" });
       setCodes(data.recoveryCodes ?? []);
       setStage("codes");
+    });
+
+  const forgetDevices = () =>
+    run(async () => {
+      await call({ action: "forget-devices" });
+      setForgotten(true);
     });
 
   const disable = () =>
@@ -197,6 +205,15 @@ export default function TwoFactorPanel({ enrolled, who, shared }: { enrolled: bo
               <button type="button" onClick={regenerate} disabled={busy} className={quiet}>
                 New recovery codes
               </button>
+              {/* NOT the same as turning it off, and not the same as new
+                  recovery codes. A device that produced a correct code can be
+                  told it need not ask again for a month; this takes that back
+                  from every device at once, without touching the secret or
+                  making him re-enrol the authenticator he still has. What a
+                  lost phone actually needs. */}
+              <button type="button" onClick={forgetDevices} disabled={busy} className={quiet}>
+                Ask every device again
+              </button>
               <button type="button" onClick={disable} disabled={busy} className={quiet}>
                 Turn it off
               </button>
@@ -207,6 +224,13 @@ export default function TwoFactorPanel({ enrolled, who, shared }: { enrolled: bo
             </button>
           )}
         </div>
+      )}
+
+      {forgotten && (
+        <p className="mt-4 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-700">
+          Every device will be asked for a code again next time it signs in. Your authenticator and your recovery codes
+          are unchanged.
+        </p>
       )}
 
       {error && <p className="mt-4 text-sm font-semibold text-red-700">{error}</p>}

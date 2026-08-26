@@ -22,6 +22,18 @@ export default function AccessForm({ scope, next }: { scope: "admin" | "site"; n
    */
   const [needsCode, setNeedsCode] = useState(false);
   const [code, setCode] = useState("");
+  /**
+   * "And stop asking on this one."
+   *
+   * ON BY DEFAULT, and that is the point rather than an oversight. The owner
+   * signs in many times a day and typing six digits every single time made him
+   * want the second factor removed altogether — a second factor nobody can
+   * live with gets switched off, and then there is none. The password is still
+   * required every time on every device; this only moves the code from once
+   * per sign-in to once per device per month.
+   */
+  const [rememberDevice, setRememberDevice] = useState(true);
+  const [rememberDays, setRememberDays] = useState(30);
 
   function destination() {
     if (scope !== "admin") return next?.startsWith("/") && !next.startsWith("//") ? next : "/";
@@ -36,12 +48,21 @@ export default function AccessForm({ scope, next }: { scope: "admin" | "site"; n
     const response = await fetch("/api/access", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ scope, password: password.trim(), ...(code.trim() ? { code: code.trim() } : {}) }),
+      body: JSON.stringify({
+        scope,
+        password: password.trim(),
+        ...(code.trim() ? { code: code.trim(), rememberDevice } : {}),
+      }),
     });
     if (!response.ok) {
-      const data = (await response.json().catch(() => null)) as { error?: string; needsCode?: boolean } | null;
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+        needsCode?: boolean;
+        rememberDays?: number;
+      } | null;
       if (data?.needsCode) {
         setNeedsCode(true);
+        if (data.rememberDays) setRememberDays(data.rememberDays);
         // The first ask is not a failure and should not read as one — the
         // password was right, there is simply a second step.
         setMessage(data.error || "");
@@ -102,6 +123,21 @@ export default function AccessForm({ scope, next }: { scope: "admin" | "site"; n
           />
           <span className="mt-2 block text-xs font-normal leading-5 text-stone-600">
             Or one of your recovery codes, if you do not have your phone.
+          </span>
+        </label>
+      )}
+      {needsCode && (
+        <label className="flex items-start gap-3 text-sm font-normal leading-6 text-stone-700">
+          <input
+            type="checkbox"
+            checked={rememberDevice}
+            onChange={(event) => setRememberDevice(event.target.checked)}
+            className="mt-1 size-4 shrink-0"
+          />
+          <span>
+            <span className="font-semibold text-[var(--navy)]">Don&rsquo;t ask for a code on this device</span> for the
+            next {rememberDays} days. The password is still needed every time. Leave this unticked on a shared or
+            borrowed device.
           </span>
         </label>
       )}

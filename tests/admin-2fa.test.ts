@@ -29,7 +29,12 @@ describe("both doors ask", () => {
   });
 
   it("the shared-password door demands the shared code where one is enrolled", () => {
-    assert.match(ACCESS_ROUTE, /await twoFactorRequired\(SHARED_DOOR\)/);
+    // readTwoFactor rather than twoFactorRequired since remembered devices
+    // arrived: the route needs the door's actual secret and generation to
+    // check a device cookie against, not just "is one enrolled". Enrolment is
+    // still what decides whether a code is demanded — `enrolled !== null`.
+    assert.match(ACCESS_ROUTE, /await readTwoFactor\(SHARED_DOOR\)/);
+    assert.match(ACCESS_ROUTE, /if \(enrolled && !trusted\)/);
     assert.match(ACCESS_ROUTE, /await checkSecondFactor\(SHARED_DOOR, code\)/);
   });
 
@@ -37,7 +42,7 @@ describe("both doors ask", () => {
     // Asking for a code before checking the password would tell anybody who
     // typed anything at all whether this deployment has one configured.
     const password = ACCESS_ROUTE.indexOf('verifyAccessPassword("admin", password)');
-    const factor = ACCESS_ROUTE.indexOf("twoFactorRequired(SHARED_DOOR)");
+    const factor = ACCESS_ROUTE.indexOf("readTwoFactor(SHARED_DOOR)");
     assert.ok(password > 0 && factor > 0);
     assert.ok(password < factor, "the password must be verified before the second factor is even mentioned");
   });
