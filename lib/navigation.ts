@@ -82,7 +82,6 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
       // are reached as places, through Destinations, and this is how somebody
       // says that is the kind of trip they want.
       { label: "Heritage", href: "/destinations?kind=heritage" },
-      { label: "Seasonal", href: "/destinations?view=seasonal" },
     ],
     groups: [
       {
@@ -102,7 +101,6 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
           { label: "Couples", href: "/destinations?kind=couples" },
           { label: "Short Trips", href: "/destinations?kind=short-break" },
           { label: "Heritage", href: "/destinations?kind=heritage" },
-          { label: "Seasonal", href: "/destinations?view=seasonal" },
         ],
       },
     ],
@@ -114,15 +112,14 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
       // booked: what is walkable from it, before Shabbos.
       { label: "Near where you are staying", href: "/near" },
       { label: "Food", href: "/kosher" },
-      { label: "Stays", href: "/hotels" },
+      { label: "Where to stay", href: "/hotels" },
       { label: "Shuls", href: "/shuls" },
-      { label: "Mikvahs", href: "/mikvaos" },
+      { label: "Mikvaos", href: "/mikvaos" },
       { label: "Chabad House Finder", href: "/chabad-directory" },
       { label: "Eruvin", href: "/eruvin" },
       { label: "Zmanim", href: "/zmanim" },
       { label: "Kevarim", href: "/tzaddikim" },
       { label: "Cemeteries", href: "/cemeteries" },
-      { label: "Batei hachaim worldwide", href: "/cemeteries/heritage" },
     ],
   },
   {
@@ -136,7 +133,7 @@ export const NAV_CATEGORIES: readonly NavCategory[] = [
   {
     label: "Travel",
     links: [
-      { label: "Stays", href: "/hotels" },
+      { label: "Where to stay", href: "/hotels" },
       { label: "Activities", href: "/things-to-do" },
       { label: "Transport", href: "/transfers" },
       { label: "Insurance", href: "/travel-insurance" },

@@ -34,7 +34,7 @@ export async function generateMetadata() {
   return pageMetadata({
     title: "Jewish Travel Guide — Kosher Destinations & Trip Planning",
     description:
-      "A Jewish travel guide for kosher trips: destinations, kosher food, Shabbos, shuls and mikvahs — plan your own itinerary or search booking partners.",
+      "A Jewish travel guide for kosher trips: destinations, kosher food, Shabbos, shuls and mikvaos — plan your own itinerary or search booking partners.",
     path: "/",
   });
 }

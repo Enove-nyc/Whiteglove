@@ -144,7 +144,7 @@ export default function MapExplorer({
         subtitle: [`${s.city} · ${s.country}`, s.kind, s.season].filter(Boolean).join(" · "),
         lat: p.lat,
         lng: p.lng,
-        href: `/kosher-stays#${s.slug}`,
+        href: `/hotels#${s.slug}`,
         kind: "stay",
       });
     }

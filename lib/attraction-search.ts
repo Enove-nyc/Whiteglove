@@ -87,7 +87,7 @@ function toStayResult(s: KosherStayItem): StayResult {
     kosherClaim: s.kosherClaim,
     season: s.season,
     website: s.website,
-    href: `/kosher-stays#${s.slug}`,
+    href: `/hotels#${s.slug}`,
   };
 }
 

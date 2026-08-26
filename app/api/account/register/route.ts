@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 import { createAccount } from "@/lib/account-store";
 import { normalizeIdentity } from "@/lib/identity";
 import { smsConfigured } from "@/lib/sms";
@@ -12,6 +13,14 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as { email?: string; password?: string; name?: string; phone?: string } | null;
   if (!body?.email || !body?.password) {
     return NextResponse.json({ error: "Enter an email address or phone number, and a password." }, { status: 400 });
+  }
+
+  // Each sign-up writes an account and fires a real email or text, so an
+  // uncapped route is a way to make us send mail to anybody, over and over.
+  // Cap by who is asking, and by the address named, before either happens.
+  for (const key of [`register-ip:${requesterKey(request.headers)}`, `register:${body.email.toLowerCase()}`]) {
+    const gate = await rateLimit(key, { limit: 5, windowSeconds: 15 * 60 });
+    if (!gate.ok) return NextResponse.json({ error: tooManyMessage(gate.retryAfter) }, { status: 429, headers: { "Retry-After": String(gate.retryAfter) } });
   }
 
   // Turn a phone sign-up away before the account exists, rather than making one

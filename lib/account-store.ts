@@ -1,4 +1,4 @@
-import { createHmac, pbkdf2Sync, randomBytes } from "crypto";
+import { createHmac, pbkdf2Sync, randomBytes, randomInt } from "crypto";
 import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { withoutAttachments } from "@/lib/attachments";
 import { buildDays, emptyItinerary, flightRouteLabel, type Itinerary } from "@/data/itinerary";
@@ -446,11 +446,19 @@ function hashPassword(password: string, salt: string) {
 }
 
 function verificationSecret() {
-  return process.env.WHITE_GLOVE_SESSION_SECRET || process.env.ADMIN_PASSWORD || "white-glove-development-secret";
+  const configured = process.env.WHITE_GLOVE_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim();
+  if (configured) return configured;
+  // Fail closed in production: a code HMAC'd with a constant compiled into the
+  // source could be forged offline. The dev constant survives only locally.
+  if (process.env.NODE_ENV !== "production") return "white-glove-development-secret";
+  throw new Error("WHITE_GLOVE_SESSION_SECRET (or ADMIN_PASSWORD) must be set in production.");
 }
 
 function verificationCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  // A security code, so it comes from the CSPRNG, not Math.random — the latter
+  // is predictable and its stream is recoverable from a few observed outputs,
+  // which would let an attacker anticipate the next sign-up or reset code.
+  return String(randomInt(100000, 1000000));
 }
 
 function hashVerificationCode(email: string, code: string) {
