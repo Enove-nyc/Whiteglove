@@ -1,6 +1,5 @@
 "use client";
 
-import { fuzzyMatch, normalize } from "@/lib/place-search";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 

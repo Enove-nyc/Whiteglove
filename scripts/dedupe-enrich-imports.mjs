@@ -211,9 +211,6 @@ function familiesCanCollapse(a, b) {
   );
 }
 
-function kindBucket(row) {
-  return venueFamily(row);
-}
 
 function orgStem(name) {
   const n = normalizeText(name);

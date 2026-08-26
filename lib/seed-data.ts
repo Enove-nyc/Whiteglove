@@ -12,13 +12,6 @@ import { directoryProviders } from "@/data/directory";
 import { kosherAreas, kosherStays } from "@/data/kosher-stays";
 import { practicalContent } from "@/data/practical-content";
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 export type SeedRows = {
   destinations: Prisma.DestinationCreateManyInput[];
   cemeteries: Prisma.CemeteryCreateManyInput[];

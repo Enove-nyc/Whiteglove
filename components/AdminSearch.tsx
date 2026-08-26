@@ -21,6 +21,9 @@ function SearchGlyph() {
   );
 }
 
+/** One empty array for the life of the module — see `results` below. */
+const NO_HITS: AdminHit[] = [];
+
 export default function AdminSearch({ areas, pathname }: { areas: AdminArea[] | null; pathname: string }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -48,7 +51,13 @@ export default function AdminSearch({ areas, pathname }: { areas: AdminArea[] | 
     [screens],
   );
 
-  const results: AdminHit[] = trimmed ? (hits?.query === trimmed ? hits.response.results : []) : emptyMatches;
+  /**
+   * NO_HITS RATHER THAN A FRESH []. The middle branch — a query typed, its
+   * answer not back yet — built a new empty array on every render, so the
+   * `groups` memo below it re-ran every render and memoised nothing. Exactly
+   * while somebody is typing, which is the one time it matters.
+   */
+  const results: AdminHit[] = trimmed ? (hits?.query === trimmed ? hits.response.results : NO_HITS) : emptyMatches;
 
   const groups = useMemo(() => {
     return ADMIN_HIT_SECTIONS.map((section) => ({

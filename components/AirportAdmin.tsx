@@ -6,7 +6,7 @@ import { useFocusTrap } from "@/components/useFocusTrap";
 import type { AddedAirport, AddedMetro } from "@/lib/airport-admin";
 import { describeMetro, isBuiltInMetro } from "@/lib/airport-admin";
 import type { Airport } from "@/data/airports";
-import { type ActionResult, removeAirportAction, saveAirportAction, saveMetroAction } from "@/app/admin/airports/actions";
+import { removeAirportAction, saveAirportAction, saveMetroAction } from "@/app/admin/airports/actions";
 
 /**
  * Adding, correcting and grouping airports — as a list you press into.

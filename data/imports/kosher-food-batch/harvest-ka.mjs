@@ -94,7 +94,6 @@ if (incoming.length < 5) {
   for (const m of html.matchAll(/<h2[^>]*>([^<]{2,80})<\/h2>([\s\S]{0,500}?)(?=<h2|$)/gi)) {
     const name = decode(m[1]);
     const block = m[2];
-    const lines = decode(block).split(/(?<=Street|Road|Rd|Avenue|Ave|Parade|Lane|Place)\s+/i);
     const addr = (block.match(/\d[\dA-Za-z .'/ -]{4,60}(?:Street|St|Road|Rd|Avenue|Ave|Parade|Lane|Place)[^<]{0,20}/i) || [])[0]
       || (block.match(/>([A-Za-z0-9 .'/ -]{6,60}(?:Street|Road|Rd|Avenue|Parade))</i) || [])[1];
     const suburb = (block.match(/>(Surry Hills|Rose Bay|Bondi(?: Beach)?|Waverley|Kensington|Woollahra|Darlington|North Bondi|Hunters Hill|Matraville|Bondi Junction|Vaucluse|Coogee|Manly|Maroubra|Botany|Alexandria|St Ives|Kirrawee|Malvern|Windsor|Bar Beach|West End|Surfers Paradise)</i) || [])[1];
