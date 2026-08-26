@@ -45,6 +45,11 @@ export const REMINDER_ACTION: Record<ReminderReason, AttentionAction> = {
   proposal_stale: { kind: "open", label: "Open the proposal", path: "/proposal" },
   // "Expires in 2 days" — same screen, where the date can be moved.
   proposal_expiring: { kind: "open", label: "Open the proposal", path: "/proposal" },
+  // The client asked for changes. Reading what they asked for is the work.
+  proposal_changes_requested: { kind: "open", label: "Read what they asked for", path: "/proposal" },
+  // They said yes, and the option they agreed to is still not on the
+  // itinerary. The Convert button lives on the proposal.
+  proposal_approved_not_converted: { kind: "open", label: "Convert to itinerary", path: "/proposal" },
   // A scheduled instalment coming due. Payments is where the schedule lives.
   payment_due_soon: { kind: "open", label: "Open payments", path: "/payments" },
   // Add-ons are offered and answered as part of the proposal, so that is where

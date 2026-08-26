@@ -21,8 +21,23 @@ describe("a stale, unanswered proposal", () => {
     assert.equal(out[0].reason, "proposal_stale");
   });
 
-  it("stays quiet once the client has answered", () => {
+  it("stops chasing once the client has answered", () => {
+    // This used to assert NOTHING at all fires on an approved proposal, which
+    // read as "the client answered, so there is nothing left to do". There is:
+    // tripStage moves an approved trip straight to Confirmed while the agreed
+    // option has never been copied onto the itinerary, and the itinerary is
+    // what the traveler opens. So the follow-up chase stops — which is what
+    // this test was really protecting — and the convert prompt takes its place.
     const proposal = { ...emptyProposal(), status: "approved" as const, sentAt: "2026-05-01T00:00:00Z" };
+    const out = tripReminders({ stage: "confirmed", proposal }, TODAY);
+    assert.ok(!out.some((r) => r.reason === "proposal_stale"), "still chasing a proposal the client answered");
+    assert.ok(!out.some((r) => r.reason === "proposal_expiring"));
+    assert.deepEqual(out.map((r) => r.reason), ["proposal_approved_not_converted"]);
+  });
+
+  it("goes quiet for real once the agreed option is on the itinerary", () => {
+    // convertProposalToItinerary moves the proposal to "confirmed".
+    const proposal = { ...emptyProposal(), status: "confirmed" as const, sentAt: "2026-05-01T00:00:00Z" };
     assert.deepEqual(tripReminders({ stage: "confirmed", proposal }, TODAY), []);
   });
 });
