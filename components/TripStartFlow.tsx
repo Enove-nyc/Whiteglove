@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
-import { BRAND_ORIGIN, brandForHost } from "@/lib/site-brand-core";
+import { BRAND_ORIGIN } from "@/lib/site-brand-core";
+import { useSiteBrand } from "@/components/useSiteBrand";
 import {
   ACCESSIBILITY_NEEDS,
   emptyAnswers,
@@ -136,10 +137,10 @@ export default function TripStartFlow({
   // out of an installed itineraries app (the Trusted Web Activity drops to an
   // ordinary browser tab, address bar and all, the moment it leaves the
   // verified domain). Detected client-side, the same way Navbar settles brand.
-  const [itineraries, setItineraries] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined") setItineraries(brandForHost(window.location.hostname) === "itineraries");
-  }, []);
+  // Through the shared hook rather than an effect: this rendered "kosher" and
+  // corrected itself after mount, which React's lint rule refuses and which
+  // ignored the deployment's own NEXT_PUBLIC_SITE_BRAND. See useSiteBrand.
+  const itineraries = useSiteBrand() === "itineraries";
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   function update(patch: Partial<TripPlanAnswers>) {

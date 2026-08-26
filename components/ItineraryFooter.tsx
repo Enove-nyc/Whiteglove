@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import GloveMark from "@/components/GloveMark";
+import { useSiteBrand } from "@/components/useSiteBrand";
 import PromotionBanner from "@/components/PromotionBanner";
 import type { Promotion } from "@/lib/admin-content";
-import { brandForHost } from "@/lib/site-brand-core";
 
 // The band at the bottom of an itinerary.
 //
@@ -24,10 +23,12 @@ import { brandForHost } from "@/lib/site-brand-core";
 // Activity to an ordinary browser tab, address bar and all, the moment
 // navigation leaves the verified domain).
 export default function ItineraryFooter({ promotion }: { promotion: Promotion | null }) {
-  const [itineraries, setItineraries] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined") setItineraries(brandForHost(window.location.hostname) === "itineraries");
-  }, []);
+  // THROUGH THE SHARED HOOK, not an effect. This rendered "kosher", then
+  // corrected itself after mount — a second render nobody asked for, which
+  // React's lint rule refuses. useSiteBrand reads the same three sources in the
+  // same order the Navbar and the Footer do, and honours the deployment's own
+  // NEXT_PUBLIC_SITE_BRAND, which this never did.
+  const itineraries = useSiteBrand() === "itineraries";
 
   return (
     <div className="mt-14">

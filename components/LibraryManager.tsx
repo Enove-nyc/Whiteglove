@@ -321,7 +321,7 @@ export default function LibraryManager() {
 
       <section className="border-t border-[var(--gold-light)] pt-6">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Destination packs</h2>
-        <p className="mt-1 text-sm text-stone-600">A named group of saved items — "Rome Family Trip" — added to a proposal all at once.</p>
+        <p className="mt-1 text-sm text-stone-600">A named group of saved items — &ldquo;Rome Family Trip&rdquo; — added to a proposal all at once.</p>
 
         <div className="mt-4 flex gap-2">
           <input value={newPackName} onChange={(e) => setNewPackName(e.target.value)} placeholder="Pack name — e.g. Rome Family Trip" className={inputCls} />

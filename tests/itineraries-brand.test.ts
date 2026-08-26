@@ -81,7 +81,12 @@ describe("a page body never hands out a bare guide link on the itineraries domai
 
   it("ItineraryFooter only signs the kosher brand, and only links kevarim, once it knows this is the kosher domain", () => {
     const src = readFileSync("components/ItineraryFooter.tsx", "utf8");
-    assert.match(src, /brandForHost\(window\.location\.hostname\)/);
+    // Through the shared hook now, not brandForHost by hand. Same property —
+    // the brand is settled before the href is chosen — by a mechanism that
+    // also honours the deployment's own NEXT_PUBLIC_SITE_BRAND, which the
+    // hand-rolled effect ignored. useSiteBrand is itself pinned below.
+    assert.match(src, /useSiteBrand\(\)/);
+    assert.doesNotMatch(src, /useEffect\([^)]*setItineraries/);
     assert.match(src, /itineraries \? "White Glove Itineraries" : "White Glove Kosher Travel"/);
     // Both branches exist — the itineraries one links the app, the kosher
     // one still links kevarim — and the choice happens before either href is
@@ -93,14 +98,38 @@ describe("a page body never hands out a bare guide link on the itineraries domai
 
   it("KosherNearby only sends a visitor to /kosher on the domain that has one", () => {
     const src = readFileSync("components/KosherNearby.tsx", "utf8");
-    assert.match(src, /brandForHost\(window\.location\.hostname\)/);
+    // Through the shared hook now, not brandForHost by hand. Same property —
+    // the brand is settled before the href is chosen — by a mechanism that
+    // also honours the deployment's own NEXT_PUBLIC_SITE_BRAND, which the
+    // hand-rolled effect ignored. useSiteBrand is itself pinned below.
+    assert.match(src, /useSiteBrand\(\)/);
+    assert.doesNotMatch(src, /useEffect\([^)]*setItineraries/);
     assert.match(src, /itineraries \? `\$\{BRAND_ORIGIN\.kosher\}\/kosher` : "\/kosher"/);
   });
 
   it("TripStartFlow only sends a visitor to /heritage on the domain that has one", () => {
     const src = readFileSync("components/TripStartFlow.tsx", "utf8");
-    assert.match(src, /brandForHost\(window\.location\.hostname\)/);
+    // Through the shared hook now, not brandForHost by hand. Same property —
+    // the brand is settled before the href is chosen — by a mechanism that
+    // also honours the deployment's own NEXT_PUBLIC_SITE_BRAND, which the
+    // hand-rolled effect ignored. useSiteBrand is itself pinned below.
+    assert.match(src, /useSiteBrand\(\)/);
+    assert.doesNotMatch(src, /useEffect\([^)]*setItineraries/);
     assert.match(src, /\$\{BRAND_ORIGIN\.kosher\}\/heritage/);
+  });
+
+  it("and useSiteBrand is what all three now lean on, so pinning it pins them", () => {
+    // The three assertions above check that each component asks the hook. This
+    // checks the hook still answers from the hostname, which is the fact they
+    // were really pinning when they read brandForHost directly.
+    const hook = readFileSync("components/useSiteBrand.ts", "utf8");
+    assert.match(hook, /brandForHost\(window\.location\.hostname\)/);
+    assert.match(hook, /configuredBrand\(\)/);
+    // Not an effect. That was the bug the rule caught: rendering "kosher"
+    // first and correcting after mount is a frame of the wrong brand, and on
+    // these three components a frame of the wrong HREF.
+    assert.doesNotMatch(hook, /useEffect/);
+    assert.match(hook, /useSyncExternalStore/);
   });
 
   // The same bug, found later on the four places that INVITE a visitor into

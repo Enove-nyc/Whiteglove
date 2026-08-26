@@ -33,12 +33,20 @@ wrong:
   the same reason as before — the ROUTES are separate even though the data is
   not.
 
-### The lint note's worked example has moved
+### The lint note's worked example — and a correction to this file
 
-It points at `components/useSiteBrand.ts` as the model fix. That file is not in
-this repo on `main` today; the same `useSyncExternalStore` treatment now lives
-in `components/Navbar.tsx` and `components/Footer.tsx`, where the brand is read
-with a server snapshot instead of corrected in an effect. Read those instead.
+It points at `components/useSiteBrand.ts` as the model fix, and that is right:
+the file exists and the Navbar and the Footer both use it. **An earlier version
+of this page said it was not in the repo. That was wrong** — checked against a
+stale local copy rather than `main` — and it is corrected here rather than
+quietly, because a filed document is only worth having if its corrections are
+themselves checked.
+
+The hook is the model for one family of these errors: a value that legitimately
+differs between server and client, read through `useSyncExternalStore` with a
+server snapshot instead of rendering a guess and correcting it after mount.
+`ItineraryFooter`, `KosherNearby` and `TripStartFlow` were the other three of
+that family and now use it too.
 
 ### One of its files is now first in the queue for a different reason
 
