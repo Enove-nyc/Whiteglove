@@ -301,7 +301,7 @@ export default function ClientFormBuilder() {
           onClick={() => void getLink()}
           className="inline-flex min-h-11 items-center rounded-full bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:opacity-90 disabled:opacity-60"
         >
-          Get the client's link
+          Get the client&rsquo;s link
         </button>
         {note && <span className="text-xs font-semibold text-emerald-700">{note}</span>}
       </div>

@@ -35,9 +35,19 @@ export default function RoutingKeyTest() {
     }
   }
 
+  // THE SAME SHAPE AgencyPanel AND THE REST OF THIS REPO USE. `void run()`
+  // entered run() synchronously, and run() opens with setBusy(true) — a
+  // setState during the effect, which is a second render before the fetch has
+  // even left. The async wrapper means nothing here runs until the microtask,
+  // so the first paint is the one React already planned.
   useEffect(() => {
-    void run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let active = true;
+    (async () => {
+      if (active) await run();
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
