@@ -114,6 +114,26 @@ describe("the page", () => {
     assert.ok(publicPaths().some((entry) => entry.path === "/hechsherim"));
   });
 
+  it("names each agency once per row, not three times", () => {
+    /**
+     * FOUND BY AN OUTSIDE SCAN, though not the finding it reported. The scan
+     * said all 271 marks on this page lacked alternative text; the images are
+     * inside an aria-hidden circle with the name in the row, so the empty alt
+     * was right. What was beside it was not: the badge also printed its own
+     * label and its own sr-only sentence, so every row showed "Hechsher:
+     * Orthodox Union" next to "Orthodox Union" and read the name three times
+     * to a screen reader — 271 times down the page.
+     *
+     * The badge is decorative HERE and nowhere else. On a listing it is the
+     * only thing naming the hechsher, so it keeps its voice.
+     */
+    const BADGE = readFileSync("components/HechsherBadge.tsx", "utf8");
+    assert.match(PAGE, /decorative/, "the mark on this page is a picture of what the row already says");
+    assert.match(BADGE, /decorative = false/, "a listing badge still names its hechsher");
+    assert.match(BADGE, /showLabel && !decorative/);
+    assert.match(BADGE, /\{!decorative && <span className="sr-only">/);
+  });
+
   it("repeats the kashrus caution that the food listings carry", () => {
     // The same sentence a traveller meets beside a restaurant: gold means
     // confirmed, grey means ask for the teudah.

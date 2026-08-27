@@ -313,7 +313,7 @@ function AgencyList({ agencies, ownAdded, storeReady, saveAction, savePending, s
           <li key={h.id} className="py-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <HechsherBadge status={{ state: "certified", hechsherId: h.id }} size="sm" showLabel={false} agencies={agencies} />
+                <HechsherBadge status={{ state: "certified", hechsherId: h.id }} size="sm" decorative agencies={agencies} />
                 <div className="min-w-0">
                   <p className="font-semibold text-[var(--navy)]">
                     {h.name}

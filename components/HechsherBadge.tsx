@@ -22,11 +22,22 @@ export default function HechsherBadge({
   status,
   size = "md",
   showLabel = true,
+  decorative = false,
   agencies = HECHSHERIM,
 }: {
   status: HechsherStatus;
   size?: "sm" | "md";
   showLabel?: boolean;
+  /**
+   * For the two places that draw the mark beside the agency's own name: the
+   * badge is then a picture of something the row already says, so it says
+   * nothing itself. Without this, /hechsherim printed "Hechsher: Orthodox
+   * Union" next to "Orthodox Union" in all 271 rows, and read the name three
+   * times to a screen reader — the visible label, the sr-only sentence, and
+   * the heading. Default false, because on a listing the badge is the only
+   * thing naming the hechsher and has to be read.
+   */
+  decorative?: boolean;
   /** The full list, including any the owner has added. Defaults to the built-in one. */
   agencies?: Hechsher[];
 }) {
@@ -80,7 +91,7 @@ export default function HechsherBadge({
   const inside = confirmed || reported ? mark || "✓" : "—";
 
   return (
-    <span className="inline-flex items-center gap-2" title={title}>
+    <span className="inline-flex items-center gap-2" title={decorative ? undefined : title}>
       <span
         className={`${circle} ${tone.ring} ${tone.ink}`}
         style={{ width: px, height: px, fontSize: inside.length > 2 ? markSize - 2 : markSize }}
@@ -103,8 +114,8 @@ export default function HechsherBadge({
           <span className="px-0.5">{inside}</span>
         )}
       </span>
-      {showLabel && <span className={`text-xs font-semibold ${tone.text}`}>{label}</span>}
-      <span className="sr-only">{title}</span>
+      {showLabel && !decorative && <span className={`text-xs font-semibold ${tone.text}`}>{label}</span>}
+      {!decorative && <span className="sr-only">{title}</span>}
     </span>
   );
 }

@@ -97,10 +97,14 @@ export default async function HechsherimPage() {
                     key={agency.id}
                     className="flex items-start gap-4 rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5"
                   >
+                    {/* The mark only. Every row names its agency in the line
+                        beside it, so a badge that also carried the name printed
+                        it twice on the screen and read it three times aloud. */}
                     <HechsherBadge
                       status={{ state: "certified", hechsherId: agency.id }}
                       agencies={agencies}
                       size="md"
+                      decorative
                     />
                     <div className="min-w-0">
                       <p className="font-semibold leading-6 text-[var(--navy)]">{agency.name}</p>
