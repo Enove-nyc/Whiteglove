@@ -226,10 +226,12 @@ export function travelerAttachments<
 }
 
 /** Every attachment id on a trip that the traveler was given. */
+type RowWithFiles = { id?: string; attachments?: Array<{ id?: string; shared?: boolean }> };
+
 export function sharedAttachmentIds(itinerary: {
-  flights?: Array<{ attachments?: Array<{ id?: string; shared?: boolean }> }>;
-  lodging?: Array<{ attachments?: Array<{ id?: string; shared?: boolean }> }>;
-  activities?: Array<{ attachments?: Array<{ id?: string; shared?: boolean }> }>;
+  flights?: RowWithFiles[];
+  lodging?: RowWithFiles[];
+  activities?: RowWithFiles[];
 }): Set<string> {
   const ids = new Set<string>();
   for (const rows of [itinerary.flights, itinerary.lodging, itinerary.activities]) {

@@ -3,7 +3,7 @@ import { kosherAreas } from "@/data/kosher-stays";
 import { attractions } from "@/data/attractions";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { notableShuls } from "@/data/notable-shuls";
-import { nearest, parsePoint, RANGES, type NearbyThing } from "@/data/near-me";
+import { nearest, parsePoint, rangesFor, type NearbyThing } from "@/data/near-me";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +39,11 @@ export async function GET(request: NextRequest) {
   if (!from) {
     return NextResponse.json({ error: "Say where you are staying." }, { status: 400 });
   }
+
+  // An airport is the same question asked with a different ruler — see
+  // DRIVING_RANGES. Anything unrecognised measures on foot, the stricter of
+  // the two, so a mangled parameter cannot quietly widen the answer.
+  const RANGES = rangesFor(request.nextUrl.searchParams.get("mode"));
 
   // The coordinate travels with every row on purpose: it is what "Navigate"
   // hands to a map and what a saved stop keeps, and asking the client to look
