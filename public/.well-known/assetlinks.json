@@ -17,6 +17,8 @@
       "namespace": "android_app",
       "package_name": "com.Whiteglovekoshertravel.app",
       "sha256_cert_fingerprints": [
+        "59:42:35:D8:C0:37:BF:59:9A:69:0C:1F:A6:BD:92:67:B9:E7:C8:F6:5C:9B:6E:E3:2E:22:56:21:A3:DE:47:BB",
+        "40:1A:50:4B:00:F7:97:2C:AC:C3:74:D2:1D:E6:FF:DD:82:0F:1C:28:3F:2C:7C:6A:0D:0E:D9:41:F4:5A:84:FC",
         "1C:34:41:92:1C:08:DA:75:FE:21:1C:1C:62:D6:08:39:E2:F4:D2:47:1C:86:29:34:9C:C1:8D:EC:24:92:44:05"
       ]
     }
@@ -27,6 +29,8 @@
       "namespace": "android_app",
       "package_name": "com.whiteglovekoshertravel.app",
       "sha256_cert_fingerprints": [
+        "59:42:35:D8:C0:37:BF:59:9A:69:0C:1F:A6:BD:92:67:B9:E7:C8:F6:5C:9B:6E:E3:2E:22:56:21:A3:DE:47:BB",
+        "40:1A:50:4B:00:F7:97:2C:AC:C3:74:D2:1D:E6:FF:DD:82:0F:1C:28:3F:2C:7C:6A:0D:0E:D9:41:F4:5A:84:FC",
         "1C:34:41:92:1C:08:DA:75:FE:21:1C:1C:62:D6:08:39:E2:F4:D2:47:1C:86:29:34:9C:C1:8D:EC:24:92:44:05"
       ]
     }
