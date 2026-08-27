@@ -1,3 +1,4 @@
+import CappedGrid from "@/components/CappedGrid";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -94,7 +95,16 @@ export default async function MikvaosPage() {
             {[...byCountry].map(([country, list]) => (
               <div key={country}>
                 <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{country}</h2>
-                <ul className="mt-5 grid gap-4 md:grid-cols-2">
+                {/* Six per country. The page measured 19,948 pixels on a
+                    phone with every country open at once; the rest of each
+                    list is in the HTML behind one press. */}
+                <CappedGrid
+                  tag="ul"
+                  cap={6}
+                  className="mt-5 grid gap-4 md:grid-cols-2"
+                  total={list.length}
+                  showAllLabel={`Show all ${list.length} in ${country}`}
+                >
                   {list.map((listing) => (
                     <li key={listing.id} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">
                       <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
@@ -166,7 +176,7 @@ export default async function MikvaosPage() {
                       </div>
                     </li>
                   ))}
-                </ul>
+                </CappedGrid>
               </div>
             ))}
           </div>

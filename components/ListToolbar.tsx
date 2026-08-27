@@ -74,7 +74,13 @@ export default function ListToolbar({
   const active = Boolean(query.trim()) || setFilters.length > 0;
 
   return (
-    <div className="rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+    /* STUCK UNDER THE HEADER, because on the pages this appears on the list
+       below it is thousands of pixels long — /tzaddikim measured 70,685 on a
+       phone — and a search box that scrolls away is a search box somebody has
+       to scroll back to the top to reach. top-16 is the header's scrolled
+       height (min-h-16 in Navbar); by the time this reaches the top of the
+       viewport the header has already shrunk to it. */
+    <div className="sticky top-16 z-[var(--wg-z-list-toolbar)] rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_6px_16px_rgba(23,45,82,.06)]">
       <div className="flex flex-wrap items-end gap-3">
         <label className="block min-w-0 flex-1 basis-64">
           <span className={captionClass}>{searchLabel}</span>

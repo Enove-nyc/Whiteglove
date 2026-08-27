@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import MixedText from "@/components/MixedText";
+import CappedGrid from "@/components/CappedGrid";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
 
 // The kevarim directory, with the search in front.
@@ -122,7 +123,17 @@ export default function TzaddikimDirectory({ people }: { people: TzaddikCard[] }
             </span>
           </h2>
 
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Poland alone holds a hundred and fifty-four of these, and the
+              page measured 70,685 pixels tall on a phone with all nineteen
+              countries open at once. Each country now opens on its first
+              twelve; the rest are in the HTML and one press away. */}
+          <CappedGrid
+            tag="ul"
+            cap={6}
+            className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            total={list.length}
+            showAllLabel={`Show all ${list.length} in ${country}`}
+          >
             {list.map((person) => (
               <li key={person.slug}>
                 <Link
@@ -146,7 +157,7 @@ export default function TzaddikimDirectory({ people }: { people: TzaddikCard[] }
                 </Link>
               </li>
             ))}
-          </ul>
+          </CappedGrid>
         </section>
       ))}
     </>

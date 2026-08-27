@@ -27,6 +27,12 @@ import { publicPaths } from "@/lib/site-map";
  */
 
 const PAGE = readFileSync("app/hechsherim/page.tsx", "utf8");
+/**
+ * The rows themselves moved off the page and into a client component, because
+ * a directory of 287 marks under 81 region headings needed a search box and a
+ * server component cannot hold one. The page still owns the words above them.
+ */
+const DIRECTORY = readFileSync("components/HechsherimDirectory.tsx", "utf8");
 const DATA = readFileSync("data/hechsherim.ts", "utf8");
 
 describe("the list of agencies", () => {
@@ -98,12 +104,12 @@ describe("the page", () => {
   });
 
   it("links each agency to itself where the address is known, and not otherwise", () => {
-    assert.match(PAGE, /agency\.website \? \(/);
-    assert.match(PAGE, /: null/);
+    assert.match(DIRECTORY, /agency\.website \? \(/);
+    assert.match(DIRECTORY, /: null/);
   });
 
   it("leaves the local rov out of the grid, because he is not an agency", () => {
-    assert.match(PAGE, /agency\.id === "local-rov"/);
+    assert.match(PAGE, /agency\.id !== "local-rov"/);
   });
 
   it("IS REACHABLE, and offered to search engines", () => {
@@ -128,7 +134,7 @@ describe("the page", () => {
      * only thing naming the hechsher, so it keeps its voice.
      */
     const BADGE = readFileSync("components/HechsherBadge.tsx", "utf8");
-    assert.match(PAGE, /decorative/, "the mark on this page is a picture of what the row already says");
+    assert.match(DIRECTORY, /decorative/, "the mark on this page is a picture of what the row already says");
     assert.match(BADGE, /decorative = false/, "a listing badge still names its hechsher");
     assert.match(BADGE, /showLabel && !decorative/);
     assert.match(BADGE, /\{!decorative && <span className="sr-only">/);
