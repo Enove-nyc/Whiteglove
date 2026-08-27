@@ -1,0 +1,12 @@
+{
+  "appId": "com.Whiteglovekoshertravel.app",
+  "appName": "White Glove Kosher Travel",
+  "webDir": "www",
+  "server": {
+    "url": "https://www.whiteglovekoshertravel.com",
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#faf7f0"
+  }
+}

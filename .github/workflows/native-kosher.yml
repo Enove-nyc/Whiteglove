@@ -1,0 +1,55 @@
+name: Build Kosher native app (pilot)
+
+# Builds the Capacitor native shell for the Kosher app into an installable
+# debug APK, so we can confirm the native look (no address bar, no "Running in
+# Chrome") on a real phone before wiring up signing and a Play release.
+#
+# Runs only on its own pilot branch and by hand — it never touches production.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/native-shell-pilot]
+    paths:
+      - "native/kosher/**"
+      - ".github/workflows/native-kosher.yml"
+
+jobs:
+  build-debug-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native/kosher
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Capacitor
+        run: npm install
+
+      - name: Generate the Android project
+        run: npx cap add android
+
+      - name: Sync web config into Android
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: native/kosher/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kosher-debug-apk
+          path: native/kosher/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
