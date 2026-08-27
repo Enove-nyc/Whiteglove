@@ -1,0 +1,6 @@
+# Capacitor deps and the generated native project are not committed — CI
+# reinstalls and regenerates them from package.json + capacitor.config.json on
+# every build (see .github/workflows/native-kosher.yml). Keeping them out keeps
+# the web repo lean.
+node_modules/
+android/
