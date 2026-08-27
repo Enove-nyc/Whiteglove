@@ -75,6 +75,16 @@ function skip(why) {
 }
 
 /** Hosts a hand-off cannot be checked without. */
+/**
+ * A console error that is a network refusal rather than a fault in the page.
+ *
+ * Paired with EXTERNAL: both have to match before an error is treated as
+ * somebody else's. "Blocked by CORS" naming a partner host is their policy;
+ * a TypeError in our own code that happens to print a partner URL is ours,
+ * and this does not match it.
+ */
+const FOREIGN_ERROR = /blocked by CORS|Access to (fetch|script|XMLHttpRequest)|Failed to load resource|net::ERR_/i;
+
 const PARTNER_HOSTS = /stay22|tp\.media|travelpayouts|emrldco|booking\.com/i;
 
 /**
@@ -88,9 +98,23 @@ async function flow(name, viewport, width, body) {
   const context = await browser.newContext({ viewport, isMobile: width === "mobile", hasTouch: width === "mobile" });
   const page = await context.newPage();
   const noise = [];
+  // Somebody else's error, on somebody else's host. Reported, never failed —
+  // see the note above FOREIGN_ERROR.
+  const foreign = [];
   page.on("console", (message) => {
     if (message.type() !== "error") return;
     const text = message.text();
+    // A PARTNER'S OWN FAILURE IS NOT OUR DEFECT. The Travelpayouts
+    // verification script is required on every public page, and its internal
+    // config fetch is refused by their own CORS policy — so every check on
+    // every page carried an error nobody here can fix, and "no red in the
+    // console" was unachievable by construction. The request handler below
+    // already filtered these; the console handler did not, which is why the
+    // live run came back 24/96 with half the failures reading emrldco.
+    if (FOREIGN_ERROR.test(text) && EXTERNAL.test(text)) {
+      foreign.push(text.slice(0, 160));
+      return;
+    }
     // A signed-out visitor saving to their trip gets a 401 from the account
     // sync, and that is the correct answer: the trip is kept in the browser
     // and pushed to the account only when there is one. Expected, not noise.
@@ -108,7 +132,8 @@ async function flow(name, viewport, width, body) {
     if (request.failure()?.errorText === "net::ERR_ABORTED") return;
     // The partner sites and the map tiles are on the open internet; a machine
     // running this check may not be. Those are filtered by EXTERNAL below.
-    if (!EXTERNAL.test(request.url())) noise.push(`request failed: ${request.url().slice(0, 160)}`);
+    if (EXTERNAL.test(request.url())) foreign.push(`request failed: ${request.url().slice(0, 120)}`);
+    else noise.push(`request failed: ${request.url().slice(0, 160)}`);
   });
   // Noted separately from `noise`: a partner script that could not be fetched
   // is not reported as a broken request (EXTERNAL filters it), but it IS the
@@ -134,6 +159,12 @@ async function flow(name, viewport, width, body) {
   if (noise.length) {
     const unique = [...new Set(noise)];
     record(`${name} — console and network`, width, false, unique.slice(0, 3).join(" | "));
+  } else if (foreign.length) {
+    // Clean as far as this site is concerned. Said out loud rather than
+    // silently dropped, so a partner breaking is still visible — it is just
+    // not counted against us.
+    const hosts = [...new Set(foreign.map((line) => line.match(EXTERNAL)?.[0] ?? "external"))];
+    record(`${name} — console and network`, width, true, `clean; ${foreign.length} from ${hosts.join(", ")}`);
   }
   await context.close();
 }
