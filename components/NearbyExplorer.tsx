@@ -57,8 +57,13 @@ type NearResult = {
   food: Nearby[];
 };
 
-/** Where the measuring is done from, however the visitor got there. */
-type Anchor = { label: string; hint?: string; at: string };
+/**
+ * Where the measuring is done from, however the visitor got there.
+ *
+ * `kind` decides the ruler, not the wording: from an airport nobody walks
+ * anywhere, so the ranges widen. See DRIVING_RANGES in data/near-me.ts.
+ */
+type Anchor = { label: string; hint?: string; at: string; kind?: string };
 
 type Hotel = { name: string; address?: string; coordinates?: string };
 
@@ -170,7 +175,8 @@ export default function NearbyExplorer() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`/api/near?at=${encodeURIComponent(from.at)}`);
+      const mode = from.kind === "airport" ? "drive" : "walk";
+      const res = await fetch(`/api/near?at=${encodeURIComponent(from.at)}&mode=${mode}`);
       const data = await res.json().catch(() => null);
       if (res.ok && data) setResult(data as NearResult);
       else setError(data?.error || "Could not work that out just now.");
@@ -265,7 +271,7 @@ export default function NearbyExplorer() {
               <li key={option.id}>
                 <button
                   type="button"
-                  onClick={() => void measure({ label: option.label, hint: option.hint, at: option.at })}
+                  onClick={() => void measure({ label: option.label, hint: option.hint, at: option.at, kind: option.kind })}
                   className="w-full px-2 py-2 text-left text-sm hover:bg-[var(--cream)]"
                 >
                   <span className="font-semibold text-[var(--navy)]">{option.label}</span>

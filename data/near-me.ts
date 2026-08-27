@@ -145,7 +145,13 @@ export function nearest<T>(
   return found.slice(0, options.limit);
 }
 
-/** How far out each kind of thing is worth looking, in metres. */
+/**
+ * How far out each kind of thing is worth looking, in metres.
+ *
+ * WRITTEN FOR A HOTEL, WHICH IS WHERE THIS STARTED. Somebody standing where
+ * they are sleeping is asking whether they can walk it, and eight kilometres
+ * is already further than that question means.
+ */
 export const RANGES = {
   /** A quarter further than this is not "where you are staying" in any useful sense. */
   quarter: 8_000,
@@ -154,3 +160,32 @@ export const RANGES = {
   thingToDo: 15_000,
   food: 5_000,
 } as const;
+
+/**
+ * The same question asked from an airport, where nobody walks anywhere.
+ *
+ * WHY IT IS NOT ONE SET OF NUMBERS. Measured from a hotel, five kilometres is
+ * generous — it is an hour on foot. Measured from JFK it is the runway: the
+ * nearest listed shul is 23km away and the whole of Manhattan is 21, so the
+ * walking ranges answered "nothing on this site is close enough" to somebody
+ * standing in the arrivals hall of the busiest Jewish gateway on earth. That
+ * is not a true answer, it is the wrong ruler.
+ *
+ * A traveler who has just landed has a car or a train and will happily hear
+ * about somewhere half an hour away. So the ranges widen when the anchor is an
+ * airport, and only then — a postcode, a landmark and a hotel are all still
+ * places somebody is standing.
+ */
+export const DRIVING_RANGES = {
+  quarter: 40_000,
+  shul: 30_000,
+  thingToDo: 40_000,
+  food: 30_000,
+} as const;
+
+export type NearMode = "walk" | "drive";
+
+/** The ruler to measure with. Unknown modes fall back to walking, the stricter one. */
+export function rangesFor(mode: NearMode | string | null | undefined) {
+  return mode === "drive" ? DRIVING_RANGES : RANGES;
+}

@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 import { kosherAreas } from "@/data/kosher-stays";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { notableShuls } from "@/data/notable-shuls";
-import { parsePoint } from "@/data/near-me";
+import { DRIVING_RANGES, nearest, parsePoint, RANGES, rangesFor } from "@/data/near-me";
 import { codeOf } from "./helpers/source";
 
 // Comments stripped: both files EXPLAIN why there is no mikvah section, and
@@ -94,6 +94,39 @@ describe("the expensive call is the hotel lookup, and only that", () => {
     assert.doesNotMatch(PANEL, /useEffect\([\s\S]*?geolocation/);
     assert.match(PANEL, /function useMyLocation\(\)/);
     assert.match(PANEL, /type a city, an airport or a landmark instead/);
+  });
+});
+
+describe("an airport is the same question with a different ruler", () => {
+  it("measures further from one, because nobody walks out of an airport", () => {
+    assert.ok(DRIVING_RANGES.shul > RANGES.shul);
+    assert.ok(DRIVING_RANGES.food > RANGES.food);
+    assert.ok(DRIVING_RANGES.thingToDo > RANGES.thingToDo);
+    assert.ok(DRIVING_RANGES.quarter > RANGES.quarter);
+  });
+
+  it("reaches what is actually near JFK, which the walking ruler did not", () => {
+    // The nearest listed shul is 23km from the terminal and Manhattan is 21.
+    // On the walking ranges this page told somebody standing in arrivals that
+    // nothing on the site was close enough, which is the wrong ruler rather
+    // than a true answer.
+    const jfk = parsePoint("40.6413, -73.7781");
+    assert.ok(jfk);
+    const onFoot = nearest(jfk, notableShuls, { coordinatesOf: (s) => s.coordinates, within: RANGES.shul, limit: 5 });
+    const driving = nearest(jfk, notableShuls, { coordinatesOf: (s) => s.coordinates, within: DRIVING_RANGES.shul, limit: 5 });
+    assert.equal(onFoot.length, 0);
+    assert.ok(driving.length > 0, "widening the ranges still finds nothing near JFK");
+  });
+
+  it("falls back to walking for anything else, including a parameter nobody recognises", () => {
+    assert.equal(rangesFor("drive"), DRIVING_RANGES);
+    assert.equal(rangesFor("walk"), RANGES);
+    assert.equal(rangesFor("teleport"), RANGES);
+    assert.equal(rangesFor(null), RANGES);
+  });
+
+  it("the page asks for the wider ruler only from an airport", () => {
+    assert.match(PANEL, /from\.kind === "airport" \? "drive" : "walk"/);
   });
 });
 
