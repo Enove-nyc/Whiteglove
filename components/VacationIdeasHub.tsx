@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import CappedGrid from "@/components/CappedGrid";
 import VacationCard from "@/components/VacationCard";
 import { SEASONS, TRIP_THEMES, type Season, type TripTheme } from "@/data/vacation-destinations";
 import {
@@ -224,11 +225,20 @@ export default function VacationIdeasHub({
       </div>
 
       {results.length > 0 ? (
-        <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        /* Every destination and heritage town in one grid measured 53,418
+           pixels on a phone, which put the filters directly above it tens of
+           thousands of pixels out of reach. It opens on twelve; the rest are
+           in the HTML behind one press, so nothing stops being linked. */
+        <CappedGrid
+          cap={24}
+          className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+          total={results.length}
+          showAllLabel={`Show all ${results.length} destinations`}
+        >
           {results.map((card) => (
             <VacationCard key={`${card.kind}-${cardSlug(card)}`} card={card} />
           ))}
-        </div>
+        </CappedGrid>
       ) : (
         /* An empty result has to say what to do next. "No matches" and a blank
            page is where somebody leaves. */

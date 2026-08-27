@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
-import HechsherBadge from "@/components/HechsherBadge";
+import HechsherimDirectory from "@/components/HechsherimDirectory";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
@@ -46,16 +46,10 @@ export default async function HechsherimPage() {
   const agencies = allHechsherim(await listAgencies());
   const page = await resolvePage("hechsherim");
 
-  // Grouped by where each one certifies, in the order the list is written, so
-  // somebody looking at a package in Antwerp is not reading down the American
-  // agencies first. `local-rov` is not an agency and sits on its own.
-  const groups = new Map<string, typeof agencies>();
-  for (const agency of agencies) {
-    if (agency.id === "local-rov") continue;
-    const list = groups.get(agency.region) ?? [];
-    list.push(agency);
-    groups.set(agency.region, list);
-  }
+  // `local-rov` is not an agency and does not belong in a directory of them.
+  // The grouping by region moved into the directory component, which rebuilds
+  // it for whatever the search leaves on screen.
+  const listed = agencies.filter((agency) => agency.id !== "local-rov");
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -85,46 +79,7 @@ export default async function HechsherimPage() {
       )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-        <div className="space-y-12">
-          {[...groups].map(([region, list]) => (
-            <div key={region}>
-              <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                {region}
-              </h2>
-              <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {list.map((agency) => (
-                  <li
-                    key={agency.id}
-                    className="flex items-start gap-4 rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5"
-                  >
-                    {/* The mark only. Every row names its agency in the line
-                        beside it, so a badge that also carried the name printed
-                        it twice on the screen and read it three times aloud. */}
-                    <HechsherBadge
-                      status={{ state: "certified", hechsherId: agency.id }}
-                      agencies={agencies}
-                      size="md"
-                      decorative
-                    />
-                    <div className="min-w-0">
-                      <p className="font-semibold leading-6 text-[var(--navy)]">{agency.name}</p>
-                      {agency.website ? (
-                        <a
-                          href={agency.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-                        >
-                          {agency.website.replace(/^https?:\/\/(www\.)?/, "")} ↗
-                        </a>
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+        <HechsherimDirectory agencies={listed} />
 
         <div className="mt-14 rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
           <SectionHeading eyebrow="On a listing" title="What the circle beside a place means" />

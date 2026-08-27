@@ -50,7 +50,19 @@ describe("every directory consumer", () => {
     for (const file of CONSUMERS) {
       const source = readFileSync(file, "utf8");
       assert.match(source, /empty=\{/, `${file} does not pass empty`);
-      assert.doesNotMatch(source, /showing=\{|total=\{/, `${file} still passes counts`);
+      /**
+       * SCOPED TO THE TOOLBAR ELEMENT, not the whole file. This read the
+       * source for `total={` anywhere and started failing when the same
+       * directories grew a CappedGrid, which takes a `total` because it has to
+       * know whether there is anything past the cap to offer. That count never
+       * reaches the toolbar and is never printed — it decides whether a button
+       * exists. The rule being kept is the one that was always meant: the
+       * toolbar says whether a list is narrowed and whether it is empty, and
+       * never "Showing 12 of 149".
+       */
+      const toolbar = source.slice(source.indexOf("<ListToolbar"));
+      const props = toolbar.slice(0, toolbar.indexOf("/>") + 2);
+      assert.doesNotMatch(props, /showing=\{|total=\{/, `${file} still passes counts to the toolbar`);
     }
   });
 
