@@ -9,13 +9,12 @@ import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { pageMetadata } from "@/lib/seo";
-import { Icon } from "@/components/icons/Icon";
+import { Icon, type IconName } from "@/components/icons/Icon";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { currentSpotlight } from "@/lib/seasonal-spotlight-view";
 import { website } from "@/lib/structured-data";
-import { DEFAULT_PHOTO } from "@/lib/default-photo";
 import ItinerariesHome from "@/components/ItinerariesHome";
 import { BRAND_ORIGIN, brandFromRequestHeaders, currentBrand } from "@/lib/site-brand";
 import { headers } from "next/headers";
@@ -91,17 +90,29 @@ export async function generateMetadata() {
  * asked for it to be the sections instead, so a first-time visitor sees the
  * whole shape of the site — what to do, where to stay, what to eat, the
  * heritage, the map and the directory — rather than six towns. Same card as
- * before; only what it points at changed. Each opens its own section, and the
- * picture is the branded default (lib/default-photo.ts) until a section has its
- * own.
+ * before; only what it points at changed. Each opens its own section.
  */
-const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: string }> = [
-  { label: "Things to do", blurb: "Attractions across every destination.", href: "/things-to-do" },
-  { label: "Where to stay", blurb: "Places to stay and kosher apartments.", href: "/hotels" },
-  { label: "Kosher food", blurb: "Restaurants, bakeries and groceries.", href: "/kosher" },
-  { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage" },
-  { label: "Map", blurb: "Everything on the site, placed.", href: "/map" },
-  { label: "Local help", blurb: "Drivers, guides and agencies — their businesses, not ours.", href: "/directory" },
+/**
+ * The six sections, each with a mark of its own.
+ *
+ * THEY ALL CARRIED THE SAME PHOTOGRAPH. Every card drew the branded default
+ * (lib/default-photo.ts) — an aeroplane — so a page whose whole job is to show
+ * a visitor the six shapes of the site showed them the same picture six times.
+ * Nothing distinguished Kosher food from Heritage above the label, which is
+ * the one place a picture could have been doing work.
+ *
+ * NOT PHOTOGRAPHS, DELIBERATELY. Six licensed images is a purchase, and a
+ * stand-in from a stock site is worse than the default it replaced. A mark on
+ * the site's own navy is the thing the design system already owns: it tells
+ * the six apart at a glance, and it does not pretend to be a place.
+ */
+const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: string; icon: IconName }> = [
+  { label: "Things to do", blurb: "Attractions across every destination.", href: "/things-to-do", icon: "camera" },
+  { label: "Where to stay", blurb: "Places to stay and kosher apartments.", href: "/hotels", icon: "bed" },
+  { label: "Kosher food", blurb: "Restaurants, bakeries and groceries.", href: "/kosher", icon: "utensils" },
+  { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage", icon: "pin" },
+  { label: "Map", blurb: "Everything on the site, placed.", href: "/map", icon: "map" },
+  { label: "Local help", blurb: "Drivers, guides and agencies — their businesses, not ours.", href: "/directory", icon: "account" },
 ];
 
 export default async function Home() {
@@ -168,7 +179,8 @@ export default async function Home() {
           The six main sections of the site, as cards — not individual places.
           Picture, name, one line saying what is inside. Nothing else: no rating,
           no CTA, no count. The picture is the branded White Glove default
-          (lib/default-photo.ts) — never a blank box. The whole card is one link,
+          section's own mark on the site's navy — never a blank box, and never
+          the same picture six times. The whole card is one link,
           so a screen reader lists "Where to stay" rather than "Explore" six
           times. */}
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
@@ -182,11 +194,15 @@ export default async function Home() {
                 href={category.href}
                 className="wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
               >
+                {/* The section's own mark, not the same aeroplane six times.
+                    aria-hidden because the label under it already names the
+                    section and the whole card is one link. */}
                 <div
                   aria-hidden="true"
-                  className="aspect-[4/3] w-full bg-[var(--navy)] bg-cover bg-center"
-                  style={{ backgroundImage: `url(${DEFAULT_PHOTO})` }}
-                />
+                  className="flex aspect-[4/3] w-full items-center justify-center bg-[var(--navy)] bg-[radial-gradient(circle_at_30%_25%,rgba(198,166,100,.22),transparent_62%)]"
+                >
+                  <Icon name={category.icon} className="h-16 w-16 text-[var(--gold-light)] transition group-hover:text-white" />
+                </div>
                 <div className="p-5">
                   <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
                     {category.label}

@@ -18,6 +18,7 @@ export type IconName =
   | "route"
   | "suitcase"
   | "account"
+  | "utensils"
   | "chevron-down"
   | "menu"
   | "close"
@@ -165,6 +166,17 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M10.5 13.5 3.5 11l1.2-1.2 5.6.7 4.5-4.5a1.6 1.6 0 0 1 2.3 2.3l-4.5 4.5.7 5.6L12 19.6l-2.5-7" />
       <path d="M4.5 19.5 8 16" />
+    </>
+  ),
+  // Fork and knife. The kosher food section had no mark of its own, and the
+  // set has nothing else that could stand for eating.
+  utensils: (
+    <>
+      <path d="M7 3v8" />
+      <path d="M4.5 3v4a2.5 2.5 0 0 0 5 0V3" />
+      <path d="M7 11v10" />
+      <path d="M17.5 3c-1.4 1.2-2 3-2 5.2 0 1.6.7 2.6 2 2.8" />
+      <path d="M17.5 11v10" />
     </>
   ),
   bed: (
