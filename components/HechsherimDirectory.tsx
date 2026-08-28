@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import CappedGrid from "@/components/CappedGrid";
 import HechsherBadge from "@/components/HechsherBadge";
 import ListToolbar, { listMatches } from "@/components/ListToolbar";
+import { useListUrl } from "@/components/useListUrl";
 import type { Hechsher } from "@/data/hechsherim";
 
 /**
@@ -31,7 +31,11 @@ export default function HechsherimDirectory({
   /** Already filtered of local-rov, which is not an agency. */
   agencies: Hechsher[];
 }) {
-  const [query, setQuery] = useState("");
+  // In the address bar, so a search for one mark is a link. Somebody who has
+  // just worked out whose hechsher is on a package usually wants to send that
+  // to whoever asked.
+  const [{ q }, setFilters, reset] = useListUrl({ q: "" });
+  const query = q;
 
   const shown = agencies.filter((agency) =>
     listMatches([agency.name, agency.mark, agency.region, ...agency.aliases].join(" "), query),
@@ -51,7 +55,8 @@ export default function HechsherimDirectory({
     <>
       <ListToolbar
         query={query}
-        onQuery={setQuery}
+        onQuery={(value) => setFilters({ q: value })}
+        onReset={reset}
         placeholder="OU, Star-K, בד״ץ, London…"
         searchLabel="Search certification marks"
         empty={shown.length === 0}
