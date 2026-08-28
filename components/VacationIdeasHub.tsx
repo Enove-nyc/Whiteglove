@@ -232,8 +232,8 @@ export default function VacationIdeasHub({
         <CappedGrid
           cap={24}
           className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3"
-          total={results.length}
-          showAllLabel={`Show all ${results.length} destinations`}
+          count={results.length}
+          of="destinations"
         >
           {results.map((card) => (
             <VacationCard key={`${card.kind}-${cardSlug(card)}`} card={card} />

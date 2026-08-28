@@ -35,6 +35,35 @@ describe("the capped-list sizes match the rule that hides them", () => {
     });
   }
 
+  it("is not shut inside a phone media query", () => {
+    /**
+     * IT WAS, AND FOR LONG ENOUGH TO BE MEASURED AND REPORTED AS DONE. The
+     * rule was written into the max-width:640px block, so it had never once
+     * applied above 640px. Every mobile figure it was verified against was
+     * real, and every desktop page was untouched: /tzaddikim still 28,702px at
+     * 1280, /hechsherim 23,915, /destinations 18,256 — all within a couple of
+     * percent of what an outside review measured before any of the work, which
+     * is exactly what that review reported back.
+     *
+     * A directory is unmanageable at every width. Nothing about a cap is a
+     * phone rule, and the review's own numbers were desktop ones. Moved out:
+     * /tzaddikim 9,773, /hechsherim 4,505, /destinations 3,699 at 1280, with
+     * every link still in the markup.
+     *
+     * Checked by brace depth rather than by looking for a media query, because
+     * "not inside any block at all" is the property that matters and there are
+     * several other kinds of block it could be moved into by accident.
+     */
+    const at = CSS.indexOf(".wg-capped-6 > *");
+    assert.ok(at > 0, "the capping rule is gone");
+    let depth = 0;
+    for (let i = 0; i < at; i += 1) {
+      if (CSS[i] === "{") depth += 1;
+      else if (CSS[i] === "}") depth -= 1;
+    }
+    assert.equal(depth, 0, `the capping rule is nested ${depth} block(s) deep, so it applies only conditionally`);
+  });
+
   it("has no rule for a size the component cannot ask for", () => {
     const inCss = [...CSS.matchAll(/\.wg-capped-(\d+)/g)].map((m) => Number(m[1]));
     const extra = [...new Set(inCss)].filter((size) => !CAPS.includes(size as never));
@@ -127,5 +156,33 @@ describe("nothing on the root element stops a sticky thing sticking", () => {
       /uppercase tracking-\[0\.12em\] text-white/,
       "the contact address is set as a label again, and is wider than a phone",
     );
+  });
+});
+
+describe("the disclosure says whether there is more, not how much more", () => {
+  const GRID = readFileSync("components/CappedGrid.tsx", "utf8");
+
+  it("prints no item count", () => {
+    // The site refuses "showing 12 of 149" everywhere else
+    // (tests/list-toolbar.test.ts), and "Show all 154" is the same number in a
+    // different coat. What a reader needs to know is whether there is more,
+    // and the button being there says so.
+    assert.match(GRID, /"Show more"/);
+    assert.doesNotMatch(GRID, /: showAllLabel/);
+    for (const file of [
+      "components/TzaddikimDirectory.tsx",
+      "components/VacationIdeasHub.tsx",
+      "components/HechsherimDirectory.tsx",
+      "app/mikvaos/page.tsx",
+    ]) {
+      const source = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+      assert.doesNotMatch(source, /of=\{`[^`]*\$\{[^}]*\.(length|size)/, `${file} puts a count in the button's name`);
+    }
+  });
+
+  it("names each one, because a page has eleven of them", () => {
+    // Eleven buttons all reading "Show more" are eleven identical rows in the
+    // list of controls a screen reader offers.
+    assert.match(GRID, /sr-only"> \{of\}/);
   });
 });

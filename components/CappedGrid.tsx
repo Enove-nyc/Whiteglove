@@ -38,17 +38,24 @@ export const CAPS = [6, 12, 24] as const;
 export type Cap = (typeof CAPS)[number];
 
 export default function CappedGrid({
-  total,
-  showAllLabel,
+  count,
+  of,
   cap = 12,
   tag = "div",
   className,
   children,
 }: {
   /** How many children there are. The button only appears past the cap. */
-  total: number;
-  /** What the button says, e.g. "Show all 154 kevarim in Poland". */
-  showAllLabel: string;
+  /**
+   * How many children there are, so the button only appears past the cap.
+   * NEVER RENDERED. Every list on this site refuses to print "showing 12 of
+   * 154" (tests/list-toolbar.test.ts), and a button reading "Show all 154" is
+   * the same number in a different coat. What a reader needs to know is
+   * whether there is more, and the button being there says so.
+   */
+  count: number;
+  /** What there is more of, for the button's accessible name: "in Poland". */
+  of: string;
   /**
    * Six for a list somebody is skimming past — many small groups under
    * headings, where the heading is what they are reading. Twenty-four for a
@@ -60,7 +67,7 @@ export default function CappedGrid({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const over = total > cap;
+  const over = count > cap;
   const capped = over && !open;
   const List = tag;
 
@@ -79,7 +86,11 @@ export default function CappedGrid({
             aria-expanded={open}
             className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold)] bg-white px-5 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
           >
-            {open ? "Show fewer" : showAllLabel}
+            {open ? "Show fewer" : "Show more"}
+            {/* Which of the eleven "Show more" buttons on this page this one
+                is. A screen reader reading them out of context otherwise gets
+                the same two words eleven times. */}
+            <span className="sr-only"> {of}</span>
           </button>
         </p>
       )}
