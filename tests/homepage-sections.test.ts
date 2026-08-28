@@ -80,3 +80,43 @@ describe("what the owner settled about this page still holds", () => {
     assert.doesNotMatch(RENDERED, /\d+\s+(?:listings|places|destinations|attractions|things to do)/i);
   });
 });
+
+describe("the six section cards are told apart above their labels", () => {
+  const PAGE = readFileSync("app/page.tsx", "utf8");
+
+  /**
+   * EVERY ONE OF THEM DREW THE SAME AEROPLANE. The card's picture was
+   * lib/default-photo.ts — the branded stand-in used wherever a section has no
+   * image of its own — so the page whose whole job is to show a first-time
+   * visitor the six shapes of the site showed them one picture six times.
+   * Nothing separated Kosher food from Heritage above the label, which is the
+   * only place a picture could have been doing any work.
+   *
+   * NOT SOLVED WITH PHOTOGRAPHS. Six licensed images is a purchase the owner
+   * has not made, and a stock stand-in is worse than the default it replaces —
+   * it claims to be somewhere. A mark on the site's own navy is what the
+   * design system already owns.
+   */
+  it("each carries its own icon", () => {
+    const block = PAGE.slice(PAGE.indexOf("const HOME_CATEGORIES"), PAGE.indexOf("export default async function Home"));
+    const icons = [...block.matchAll(/icon: "([a-z-]+)"/g)].map((match) => match[1]);
+    assert.equal(icons.length, 6, "not every section card has a mark");
+    assert.equal(new Set(icons).size, 6, `two sections share a mark: ${icons.join(", ")}`);
+  });
+
+  it("every icon it names is one the set actually draws", () => {
+    // A name with no drawing behind it renders an empty box, which is exactly
+    // the blank the default photo existed to prevent.
+    const block = PAGE.slice(PAGE.indexOf("const HOME_CATEGORIES"), PAGE.indexOf("export default async function Home"));
+    const icons = [...block.matchAll(/icon: "([a-z-]+)"/g)].map((match) => match[1]);
+    const set = readFileSync("components/icons/Icon.tsx", "utf8");
+    for (const icon of icons) {
+      assert.match(set, new RegExp(`^\\s*"?${icon}"?: \\(`, "m"), `Icon.tsx does not draw "${icon}"`);
+      assert.match(set, new RegExp(`\\| "${icon}"`), `"${icon}" is not in IconName`);
+    }
+  });
+
+  it("no longer paints the same photograph behind all six", () => {
+    assert.doesNotMatch(PAGE, /backgroundImage: `url\(\$\{DEFAULT_PHOTO\}\)`/);
+  });
+});
