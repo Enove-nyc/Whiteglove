@@ -98,6 +98,85 @@ export function gearLooksUnfinished(item: TravelGearItem): string | null {
   return null;
 }
 
+/**
+ * Wording that reads as pasted rather than written.
+ *
+ * WHY THIS IS A HINT AND NOT A RULE. Every row here is a real product with a
+ * real supplier, and the shelf is filled by copying a title and a line of
+ * description from wherever the product lives. That is the right way to fill
+ * it and it brings four things with it, every time: a title with a stray comma
+ * or pipe left on the end, a description cut off mid-sentence at whatever
+ * length the source truncated it to, the odd typo in a word nobody proofreads
+ * ("Potable Luggage Scale" was on the live shelf), and the same Hebrew word
+ * spelled two ways down one page.
+ *
+ * None of those is worth refusing a save over — the row is still useful and
+ * the owner may be mid-paste. But none of them should reach a traveller
+ * either, and the site cannot rewrite a supplier's product title on his behalf
+ * without risking making it wrong. So it says what it sees, in the one place
+ * he is already looking at the row.
+ */
+const LIKELY_TYPOS: ReadonlyArray<[RegExp, string]> = [
+  [/\bpotable\b/i, "portable"],
+  [/\btravelling case\b/i, "travel case"],
+  [/\baccesory\b/i, "accessory"],
+  [/\brechargable\b/i, "rechargeable"],
+  [/\bstainles\b/i, "stainless"],
+  [/\blightwieght\b/i, "lightweight"],
+];
+
+export function gearWordingHint(item: TravelGearItem): string | null {
+  const name = item.name.trim();
+  const description = item.description.trim();
+
+  for (const [pattern, correction] of LIKELY_TYPOS) {
+    const found = name.match(pattern) ?? description.match(pattern);
+    if (found) return `"${found[0]}" is probably meant to be "${correction}".`;
+  }
+
+  // A title that ends on punctuation it was separated from something else by.
+  if (/[,;:|\-–—]$/.test(name)) return "The name ends on a stray mark — trim what came after it in the source.";
+
+  if (description) {
+    // Cut off where the source truncated it, rather than where the sentence
+    // ends. An ellipsis is explicit; a long line with no terminal punctuation
+    // is the same thing without the courtesy.
+    if (/(\.\.\.|…)$/.test(description)) return "The description is cut off — finish the sentence in your own words.";
+    if (description.length > 80 && !/[.!?"')\]]$/.test(description)) {
+      return "The description stops without finishing — it reads as pasted mid-sentence.";
+    }
+  }
+
+  return null;
+}
+
+/**
+ * One word, spelled two ways, on one page.
+ *
+ * Transliterated words have no single right spelling and this does not claim
+ * one — it only says the shelf is using two, which is the part a reader
+ * notices. Compared case-insensitively across names and descriptions.
+ */
+const TRANSLITERATIONS = ["havdal", "shabb", "chanuk", "hanuk", "sukk", "succ", "tefill", "mezuz"];
+
+export function gearSpellingSplits(items: readonly TravelGearItem[]): string[] {
+  const seen = new Map<string, Set<string>>();
+  for (const item of items) {
+    const words = `${item.name} ${item.description}`.match(/[A-Za-z']+/g) ?? [];
+    for (const word of words) {
+      const lower = word.toLowerCase();
+      const stem = TRANSLITERATIONS.find((prefix) => lower.startsWith(prefix));
+      if (!stem) continue;
+      const set = seen.get(stem) ?? new Set<string>();
+      set.add(lower);
+      seen.set(stem, set);
+    }
+  }
+  return [...seen.values()]
+    .filter((set) => set.size > 1)
+    .map((set) => [...set].sort().join(" / "));
+}
+
 /** Why this row cannot be saved, or null. */
 export function gearItemProblem(item: TravelGearItem): string | null {
   const name = item.name.trim();
