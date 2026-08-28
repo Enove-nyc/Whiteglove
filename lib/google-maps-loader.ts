@@ -55,15 +55,48 @@ export type GMarker = {
   addListener(event: string, handler: () => void): void;
 };
 
+/**
+ * AdvancedMarkerElement, the replacement for the deprecated Marker.
+ *
+ * It takes DOM rather than an icon URL — `content` is an element the caller
+ * builds — and it anchors that element by its bottom centre, where the old one
+ * took an explicit anchor point.
+ *
+ * IT DOES NOT HAVE setMap, WHICH IS THE ONE THING WORTH SPELLING OUT. Taking a
+ * pin off the map is `marker.map = null` here and `marker.setMap(null)` there,
+ * and the two are not interchangeable — calling the old method on the new
+ * marker throws, in a teardown, where an exception takes the rest of the
+ * redraw with it. So this is written as its own shape rather than as the old
+ * one with fields added, and anything holding both has to say which it has.
+ */
+export type GAdvancedMarker = {
+  map: GMap | null;
+  content: HTMLElement | null;
+  addListener(event: string, handler: () => void): void;
+};
+
+/** Either kind of pin: what a marker list and an info-window anchor accept. */
+export type GAnyMarker = GMarker | GAdvancedMarker;
+
 export type GInfoWindow = {
   setContent(content: string): void;
-  open(options: { map: GMap; anchor: GMarker }): void;
+  open(options: { map: GMap; anchor: GAnyMarker }): void;
   close(): void;
 };
+
+/** Takes a pin of either kind off the map, by the method that kind has. */
+export function detachMarker(marker: GAnyMarker) {
+  if ("setMap" in marker) marker.setMap(null);
+  else marker.map = null;
+}
 
 export type GoogleMapsApi = {
   Map: new (element: HTMLElement, options: Record<string, unknown>) => GMap;
   Marker: new (options: Record<string, unknown>) => GMarker;
+  /** Present once libraries=marker has loaded. Absent on an older bootstrap. */
+  marker?: {
+    AdvancedMarkerElement: new (options: Record<string, unknown>) => GAdvancedMarker;
+  };
   InfoWindow: new (options?: Record<string, unknown>) => GInfoWindow;
   SymbolPath: { CIRCLE: number };
   /** For sizing and anchoring a drawn marker icon. */
@@ -92,6 +125,24 @@ export function googleMapsBrowserKey(): string | null {
   // URL percent-encoded, and Google would answer InvalidKey with no hint why.
   // See lib/api-key.ts.
   return cleanKey(process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY);
+}
+
+/**
+ * The cloud Map ID, which Advanced Markers require and ordinary markers do not.
+ *
+ * WHY IT IS OPTIONAL AND MUST STAY OPTIONAL. google.maps.Marker is deprecated
+ * and its replacement, AdvancedMarkerElement, refuses to render on a map built
+ * without a mapId — so a missing or mistyped ID would not degrade the pins, it
+ * would remove every one of them. The map is the feature; the marker class is
+ * an implementation detail. So this returns null rather than a guess, and
+ * components/AreaMap.tsx draws the deprecated marker in that case: a console
+ * warning is a cost worth paying to keep a map that has its pins on it.
+ *
+ * A Map ID is public by design — it names a style, not an account — so it
+ * belongs in a NEXT_PUBLIC_ variable alongside the browser key.
+ */
+export function googleMapsMapId(): string | null {
+  return cleanKey(process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID);
 }
 
 export function googleMapsAvailable(): boolean {
@@ -166,7 +217,13 @@ function ensureMapsScript(key: string): Promise<void> {
     script.async = true;
     // Official dynamic path. Do not use callback= here — that can fire before
     // Map exists. importLibrary("maps") is the ready signal.
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&loading=async&v=weekly`;
+    // libraries=marker brings AdvancedMarkerElement in with the bootstrap. It is
+    // requested whether or not a Map ID is configured: asking for it costs one
+    // small module, and having it absent is the difference between "draw the
+    // new marker" and "silently draw nothing".
+    script.src =
+      `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}` +
+      `&libraries=marker&loading=async&v=weekly`;
     script.addEventListener("load", () => resolve(), { once: true });
     script.addEventListener("error", () => reject(new Error("maps script failed")), { once: true });
     document.head.appendChild(script);

@@ -163,6 +163,14 @@ export const CONNECTIONS: Connection[] = [
     where: "Google Cloud. This one is public by design — it is in the browser, and is restricted by domain rather than kept secret.",
   },
   {
+    vars: ["NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID"],
+    what: "Which kind of pin the map draws.",
+    without:
+      "The map and every pin on it still work. They are drawn with Google's older marker, which warns in a developer console and which Google will eventually stop supporting — so this is worth setting, and nothing breaks on the day it is not.",
+    weight: "nicety",
+    where: "Google Cloud → Map Management. Public by design, like the browser key: a Map ID names a style, not an account.",
+  },
+  {
     vars: ["GOOGLE_PLACES_API_KEY"],
     what: "The general hotel lookup in the itinerary builder — type a hotel's name anywhere in the world, get its address, phone and coordinates.",
     without:

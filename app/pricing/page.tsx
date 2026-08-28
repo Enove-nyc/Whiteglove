@@ -10,6 +10,7 @@ import { describePrice, readPrice } from "@/lib/stripe";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
 import { BRAND_NAME } from "@/lib/site-brand-core";
+import { planParitySentence } from "@/lib/account-limits";
 
 /**
  * WHAT THIS IS AND WHAT IT COSTS — the page a travel advisor could not reach.
@@ -124,9 +125,17 @@ export default async function PricingPage() {
       <section className="border-t border-[var(--gold-light)] bg-white px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-2xl font-bold text-[var(--navy)]">Which one you need</h2>
+          {/* BUILT FROM THE ENTITLEMENT TABLE, not typed beside it. This said
+              "sharing a trip with anybody you like — is the same on every
+              plan", and four rows down the table says handing a client their
+              own app is an advisor plan. Both were describing something real —
+              a share link, which every plan has, and companionClients, which
+              One Trip does not — under one word, so a buyer read a promise and
+              then found it withdrawn, in the paragraph they were deciding on.
+              lib/account-limits.ts computes it now, and the account page reads
+              the same function, so the two cannot drift apart again. */}
           <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-6 text-stone-600">
-            One trip for yourself, or the tools to run clients. Everything on the site — the planner, the map, the
-            guides, sharing a trip with anybody you like — is the same on every plan.
+            One trip for yourself, or the tools to run clients. {planParitySentence()}
           </p>
 
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
