@@ -152,9 +152,69 @@ implementations.
 
 ---
 
+## Second pass — the rest of the list
+
+**Item 9, card contents.** A things-to-do card carried nine controls at once
+and a places-to-stay card eight, on every one of several hundred cards.
+Measured at 390px: nine visible controls on the first card, now two. The thing
+the card is about and the buttons that put it on a trip stay in front;
+everything else is behind one native `<details>`, still in the HTML.
+
+Your destination-tile finding was right and was about the accessibility text,
+not the visible text — worth saying because it took a second look to see. The
+visible tile was already name, region, two chips, one action, exactly your
+target. But each chip hid its own label from assistive technology and put the
+full sentence in an `sr-only` span, so a screen reader got 285 characters per
+tile across 156 tiles while a sighted reader got six words. The two audiences
+were handed different cards and the one that could not see it got the longer
+one. The chip announces its label now; the detail is on the destination page,
+shown in full.
+
+**Item 9, filters in the URL.** Four of the six directories did not do this.
+`/tzaddikim`, `/hechsherim` and `/kosher` now do, through the same hook the
+other two already used. Confirmed in a browser: typing puts `?q=` in the
+address and reloading restores it. `/cemeteries` is left alone — it pages from
+its own API and already takes its country from the URL server-side, and a
+second mechanism writing one address is worse than the gap.
+
+**Item 10.** All eight detail-page actions sat in one row at equal weight, with
+Add to itinerary — the action the whole planner is built on — seventh of eight,
+after Share. Three in front now, the rest one press away with their names and
+behaviour unchanged. The "On this page" nav is pinned on desktop; confirmed
+after 2,500px of scroll it sits at 64, the header's scrolled height. Not pinned
+on a phone, where it is a wrapping row of nine links.
+
+The Rome hero's "large unused space" is two things. The short panels stretching
+to match the tall ones was real and is fixed. The blank to the right of the
+overview paragraph is not: that is a measure, and a line of body text running
+the full width of a 1280px page is harder to read, not better used.
+
+**Item 11, gear wording.** The shelf is owner-entered data, not repository
+content, so the site does not rewrite a supplier's product title on his behalf
+— the one thing worse than a typo in a product name is a correction that makes
+it the wrong product. Instead the admin now says what it sees, on the row he is
+already looking at: likely typos including the one you found, titles ending on
+a separator, descriptions cut off where the source truncated them, and one word
+spelled two ways across the shelf. None of it blocks a save.
+
+**Item 12, audience choice.** Done. One question, two answers; the headline, the
+supporting line and the first button follow it. The brand, navigation and
+everything below the hero do not move. The adviser is the server-rendered
+default. Radios in a fieldset, so a screen reader is told it is a choice and
+which one is made.
+
+**Item 14 — measured, and mostly already true.** At 360, 390, 430, 768 and
+1280, across the home page, a directory and a destination: no sideways
+scrolling at any width, four persistent bottom actions against your limit of
+five, the floating Ask button clearing the bottom bar by fifteen pixels rather
+than covering it, and every touch target at or above 44px — except one, the
+"Destinations" breadcrumb at 122x14, which is fixed. The remaining part of your
+item is the judgement about competing navigation systems, which overlaps two
+settled decisions and is not something to change from an audit line.
+
 ## Still open, and genuinely ours
 
-**Item 9 — directory lengths.** Partly done and measurably so, on mobile at
+**Item 9 — directory lengths.** Lengths partly done and measurably so, on mobile at
 390px: `/tzaddikim` 70,685 → 20,311, `/destinations` 53,418 → 10,042,
 `/hechsherim` 39,211 → 7,176, with every detail link still in the HTML (hidden
 in CSS, not dropped, so nothing stops being crawlable and nothing enters the
@@ -163,14 +223,21 @@ had — the page whose entire job is looking up an unfamiliar mark had 287
 agencies under 81 region headings and no search box.
 
 Your desktop numbers are higher than our mobile ones and we have not measured
-desktop. The card-content reductions you specify (destination tiles, things-to-do
-tiles, detail-page action hierarchy) are not done.
+desktop.
 
-**Item 10 — detail-page actions.** Not done.
+**Item 8 — the homepage AI section.** Not removing it, and this belongs with
+the settled decisions above: it was kept off the front page once and the owner
+asked for it back, displayed and labelled as AI. The persistent control already
+carries the three disclosures you list. The other half of your item — the
+floating button covering navigation — did not reproduce: measured on mobile it
+clears the bottom bar and covers nothing.
 
-**Item 14 — mobile navigation consolidation.** Not done.
+**Item 12's visual product proof.** Not done. It needs real screenshots of the
+planner and the client app, which is an asset task rather than a copy fix, and
+a committed screenshot goes stale silently.
 
-**Item 8 — duplicate AI entry points.** Not done.
+**Item 16's competitor work.** Not started, beyond the inventory instruction,
+which we were already following.
 
 ---
 
