@@ -186,3 +186,52 @@ describe("the disclosure says whether there is more, not how much more", () => {
     assert.match(GRID, /sr-only"> \{of\}/);
   });
 });
+
+describe("the quarters list is shortened without hiding it", () => {
+  const QUARTERS = readFileSync("components/StayQuarters.tsx", "utf8");
+
+  /**
+   * IT WAS OVER HALF OF /hotels. Thirty-two quarters in one column came to
+   * 7,512 pixels, above the directory somebody came for — and the stay cards,
+   * which is where the work had gone, were only 2,627 of the page. The first
+   * diagnosis was wrong and halving the card page size fixed almost nothing;
+   * the rows themselves are lean and it was running them down the middle of a
+   * 1280px page that cost the height. Two columns on a desktop: 15,412 to
+   * 11,919, with every card still drawn.
+   */
+  it("is laid out in two columns rather than one on a desktop", () => {
+    assert.match(QUARTERS, /md:grid md:grid-cols-2/);
+  });
+
+  it("is NOT capped, and must not be", () => {
+    /**
+     * Every one of these rows is an anchor that /stops, the map, the search
+     * index and the admin link straight to — /hotels#rome-ghetto. CappedGrid
+     * hides its overflow with display:none, and an anchor inside display:none
+     * is a link that lands nowhere: the browser has nothing to scroll to.
+     *
+     * So this is the one long list on the site that stays whole. If it is ever
+     * capped, the cap has to open itself on a matching hash first.
+     */
+    assert.doesNotMatch(QUARTERS, /<CappedGrid|wg-capped-/, "the quarter anchors are hidden, so the links to them land nowhere");
+    assert.match(QUARTERS, /id=\{area\.slug\}/);
+    const linkers = ["app/stops/page.tsx", "components/MapExplorer.tsx", "lib/attraction-search.ts"];
+    for (const file of linkers) {
+      assert.match(readFileSync(file, "utf8"), /\/hotels#/, `${file} no longer links into the quarters`);
+    }
+  });
+
+  it("says how distances are measured once, not on every card", () => {
+    // The same small-print sentence was at the foot of all twenty-four stay
+    // cards. It is a fact about how the list measures, so it belongs to the
+    // list.
+    // Comments out: the note explaining this rule quotes the sentence it
+    // removed, and matching prose rather than code has caught the explanation
+    // instead of the thing three times in this session.
+    const stays = readFileSync("components/KosherStayDirectory.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+    assert.equal(stays.match(/not from the building itself/g)?.length, 1);
+    assert.doesNotMatch(stays.slice(stays.indexOf("{visible.map")), /not from the building itself/);
+  });
+});

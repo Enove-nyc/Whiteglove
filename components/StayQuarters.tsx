@@ -46,9 +46,20 @@ export default async function StayQuarters({
     <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 sm:p-8">
       <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Where should I stay?</h2>
 
-      <ul className="mt-6 divide-y divide-[var(--gold-light)] border-t border-[var(--gold-light)]">
+      {/* TWO COLUMNS ON A DESKTOP, because there are thirty-two of these and
+          one column of them was 7,512 pixels — over half the height of
+          /hotels, above the directory somebody came for. Each row is already
+          lean (a city, the quarter, a line about it, and the search); what was
+          wrong was running them down the middle of a 1280px page.
+
+          NOT CAPPED, unlike the other long lists on the site. Every one of
+          these is an anchor that /stops, the map and the admin link straight
+          to — /hotels#rome-ghetto — and an anchor inside display:none is a
+          link that lands nowhere. Two columns costs nothing and breaks
+          nothing. */}
+      <ul className="mt-6 border-t border-[var(--gold-light)] md:grid md:grid-cols-2 md:gap-x-10">
         {offerable.map((area) => (
-          <li key={area.slug} id={area.slug} className="scroll-mt-24 py-5">
+          <li key={area.slug} id={area.slug} className="scroll-mt-24 border-b border-[var(--gold-light)] py-5">
             <p className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
               {area.city}, {area.country}
             </p>

@@ -165,7 +165,17 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
         ]}
       />
 
-      <div className="mt-8 grid gap-5 md:grid-cols-2">
+      {/* SAID ONCE, NOT TWENTY-FOUR TIMES. "Distances measured from the
+          quarter, not from the building itself" was printed at the foot of
+          every card — the same sentence, in small print, down the whole page.
+          It is a caveat about how this list measures, which is a fact about
+          the list. Each card still names its own anchor, in the walking
+          distances themselves and in Navigate. */}
+      <p className="mt-6 text-sm leading-6 text-stone-600">
+        Walking distances are measured from the quarter each place is anchored to, not from the building itself.
+      </p>
+
+      <div className="mt-6 grid gap-5 md:grid-cols-2">
         {visible.map((s) => (
           // The id is what /stops and the planner's hotel picker link to.
           <article key={s.slug} id={s.slug} className="min-w-0 scroll-mt-24 border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-7">
@@ -173,7 +183,11 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
               {s.city} · {s.country} · {s.kind}
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{s.name}</h2>
-            <p className="mt-3 text-sm leading-7 text-stone-600">{s.summary}</p>
+            {/* Clamped on the list, whole in the markup. A browse page is
+                read by skimming down it, and an unbounded paragraph on each of
+                twenty-four cards is what made this the longest directory on
+                the site after the capping. */}
+            <p className="mt-3 line-clamp-4 text-sm leading-7 text-stone-600">{s.summary}</p>
 
             {/* Up to 3 confirmed advantages, never an "unknown" — a scannable
                 signal of the property's actual Shabbos/kosher edge, not a
@@ -243,10 +257,6 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                 </ul>
               </details>
             )}
-
-            <p className="mt-4 text-xs leading-5 text-stone-500">
-              Distances measured from <strong>{s.anchor.name}</strong>, not from the building itself.
-            </p>
 
             {/* THE NEXT STEP, AND ONLY THE NEXT STEP. This card carried eight
                 controls at once — Navigate, Their site, What's within walking
