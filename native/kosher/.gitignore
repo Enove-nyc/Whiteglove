@@ -1,6 +1,5 @@
-# Capacitor deps and the generated native project are not committed — CI
-# reinstalls and regenerates them from package.json + capacitor.config.json on
-# every build (see .github/workflows/native-kosher.yml). Keeping them out keeps
-# the web repo lean.
+# Capacitor deps are not committed — CI reinstalls them from package.json.
+# The android/ project IS committed, because it now carries native
+# customizations (microphone/camera/location permissions, system-bar colors)
+# that must survive every build.
 node_modules/
-android/

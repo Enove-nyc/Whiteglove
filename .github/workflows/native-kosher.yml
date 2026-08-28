@@ -37,10 +37,7 @@ jobs:
       - name: Install Capacitor
         run: npm install
 
-      - name: Generate the Android project
-        run: npx cap add android
-
-      - name: Sync web config into Android
+      - name: Sync web config + plugins into the committed Android project
         run: npx cap sync android
 
       - name: Build debug APK
