@@ -35,14 +35,34 @@ import { DEFAULT_PHOTO, destinationPhotoSrc } from "@/lib/default-photo";
  * the rest does not change.
  */
 
+/**
+ * A status chip on a browse tile: the label, and the label only.
+ *
+ * IT USED TO ANNOUNCE THE WHOLE SENTENCE. The visible label was aria-hidden
+ * and an sr-only span carried the full detail, so what a screen reader
+ * actually got from each tile was two paragraphs — "There is kosher food in
+ * Rome. Confirm current certification and opening details before visiting.
+ * The Ghetto — around the Great Synagogue and Via del Portico d'Ottavia places
+ * some of the kosher food within walking distance…" — and there are a hundred
+ * and fifty-six tiles on /destinations. Two hundred and eighty-five characters
+ * per tile, to say two things that fit in six words.
+ *
+ * Worse, it was inside out: the words on the screen were hidden from assistive
+ * technology and only the long version was available, so the two audiences
+ * were not being given the same card.
+ *
+ * The detail has a home already. It is on the destination page, shown in full
+ * and visibly (SignalPanel), which is one press from here and is where
+ * somebody who wants it is going.
+ */
 function SignalChip({ signal }: { signal: Signal<string> }) {
   return (
     <span
       className={`inline-flex items-start gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-semibold leading-4 ${SIGNAL_CLASSES[signal.tone]}`}
     >
+      {/* The glyph is decoration; the label beside it is the whole meaning. */}
       <span aria-hidden="true">{signal.glyph}</span>
-      <span aria-hidden="true">{signal.label}</span>
-      <span className="sr-only">{signal.detail}</span>
+      <span>{signal.label}</span>
     </span>
   );
 }
