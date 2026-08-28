@@ -4,10 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import ListToolbar from "@/components/ListToolbar";
+import { useListUrl } from "@/components/useListUrl";
 import { IconLink } from "@/components/icons/IconAction";
 import { placeDirectionsUrl } from "@/data/route-utils";
 import { hechsherLabel } from "@/data/hechsherim";
 import type { EateryCard } from "@/data/eatery-search";
+
+const DEFAULTS = { q: "", country: "", kind: "" };
 
 /**
  * The curated kosher listings. The food finder filters this same White Glove
@@ -51,9 +54,10 @@ export default function EateryDirectory({
   countries: string[];
   kinds: string[];
 }) {
-  const [query, setQuery] = useState("");
-  const [country, setCountry] = useState("");
-  const [kind, setKind] = useState("");
+  // In the address bar, the same as /hotels and /things-to-do. A narrowed list
+  // of kosher listings could not be sent to anybody, could not be bookmarked,
+  // and was lost the moment somebody opened an entry and pressed back.
+  const [{ q: query, country, kind }, setFilters, reset] = useListUrl(DEFAULTS);
   const [rows, setRows] = useState<EateryCard[]>(initial);
   const [more, setMore] = useState(initialMore);
   const [busy, setBusy] = useState(false);
@@ -112,14 +116,15 @@ export default function EateryDirectory({
 
       <ListToolbar
         query={query}
-        onQuery={setQuery}
+        onQuery={(value) => setFilters({ q: value })}
         placeholder="Rome, bakery, meat, Antwerp…"
         searchLabel="Search kosher listings"
         empty={rows.length === 0 && !busy && !failed}
         filters={[
-          { label: "Country", value: country, onChange: setCountry, options: countries.map((value) => ({ value, label: value })), allLabel: "Everywhere" },
-          { label: "Kind", value: kind, onChange: setKind, options: kinds.map((value) => ({ value, label: value })), allLabel: "Anything" },
+          { label: "Country", value: country, onChange: (value: string) => setFilters({ country: value }), options: countries.map((value) => ({ value, label: value })), allLabel: "Everywhere" },
+          { label: "Kind", value: kind, onChange: (value: string) => setFilters({ kind: value }), options: kinds.map((value) => ({ value, label: value })), allLabel: "Anything" },
         ]}
+        onReset={() => reset()}
       />
 
       {failed && (

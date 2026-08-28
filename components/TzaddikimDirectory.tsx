@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import MixedText from "@/components/MixedText";
 import CappedGrid from "@/components/CappedGrid";
 import ListToolbar, { listMatches, listRank } from "@/components/ListToolbar";
+import { useListUrl } from "@/components/useListUrl";
 
 // The kevarim directory, with the search in front.
 //
@@ -49,7 +50,13 @@ function countryId(country: string): string {
 }
 
 export default function TzaddikimDirectory({ people }: { people: TzaddikCard[] }) {
-  const [query, setQuery] = useState("");
+  // IN THE ADDRESS BAR, like /hotels and /things-to-do. A search for a name
+  // among four hundred could not be sent to anybody, could not be bookmarked,
+  // and was lost the moment somebody opened a kever and pressed back — which
+  // on a page this long means starting again from the top.
+  const [{ q }, setFilters, reset] = useListUrl({ q: "" });
+  const query = q;
+  const setQuery = (value: string) => setFilters({ q: value });
 
   const shown = people
     .filter((person) => listMatches(person.search, query))
@@ -85,6 +92,7 @@ export default function TzaddikimDirectory({ people }: { people: TzaddikCard[] }
         placeholder="Noam Elimelech, Sanz, Kraków…"
         searchLabel="Search kevarim by name"
         empty={shown.length === 0}
+        onReset={reset}
       />
 
       {/* Skipping to a country rather than scrolling past four hundred names.
