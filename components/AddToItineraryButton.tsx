@@ -39,7 +39,7 @@ export default function AddToItineraryButton({
         onClick={() => start(place)}
         className={`inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 disabled:opacity-60 ${className}`}
       >
-        {phase.kind === "working" ? "Adding…" : phase.kind === "failed" ? "That did not save — try again" : label}
+        {phase.kind === "working" ? "Adding…" : phase.kind === "failed" ? phase.message : label}
       </button>
       {dialog}
     </>

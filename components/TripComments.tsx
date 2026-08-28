@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRequireSignIn } from "@/components/SignInGate";
+import { useOnline } from "@/components/SaveState";
+import { describeSave, saveJson } from "@/lib/save-state";
 import {
   MAX_COMMENT,
   type TripComment,
@@ -48,6 +50,11 @@ export default function TripComments({
   const [body, setBody] = useState("");
   const [about, setAbout] = useState("");
   const [busy, setBusy] = useState(false);
+  // All three handlers below were a bare await fetch. A comment typed on
+  // a shared trip from a hotel whose wifi drops mid-send left the form
+  // disabled, no message, and the words still in the box with no way to
+  // find out whether they had gone.
+  const online = useOnline();
   const requireSignIn = useRequireSignIn();
   const [error, setError] = useState("");
 
@@ -92,50 +99,48 @@ export default function TripComments({
   async function post() {
     setBusy(true);
     setError("");
-    const res = await fetch(`/api/account/itinerary/comments?share=${encodeURIComponent(shareId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body, about: about || undefined }),
-    });
-    const data = await res.json().catch(() => ({}));
+    const result = await saveJson<{ comments?: TripComment[] }>(
+      `/api/account/itinerary/comments?share=${encodeURIComponent(shareId)}`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, about: about || undefined }) },
+      online,
+    );
     setBusy(false);
-    if (!res.ok) {
-      setError(data.error || "That could not be sent.");
+    if (!result.ok) {
+      setError(describeSave(result.state)!);
       return;
     }
-    setComments(data.comments ?? []);
+    setComments(result.data?.comments ?? []);
     setBody("");
   }
 
   async function markDone(comment: TripComment, done: boolean) {
     setBusy(true);
-    const res = await fetch(`/api/account/itinerary/comments?share=${encodeURIComponent(shareId)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: comment.id, done }),
-    });
-    const data = await res.json().catch(() => ({}));
+    const result = await saveJson<{ comments?: TripComment[] }>(
+      `/api/account/itinerary/comments?share=${encodeURIComponent(shareId)}`,
+      { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: comment.id, done }) },
+      online,
+    );
     setBusy(false);
-    if (!res.ok) {
-      setError(data.error || "That could not be saved.");
+    if (!result.ok) {
+      setError(describeSave(result.state)!);
       return;
     }
-    setComments(data.comments ?? []);
+    setComments(result.data?.comments ?? []);
   }
 
   async function remove(comment: TripComment) {
     setBusy(true);
-    const res = await fetch(
+    const result = await saveJson<{ comments?: TripComment[] }>(
       `/api/account/itinerary/comments?share=${encodeURIComponent(shareId)}&id=${encodeURIComponent(comment.id)}`,
       { method: "DELETE" },
+      online,
     );
-    const data = await res.json().catch(() => ({}));
     setBusy(false);
-    if (!res.ok) {
-      setError(data.error || "That could not be removed.");
+    if (!result.ok) {
+      setError(describeSave(result.state)!);
       return;
     }
-    setComments(data.comments ?? []);
+    setComments(result.data?.comments ?? []);
   }
 
   if (comments === null) return null;

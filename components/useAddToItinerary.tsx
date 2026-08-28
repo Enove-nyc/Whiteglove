@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import { useRequireSignIn } from "@/components/SignInGate";
+import { useOnline } from "@/components/SaveState";
+import { FAILED, OFFLINE, saveJson } from "@/lib/save-state";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { emptyItinerary, type ItinActivity, type Itinerary } from "@/data/itinerary";
 
@@ -54,7 +56,15 @@ type Phase =
   | { kind: "working" }
   | { kind: "choosing"; trips: TripChoice[]; place: TripStop }
   | { kind: "added"; tripName: string }
-  | { kind: "failed" };
+  /**
+   * WHY THIS CARRIES A SENTENCE NOW. It used to be a bare kind, and all three
+   * call sites printed "That did not save — try again" from it. Try again is
+   * exactly the wrong advice when the phone has no signal: the second press
+   * produces the identical nothing, and the site takes the blame for the
+   * lift, the tunnel, or the apartment wifi. lib/save-state.ts owns both
+   * wordings; this carries whichever one applies.
+   */
+  | { kind: "failed"; message: string };
 
 const uid = () =>
   typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`;
@@ -80,9 +90,11 @@ function whenIsIt(trip: TripChoice): string {
  */
 async function appendStop(place: TripStop, tripId?: string): Promise<string | null> {
   const query = tripId ? `?trip=${encodeURIComponent(tripId)}` : "";
-  const read = await fetch(`/api/account/itinerary${query}`);
+  const read = await saveJson<{ itinerary?: Itinerary | null; tripId?: string | null; tripName?: string | null }>(
+    `/api/account/itinerary${query}`,
+  );
   if (!read.ok) return null;
-  const data = (await read.json()) as { itinerary?: Itinerary | null; tripId?: string | null; tripName?: string | null };
+  const data = read.data ?? {};
   const itin: Itinerary = { ...emptyItinerary(), ...(data.itinerary ?? {}) };
 
   const activity: ItinActivity = {
@@ -96,7 +108,7 @@ async function appendStop(place: TripStop, tripId?: string): Promise<string | nu
   };
   const next: Itinerary = { ...itin, activities: [...(itin.activities ?? []), activity] };
 
-  const saved = await fetch("/api/account/itinerary", {
+  const saved = await saveJson("/api/account/itinerary", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ itinerary: next, tripId: tripId ?? data.tripId ?? undefined }),
@@ -107,20 +119,25 @@ async function appendStop(place: TripStop, tripId?: string): Promise<string | nu
 
 export function useAddToItinerary() {
   const requireSignIn = useRequireSignIn();
+  const online = useOnline();
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const close = useCallback(() => setPhase({ kind: "idle" }), []);
   const dialogRef = useFocusTrap<HTMLDivElement>(phase.kind === "choosing", close);
   const returnFocusTo = useRef<HTMLElement | null>(null);
 
-  const addTo = useCallback(async (place: TripStop, tripId?: string) => {
-    setPhase({ kind: "working" });
-    try {
-      const tripName = await appendStop(place, tripId);
-      setPhase(tripName ? { kind: "added", tripName } : { kind: "failed" });
-    } catch {
-      setPhase({ kind: "failed" });
-    }
-  }, []);
+  const addTo = useCallback(
+    async (place: TripStop, tripId?: string) => {
+      setPhase({ kind: "working" });
+      const failure = { kind: "failed" as const, message: online ? FAILED : OFFLINE };
+      try {
+        const tripName = await appendStop(place, tripId);
+        setPhase(tripName ? { kind: "added", tripName } : failure);
+      } catch {
+        setPhase(failure);
+      }
+    },
+    [online],
+  );
 
   const start = useCallback(
     (place: TripStop) => {

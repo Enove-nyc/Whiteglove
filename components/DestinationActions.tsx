@@ -232,9 +232,12 @@ export default function DestinationActions({
           <AddedToTrip tripName={trip.phase.tripName} />
         </p>
       )}
+      {/* The sentence comes from the phase now rather than being written here.
+          A phone with no signal gets told that, not "try again", which would
+          be advice to press the same button for the same nothing. */}
       {trip.phase.kind === "failed" && (
         <p className="mt-2 text-sm font-semibold text-[var(--navy)]" role="status">
-          That did not save — try again.
+          {trip.phase.message}
         </p>
       )}
       {trip.dialog}

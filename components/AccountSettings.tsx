@@ -3,6 +3,8 @@
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AvatarCircle from "@/components/AvatarCircle";
+import { useOnline } from "@/components/SaveState";
+import { describeSave, saveJson } from "@/lib/save-state";
 
 const inputClass =
   "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] transition focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -25,6 +27,20 @@ export default function AccountSettings({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [open, setOpen] = useState(false);
+  /**
+   * EVERY SAVE ON THIS SCREEN COULD HANG, AND THREE OF THE FOUR DID NOTHING
+   * ABOUT IT. Each was a bare `await fetch(...)` with no try around it: a
+   * request that never reaches a server rejects, the rejection goes nowhere
+   * inside an async handler, and the setSaving(false) after it never runs. The
+   * button then says "Saving…" until the page is reloaded, with no message —
+   * on a screen somebody has just typed their email address into, so the
+   * obvious reading is that it saved and the screen is stuck, or that it did
+   * not and the typing is gone.
+   *
+   * saveJson returns the failure instead of throwing it, so there is nothing
+   * left to forget to catch.
+   */
+  const online = useOnline();
 
   async function uploadAvatar(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -44,18 +60,21 @@ export default function AccountSettings({
       setAvatarMessage({ ok: false, text: "Could not read that file." });
       return;
     }
-    const response = await fetch("/api/account/avatar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dataUrl }),
-    });
-    const data = await response.json().catch(() => null);
+    const result = await saveJson<{ avatarMediaId?: string }>(
+      "/api/account/avatar",
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ dataUrl }) },
+      online,
+    );
     setAvatarBusy(false);
-    if (!response.ok || !data?.avatarMediaId) {
-      setAvatarMessage({ ok: false, text: data?.error || "Could not save the picture." });
+    if (!result.ok) {
+      setAvatarMessage({ ok: false, text: describeSave(result.state)! });
       return;
     }
-    setAvatarId(data.avatarMediaId);
+    if (!result.data?.avatarMediaId) {
+      setAvatarMessage({ ok: false, text: "Could not save the picture." });
+      return;
+    }
+    setAvatarId(result.data.avatarMediaId);
     setAvatarMessage({ ok: true, text: "Saved" });
     router.refresh();
   }
@@ -63,10 +82,10 @@ export default function AccountSettings({
   async function removeAvatar() {
     setAvatarBusy(true);
     setAvatarMessage(null);
-    const response = await fetch("/api/account/avatar", { method: "DELETE" });
+    const result = await saveJson("/api/account/avatar", { method: "DELETE" }, online);
     setAvatarBusy(false);
-    if (!response.ok) {
-      setAvatarMessage({ ok: false, text: "Could not remove the picture." });
+    if (!result.ok) {
+      setAvatarMessage({ ok: false, text: describeSave(result.state)! });
       return;
     }
     setAvatarId("");
@@ -78,15 +97,14 @@ export default function AccountSettings({
     event.preventDefault();
     setSaving(true);
     setMessage(null);
-    const response = await fetch("/api/account/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, phone }),
-    });
-    const data = await response.json().catch(() => null);
+    const result = await saveJson(
+      "/api/account/update",
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, phone }) },
+      online,
+    );
     setSaving(false);
-    if (!response.ok) {
-      setMessage({ ok: false, text: data?.error || "Could not save your changes." });
+    if (!result.ok) {
+      setMessage({ ok: false, text: describeSave(result.state)! });
       return;
     }
     setMessage({ ok: true, text: "Saved" });
@@ -97,14 +115,19 @@ export default function AccountSettings({
     if (!window.confirm("Delete your account permanently? Everything saved to it will be erased. This can't be undone.")) return;
     setDeleting(true);
     setMessage(null);
-    const response = await fetch("/api/account/delete", { method: "POST" });
-    if (response.ok) {
+    const result = await saveJson("/api/account/delete", { method: "POST" }, online);
+    if (result.ok) {
       router.push("/");
       router.refresh();
       return;
     }
     setDeleting(false);
-    setMessage({ ok: false, text: "Could not delete the account. Please try again." });
+    // Deleting is not saving, so the generic sentence would be wrong — but the
+    // offline one is exactly right, and is the reason this could hang.
+    setMessage({
+      ok: false,
+      text: result.state.kind === "offline" ? describeSave(result.state)! : "Could not delete the account. Please try again.",
+    });
   }
 
   return (
