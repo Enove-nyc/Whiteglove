@@ -99,8 +99,8 @@ export default async function MikvaosPage() {
               same as every row inside them. 11,486 now. */}
           <CappedGrid
             className="mt-10 space-y-12"
-            total={byCountry.size}
-            showAllLabel={`Show all ${byCountry.size} countries`}
+            count={byCountry.size}
+            of="countries"
           >
             {[...byCountry].map(([country, list]) => (
               <div key={country}>
@@ -112,8 +112,8 @@ export default async function MikvaosPage() {
                   tag="ul"
                   cap={6}
                   className="mt-5 grid gap-4 md:grid-cols-2"
-                  total={list.length}
-                  showAllLabel={`Show all ${list.length} in ${country}`}
+                  count={list.length}
+                  of={`mikvaos in ${country}`}
                 >
                   {list.map((listing) => (
                     <li key={listing.id} className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5">

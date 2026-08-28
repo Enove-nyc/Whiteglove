@@ -69,8 +69,8 @@ export default function HechsherimDirectory({
           the rest one press away and all of them still in the HTML. */}
       <CappedGrid
         className="mt-8 space-y-12"
-        total={groups.size}
-        showAllLabel={`Show all ${groups.size} regions`}
+        count={groups.size}
+        of="regions"
       >
         {[...groups].map(([region, list]) => (
           <div key={region}>
@@ -84,8 +84,8 @@ export default function HechsherimDirectory({
               tag="ul"
               cap={6}
               className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-              total={list.length}
-              showAllLabel={`Show all ${list.length} in ${region}`}
+              count={list.length}
+              of={`certifying bodies in ${region}`}
             >
               {list.map((agency) => (
                 <li

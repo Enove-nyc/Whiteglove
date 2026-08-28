@@ -139,8 +139,8 @@ export default function TzaddikimDirectory({ people }: { people: TzaddikCard[] }
             tag="ul"
             cap={6}
             className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-            total={list.length}
-            showAllLabel={`Show all ${list.length} in ${country}`}
+            count={list.length}
+            of={`kevarim in ${country}`}
           >
             {list.map((person) => (
               <li key={person.slug}>
