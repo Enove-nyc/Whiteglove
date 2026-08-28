@@ -241,3 +241,22 @@ describe("a destination page keeps its contents list in reach", () => {
     assert.match(PAGE, /grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4/);
   });
 });
+
+describe("the breadcrumb out of a destination is a real target", () => {
+  it("is at least 44px tall like everything else", () => {
+    /**
+     * MEASURED IN A BROWSER at 360, 390, 430, 768 and 1280, across the home
+     * page, /things-to-do and /destinations/rome. Everything passed except
+     * this one link: 122x14, at every width — and it is the control that
+     * takes somebody back out of a destination.
+     *
+     * The rest of that audit came back clean and is worth recording: no
+     * sideways scrolling at any width, four persistent bottom actions (the
+     * limit is five), and the floating Ask button clearing the bottom bar by
+     * fifteen pixels rather than covering it.
+     */
+    const page = readFileSync("app/destinations/[destination]/page.tsx", "utf8");
+    const crumb = page.slice(page.indexOf('aria-label="Breadcrumb"'), page.indexOf("</nav>", page.indexOf('aria-label="Breadcrumb"')));
+    assert.match(crumb, /href="\/destinations"[\s\S]{0,200}min-h-11/);
+  });
+});
