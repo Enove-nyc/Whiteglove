@@ -206,3 +206,38 @@ describe("a detail page shows an order of importance", () => {
     }
   });
 });
+
+describe("a destination page keeps its contents list in reach", () => {
+  const PAGE = readFileSync("app/destinations/[destination]/page.tsx", "utf8");
+
+  it("pins 'On this page' on a desktop", () => {
+    /**
+     * The page folds into eight or nine sections and runs several screens, and
+     * the one control for moving between them sat at the top and scrolled
+     * away — so getting from the kosher food to Shabbos meant scrolling back
+     * past everything in between. Confirmed in a browser: after scrolling
+     * 2,500px it is pinned at 64px, which is the header's scrolled height.
+     */
+    const nav = PAGE.slice(PAGE.indexOf('aria-label="On this page"'));
+    assert.match(nav, /lg:sticky lg:top-16/);
+    // Under the site's own navigation where the two meet, on the same layer
+    // as the directory toolbars rather than a number somebody guessed.
+    assert.match(nav, /lg:z-\[var\(--wg-z-list-toolbar\)\]/);
+    // And it needs a ground of its own, or the content scrolls through it.
+    assert.match(nav, /lg:bg-\[var\(--cream\)\]/);
+  });
+
+  it("does not pin it on a phone", () => {
+    // It is a wrapping row of eight or nine links: at 390px that is three
+    // lines of chrome fixed over the thing somebody is reading.
+    const nav = PAGE.slice(PAGE.indexOf('aria-label="On this page"'));
+    const classes = nav.slice(nav.indexOf("className="), nav.indexOf(">"));
+    assert.doesNotMatch(classes, /(^|\s)sticky/, "the contents list is pinned at every width");
+  });
+
+  it("lets the short hero panels be short", () => {
+    // "3–5 days" was drawn in a box the height of a four-line paragraph about
+    // Shabbos, because the grid stretched every cell to the tallest.
+    assert.match(PAGE, /grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4/);
+  });
+});

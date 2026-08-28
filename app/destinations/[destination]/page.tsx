@@ -703,7 +703,11 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               components/DestinationPhotos.tsx. */}
           <DestinationPhotos photos={destination.photos} name={destination.name} />
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* items-start, so the two short panels stop growing to match the
+              two long ones. "3–5 days" was being drawn in a box the height of
+              a four-line paragraph about Shabbos, which is most of a card of
+              nothing beside the answer somebody came for. */}
+          <div className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Ideal length</p>
               <p className="mt-1 font-semibold text-[var(--navy)]">{destination.suggestedLength}</p>
@@ -757,7 +761,21 @@ export default async function VacationDestinationPage({ params }: { params: Prom
       </div>
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <nav aria-label="On this page" className="border-b border-[var(--gold-light)] py-6">
+        {/* STAYS WITH THE READER ON A DESKTOP. This page folds into eight or
+            nine sections and runs several screens; the one control for moving
+            between them sat at the top and scrolled away, so getting from the
+            kosher food to Shabbos meant scrolling back past everything in
+            between. top-16 is the header's scrolled height, and it takes the
+            same layer as the directory toolbars so the site's own navigation
+            still wins where they meet.
+
+            Not on a phone, deliberately: this is a wrapping row of eight or
+            nine links, which at 390px is three lines of chrome pinned over the
+            content somebody is trying to read. */}
+        <nav
+          aria-label="On this page"
+          className="border-b border-[var(--gold-light)] py-6 lg:sticky lg:top-16 lg:z-[var(--wg-z-list-toolbar)] lg:bg-[var(--cream)] lg:py-4 lg:shadow-[0_6px_16px_rgba(23,45,82,.06)]"
+        >
           <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">On this page</h2>
           <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
             {contents.map(([id, label]) => (
