@@ -360,6 +360,65 @@ export function describePrints(prints: PrintEvent[], limits: PlanLimits, now: nu
 }
 
 /**
+ * WHAT IS ACTUALLY THE SAME ON EVERY PLAN, worked out rather than asserted.
+ *
+ * Two places said "sharing a trip with anybody you like — is the same on every
+ * plan": the pricing page and describeLimits below. Four rows underneath, the
+ * feature table says handing a client their own app is an advisor plan. Both
+ * were describing something real — a share link, which every plan has, and
+ * companionClients, which One Trip does not — under one word, so a buyer read
+ * a promise and then found it withdrawn, in the paragraph they were deciding
+ * on.
+ *
+ * Two hand-written sentences about a table cannot be kept true by hand. These
+ * two are computed FROM the table, so the day an entitlement moves the
+ * sentence moves with it and no editor has to remember.
+ *
+ * THE ALWAYS-FREE THINGS ARE NOT IN THE TABLE, deliberately. The planner, the
+ * map and the guides are not entitlements at all — nothing gates them, on any
+ * plan, including free — so they are named as the floor rather than computed
+ * as a feature that happens to be on everywhere.
+ */
+const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {
+  companionApp: "the White Glove app for your own trip",
+  assistantHistory: "your assistant history",
+  companionClients: "handing a client their own app",
+  ownBranding: "your own name and logo on it",
+  templates: "saved trip templates",
+  analytics: "the numbers on your pipeline",
+};
+
+/** The paid plans a buyer is choosing between. Free is not one of the options. */
+const CHOOSABLE: AccountPlan[] = ["one_trip", "starter", "pro"];
+
+export function planParity(): { same: string[]; differs: string[] } {
+  const keys = Object.keys(FEATURE_LABELS) as (keyof PlanFeatures)[];
+  const same: string[] = [];
+  const differs: string[] = [];
+  for (const key of keys) {
+    const values = CHOOSABLE.map((plan) => PLAN_FEATURES[plan][key]);
+    (values.every(Boolean) ? same : differs).push(FEATURE_LABELS[key]);
+  }
+  return { same, differs };
+}
+
+/** The floor: not entitlements, and not gated on any plan including free. */
+export const ALWAYS_FREE = "the planner, the map and the guides";
+
+/**
+ * The sentence both surfaces print, built from the table above.
+ *
+ * Says what changes as well as what does not, because a promise with no limit
+ * beside it is the one a buyer later feels tricked by.
+ */
+export function planParitySentence(): string {
+  const { differs } = planParity();
+  const last = differs[differs.length - 1];
+  const list = differs.length > 1 ? `${differs.slice(0, -1).join(", ")} and ${last}` : last;
+  return `${ALWAYS_FREE.charAt(0).toUpperCase()}${ALWAYS_FREE.slice(1)} are the same on every plan. What changes is ${list}.`;
+}
+
+/**
  * The whole thing in a paragraph, for the account page and the admin.
  *
  * Says what a plan DOES NOT limit as well as what it does, because a list of
@@ -372,8 +431,10 @@ export function describeLimits(plan: AccountPlan, limits: PlanLimits): string {
   if (limits.printsPerWeek !== UNLIMITED) {
     parts.push(`${limits.printsPerWeek} printable ${limits.printsPerWeek === 1 ? "copy" : "copies"} a week`);
   }
-  const everythingElse =
-    "Everything else on the site is the same — every kever, every guide, the planner, the map, and sharing a trip with anybody you like.";
+  // Built from the table rather than typed, so it cannot promise what the
+  // table takes back. It used to end "...and sharing a trip with anybody you
+  // like", which One Trip cannot do.
+  const everythingElse = `Everything else on the site is the same — every kever, every guide, ${ALWAYS_FREE}. ${planParitySentence()}`;
   if (parts.length === 0) return `${PLAN_LABELS[plan]} has no limits on trips or printing. ${everythingElse}`;
   return `${PLAN_LABELS[plan]}: ${parts.join(", and ")}. ${everythingElse}`;
 }

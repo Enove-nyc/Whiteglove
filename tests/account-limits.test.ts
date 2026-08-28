@@ -222,7 +222,24 @@ describe("what somebody is told before they meet any of it", () => {
     assert.match(said, /2 trips at a time/);
     assert.match(said, /1 printable copy a week/);
     assert.match(said, /every kever/i);
-    assert.match(said, /sharing a trip/);
+    assert.match(said, /the planner, the map and the guides/);
+  });
+
+  it("no longer tells One Trip it can share with anybody", () => {
+    /**
+     * IT DID, IN TWO PLACES. This sentence ended "…and sharing a trip with
+     * anybody you like", and the pricing page said the same above its three
+     * cards — while the feature table four rows down says handing a client
+     * their own app is an advisor plan. Both were describing something real, a
+     * share link and companionClients, under one word.
+     *
+     * Neither writes it now: planParitySentence() computes it from the table,
+     * so the day an entitlement moves the sentence moves with it.
+     */
+    const said = describeLimits("one_trip", BOTH_LIMITED);
+    assert.doesNotMatch(said, /sharing a trip with anybody/);
+    assert.match(said, /What changes is/);
+    assert.match(said, /handing a client their own app/);
   });
 
   it("says plainly when a plan limits nothing", () => {
