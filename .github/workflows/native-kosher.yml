@@ -1,8 +1,10 @@
-name: Build Kosher native app (pilot)
+name: Build Kosher native app
 
-# Builds the Capacitor native shell for the Kosher app into an installable
-# debug APK, so we can confirm the native look (no address bar, no "Running in
-# Chrome") on a real phone before wiring up signing and a Play release.
+# Builds the Capacitor native shell for the Kosher app:
+#  - always a debug APK (sideload to confirm the native look), and
+#  - a SIGNED release .aab for the Play Store, when the upload-key secrets are
+#    present (WG_KEYSTORE_BASE64 / WG_KEYSTORE_PASSWORD / WG_KEY_ALIAS /
+#    WG_KEY_PASSWORD in the repo's Actions secrets).
 #
 # Runs only on its own pilot branch and by hand — it never touches production.
 
@@ -15,8 +17,13 @@ on:
       - ".github/workflows/native-kosher.yml"
 
 jobs:
-  build-debug-apk:
+  build:
     runs-on: ubuntu-latest
+    env:
+      WG_KEYSTORE_BASE64: ${{ secrets.WG_KEYSTORE_BASE64 }}
+      WG_KEYSTORE_PASSWORD: ${{ secrets.WG_KEYSTORE_PASSWORD }}
+      WG_KEY_ALIAS: ${{ secrets.WG_KEY_ALIAS }}
+      WG_KEY_PASSWORD: ${{ secrets.WG_KEY_PASSWORD }}
     defaults:
       run:
         working-directory: native/kosher
@@ -44,9 +51,29 @@ jobs:
         working-directory: native/kosher/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Upload the APK
+      - name: Upload the debug APK
         uses: actions/upload-artifact@v4
         with:
           name: kosher-debug-apk
           path: native/kosher/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      # --- Signed Play release, only when the upload key is available ---------
+      - name: Decode the upload keystore
+        if: env.WG_KEYSTORE_BASE64 != ''
+        run: echo "$WG_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/wg-upload.keystore"
+
+      - name: Build signed release AAB
+        if: env.WG_KEYSTORE_BASE64 != ''
+        working-directory: native/kosher/android
+        env:
+          WG_KEYSTORE_PATH: ${{ runner.temp }}/wg-upload.keystore
+        run: ./gradlew bundleRelease --no-daemon --stacktrace
+
+      - name: Upload the signed AAB (for the Play Store)
+        if: env.WG_KEYSTORE_BASE64 != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: kosher-release-aab
+          path: native/kosher/android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
