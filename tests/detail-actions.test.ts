@@ -112,8 +112,13 @@ describe("adding a stop to a trip", () => {
   });
 
   it("reads the trip before it writes to it", () => {
+    // Both calls go through saveJson now rather than fetch — a bare awaited
+    // fetch here would reject on a lost connection and the rejection would
+    // land nowhere, leaving the suitcase spinning (tests/save-state.test.ts).
+    // The order is what this holds: building the new itinerary from anything
+    // other than what the account currently holds overwrites a trip, silently.
     const read = HOOK.indexOf("`/api/account/itinerary${query}`");
-    const write = HOOK.indexOf('fetch("/api/account/itinerary", {');
+    const write = HOOK.indexOf('saveJson("/api/account/itinerary", {');
     assert.ok(read !== -1, "the trip is never read");
     assert.ok(write !== -1, "the trip is never saved");
     assert.ok(read < write, "it writes before it has read");

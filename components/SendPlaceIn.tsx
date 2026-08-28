@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { NEVER_SENT, type TripPlace, fieldsSent, offerTitle, submissionFor } from "@/lib/place-offers";
+import { useOnline } from "@/components/SaveState";
+import { describeSave, saveJson } from "@/lib/save-state";
 
 /**
  * "You have added somewhere we do not have. Would you send it in?"
@@ -35,6 +37,7 @@ export default function SendPlaceIn({
   onAnswered: Answered;
 }) {
   const [sending, setSending] = useState(false);
+  const online = useOnline();
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
@@ -54,15 +57,17 @@ export default function SendPlaceIn({
   async function send() {
     setSending(true);
     setError(null);
-    const response = await fetch("/api/content/suggestions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(submissionFor(place, from)),
-    });
+    const result = await saveJson(
+      "/api/content/suggestions",
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(submissionFor(place, from)) },
+      online,
+    );
     setSending(false);
-    if (!response.ok) {
-      const data = await response.json().catch(() => null);
-      setError(data?.error || "That could not be sent. Your trip is unchanged.");
+    if (!result.ok) {
+      // "Your trip is unchanged" is the reassurance worth keeping, and it is
+      // as true offline as it is on a refusal — so it is added to whichever
+      // sentence applies rather than replacing both.
+      setError(`${describeSave(result.state)} Your trip is unchanged.`);
       return;
     }
     setSent(true);

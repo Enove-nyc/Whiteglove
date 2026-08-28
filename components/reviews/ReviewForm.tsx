@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { StarRating } from "@/components/reviews/StarRating";
+import { useOnline } from "@/components/SaveState";
+import { describeSave, saveJson } from "@/lib/save-state";
 import {
   MAX_REVIEW_LENGTH,
   reviewTextProblem,
@@ -40,6 +42,7 @@ export function ReviewForm({
   const [text, setText] = useState(initial?.text ?? "");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const online = useOnline();
 
   async function save() {
     if (score === null) {
@@ -53,23 +56,21 @@ export function ReviewForm({
     }
     setBusy(true);
     setError(null);
-    try {
-      const response = await fetch("/api/reviews", {
+    const result = await saveJson(
+      "/api/reviews",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ placeKind, placeRef, placeLabel, score, text: text.trim() }),
-      });
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      if (!response.ok) {
-        setError(payload?.error || "Could not save that just now.");
-        return;
-      }
-      onSaved();
-    } catch {
-      setError("Could not save that just now.");
-    } finally {
-      setBusy(false);
+      },
+      online,
+    );
+    setBusy(false);
+    if (!result.ok) {
+      setError(describeSave(result.state));
+      return;
     }
+    onSaved();
   }
 
   return (

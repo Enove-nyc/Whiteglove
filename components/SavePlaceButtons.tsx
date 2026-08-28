@@ -44,12 +44,22 @@ export default function SavePlaceButtons({ place }: { place: SavedPlace }) {
   const [inRoute, setInRoute] = useState(() => read(routeKey).some((item) => item.id === place.id));
   const [favorite, setFavorite] = useState(() => read(favoritesKey).some((item) => item.id === place.id));
 
+  /**
+   * The account's copy, brought level with the browser's.
+   *
+   * DELIBERATELY SILENT, AND NOW DELIBERATELY SAFE. The button has already
+   * done its job against localStorage by the time this runs, so there is
+   * nothing to tell somebody and nothing to undo — the place IS saved on this
+   * device, and the next load will sync it. What it must not do is throw:
+   * this was a bare `await fetch` called with `void`, so on a dropped
+   * connection it raised an unhandled rejection out of a click handler.
+   */
   const syncAccount = async (collection: "route" | "favorites") => {
     await fetch("/api/account/places", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ collection, action: "toggle", place }),
-    });
+    }).catch(() => undefined);
   };
 
   const toggle = (key: string, active: boolean, setActive: (value: boolean) => void, collection: "route" | "favorites") => {

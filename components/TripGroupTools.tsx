@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import type { SharedFavorite, TripVote } from "@/lib/trip-collaboration";
 import { tallyVotes } from "@/lib/trip-collaboration";
+import { useOnline } from "@/components/SaveState";
+import { describeSave, saveJson } from "@/lib/save-state";
 
 /* load is recreated each render on purpose — shareId is the only input that matters */
 
@@ -29,6 +31,11 @@ export default function TripGroupTools({
   const [voteLabel, setVoteLabel] = useState("");
   const [favoriteLabel, setFavoriteLabel] = useState("");
   const [busy, setBusy] = useState(false);
+  // A client on a shared trip is the person most likely to be doing this
+  // abroad on a hotel connection. Every handler here was a bare await
+  // fetch, so a dropped signal left the buttons disabled with nothing
+  // said and no way back but a reload.
+  const online = useOnline();
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
 
@@ -64,36 +71,34 @@ export default function TripGroupTools({
   async function vote(targetId: string, voteLabel: string, kind: TripVote["kind"], value: 1 | -1) {
     setBusy(true);
     setError("");
-    const res = await fetch(`/api/account/itinerary/votes?share=${encodeURIComponent(shareId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ targetId, label: voteLabel, kind, value }),
-    });
-    const data = await res.json().catch(() => ({}));
+    const result = await saveJson<{ votes?: TripVote[] }>(
+      `/api/account/itinerary/votes?share=${encodeURIComponent(shareId)}`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetId, label: voteLabel, kind, value }) },
+      online,
+    );
     setBusy(false);
-    if (!res.ok) {
-      setError(data.error || "Could not save that vote.");
+    if (!result.ok) {
+      setError(describeSave(result.state)!);
       return;
     }
-    setVotes(data.votes ?? []);
+    setVotes(result.data?.votes ?? []);
   }
 
   async function addFavorite(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
-    const res = await fetch(`/api/account/itinerary/favorites?share=${encodeURIComponent(shareId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ label: favoriteLabel, kind: "place" }),
-    });
-    const data = await res.json().catch(() => ({}));
+    const result = await saveJson<{ favorites?: SharedFavorite[] }>(
+      `/api/account/itinerary/favorites?share=${encodeURIComponent(shareId)}`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ label: favoriteLabel, kind: "place" }) },
+      online,
+    );
     setBusy(false);
-    if (!res.ok) {
-      setError(data.error || "Could not save that.");
+    if (!result.ok) {
+      setError(describeSave(result.state)!);
       return;
     }
-    setFavorites(data.favorites ?? []);
+    setFavorites(result.data?.favorites ?? []);
     setFavoriteLabel("");
   }
 

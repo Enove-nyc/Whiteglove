@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { forgetSignedIn } from "@/lib/use-signed-in";
 import { MIN_PASSWORD_LENGTH, passwordProblem } from "@/lib/password-rules";
+import { useOnline } from "@/components/SaveState";
+import { describeSave, saveJson } from "@/lib/save-state";
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
@@ -113,6 +115,10 @@ export default function LoginForm({
   const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">(initialMode);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  // Signing in was a bare await fetch too. Losing the connection on the
+  // login screen left the button reading "Saving…" for ever, which is
+  // the worst place on the site to have to guess whether it worked.
+  const online = useOnline();
 
   useEffect(() => {
     // Inside the dialog this form is only ever mounted while signed out —
@@ -137,17 +143,17 @@ export default function LoginForm({
     setMessage("");
 
     if (mode === "forgot") {
-      const response = await fetch("/api/account/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await response.json().catch(() => null) as { message?: string; error?: string } | null;
+      const result = await saveJson<{ message?: string }>(
+        "/api/account/forgot-password",
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) },
+        online,
+      );
       setSaving(false);
-      if (!response.ok) {
-        setMessage(data?.error || "Please try again.");
+      if (!result.ok) {
+        setMessage(describeSave(result.state)!);
         return;
       }
+      const data = result.data;
       // The same words whether or not the account exists. Saying where the
       // code went would say that an account is there to send it to.
       setMode("reset");
@@ -156,15 +162,14 @@ export default function LoginForm({
     }
 
     if (mode === "reset") {
-      const response = await fetch("/api/account/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code, password: newPassword }),
-      });
-      const data = await response.json().catch(() => null) as { error?: string } | null;
+      const result = await saveJson(
+        "/api/account/reset-password",
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, code, password: newPassword }) },
+        online,
+      );
       setSaving(false);
-      if (!response.ok) {
-        setMessage(data?.error || "Please try again.");
+      if (!result.ok) {
+        setMessage(describeSave(result.state)!);
         return;
       }
       setMode("login");
@@ -182,18 +187,21 @@ export default function LoginForm({
     }
     const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
     const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name, phone: contactPhone } : { email, password };
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json().catch(() => null) as Delivery | null;
-    if (!response.ok) {
-      setMessage(data?.error || "Please try again.");
+    const result = await saveJson<Delivery>(
+      endpoint,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+      online,
+    );
+    if (!result.ok) {
+      setMessage(describeSave(result.state)!);
       setSaving(false);
-      if (data?.verificationRequired) setMode("verify");
+      // The route says so on a 403 with an unverified account, and saveJson
+      // keeps the route's own sentence, so the mode switch has to be read off
+      // the body rather than off the message.
+      if (result.data?.verificationRequired) setMode("verify");
       return;
     }
+    const data = result.data;
     if (mode === "signup") {
       setMode("verify");
       setMessage(whereTheCodeWent(data, "verification code"));
