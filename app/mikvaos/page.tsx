@@ -91,7 +91,17 @@ export default async function MikvaosPage() {
       ) : (
         <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
           <SectionHeading eyebrow="Listings" title="By country" />
-          <div className="mt-10 space-y-12">
+          {/* AND THE COUNTRY HEADINGS ARE CAPPED TOO. Capping inside each
+              country took this page from 19,948 pixels to 16,767 and stopped
+              there, because the length is mostly the number of countries
+              rather than the number of mikvaos in any one of them. Twelve
+              countries open; the rest are in the HTML behind one press, the
+              same as every row inside them. 11,486 now. */}
+          <CappedGrid
+            className="mt-10 space-y-12"
+            total={byCountry.size}
+            showAllLabel={`Show all ${byCountry.size} countries`}
+          >
             {[...byCountry].map(([country, list]) => (
               <div key={country}>
                 <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{country}</h2>
@@ -179,7 +189,7 @@ export default async function MikvaosPage() {
                 </CappedGrid>
               </div>
             ))}
-          </div>
+          </CappedGrid>
         </section>
       )}
 

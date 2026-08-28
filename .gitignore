@@ -42,3 +42,9 @@ next-env.d.ts
 
 # Local audit harness (never deployed)
 .audit/
+
+# Throwaway measuring scripts. Four of these were committed to main by
+# accident — a browser harness written to check one page's height, left in the
+# working tree and swept up by `git add -A`. They are not tests, nothing runs
+# them, and they carry a hard-coded localhost port and browser path.
+scratch-*.mjs
