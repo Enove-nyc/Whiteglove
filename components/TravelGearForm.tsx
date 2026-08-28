@@ -10,6 +10,8 @@ import {
   gearItemProblem,
   gearListProblem,
   gearLooksUnfinished,
+  gearSpellingSplits,
+  gearWordingHint,
   GEAR_IDEAS,
   MAX_GEAR_ITEMS,
   priceCheckedLabel,
@@ -71,6 +73,7 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
   const [state, act, busy] = useActionState(saveGearAction, null);
 
   const dialogRef = useFocusTrap<HTMLDivElement>(Boolean(editing), () => setEditing(null));
+  const splits = gearSpellingSplits(rows);
   const unused = GEAR_IDEAS.filter((idea) => !rows.some((r) => r.name.trim().toLowerCase() === idea.toLowerCase()));
 
   /** Persist the whole list through the one action, and keep the page in step. */
@@ -126,6 +129,16 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
     <section className="mt-6">
       <p className="text-sm leading-6 text-stone-600">{describeGearItems(rows)}</p>
 
+      {/* One word spelled two ways down one page is the thing a reader
+          notices. This does not claim a right spelling for a transliterated
+          word — there is not one — only that the shelf is currently using
+          two. */}
+      {splits.length > 0 && (
+        <p className="mt-2 text-sm leading-6 text-amber-800">
+          Spelled two ways on the shelf: {splits.join("; ")}. Pick one.
+        </p>
+      )}
+
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -172,6 +185,7 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
         <ul className="mt-5 divide-y divide-[var(--gold-light)] rounded-lg border border-[var(--gold-light)]">
           {rows.map((row) => {
             const status = rowStatus(row);
+            const wording = gearWordingHint(row);
             const sub = priceCheckedLabel(row) || row.description.trim() || row.url.trim();
             return (
               <li key={row.id}>
@@ -185,6 +199,13 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
                       {row.name.trim() || "Untitled item"}
                     </span>
                     {sub && <span className="mt-0.5 block truncate text-xs text-stone-500">{sub}</span>}
+                    {/* Said here rather than refused on save: the row is still
+                        useful and he may be mid-paste. The site cannot rewrite
+                        a supplier's product title on his behalf without
+                        risking making it wrong, so it says what it sees. */}
+                    {wording && (
+                      <span className="mt-1 block text-xs leading-5 text-amber-800">{wording}</span>
+                    )}
                   </span>
                   <span
                     className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] ${status.className}`}
