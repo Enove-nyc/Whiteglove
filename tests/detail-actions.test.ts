@@ -157,3 +157,52 @@ describe("adding a stop to a trip", () => {
     }
   });
 });
+
+describe("a detail page shows an order of importance", () => {
+  /**
+   * ALL EIGHT USED TO SIT IN ONE ROW at equal weight — Directions, Phone,
+   * Website, Share, Favorite, Route, Add to itinerary, Report — so the page's
+   * answer to "what do I do with this place" was eight identical squares and
+   * no answer at all. Add to itinerary, the action the whole planner is built
+   * on, was seventh of the eight, after Share.
+   *
+   * Three in front: put it on the trip, put it on the route, go there.
+   * Everything else keeps its name, its tooltip and its behaviour, one press
+   * away in a native disclosure.
+   */
+  const ROWS: Array<[string, string]> = [
+    ["components/DetailActionRow.tsx", ROW],
+    ["components/DestinationActions.tsx", ACTIONS],
+  ];
+
+  for (const [name, source] of ROWS) {
+    const at = source.indexOf("<MoreActions");
+
+    it(`${name} has a More disclosure`, () => {
+      assert.ok(at > 0, `${name} still shows every action at once`);
+    });
+
+    it(`${name} leads with the itinerary, then the route, then directions`, () => {
+      const front = source.slice(0, at);
+      const suitcase = front.indexOf('icon="suitcase"');
+      const route = front.indexOf('icon="route"');
+      const directions = front.indexOf('icon="directions"');
+      assert.ok(suitcase > 0 && route > 0 && directions > 0, "one of the three is not in front any more");
+      assert.ok(suitcase < route, "the route comes before the itinerary");
+      assert.ok(route < directions, "directions come before the route");
+    });
+
+    it(`${name} moves the rest behind it without renaming anything`, () => {
+      const behind = source.slice(at);
+      assert.match(behind, /label="Share"/);
+      assert.match(behind, /label=\{favorite \? "Remove favorite" : "Favorite"\}/);
+    });
+  }
+
+  it("the shared row keeps phone, website and report reachable", () => {
+    const behind = ROW.slice(ROW.indexOf("<MoreActions"));
+    for (const label of ['label="Phone"', 'label="Website"', 'label="Report"']) {
+      assert.ok(behind.includes(label), `${label} was dropped rather than moved`);
+    }
+  });
+});

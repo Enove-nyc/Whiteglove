@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 import { useRequireSignIn } from "@/components/SignInGate";
 import { IconButton, IconLink } from "@/components/icons/IconAction";
+import MoreActions from "@/components/MoreActions";
 import { bookingHref } from "@/lib/booking-access";
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { placeDirectionsUrl, placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
@@ -180,32 +181,17 @@ export default function DestinationActions({
     <div className="mt-6">
       {/* The familiar actions as icons — the same set, in the same order, as
           every other detail surface (see components/DetailActionRow.tsx):
-          directions, share, favorite, route, itinerary. Each carries an
-          accessible name and a desktop tooltip; none is a bare symbol. The
-          suitcase flips its name once the place is on the trip. */}
+          itinerary, route and directions in front, share and favorite one
+          press behind. Each carries an accessible name and a desktop tooltip;
+          none is a bare symbol. The suitcase flips its name once the place is
+          on the trip. */}
       <div className="flex flex-wrap items-center gap-1">
-        {(place.address || place.coordinates) && (
-          <IconLink icon="directions" label="Directions" href={placeDirectionsUrl(place.address, place.coordinates)} />
-        )}
-        <IconButton icon="share" label="Share" onClick={() => void share()} />
         {/* Still asking whether they are signed in — a moment of nothing
             beats flashing the wrong state at somebody. Pressed signed out,
             each save opens the sign-in dialog and completes itself on
             success. See components/SignInGate.tsx. */}
         {signedIn !== null && (
           <>
-            <IconButton
-              icon={favorite ? "heart-filled" : "heart"}
-              label={favorite ? "Remove favorite" : "Favorite"}
-              active={favorite}
-              onClick={() => requireSignIn(toggleFavorite, "Sign in to save")}
-            />
-            <IconButton
-              icon="route"
-              label={role === "absent" ? "Add to Route" : "Remove from Route"}
-              active={role !== "absent"}
-              onClick={() => requireSignIn(toggleRoute, "Sign in to add to Route")}
-            />
             {trip.phase.kind === "added" ? (
               <IconLink icon="suitcase" label="View itinerary" href="/itinerary" active />
             ) : (
@@ -215,8 +201,28 @@ export default function DestinationActions({
                 onClick={() => trip.start(place)}
               />
             )}
+            <IconButton
+              icon="route"
+              label={role === "absent" ? "Add to Route" : "Remove from Route"}
+              active={role !== "absent"}
+              onClick={() => requireSignIn(toggleRoute, "Sign in to add to Route")}
+            />
           </>
         )}
+        {(place.address || place.coordinates) && (
+          <IconLink icon="directions" label="Directions" href={placeDirectionsUrl(place.address, place.coordinates)} />
+        )}
+        <MoreActions label={place.name}>
+          <IconButton icon="share" label="Share" onClick={() => void share()} />
+          {signedIn !== null && (
+            <IconButton
+              icon={favorite ? "heart-filled" : "heart"}
+              label={favorite ? "Remove favorite" : "Favorite"}
+              active={favorite}
+              onClick={() => requireSignIn(toggleFavorite, "Sign in to save")}
+            />
+          )}
+        </MoreActions>
       </div>
 
       {/* An icon that changes colour does not say which of several trips the

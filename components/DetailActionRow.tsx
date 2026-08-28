@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { IconButton, IconLink } from "@/components/icons/IconAction";
+import MoreActions from "@/components/MoreActions";
 import { useRequireSignIn } from "@/components/SignInGate";
 import { useSignedIn } from "@/lib/use-signed-in";
 import { placeDirectionsUrl, type SavedPlace } from "@/data/route-utils";
@@ -10,12 +11,24 @@ import { AddedToTrip, useAddToItinerary } from "@/components/useAddToItinerary";
 /**
  * The essential action icons a detail page carries, in one consistent row.
  *
- * The same icons, in the same order, everywhere: Directions, Phone, Website,
- * Share, Favorite, Route, Add to itinerary, Report. Each is an icon with an
+ * The same icons, in the same order, everywhere. Each is an icon with an
  * accessible name and a desktop tooltip (components/icons/IconAction.tsx) —
  * never a bare symbol a visitor has to guess at. Actions that only exist for
  * some places (no phone, no website) simply do not render, so the row stays
  * short rather than greying out.
+ *
+ * THREE IN FRONT, THE REST BEHIND ONE PRESS. All eight used to sit in one row
+ * — Directions, Phone, Website, Share, Favorite, Route, Add to itinerary,
+ * Report — at equal weight, so the page's answer to "what do I do with this
+ * place" was eight identical squares and no order of importance. What somebody
+ * on a detail page actually does is put it on the trip, put it on the route,
+ * or go there, so those three stay out. Phone, Website, Share, Favorite and
+ * Report are real and are one press away, with their names and tooltips
+ * unchanged.
+ *
+ * The itinerary comes first now rather than last. It is the site's own
+ * primary action — the whole planner is built on it — and it was sitting
+ * seventh of eight, after Share.
  *
  * Save actions are gated exactly like everywhere else — pressed signed out,
  * the sign-in dialog opens and the action completes on success. See
@@ -110,28 +123,9 @@ export default function DetailActionRow({
   return (
     <div className="mt-5">
       <div className="flex flex-wrap items-center gap-1">
-        {(place.address || place.coordinates) && (
-          <IconLink icon="directions" label="Directions" href={placeDirectionsUrl(place.address, place.coordinates)} />
-        )}
-        {phone && <IconLink icon="phone" label="Phone" href={`tel:${phone.replace(/[^+\d]/g, "")}`} />}
-        {website && <IconLink icon="website" label="Website" href={website} />}
-        <IconButton icon="share" label="Share" onClick={() => void share()} />
-
         {/* A moment of nothing beats flashing sign-in state at somebody. */}
         {signedIn !== null && (
           <>
-            <IconButton
-              icon={favorite ? "heart-filled" : "heart"}
-              label={favorite ? "Remove favorite" : "Favorite"}
-              active={favorite}
-              onClick={() => requireSignIn(toggleFavorite, "Sign in to save")}
-            />
-            <IconButton
-              icon="route"
-              label={inRoute ? "Remove from Route" : "Add to Route"}
-              active={inRoute}
-              onClick={() => requireSignIn(toggleRoute, "Sign in to add to Route")}
-            />
             {trip.phase.kind === "added" ? (
               <IconLink icon="suitcase" label="View itinerary" href="/itinerary" active />
             ) : (
@@ -141,10 +135,32 @@ export default function DetailActionRow({
                 onClick={() => trip.start(place)}
               />
             )}
+            <IconButton
+              icon="route"
+              label={inRoute ? "Remove from Route" : "Add to Route"}
+              active={inRoute}
+              onClick={() => requireSignIn(toggleRoute, "Sign in to add to Route")}
+            />
           </>
         )}
+        {(place.address || place.coordinates) && (
+          <IconLink icon="directions" label="Directions" href={placeDirectionsUrl(place.address, place.coordinates)} />
+        )}
 
-        <IconLink icon="flag" label="Report" href={reportHref} />
+        <MoreActions label={place.name}>
+          {phone && <IconLink icon="phone" label="Phone" href={`tel:${phone.replace(/[^+\d]/g, "")}`} />}
+          {website && <IconLink icon="website" label="Website" href={website} />}
+          <IconButton icon="share" label="Share" onClick={() => void share()} />
+          {signedIn !== null && (
+            <IconButton
+              icon={favorite ? "heart-filled" : "heart"}
+              label={favorite ? "Remove favorite" : "Favorite"}
+              active={favorite}
+              onClick={() => requireSignIn(toggleFavorite, "Sign in to save")}
+            />
+          )}
+          <IconLink icon="flag" label="Report" href={reportHref} />
+        </MoreActions>
       </div>
       {shared && <p className="mt-2 text-sm font-semibold text-[var(--navy)]" role="status">{shared}</p>}
       {/* An icon that changes colour does not say which of several trips the
