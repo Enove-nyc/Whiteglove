@@ -78,8 +78,21 @@ function shabbosTimes(coordinates: string | null, country: string, friday: strin
   };
 }
 
-function ListingRows({ rows, empty }: { rows: ShabbosListing[]; empty: string }) {
-  if (rows.length === 0) return <p className="text-sm leading-6 text-stone-500">{empty}</p>;
+/**
+ * A section's listings, or nothing at all.
+ *
+ * IT USED TO SAY "No mikvah is listed here yet." That is the site telling a
+ * customer which records the owner has not filled in — a status line about the
+ * database dressed as information about the town — and "yet" makes it a
+ * promise as well. A traveller who needs a mikvah in Rome learns nothing from
+ * it except that we do not have one, which is what an absent section says
+ * anyway, without the apology.
+ *
+ * So the section does not render. The caller checks first: a heading over
+ * nothing is the same defect one line higher up.
+ */
+function ListingRows({ rows }: { rows: ShabbosListing[] }) {
+  if (rows.length === 0) return null;
   return (
     <ul className="flex flex-col gap-4">
       {rows.map((row) => (
@@ -197,19 +210,23 @@ export default async function ShabbosModePage({ params }: { params: Promise<{ de
           </p>
         ) : (
           <div className="mt-10 flex flex-col gap-10">
-            <section>
-              <h2 className="text-xl font-bold text-[var(--navy)]">Shuls</h2>
-              <div className="mt-4">
-                <ListingRows rows={place.shuls} empty="No shul is listed here yet." />
-              </div>
-            </section>
+            {place.shuls.length > 0 && (
+              <section>
+                <h2 className="text-xl font-bold text-[var(--navy)]">Shuls</h2>
+                <div className="mt-4">
+                  <ListingRows rows={place.shuls} />
+                </div>
+              </section>
+            )}
 
-            <section>
-              <h2 className="text-xl font-bold text-[var(--navy)]">Mikvaos</h2>
-              <div className="mt-4">
-                <ListingRows rows={place.mikvaos} empty="No mikvah is listed here yet." />
-              </div>
-            </section>
+            {place.mikvaos.length > 0 && (
+              <section>
+                <h2 className="text-xl font-bold text-[var(--navy)]">Mikvaos</h2>
+                <div className="mt-4">
+                  <ListingRows rows={place.mikvaos} />
+                </div>
+              </section>
+            )}
 
             {place.eruvin.length > 0 && (
               <section>

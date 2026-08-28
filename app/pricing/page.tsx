@@ -91,10 +91,24 @@ export default async function PricingPage() {
       <Navbar />
 
       <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
+        {/* THE PRODUCT BEING PRICED IS NAMED, and it was not.
+            BRAND_NAME[brand] put the reader's own domain in this sentence, so
+            on whiteglovekoshertravel.com it read "White Glove Kosher Travel is
+            where you build a trip, hand it to the person taking it, and stay
+            with them while they travel" — which is a description of the other
+            product. Kosher Travel does not hand anybody a trip and does not
+            travel with them; that is White Glove Itineraries, and these plans
+            are its plans on either domain.
+
+            Naming it here is the one-directional link the two products are
+            allowed: Kosher Travel may point at Itineraries. Nothing on the
+            other side points back. */}
         <PageHeader
           eyebrow="Plans and pricing"
           title="The trip you plan, in your client's pocket."
-          description={`${BRAND_NAME[brand]} is where you build a trip, hand it to the person taking it, and stay with them while they travel.`}
+          description={`${BRAND_NAME.itineraries} is where you build a trip, hand it to the person taking it, and stay with them while they travel.${
+            brand === "itineraries" ? "" : " The guide on this site stays free."
+          }`}
         />
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
