@@ -86,3 +86,46 @@ describe("the long directories are capped", () => {
     assert.match(DIR, /agency\.aliases/);
   });
 });
+
+describe("nothing on the root element stops a sticky thing sticking", () => {
+  /**
+   * THE STICKY TOOLBAR ABOVE SHIPPED BROKEN, AND SO HAS THE HEADER ALL ALONG.
+   *
+   * `html` carried `overflow-x: hidden`, which makes the root element a scroll
+   * container — and a scroll container between a `position: sticky` element
+   * and the viewport is the thing that element sticks to. Every sticky rule on
+   * this site therefore resolved against a box that never scrolls. Navbar's
+   * `sticky top-0` has been decorative since it was written, and the search
+   * bar the test above pins was landing in exactly the same state.
+   *
+   * Measured in a browser on /tzaddikim, scrolled to 6,000px: with any
+   * non-visible overflow-x on html the header sat at -3,729 and the search bar
+   * at -3,292; with html left alone, 0 and 64. `clip` behaves the same as
+   * `hidden` here — the trap is the root element, not the keyword, which is
+   * why swapping the keyword was tried first and changed nothing.
+   */
+  it("leaves html's overflow alone", () => {
+    const html = CSS.match(/^html \{[^}]*\}/m)?.[0] ?? "";
+    assert.ok(html, "the html rule went missing");
+    assert.doesNotMatch(
+      html,
+      /overflow/,
+      `html must not set overflow — it makes the root a scroll container and every sticky element on the site stops sticking: ${html}`,
+    );
+  });
+
+  it("still guards against sideways scroll, on body", () => {
+    // body is not the scrollport, so the guard costs no sticky behaviour
+    // there. Twenty pages were swept at 390 and 768 after the change and none
+    // scrolls sideways; the one element that did — the contact address on
+    // /about, set in uppercase at 0.12em tracking and 403px wide on a 390px
+    // phone — was fixed rather than hidden again.
+    const body = CSS.slice(CSS.indexOf("html { scroll-behavior"));
+    assert.match(body.slice(0, body.indexOf("}", body.indexOf("body {"))), /overflow-x: clip/);
+    assert.doesNotMatch(
+      readFileSync("app/about/page.tsx", "utf8"),
+      /uppercase tracking-\[0\.12em\] text-white/,
+      "the contact address is set as a label again, and is wider than a phone",
+    );
+  });
+});
