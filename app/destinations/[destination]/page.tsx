@@ -672,7 +672,15 @@ export default async function VacationDestinationPage({ params }: { params: Prom
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
           <nav aria-label="Breadcrumb" className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
-            <Link href="/destinations" className="underline decoration-[var(--gold)] underline-offset-4">
+            {/* min-h-11 like every other link on the site. This was 122x14 —
+                the only control on the page under the 44px minimum, and it is
+                the one that takes somebody back out of a destination. Inline
+                text in a nav of its own, so giving it a full-height target
+                costs nothing in the layout. */}
+            <Link
+              href="/destinations"
+              className="inline-flex min-h-11 items-center underline decoration-[var(--gold)] underline-offset-4"
+            >
               Destinations
             </Link>
             <span aria-hidden="true" className="mx-2 text-stone-400">
