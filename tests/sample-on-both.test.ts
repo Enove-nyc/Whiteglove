@@ -109,7 +109,14 @@ describe("the printed sample carries the brand of the site showing it", () => {
   it("passes the brand rather than taking the default", () => {
     // No /s flag: it needs ES2018, this project targets ES2017, and the
     // pattern has no "." for dotAll to widen — [^>]* already crosses lines.
-    assert.match(source, /<PrintableItinerary[^>]*siteBrand=\{brand\}/);
+    //
+    // THE CHAIN, not one call site. The page reads the brand and hands it to
+    // SampleItineraryViews, which hands it to the printed document. Both links
+    // are checked, because the document taking its own default is the defect —
+    // it printed White Glove Kosher Travel on the site that sells this.
+    assert.match(source, /<SampleItineraryViews[^>]*siteBrand=\{brand\}/);
+    const views = readFileSync("components/SampleItineraryViews.tsx", "utf8");
+    assert.match(views, /<PrintableItinerary[^>]*siteBrand=\{siteBrand\}/);
   });
 
   it("every caller that prints a document names its brand", () => {
