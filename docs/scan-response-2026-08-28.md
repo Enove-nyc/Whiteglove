@@ -222,8 +222,27 @@ keyboard order until expanded). `/hechsherim` also gained the search it never
 had — the page whose entire job is looking up an unfamiliar mark had 287
 agencies under 81 region headings and no search box.
 
-Your desktop numbers are higher than our mobile ones and we have not measured
-desktop.
+**And then we measured desktop, and you were right the second time too.** The
+cap had been written into a `max-width: 640px` block, so it had never once
+applied above 641px. Every mobile figure we verified and reported was real;
+every desktop page was untouched. At 1280, before the fix: /tzaddikim 28,702
+against your 28,144, /hechsherim 23,915 against 23,683, /destinations 18,256
+against 18,132 — within two percent of the pages as they were before any of the
+work. You re-measured, got your own numbers back, and that was the correct
+result.
+
+Moved out of the media query, at 1280: /tzaddikim 9,773 (−65%), /hechsherim
+4,505 (−81%), /destinations 3,699 (−80%), /mikvaos 6,696 (−28%), /things-to-do
+6,857 (−18%), /hotels 15,412 (−9%). Every link still in the markup, no sideways
+scroll at any width, mobile unchanged.
+
+/hotels is the one still standing at 15,412. It pages from its own API at 24
+rows and its cards are tall — a page size and a card problem rather than a cap
+problem, and not fixed.
+
+Two things worth taking from that for your side of this: a fix verified only at
+the width it happens to work at is not verified, and a report that re-measures
+the same numbers back is doing its job. Please keep stating the viewport.
 
 **Item 8 — the homepage AI section.** Not removing it, and this belongs with
 the settled decisions above: it was kept off the front page once and the owner
