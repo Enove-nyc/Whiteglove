@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
+import MoreActions from "@/components/MoreActions";
 import RateExperienceLink from "@/components/RateExperienceLink";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
@@ -247,44 +248,19 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
               Distances measured from <strong>{s.anchor.name}</strong>, not from the building itself.
             </p>
 
-            <div className="mt-4 flex flex-wrap gap-2 text-sm">
-              <a
-                href={placeDirectionsUrl(undefined, s.anchor.coordinates)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]"
-              >
-                Navigate to {s.anchor.name} →
-              </a>
-              {s.website && (
-                <a href={s.website} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold-light)] px-3 font-semibold text-[var(--navy)]">
-                  Their site →
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() => setOpenNearby(openNearby === s.slug ? null : s.slug)}
-                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-3 font-semibold text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-              >
-                {openNearby === s.slug ? "Hide what's nearby" : "What's within walking distance"}
-              </button>
-            </div>
-
-            {/* The next step from a stay somebody likes: check dates and
-                prices for that town, or see what there is to do around it.
-                Both were two pages away through the navigation. */}
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--gold-light)] pt-3 text-sm">
+            {/* THE NEXT STEP, AND ONLY THE NEXT STEP. This card carried eight
+                controls at once — Navigate, Their site, What's within walking
+                distance, Check dates, Things to do, Add to Itinerary, Rate,
+                Suggest edit — on every one of a long list. What somebody
+                actually does from a stay they like is check dates for that
+                town or keep the place, so those two stay out here and the rest
+                is one press away. */}
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--gold-light)] pt-4 text-sm">
               <Link
                 href={staySearchHref({ destination: s.city })}
-                className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] px-3 font-semibold text-[var(--navy)]"
               >
                 Check dates in {s.city} →
-              </Link>
-              <Link
-                href={`/things-to-do?city=${encodeURIComponent(s.city)}`}
-                className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-              >
-                Things to do in {s.city} →
               </Link>
               {/* A traveller could put a restaurant and a museum on their trip
                   and not the hotel they were sleeping in. Same button, same
@@ -297,8 +273,36 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                 place={{ id: s.slug, name: s.name, address: `${s.anchor.name}, ${s.city}`, coordinates: s.anchor.coordinates }}
                 className="text-sm"
               />
-              <RateExperienceLink kind="listing" refId={s.slug} label={s.name} />
-              <SuggestEditPanel targetType="accommodation" targetId={s.slug} title={s.name} compact />
+              <MoreActions label={s.name}>
+                <a
+                  href={placeDirectionsUrl(undefined, s.anchor.coordinates)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                >
+                  Navigate to {s.anchor.name} →
+                </a>
+                {s.website && (
+                  <a href={s.website} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+                    Their site →
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setOpenNearby(openNearby === s.slug ? null : s.slug)}
+                  className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                >
+                  {openNearby === s.slug ? "Hide what's nearby" : "What's within walking distance"}
+                </button>
+                <Link
+                  href={`/things-to-do?city=${encodeURIComponent(s.city)}`}
+                  className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+                >
+                  Things to do in {s.city} →
+                </Link>
+                <RateExperienceLink kind="listing" refId={s.slug} label={s.name} />
+                <SuggestEditPanel targetType="accommodation" targetId={s.slug} title={s.name} compact />
+              </MoreActions>
             </div>
 
             {openNearby === s.slug && (
