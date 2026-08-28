@@ -8,8 +8,13 @@ const AREA = readFileSync("components/AreaMap.tsx", "utf8");
 
 describe("Google Maps loader", () => {
   it("uses loading=async with importLibrary, not a classic callback race", () => {
-    const scriptSrc = LOADER.match(/script\.src = `([^`]+)`/)?.[1] ?? "";
+    // The URL is built across two template literals now that the marker
+    // library is asked for, so both are read rather than only the first.
+    const scriptSrc = (LOADER.match(/script\.src =\s*([\s\S]*?);/)?.[1] ?? "").replace(/[`\s+]/g, "");
     assert.match(scriptSrc, /loading=async/);
+    // AdvancedMarkerElement lives in this library and renders nothing without
+    // it — see tests/advanced-markers.test.ts for why that matters.
+    assert.match(scriptSrc, /libraries=marker/);
     assert.doesNotMatch(scriptSrc, /callback=/);
     assert.match(LOADER, /importLibrary/);
     assert.match(LOADER, /gm_authFailure/);

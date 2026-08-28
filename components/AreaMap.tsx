@@ -9,12 +9,14 @@ import { GLOVE_MARK_SRC, markPinFor, MAP_STYLE, TOGGLEABLE_KINDS } from "@/lib/m
 import { tintedMarkUrl } from "@/lib/tinted-mark";
 import { boundsOf, type MapKind, type MapMarker } from "@/lib/map-markers";
 import {
+  detachMarker,
   googleMaps,
+  googleMapsMapId,
   loadGoogleMaps,
   onGoogleMapsAuthFailure,
   type GInfoWindow,
   type GMap,
-  type GMarker,
+  type GAnyMarker,
 } from "@/lib/google-maps-loader";
 
 // What is around a place, on a map.
@@ -48,6 +50,15 @@ function popupHtml(marker: MapMarker, centerName: string | null) {
   ].filter(Boolean).join("");
 }
 
+/**
+ * THE MAP ID IS WHAT MAKES AN ADVANCED MARKER POSSIBLE. Without one,
+ * AdvancedMarkerElement renders nothing at all — not a smaller pin, none — so
+ * the ID is passed to the map when it is configured, left off when it is not,
+ * and the marker code reads the same constant. A build-time value, so it is
+ * read once here rather than in each effect that needs the same answer.
+ */
+const MAP_ID = googleMapsMapId();
+
 export default function AreaMap({
   center,
   centerName,
@@ -69,7 +80,7 @@ export default function AreaMap({
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<Record<string, L.LayerGroup>>({});
   const gmapRef = useRef<GMap | null>(null);
-  const gmarkersRef = useRef<GMarker[]>([]);
+  const gmarkersRef = useRef<GAnyMarker[]>([]);
   const ginfoRef = useRef<GInfoWindow | null>(null);
   const [engine, setEngine] = useState<"deciding" | "google" | "osm">("deciding");
   const [zoom, setZoom] = useState(11);
@@ -110,7 +121,7 @@ export default function AreaMap({
 
     async function drawOsm() {
       if (cancelled || !boxRef.current || mapRef.current) return;
-      for (const marker of gmarkersRef.current) marker.setMap(null);
+      for (const marker of gmarkersRef.current) detachMarker(marker);
       gmarkersRef.current = [];
       gmapRef.current = null;
       ginfoRef.current = null;
@@ -138,6 +149,7 @@ export default function AreaMap({
       if (cancelled || !boxRef.current || !maps?.Map) return false;
       try {
         gmapRef.current = new maps.Map(boxRef.current, {
+          ...(MAP_ID ? { mapId: MAP_ID } : {}),
           center: { lat: 48, lng: 14 },
           zoom: 4,
           gestureHandling: "cooperative",
@@ -180,7 +192,7 @@ export default function AreaMap({
       mapRef.current?.remove();
       mapRef.current = null;
       layersRef.current = {};
-      for (const marker of gmarkersRef.current) marker.setMap(null);
+      for (const marker of gmarkersRef.current) detachMarker(marker);
       gmarkersRef.current = [];
       gmapRef.current = null;
       ginfoRef.current = null;
@@ -226,8 +238,15 @@ export default function AreaMap({
       const maps = googleMaps();
       const map = gmapRef.current;
       if (!maps || !map) return;
-      for (const marker of gmarkersRef.current) marker.setMap(null);
+      for (const marker of gmarkersRef.current) detachMarker(marker);
       gmarkersRef.current = [];
+
+      // One place the info window is opened from, so the two marker kinds
+      // cannot drift apart in what a click does.
+      const openFor = (item: MapMarker, marker: GAnyMarker) => {
+        ginfoRef.current?.setContent(popupHtml(item, centerName));
+        ginfoRef.current?.open({ map, anchor: marker });
+      };
 
       void (async () => {
         // Google's icon is a URL, so the mark arrives already tinted — the same
@@ -243,7 +262,52 @@ export default function AreaMap({
         );
         if (cancelled || gmapRef.current !== map) return;
 
-        for (const item of visible) {
+        /**
+         * ADVANCED MARKERS WHEN BOTH HALVES ARE THERE, the old one when they
+         * are not.
+         *
+         * google.maps.Marker is deprecated and warns in the console on every
+         * page with a map on it. Its replacement needs two things this code
+         * cannot assume: a Map ID on the map, and the marker library on the
+         * bootstrap. If either is missing, AdvancedMarkerElement does not
+         * degrade — it renders nothing, and the map loses every pin.
+         *
+         * A console warning is a cost worth paying to keep a map that has its
+         * pins on it, so the deprecated class stays as the fallback, and the
+         * condition is checked twice: once here for the two things that can be
+         * read, and once below for the one that cannot.
+         */
+        const Advanced = MAP_ID ? maps.marker?.AdvancedMarkerElement : undefined;
+
+        const drawAdvanced = (item: MapMarker) => {
+          const pin = markPinFor(item.kind, zoom);
+          // The new marker takes DOM rather than an icon URL, and anchors it
+          // by its bottom centre — which is what the old anchorY of 97% was
+          // approximating, so the geometry comes out the same.
+          const img = document.createElement("img");
+          img.src = icons[item.kind];
+          img.width = pin.width;
+          img.height = pin.height;
+          img.alt = "";
+          img.style.display = "block";
+          const marker = new Advanced!({
+            position: { lat: item.lat, lng: item.lng },
+            map,
+            title: item.name,
+            content: img,
+            // Without this the element is inert and the info window never
+            // opens — the old marker was clickable by default.
+            gmpClickable: true,
+          });
+          // "gmp-click" is the documented event; "click" still fires on
+          // current builds. Both are listened for so neither a new nor an
+          // older bootstrap leaves the pin dead.
+          marker.addListener("gmp-click", () => openFor(item, marker));
+          marker.addListener("click", () => openFor(item, marker));
+          return marker;
+        };
+
+        const drawLegacy = (item: MapMarker) => {
           const pin = markPinFor(item.kind, zoom);
           const marker = new maps.Marker({
             position: { lat: item.lat, lng: item.lng },
@@ -255,11 +319,38 @@ export default function AreaMap({
               anchor: new maps.Point(pin.anchorX, pin.anchorY),
             },
           });
-          marker.addListener("click", () => {
-            ginfoRef.current?.setContent(popupHtml(item, centerName));
-            ginfoRef.current?.open({ map, anchor: marker });
-          });
-          gmarkersRef.current.push(marker);
+          marker.addListener("click", () => openFor(item, marker));
+          return marker;
+        };
+
+        for (const item of visible) gmarkersRef.current.push(Advanced ? drawAdvanced(item) : drawLegacy(item));
+
+        /**
+         * AND IF THE MAP ID ITSELF IS REFUSED, DRAW THEM AGAIN THE OLD WAY.
+         *
+         * The two checks above are answerable from this side: a variable is
+         * set or it is not, a library loaded or it did not. Whether Google
+         * accepts the ID is not — it can be deleted, renamed, restricted to
+         * another referrer, or simply be having a bad afternoon, and the
+         * answer arrives asynchronously as a console error rather than as
+         * anything this code is handed. What that failure looks like on the
+         * page is a map with no pins on it, which is the one outcome worth
+         * writing code to avoid.
+         *
+         * So the pins are looked for after a frame. Every advanced marker
+         * renders a <gmp-advanced-marker> inside the map; if not one of them
+         * is there, the ID did not work, and the whole set is drawn again with
+         * the deprecated marker — which needs no Map ID and has never needed
+         * one. The console keeps its deprecation warning that day, and the map
+         * keeps its markers.
+         */
+        if (Advanced && visible.length > 0) {
+          await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+          if (cancelled || gmapRef.current !== map) return;
+          if (!boxRef.current?.querySelector("gmp-advanced-marker")) {
+            for (const marker of gmarkersRef.current) detachMarker(marker);
+            gmarkersRef.current = visible.map(drawLegacy);
+          }
         }
       })();
 
