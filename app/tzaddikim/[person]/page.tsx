@@ -90,14 +90,20 @@ export default async function TzaddikPage({ params }: { params: Promise<{ person
       <section className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_.8fr]">
           <div>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Who he was</h2>
-            {burial.note ? (
-              <p className="mt-4 text-lg leading-8 text-stone-600">{burial.note}</p>
-            ) : (
-              <p className="mt-4 text-sm leading-6 text-stone-500">
-                Nothing written here yet beyond his name and where he is buried. If you know more, send it
-                with Suggest edit below.
-              </p>
+            {/* THE HEADING GOES WITH THE PARAGRAPH, and neither shows without
+                the other. This used to print "Nothing written here yet beyond
+                his name and where he is buried" under a "Who he was" heading —
+                the site telling a visitor which records the owner has not
+                written, on a page about a tzadik. The page still has his name,
+                where he is buried, his yahrzeit and the way to get there,
+                which is what somebody came for; a heading over an apology adds
+                nothing to it. Suggest edit is on the action row below either
+                way, so anybody who knows more can still send it. */}
+            {burial.note && (
+              <>
+                <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Who he was</h2>
+                <p className="mt-4 text-lg leading-8 text-stone-600">{burial.note}</p>
+              </>
             )}
             {/* THE ONE PAGE ON THE SITE WITH NO ACTIONS ON IT. A town, a bais
                 hachaim and a destination all carry this row; a kever — the
