@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { TRIP_PLACES, tripPlacesFor } from "@/lib/account-places";
-import { tripBar, tripBarDates, tripBarTitle } from "@/lib/trip-bar";
+import { tripBar, tripBarDates, tripBarTitle, tripRowMeta } from "@/lib/trip-bar";
 
 /**
  * WHICH TRIP AM I ON.
@@ -175,5 +175,64 @@ describe("it is on every screen that is about a trip", () => {
     // Six links wrapped is three rows of chrome above the content, which is
     // the permanent sticky furniture this was meant to avoid.
     assert.match(readFileSync("components/TripContextBar.tsx", "utf8"), /overflow-x-auto/);
+  });
+});
+
+describe("the line under a trip's name in the list", () => {
+  /**
+   * IT DID NOT SAY WHEN THE TRIP WAS.
+   *
+   * The row read "3 stops · 8 days · in 2 months · 5 saved · client code
+   * created" — five facts, and the one an advisor picks a trip out of a list
+   * by was not among them. "8 days" is not a date and "in 2 months" is not a
+   * date; twenty trips sorted by neither are twenty rows you have to open to
+   * tell apart.
+   *
+   * Two of the five were not worth the room either. "5 saved" is a count of
+   * places inside the trip and means nothing from outside it. "client code
+   * created" is the name of a database field.
+   */
+  const HARPER_ROW = { stops: 12, days: 8, startDate: "2026-10-25", endDate: "2026-11-01", shareId: "abc" };
+
+  it("leads with the dates", () => {
+    assert.ok(tripRowMeta(HARPER_ROW, "in 2 months").startsWith("25 Oct – 1 Nov 2026"));
+  });
+
+  it("says so plainly when a trip has no dates yet", () => {
+    // Rather than leaving the row starting with a stop count and no when.
+    assert.ok(tripRowMeta({ stops: 3 }, null).startsWith("No dates yet"));
+  });
+
+  it("drops the two that were not worth the room", () => {
+    const said = tripRowMeta(HARPER_ROW, "in 2 months");
+    assert.doesNotMatch(said, /saved/);
+    assert.doesNotMatch(said, /code created/);
+  });
+
+  it("says what the code MEANS, not what the field is called", () => {
+    assert.match(tripRowMeta(HARPER_ROW, null), /client can open it/);
+    assert.doesNotMatch(tripRowMeta({ ...HARPER_ROW, shareId: undefined }, null), /client can open/);
+  });
+
+  it("leaves out a count that is nought rather than printing it", () => {
+    const said = tripRowMeta({ stops: 0, days: 0, startDate: "2026-10-25", endDate: "2026-10-25" }, null);
+    assert.equal(said, "25 Oct 2026");
+  });
+
+  it("is what the list actually renders", () => {
+    const list = readFileSync("components/TripSwitcher.tsx", "utf8");
+    assert.match(list, /tripRowMeta\(trip, countdownPhrase\(/);
+    // The old hand-built line, with its two dead facts, is gone.
+    const code = list.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    assert.doesNotMatch(code, /client code created/);
+    assert.doesNotMatch(code, /\$\{trip\.places\} saved/);
+  });
+
+  it("makes the trip's name a heading rather than another link", () => {
+    // Underlined in gold at rest, above an underlined client line and meta
+    // line, every row read as a paragraph of links with nothing standing out.
+    const list = readFileSync("components/TripSwitcher.tsx", "utf8");
+    assert.match(list, /text-base font-semibold text-\[var\(--navy\)\]/);
+    assert.match(list, /decoration-transparent decoration-2 underline-offset-4 transition hover:decoration-\[var\(--gold\)\]/);
   });
 });
