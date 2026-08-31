@@ -9,6 +9,7 @@ import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
+import TripContextBar from "@/components/TripContextBar";
 import { cookies } from "next/headers";
 
 // Brand-aware, signed-in only: /addons is one of the itineraries domain's
@@ -36,6 +37,9 @@ export default async function AddonsPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+      {/* Which trip this is, and the trip's other screens. Renders nothing
+          for a plan that can only reach one of them. */}
+      <TripContextBar current="/addons" />
       <section className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
         <PageHeader
           eyebrow="Add-ons"
