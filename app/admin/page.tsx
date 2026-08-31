@@ -41,30 +41,6 @@ function QuickAction({ href, title, detail }: { href: string; title: string; det
   );
 }
 
-function WorkPanel({
-  title,
-  children,
-  href,
-  hrefLabel,
-}: {
-  title: string;
-  children: React.ReactNode;
-  href: string;
-  hrefLabel: string;
-}) {
-  return (
-    <section className={`${cardClass} flex h-full flex-col p-5`}>
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{title}</h3>
-      </div>
-      <div className="mt-3 flex-1 text-sm leading-6 text-stone-600">{children}</div>
-      <AdminNavLink href={href} className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-        {hrefLabel} <span aria-hidden="true">→</span>
-      </AdminNavLink>
-    </section>
-  );
-}
-
 const totalCardClass =
   "rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2";
 
@@ -212,6 +188,42 @@ export default async function AdminHome() {
     });
   }
   const visibleAlerts = alerts.filter((alert) => may(alert.href));
+
+  /**
+   * WHAT IS ACTUALLY WAITING, AS ONE LIST — and nothing at all when nothing is.
+   *
+   * The owner's own queue was in two sections with two launcher sections
+   * between them: "Waiting on you", six count cards, and "Work waiting for
+   * you", four panels, further down past "Add something" and "Quick actions".
+   * Same question, asked twice, split by furniture.
+   *
+   * AND ON A QUIET DAY IT FILLED A SCREEN SAYING NOTHING WAS WAITING. Every
+   * one of the ten rendered whatever the count was, including nought, and the
+   * four panels each wrote a sentence about it — "Every page is published",
+   * "No visitor corrections are waiting", "No listing candidates are waiting
+   * for verification", "Nothing on the checklist is outstanding". Ten
+   * containers, a full screen, to say there is no work.
+   *
+   * Two of the panels also had work and would not say how much: "Listings are
+   * waiting for verification" and "Items are marked unfinished", with the
+   * number sitting right there unused.
+   *
+   * So: one list, each entry with its own count, entries with nothing in them
+   * left out, and one quiet line when the whole thing is empty.
+   */
+  const waiting: Array<{ label: string; count: number; href: string }> = [
+    { label: "Listing candidates to verify", count: reviewWaiting, href: "/admin/imports/needs-review" },
+    {
+      label: "Possible duplicates",
+      count: importReviewQueue.error ? 0 : importReviewQueue.counts.duplicates,
+      href: "/admin/imports/needs-review",
+    },
+    { label: "Corrections from visitors", count: pendingSuggestions.length, href: "/admin/content" },
+    { label: "Pages not published", count: unpublishedPages.length, href: "/admin/pages" },
+    { label: "Ratings to read", count: privateRatings.length, href: "/admin/ratings" },
+    { label: "Flagged reviews", count: reportedReviews.length, href: "/admin/ratings" },
+    { label: "Checklist items unfinished", count: unfinished.length, href: "/admin/inventory" },
+  ].filter((item) => item.count > 0 && may(item.href));
   const quickAdd = ADMIN_QUICK_ADD.filter((item) => may(item.href));
   const quickActions = [
     { href: "/admin/pages", title: "Edit a page", detail: "Words or pictures." },
@@ -260,40 +272,21 @@ export default async function AdminHome() {
         </section>
       )}
 
-      {/* Work waiting on a decision — distinct from "Needs attention" above,
-          which is urgent; this is the everyday queue. Counted from the
-          built-in content, so these survive the database being away. */}
-      {(may("/admin/imports/needs-review") || may("/admin/content") || may("/admin/ratings") || may("/admin/history")) && (
-        <section aria-labelledby="now-heading" className="mt-7">
-          <h2 id="now-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Waiting on you</h2>
+      {/* The owner's queue, in one place and above the launchers. Empty
+          entries are gone rather than printed as nought, and an empty queue is
+          one line rather than ten containers explaining itself. */}
+      <section aria-labelledby="now-heading" className="mt-7">
+        <h2 id="now-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Waiting on you</h2>
+        {waiting.length === 0 ? (
+          <p className="mt-3 text-sm leading-6 text-stone-600">Nothing is waiting for you.</p>
+        ) : (
           <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {may("/admin/imports/needs-review") && (
-              <TotalCard
-                label="Needs review"
-                value={importReviewQueue.error ? 0 : importReviewQueue.counts.awaitingVerification}
-                href="/admin/imports/needs-review"
-              />
-            )}
-            {may("/admin/imports/needs-review") && (
-              <TotalCard
-                label="Possible duplicates"
-                value={importReviewQueue.error ? 0 : importReviewQueue.counts.duplicates}
-                href="/admin/imports/needs-review"
-              />
-            )}
-            {may("/admin/content") && (
-              <TotalCard label="Reported updates" value={pendingSuggestions.length} href="/admin/content" />
-            )}
-            {may("/admin/ratings") && (
-              <TotalCard label="Pending ratings" value={privateRatings.length} href="/admin/ratings" />
-            )}
-            {may("/admin/ratings") && (
-              <TotalCard label="Flagged reviews" value={reportedReviews.length} href="/admin/ratings" />
-            )}
-            {may("/admin/history") && <TotalCard label="Recent admin activity" href="/admin/history" />}
+            {waiting.map((item) => (
+              <TotalCard key={item.label} label={item.label} value={item.count} href={item.href} />
+            ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* The jobs somebody opens the admin to do, rather than a place to go
           and then find the button. */}
@@ -326,72 +319,10 @@ export default async function AdminHome() {
       </section>
       )}
 
-      {/* All three panels are content screens, so a helper given only the
-          directory would otherwise get the heading "Work waiting for you" with
-          nothing under it. */}
-      {(may("/admin/pages") || may("/admin/content") || may("/admin/inventory") || may("/admin/imports/needs-review")) && (
-      <section aria-labelledby="work-heading" className="mt-9">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Your queue</p>
-          <h2 id="work-heading" className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Work waiting for you</h2>
-        </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-          {may("/admin/pages") && (
-          <WorkPanel title="Waiting to be published" href="/admin/pages" hrefLabel="Open pages">
-            {unpublishedPages.length === 0 ? (
-              <p>Every page is published. Nothing is sitting as a draft.</p>
-            ) : (
-              <ul className="space-y-2">
-                {unpublishedPages.slice(0, 4).map((page) => (
-                  <li key={page.slug} className="flex justify-between gap-3">
-                    <span className="font-semibold text-[var(--navy)]">{page.title}</span>
-                    <span className="text-stone-500">{page.status === "DRAFT" ? "Draft" : "Review"}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </WorkPanel>
-          )}
-
-          {may("/admin/content") && (
-          <WorkPanel title="Suggestions" href="/admin/content" hrefLabel="Read suggestions">
-            {pendingSuggestions.length === 0 ? (
-              <p>No visitor corrections are waiting.</p>
-            ) : (
-              <ul className="space-y-2">
-                {pendingSuggestions.slice(0, 4).map((suggestion) => (
-                  <li key={suggestion.id}>
-                    <span className="font-semibold text-[var(--navy)]">{suggestion.title || suggestion.targetId}</span>
-                    <span className="block truncate text-stone-500">{suggestion.issue || suggestion.suggestedInfo || "No note"}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </WorkPanel>
-          )}
-
-                    {may("/admin/imports/needs-review") && (
-          <WorkPanel title="Listing candidates" href="/admin/imports/needs-review" hrefLabel="Open needs review">
-            {reviewWaiting === 0 ? (
-              <p>No listing candidates are waiting for verification.</p>
-            ) : (
-              <p>Listings are waiting for verification.</p>
-            )}
-          </WorkPanel>
-          )}
-
-{may("/admin/inventory") && (
-          <WorkPanel title="Unfinished checklist" href="/admin/inventory" hrefLabel="Open checklist">
-            {unfinished.length === 0 ? (
-              <p>Nothing on the checklist is outstanding.</p>
-            ) : (
-              <p>Items are marked unfinished.</p>
-            )}
-          </WorkPanel>
-          )}
-        </div>
-      </section>
-      )}
+      {/* The second copy of the queue used to be here — four panels, below two
+          launcher sections, saying the same thing the cards above say and
+          writing a sentence when there was nothing to say. It is gone; its
+          counts are in the one list above. */}
 
       {/* Informational totals — what the site holds, not what needs doing.
           Kept quiet and last among the summary sections on purpose. */}
