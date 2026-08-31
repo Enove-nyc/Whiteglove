@@ -506,20 +506,28 @@ export default function PipelineDashboard() {
   return (
     <div>
       {showAnalytics && (
+        /* A NUMBER YOU CANNOT PRESS IS A NUMBER YOU HAVE TO GO AND LOOK UP.
+           These four were plain text. "Traveling now: 3" is only useful if the
+           next thing it does is show you the three, and every one of these
+           already had a list behind it — the advisor was reading the count
+           here and then finding the matching view along the top by hand.
+           Three of the four go somewhere. "Outstanding" is a sum of money
+           across trips rather than a count of them, and the trips owing it are
+           in Waiting on the client, so it leads there. */
         <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className={cardBase}>
+          <button type="button" onClick={() => setView("board")} className={`${cardBase} text-left transition hover:border-[var(--gold)]`}>
             <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Active client trips</p>
             <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.activeCount}</p>
-          </div>
-          <div className={cardBase}>
+          </button>
+          <button type="button" onClick={() => setView("traveling")} className={`${cardBase} text-left transition hover:border-[var(--gold)]`}>
             <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Traveling now</p>
             <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{counts.traveling}</p>
-          </div>
-          <div className={cardBase}>
+          </button>
+          <button type="button" onClick={() => setView("upcoming")} className={`${cardBase} text-left transition hover:border-[var(--gold)]`}>
             <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Departing in 30 days</p>
             <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{stats.departingSoon}</p>
-          </div>
-          <div className={cardBase}>
+          </button>
+          <button type="button" onClick={() => setView("needs_attention")} className={`${cardBase} text-left transition hover:border-[var(--gold)]`}>
             <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Outstanding</p>
             {stats.outstandingByCurrency.length === 0 ? (
               <p className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{formatCents(0)}</p>
@@ -528,7 +536,10 @@ export default function PipelineDashboard() {
                 {stats.outstandingByCurrency.map(([currency, cents]) => formatCents(cents, currency)).join(" · ")}
               </p>
             )}
-          </div>
+          </button>
+          {/* Not a link: commission is a total the advisor recorded, and there
+              is no list of "the commission" to open. A card that looks
+              pressable and does nothing is worse than one that plainly is not. */}
           <div className={cardBase}>
             <p className="text-[10px] font-bold uppercase tracking-wide text-stone-400">Commission earned</p>
             {stats.commissionByCurrency.length === 0 ? (

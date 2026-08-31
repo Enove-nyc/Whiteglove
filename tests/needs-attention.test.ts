@@ -255,3 +255,37 @@ describe("the dashboard opens on the answer, not the board", () => {
     assert.match(DASH, /rowGroups\(row, today\)\.has\(group\)/);
   });
 });
+
+describe("a number you can press", () => {
+  const DASH = readFileSync("components/PipelineDashboard.tsx", "utf8");
+
+  it("sends each count to the list behind it", () => {
+    /**
+     * The four cards along the top were plain text. "Traveling now: 3" is only
+     * useful if the next thing it does is show you the three, and every one of
+     * them already had a list behind it — the advisor read the count here and
+     * then found the matching view along the top by hand.
+     */
+    // Bounded by the comment on the last card, not by the words "Commission
+    // earned" — those appear earlier in the file, in the per-trip editor.
+    const cards = DASH.slice(DASH.indexOf("showAnalytics && ("), DASH.indexOf("Not a link: commission"));
+    assert.ok(cards.length > 200, "the analytics cards moved");
+    for (const view of ['setView("board")', 'setView("traveling")', 'setView("upcoming")', 'setView("needs_attention")']) {
+      assert.ok(cards.includes(view), `no card leads to ${view}`);
+    }
+  });
+
+  it("leaves commission as text, because there is no list to open", () => {
+    /**
+     * A card that looks pressable and does nothing is worse than one that
+     * plainly is not. Anchored on the stat card's own comment rather than on
+     * the words "Commission earned", which appear earlier in the file in the
+     * per-trip commission editor.
+     */
+    const at = DASH.indexOf("Not a link: commission");
+    assert.ok(at > 0, "the note explaining why this one is not a button is gone");
+    const card = DASH.slice(at, at + 400);
+    assert.match(card, /<div className=\{cardBase\}>/);
+    assert.ok(!card.slice(0, card.indexOf("Commission earned")).includes("<button"));
+  });
+});
