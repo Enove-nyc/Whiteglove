@@ -81,3 +81,68 @@ describe("the decision is written down where the next session reads it", () => {
     assert.match(agents, /Do not build a second dashboard, a per-brand admin, or a brand switcher/);
   });
 });
+
+describe("the owner's queue is one queue, and says nothing when there is nothing", () => {
+  /**
+   * IT WAS TWO, SPLIT BY FURNITURE. "Waiting on you" — six count cards — and
+   * then, past "Add something" and "Quick actions", a second section called
+   * "Work waiting for you" with four panels covering the same ground. The same
+   * question, asked twice, with two launcher sections between the answers.
+   *
+   * AND ON A QUIET DAY IT FILLED A SCREEN SAYING THERE WAS NO WORK. All ten
+   * rendered whatever the count was, nought included, and each of the four
+   * panels wrote a sentence about being empty — "Every page is published", "No
+   * visitor corrections are waiting", and so on. Ten containers to say there
+   * is nothing to do.
+   *
+   * Two of those panels had the opposite problem: work, and no number. "Items
+   * are marked unfinished" — how many? The count was in scope and unused.
+   */
+  const DASH = readFileSync("app/admin/page.tsx", "utf8");
+  const code = DASH.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
+  it("builds the queue as one list", () => {
+    assert.match(code, /const waiting: Array<\{ label: string; count: number; href: string \}>/);
+  });
+
+  it("leaves out anything with nothing in it", () => {
+    // A card reading nought is not work, and it competes with the ones that are.
+    assert.match(code, /\.filter\(\(item\) => item\.count > 0 && may\(item\.href\)\)/);
+  });
+
+  it("says one line when the whole queue is empty", () => {
+    assert.match(code, /waiting\.length === 0 \? \(/);
+    assert.match(code, /Nothing is waiting for you\./);
+  });
+
+  it("has no second queue further down the page", () => {
+    // The four panels and the component they were built from are gone.
+    assert.doesNotMatch(code, /WorkPanel/, "the second queue is back");
+    assert.doesNotMatch(code, /Work waiting for you/);
+  });
+
+  it("no longer explains an empty section instead of hiding it", () => {
+    for (const excuse of [
+      "Every page is published",
+      "No visitor corrections are waiting",
+      "No listing candidates are waiting",
+      "Nothing on the checklist is outstanding",
+    ]) {
+      assert.ok(!code.includes(excuse), `the dashboard still explains an empty section: ${excuse}`);
+    }
+  });
+
+  it("gives every entry its own number", () => {
+    // "Listings are waiting for verification" and "Items are marked
+    // unfinished" both had the count in scope and printed neither.
+    assert.doesNotMatch(code, /Listings are waiting for verification/);
+    assert.doesNotMatch(code, /Items are marked unfinished/);
+    assert.match(code, /value=\{item\.count\}/);
+  });
+
+  it("keeps the urgent alerts above the queue, where they were", () => {
+    // "Needs attention" is the one surface that demands action today; the
+    // queue is the everyday work under it. That order did not change.
+    assert.ok(DASH.indexOf('id="attention-heading"') < DASH.indexOf('id="now-heading"'));
+  });
+});
