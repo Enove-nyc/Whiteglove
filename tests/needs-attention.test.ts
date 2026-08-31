@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import type { ReminderReason } from "@/data/trip-reminders";
 import { tripReminders } from "@/data/trip-reminders";
-import { REMINDER_ACTION, actionForReminder } from "@/lib/needs-attention";
+import { GROUP_LABEL, GROUP_ORDER, REMINDER_ACTION, actionForReminder, groupForReminder } from "@/lib/needs-attention";
 
 /**
  * Everything that needs a planner's attention gets one thing to press.
@@ -165,5 +166,92 @@ describe("a client acting on a proposal reaches the planner", () => {
       assert.ok(!reasons.includes("proposal_approved_not_converted"), `${status} nagged about converting`);
       assert.ok(!reasons.includes("proposal_changes_requested"), `${status} nagged about changes`);
     }
+  });
+});
+
+describe("the three piles, and why they are three and not eight", () => {
+  /**
+   * THE PIPELINE ASKED THE SAME QUESTION FOUR TIMES.
+   *
+   * It offered eight views along the top — Board, Upcoming, Currently
+   * traveling, Awaiting approval, Changes requiring attention, Unread
+   * messages, Payment due, Needs a nudge — and four of those eight mean
+   * "something needs the advisor". The screen led with none of them: it opened
+   * on Board, every trip they have. So the first question anybody opens this
+   * with was answered in four places, and being sure meant checking all four.
+   *
+   * One view answers it now and the screen opens on it, grouped by the only
+   * split that changes what somebody does next: whose move is it.
+   */
+  it("groups every reason, so a new one cannot land nowhere", () => {
+    // The same Record-over-the-union discipline as REMINDER_ACTION. A reason
+    // added to data/trip-reminders.ts and forgotten here is a compile error;
+    // this catches the runtime half.
+    for (const reason of Object.keys(REMINDER_ACTION) as ReminderReason[]) {
+      assert.ok(GROUP_ORDER.includes(groupForReminder(reason)), `${reason} is in no pile`);
+    }
+  });
+
+  it("splits by whose move it is, not by which system raised it", () => {
+    /**
+     * The two proposal items that look alike and are not: one is the client
+     * asking the advisor for something, the other is the advisor waiting on
+     * the client. Sorting by feature would file them together and separate
+     * each from the thing it actually resembles.
+     */
+    assert.equal(groupForReminder("proposal_changes_requested"), "needs_you");
+    assert.equal(groupForReminder("proposal_stale"), "waiting_on_client");
+  });
+
+  it("puts an approved-but-unconverted proposal on the advisor", () => {
+    // The one that does not look like a problem: the board reads Confirmed
+    // while the agreed option is still not on the itinerary the traveler
+    // opens. Nobody is waiting on the client for it.
+    assert.equal(groupForReminder("proposal_approved_not_converted"), "needs_you");
+  });
+
+  it("does not call somebody else's money the advisor's move", () => {
+    assert.equal(groupForReminder("payment_due_soon"), "waiting_on_client");
+    assert.equal(groupForReminder("addon_pending"), "waiting_on_client");
+  });
+
+  it("reads the blocking pile first", () => {
+    assert.equal(GROUP_ORDER[0], "needs_you");
+    assert.equal(GROUP_ORDER.length, 3);
+  });
+
+  it("names the piles in words an advisor would use", () => {
+    // Not "queue", not "state", not the name of the module that raised it.
+    for (const group of GROUP_ORDER) {
+      assert.ok(GROUP_LABEL[group].length > 3);
+      assert.doesNotMatch(GROUP_LABEL[group], /queue|status|state|record|item/i);
+    }
+  });
+});
+
+describe("the dashboard opens on the answer, not the board", () => {
+  const DASH = readFileSync("components/PipelineDashboard.tsx", "utf8");
+
+  it("leads with what needs the advisor", () => {
+    assert.match(DASH, /useState<View>\("needs_attention"\)/);
+    assert.match(DASH, /\{ id: "needs_attention", label: "Needs attention" \}/);
+  });
+
+  it("has four views where it had eight", () => {
+    // The four that meant the same thing became one. "Awaiting approval" went
+    // with them: it is a stage, and the board already shows stages in columns.
+    const list = DASH.slice(DASH.indexOf("const VIEWS"), DASH.indexOf("];", DASH.indexOf("const VIEWS")));
+    // `{ id: "` and not `{ id:`, or the Array<{ id: View }> annotation counts
+    // as a fifth view.
+    assert.equal((list.match(/\{ id: "/g) ?? []).length, 4);
+    for (const gone of ["awaiting_approval", '"unread"', '"payment_due"', '"nudge"', '"attention"']) {
+      assert.ok(!list.includes(gone), `${gone} is back as its own view`);
+    }
+  });
+
+  it("shows a trip in every pile it genuinely belongs to", () => {
+    // A client who asked for changes AND owes money is both. Showing it once,
+    // under whichever came first, would hide half of why it is there.
+    assert.match(DASH, /rowGroups\(row, today\)\.has\(group\)/);
   });
 });
