@@ -17,7 +17,12 @@ export type AdminSection = {
   /** Simple inline mark — no icon font, no dependency. */
   icon: string;
   /** Screens that belong to this section, shown when you are inside it. */
-  children?: Array<{ href: string; label: string; blurb: string }>;
+  /**
+   * `keywords` on a child are ITS OWN words. They are never inherited from the
+   * section — see allAdminDestinations for what that cost. A child with none
+   * is found by its label, which is usually the whole answer.
+   */
+  children?: Array<{ href: string; label: string; blurb: string; keywords?: string }>;
   /** Extra words the "go to" search should match. */
   keywords?: string;
 };
@@ -168,22 +173,23 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     keywords: "password lock closed open account admin team finance email maps ai technical advanced referral membership collaboration group voting plus earnings partners travel essentials insurance esim transfer tours words headline footer about profile proof case study limits free account trello board duffel flight ticket search book stays flight itinerary itineraries sell private customer send pdf amazon gear blech hotplate shelf products provider providers routestack stay22 travelpayouts car rental hire compare health sandbox security csp content policy report only block allow load rule",
     children: [
       { href: "/admin/settings", label: "Overview", blurb: "All settings in one place." },
-      { href: "/admin/settings/words", label: "Words", blurb: "Headline, contact line and footer." },
+      { href: "/admin/settings/words", label: "Words", blurb: "Headline, contact line and footer.", keywords: "headline contact line footer wording copy" },
       { href: "/admin/settings/about", label: "About", blurb: "Optional About page fields." },
       { href: "/admin/settings/proof", label: "Case studies", blurb: "Trip outcomes with permission." },
-      { href: "/admin/settings/limits", label: "Limits", blurb: "Trip and print limits." },
-      { href: "/admin/settings/plans", label: "Paid plans", blurb: "Whether they are offered, and how." },
-      { href: "/admin/team", label: "Team", blurb: "Who else can get in." },
-      { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site." },
-      { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes." },
-      { href: "/admin/settings/security", label: "Security policy", blurb: "The load rule, and what it blocks." },
+      { href: "/admin/settings/limits", label: "Limits", blurb: "Trip and print limits.", keywords: "trip print limit free" },
+      { href: "/admin/settings/plans", label: "Paid plans", blurb: "Whether they are offered, and how.", keywords: "plan membership paid subscription" },
+      { href: "/admin/team", label: "Team", blurb: "Who else can get in.", keywords: "team staff colleague access" },
+      { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site.", keywords: "open closed lock site access password" },
+      { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes.", keywords: "password code admin login" },
+      { href: "/admin/settings/security", label: "Security policy", blurb: "The load rule, and what it blocks.", keywords: "csp content policy report only block allow load rule" },
       { href: "/admin/settings/trello", label: "Trello", blurb: "Pictures, listings and reports." },
-      { href: "/admin/accounts", label: "Users", blurb: "People who signed up." },
+      { href: "/admin/accounts", label: "Users", blurb: "People who signed up.", keywords: "user account customer signed up" },
       { href: "/admin/messages", label: "Messages", blurb: "What people wrote from the site." },
       {
         href: "/admin/settings/travel-gear",
         label: "Travel gear",
         blurb: "The Amazon shelf.",
+        keywords: "amazon gear blech hotplate shelf products",
       },
       // TRAVEL ESSENTIALS IS NOT LISTED HERE, and that is the finished half of
       // a move somebody left half-done. The cards — insurance, eSIM, transfers,
@@ -193,14 +199,17 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       // redirects to that section, for a bookmark or the admin's own history;
       // a menu entry pointing at a redirect is a different thing, and it was
       // still here, sending anybody who used it bouncing.
-      { href: "/admin/travel", label: "Travel providers", blurb: "Who supplies flights, hotels and cars." },
+      { href: "/admin/travel", label: "Travel providers", blurb: "Who supplies flights, hotels and cars.", keywords: "provider routestack stay22 travelpayouts car rental hire compare partners" },
       {
         href: "/admin/settings/earnings",
         label: "Earnings",
         blurb: "Searches, partners and placements.",
+        // Travel essentials live here now — insurance, eSIM, transfers, tours —
+        // see the note above about the screen that used to hold them.
+        keywords: "travel essentials insurance esim transfer tours partners placements referral",
       },
       { href: "/admin/settings/referral", label: "Referrals", blurb: "Off until rewards are final." },
-      { href: "/admin/settings/collaboration", label: "Collaboration", blurb: "Voting, favorites and rooms." },
+      { href: "/admin/settings/collaboration", label: "Collaboration", blurb: "Voting, favorites and rooms.", keywords: "voting favorites rooms group share" },
       { href: "/admin/settings/membership", label: "White Glove Plus", blurb: "Planned only — not launched." },
       { href: "/admin/finances", label: "Finances", blurb: "Money in and out." },
       { href: "/admin/settings/connections", label: "Connections", blurb: "Email, maps and the assistant." },
@@ -254,7 +263,7 @@ export function activeSection(pathname: string): AdminSection {
 }
 
 /** Screens inside a section, not including the section’s own front page. */
-export function sectionScreens(sectionHref: string): Array<{ href: string; label: string; blurb: string }> {
+export function sectionScreens(sectionHref: string): Array<{ href: string; label: string; blurb: string; keywords?: string }> {
   const section = ADMIN_SECTIONS.find((item) => item.href === sectionHref);
   return (section?.children ?? []).filter((child) => child.href !== sectionHref);
 }
@@ -271,7 +280,26 @@ export function allAdminDestinations(): Array<{ href: string; label: string; blu
     for (const child of sectionScreens(section.href)) {
       if (seen.has(child.href)) continue;
       seen.add(child.href);
-      out.push({ href: child.href, label: child.label, blurb: child.blurb, section: section.label, keywords: section.keywords ?? "" });
+      /**
+       * A CHILD DOES NOT INHERIT ITS SECTION'S KEYWORDS, AND USED TO.
+       *
+       * A section's keyword list is the union of what all of its screens are
+       * about — Settings carries ninety words covering Duffel, Trello, eSIM,
+       * Amazon, insurance, voting and the rest. Handing that same list to
+       * every child made all fifteen Settings screens an equally good match
+       * for every one of those words, and equally good means alphabetical:
+       *
+       *   "esim"   → About, Case studies, Collaboration, Connections, Duffel…
+       *   "voting" → About, Case studies, Collaboration, Connections, Duffel…
+       *
+       * The right screen was not in the first eight for either. The owner
+       * searching for a thing got a list of everything except it.
+       *
+       * The blob stays on the SECTION's own row, which is what makes a broad
+       * word find the section. A child is found by its own label and blurb,
+       * which is what the words on it actually say.
+       */
+      out.push({ href: child.href, label: child.label, blurb: child.blurb, section: section.label, keywords: child.keywords ?? "" });
     }
   }
   return out;
