@@ -42,10 +42,12 @@ describe("the pricing page never invents a price", () => {
 });
 
 describe("what a plan advertises is what the code actually gives", () => {
-  it("every paid plan is listed, and the never-chooseable one is not", () => {
+  it("every plan is listed, Personal first", () => {
+    // Personal used to be excluded, on the grounds that "an account that can
+    // plan nothing is not an option to sell". It plans trips now, and it is
+    // the first thing on the page rather than a thing the page omits.
     const names = planCards().map((c) => c.name);
-    assert.deepEqual(names, [PLAN_LABELS.one_trip, PLAN_LABELS.starter, PLAN_LABELS.pro]);
-    assert.ok(!names.includes(PLAN_LABELS.free), "an account that can plan nothing is not an option to sell");
+    assert.deepEqual(names, [PLAN_LABELS.free, PLAN_LABELS.one_trip, PLAN_LABELS.starter, PLAN_LABELS.pro]);
   });
 
   it("a plan never advertises an entitlement it does not hold", () => {
@@ -60,11 +62,27 @@ describe("what a plan advertises is what the code actually gives", () => {
     }
   });
 
-  it("One Trip says one trip, and does not claim the client-facing half", () => {
+  it("the Trip Pass is bought once, and does not claim the client-facing half", () => {
+    /**
+     * It used to assert "One trip" as a line on the card, from when the pass
+     * capped an account at one. It no longer does: the moment Personal became
+     * unlimited, a cap on the paid plan meant paying to keep FEWER trips than
+     * free. What the pass buys is the app on the phone, not a trip slot.
+     */
     const one = planCards().find((c) => c.plan === "one_trip")!;
-    assert.ok(one.includes.some((line) => /^One trip$/.test(line)));
     assert.ok(one.oneTime);
+    assert.ok(!one.free);
     assert.ok(!one.includes.some((line) => /client/i.test(line)));
+    assert.ok(one.includes.some((line) => /app/i.test(line)), "the pass does not mention the app it is for");
+  });
+
+  it("Personal is on the page, free, and is the floor", () => {
+    // It was left off entirely, on the grounds that it "can plan nothing".
+    const personal = planCards().find((c) => c.plan === "free")!;
+    assert.ok(personal, "Personal is not on the pricing page");
+    assert.ok(personal.free);
+    assert.ok(!personal.oneTime);
+    assert.ok(!personal.includes.some((line) => /app for your own trip/i.test(line)), "free must not claim the app");
   });
 
   it("Pro carries everything Starter does", () => {

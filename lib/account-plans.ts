@@ -50,8 +50,13 @@ export const DEFAULT_PLAN: AccountPlan = "free";
  * itself.
  */
 export const PLAN_LABELS: Record<AccountPlan, string> = {
-  free: "No plan yet",
-  one_trip: "One Trip",
+  // PERSONAL IS A PLAN NOW, NOT AN ABSENCE OF ONE. It used to be "No plan
+  // yet" and could not hold a trip: an account existed to choose a plan from
+  // and to do nothing else. The planner is free, and this is the name of it.
+  free: "Personal",
+  // The key stays one_trip for ever — it is what is stored on accounts and
+  // sent to Stripe. Only the words a person reads changed.
+  one_trip: "Trip Pass",
   starter: "Advisor Starter",
   pro: "Advisor Pro",
 };
@@ -64,8 +69,8 @@ export const PLAN_LABELS: Record<AccountPlan, string> = {
  * promised it.
  */
 export const PLAN_BLURB: Record<AccountPlan, string> = {
-  free: "Before anything has been bought. Every account starts here, and cannot plan a trip yet.",
-  one_trip: "For planning one trip for yourself — a single, small fee, no subscription.",
+  free: "Plan your own trip: the days, the flights, the hotels, the stops, saved to your account and readable on any of your devices.",
+  one_trip: "One trip, upgraded: the app on the phone through the trip itself, kept working with no signal.",
   starter: "For an advisor taking their first clients — the app handed to each one, and the pipeline to run them in.",
   pro: "For an advisor who plans trips often — everything Starter has, with your own name on the client's app.",
 };

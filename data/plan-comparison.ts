@@ -52,7 +52,7 @@ function limitLines(plan: AccountPlan): string[] {
 }
 
 export type PlanCard = {
-  plan: PaidPlan;
+  plan: AccountPlan;
   /** "Advisor Starter". */
   name: string;
   /** Who it is for — never what it includes; that is `includes`. */
@@ -61,18 +61,21 @@ export type PlanCard = {
   includes: string[];
   /** Whether this is bought once rather than subscribed to. */
   oneTime: boolean;
+  /** Costs nothing. The card says so instead of asking Stripe for a price. */
+  free: boolean;
 };
 
 /**
- * The paid plans in the order somebody climbs them.
+ * The plans in the order somebody climbs them, PERSONAL FIRST.
  *
- * `free` is not here on purpose. It is not a plan anybody chooses — it is what
- * an account is before it has bought anything, and it can plan nothing. A
- * pricing page listing it as an option would be offering a thing that does not
- * work.
+ * Free used to be left out of this list, and the reason given was that it "can
+ * plan nothing" — which was true when it held no trips and is not any more.
+ * The planner is the free product, so it is the first thing on the pricing
+ * page rather than a thing the page pretends does not exist. Leaving it out
+ * made the page open on a price for something a visitor can have for nothing.
  */
 export function planCards(): PlanCard[] {
-  return PAID_PLANS.map((plan) => ({
+  return (["free", ...PAID_PLANS] as const).map((plan) => ({
     plan,
     name: PLAN_LABELS[plan],
     blurb: PLAN_BLURB[plan],
@@ -81,6 +84,7 @@ export function planCards(): PlanCard[] {
       ...FEATURE_LINES.filter((entry) => PLAN_FEATURES[plan][entry.key]).map((entry) => entry.line),
     ],
     oneTime: plan === "one_trip",
+    free: plan === "free",
   }));
 }
 
