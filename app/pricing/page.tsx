@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LinkButton } from "@/components/ui/Button";
 import { planCards, whatThisAdds } from "@/data/plan-comparison";
+import type { PaidPlan } from "@/lib/plan-billing";
 import { offerLine, offerablePlans, priceIdFor, periodsFor } from "@/lib/plan-billing";
 import { readPlanOffering } from "@/lib/plan-billing-store";
 import { describePrice, readPrice } from "@/lib/stripe";
@@ -138,10 +139,11 @@ export default async function PricingPage() {
             One trip for yourself, or the tools to run clients. {planParitySentence()}
           </p>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {cards.map((card) => {
-              const price = lines.get(card.plan);
-              const adds = whatThisAdds(card.plan);
+              const price = card.free ? null : lines.get(card.plan);
+              // Personal is the floor, so there is nothing below it to add to.
+              const adds = card.free ? [] : whatThisAdds(card.plan as PaidPlan);
               return (
                 <div
                   key={card.plan}
@@ -149,7 +151,9 @@ export default async function PricingPage() {
                 >
                   <h3 className="text-lg font-bold text-[var(--navy)]">{card.name}</h3>
 
-                  {price ? (
+                  {card.free ? (
+                    <p className="mt-1 text-2xl font-bold text-[var(--navy)]">Free</p>
+                  ) : price ? (
                     <p className="mt-1 text-2xl font-bold text-[var(--navy)]">
                       {price}
                       {card.oneTime && <span className="ml-2 text-xs font-semibold text-stone-500">once</span>}
@@ -186,6 +190,29 @@ export default async function PricingPage() {
                 </div>
               );
             })}
+          </div>
+
+          {/* AGENCY IS A DOOR, NOT A CARD WITH A PRICE ON IT.
+              A company with several advisers under one subscription is a real
+              customer and there is no settled price for one, so it gets a way
+              to start the conversation and no number — never a placeholder,
+              never "from", never a coming-soon badge on a fourth card
+              pretending to be the others. It sits under the three rather than
+              beside them, because it is not a thing to compare: it is what to
+              do when the three do not fit. */}
+          <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border border-[var(--gold-light)] bg-white p-6">
+            <div>
+              <h3 className="text-lg font-bold text-[var(--navy)]">Agency</h3>
+              <p className="mt-1 text-sm leading-6 text-stone-600">
+                Several advisers in one company, working the same clients and trips.
+              </p>
+            </div>
+            <Link
+              href="/contact?reason=agency"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
+            >
+              Talk to us
+            </Link>
           </div>
         </div>
       </section>

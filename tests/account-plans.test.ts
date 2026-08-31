@@ -147,7 +147,12 @@ describe("how long it has been waiting", () => {
 
 describe("what the account page says", () => {
   it("names the plan", () => {
-    assert.equal(describePlan("free", null), "You are on No plan yet.");
+    // Read from the label table rather than spelled out: this line encoded
+    // "No plan yet" from when free WAS no plan. Free is Personal now — a real
+    // plan that holds trips — and a sentence hardcoding the old wording only
+    // fails the day the label is corrected.
+    assert.equal(describePlan("free", null), `You are on ${PLAN_LABELS.free}.`);
+    assert.equal(describePlan("pro", null), `You are on ${PLAN_LABELS.pro}.`);
   });
 
   it("says an open request is with a person", () => {

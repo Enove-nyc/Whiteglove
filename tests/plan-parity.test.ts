@@ -29,11 +29,20 @@ describe("what is the same on every plan is worked out, not asserted", () => {
     assert.ok(!planParity().same.some((line) => /handing a client/i.test(line)));
   });
 
-  it("puts a feature every paid plan has on the same side", () => {
+  it("PUTS THE APP ON THE SIDE THAT IS PAID FOR, now that Personal is a plan", () => {
+    /**
+     * It used to be on the "same on every plan" side, because the comparison
+     * ran over the three PAID plans only and all three have it. Personal is
+     * one of the plans a buyer chooses now, and Personal does not have it —
+     * so the app moved to what CHANGES, which is the truthful place for it:
+     * it is the thing the Trip Pass buys.
+     */
+    assert.equal(PLAN_FEATURES.free.companionApp, false);
     for (const plan of ["one_trip", "starter", "pro"] as const) {
       assert.equal(PLAN_FEATURES[plan].companionApp, true);
     }
-    assert.ok(planParity().same.some((line) => /app for your own trip/i.test(line)));
+    assert.ok(planParity().differs.some((line) => /app for your own trip/i.test(line)));
+    assert.ok(!planParity().same.some((line) => /app for your own trip/i.test(line)));
   });
 
   it("accounts for every entitlement, on one side or the other", () => {

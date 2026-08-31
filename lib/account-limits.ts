@@ -176,11 +176,39 @@ export const SAME_PRINT_GRACE_MS = 30 * 60 * 1000;
 
 /** What each plan gets, before the owner changes anything. */
 export const BUILT_IN_LIMITS: Record<AccountPlan, PlanLimits> = {
-  // Nothing bought yet — signed in, and able to choose a plan, and nothing
-  // else. Not a locked account by accident; this is the whole point of it.
-  free: { trips: 0, printsPerWeek: 0, staffSeats: 0 },
-  // Exactly the one trip the fee was for.
-  one_trip: { trips: 1, printsPerWeek: UNLIMITED, staffSeats: 0 },
+  /**
+   * PERSONAL, AND IT PLANS TRIPS. This was `{ trips: 0, printsPerWeek: 0 }` —
+   * an account that existed to choose a plan from and could not hold a single
+   * trip. The planner is the free product now, so the free plan has to be able
+   * to use it: build the days, add the flights and the hotels and the stops,
+   * save it, print it, open it on another device.
+   *
+   * UNLIMITED HERE IS NOT UNBOUNDED. cannotAddTrip in lib/account-store.ts
+   * still refuses a twenty-sixth trip on any plan, which is the ceiling
+   * nobody is meant to reach rather than a limit anybody meets.
+   *
+   * What the Trip Pass adds is not a bigger number — it is the app on the
+   * phone during the trip, and that is a feature flag (PLAN_FEATURES), not a
+   * count. A free planner that is deliberately crippled to sell nine dollars
+   * of upgrade is the thing this must never become.
+   */
+  free: { trips: UNLIMITED, printsPerWeek: UNLIMITED, staffSeats: 0 },
+  /**
+   * THE PASS BUYS THE APP, NOT A TRIP SLOT — and it had to stop capping trips
+   * the moment Personal stopped being capped. It was `trips: 1`, from when
+   * free could hold none: paying nine dollars would now leave somebody able to
+   * keep FEWER trips than they could for nothing, which is not a plan, it is a
+   * penalty.
+   *
+   * WHAT IS NOT SETTLED HERE, and is the owner's call rather than a default:
+   * the pass is meant to be bought PER TRIP, and an account-level plan cannot
+   * express that — one payment currently upgrades every trip on the account.
+   * Making it per-trip means the entitlement hangs off the trip rather than
+   * the account, which is a real change to how every gate resolves. Until
+   * that is decided, the generous reading is the safe one: nobody is locked
+   * out of a trip they already have, and nobody pays to lose room.
+   */
+  one_trip: { trips: UNLIMITED, printsPerWeek: UNLIMITED, staffSeats: 0 },
   // Nothing has been decided about trips or printing for these, so neither is
   // limited — an invented number would be a promise nobody made. Staff seats
   // are different: a plan that cannot serve clients at all (companionClients
@@ -238,7 +266,6 @@ export function limitsFor(plan: AccountPlan, overrides?: LimitOverrides | null):
 export function newTripProblem(plan: AccountPlan, existing: number, limits: PlanLimits): string | null {
   if (limits.trips === UNLIMITED) return null;
   if (existing < limits.trips) return null;
-  if (plan === "free") return "Choose a plan to start your first trip.";
   const n = limits.trips;
   return (
     `${PLAN_LABELS[plan]} can have ${n} ${n === 1 ? "trip" : "trips"} at a time, and you have ${existing}. ` +
@@ -388,8 +415,17 @@ const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {
   analytics: "the numbers on your pipeline",
 };
 
-/** The paid plans a buyer is choosing between. Free is not one of the options. */
-const CHOOSABLE: AccountPlan[] = ["one_trip", "starter", "pro"];
+/**
+ * The plans a buyer is choosing between — Personal included, now that it is
+ * one. It used to be excluded on the grounds that it was not an option; the
+ * planner is free, so it is the first option, and leaving it out made the
+ * parity sentence describe a lineup that no longer exists.
+ *
+ * Including it is also what makes the sentence honest: the app on the phone
+ * is false on Personal and true on the rest, so it moves from "the same on
+ * every plan" to "what changes" — which is exactly what the Trip Pass buys.
+ */
+const CHOOSABLE: AccountPlan[] = ["free", "one_trip", "starter", "pro"];
 
 export function planParity(): { same: string[]; differs: string[] } {
   const keys = Object.keys(FEATURE_LABELS) as (keyof PlanFeatures)[];
@@ -425,7 +461,6 @@ export function planParitySentence(): string {
  * restrictions with no floor under it reads as though the rest might go next.
  */
 export function describeLimits(plan: AccountPlan, limits: PlanLimits): string {
-  if (plan === "free") return "Choose a plan below to start planning a trip.";
   const parts: string[] = [];
   if (limits.trips !== UNLIMITED) parts.push(`${limits.trips} ${limits.trips === 1 ? "trip" : "trips"} at a time`);
   if (limits.printsPerWeek !== UNLIMITED) {
@@ -434,7 +469,10 @@ export function describeLimits(plan: AccountPlan, limits: PlanLimits): string {
   // Built from the table rather than typed, so it cannot promise what the
   // table takes back. It used to end "...and sharing a trip with anybody you
   // like", which One Trip cannot do.
-  const everythingElse = `Everything else on the site is the same — every kever, every guide, ${ALWAYS_FREE}. ${planParitySentence()}`;
+  // ALWAYS_FREE is in planParitySentence already; saying it here as well made
+  // the paragraph name the planner, the map and the guides twice in two
+  // consecutive sentences.
+  const everythingElse = `Everything else on the site is the same — every kever, every guide. ${planParitySentence()}`;
   if (parts.length === 0) return `${PLAN_LABELS[plan]} has no limits on trips or printing. ${everythingElse}`;
   return `${PLAN_LABELS[plan]}: ${parts.join(", and ")}. ${everythingElse}`;
 }
