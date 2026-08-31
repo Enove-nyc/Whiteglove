@@ -107,3 +107,48 @@ export function tripBar(trip: TripForBar | null | undefined, plan: AccountPlan |
     places,
   };
 }
+
+/**
+ * THE LINE UNDER A TRIP'S NAME IN THE LIST.
+ *
+ * The list of trips said: "3 stops · 8 days · in 2 months · 5 saved · client
+ * code created". Five facts, and the one an advisor picks a trip out of a list
+ * by — WHEN IT IS — was not among them. "8 days" is not a date and "in 2
+ * months" is not a date; twenty trips sorted by neither is twenty rows you
+ * have to open to tell apart.
+ *
+ * Two of the five were not worth the room either. "5 saved" is saved places,
+ * which is a count of something that lives inside the trip and means nothing
+ * from outside it. "client code created" is the name of a database field: what
+ * an advisor wants to know is whether the client can open their app, which is
+ * what it now says.
+ *
+ * So the dates lead, and the rest is what actually distinguishes one trip from
+ * another.
+ */
+export function tripRowMeta(
+  trip: {
+    stops?: number;
+    days?: number;
+    startDate?: string;
+    endDate?: string;
+    shareId?: string;
+  },
+  /** Already-phrased countdown from countdownPhrase, or null. */
+  countdown: string | null,
+): string {
+  const dates = tripBarDates({ startDate: trip.startDate, endDate: trip.endDate });
+  const stops = trip.stops ?? 0;
+  return [
+    // WHEN, first, because that is what tells two trips apart at a glance.
+    dates ?? "No dates yet",
+    trip.days ? `${trip.days} ${trip.days === 1 ? "day" : "days"}` : "",
+    stops ? `${stops} ${stops === 1 ? "stop" : "stops"}` : "",
+    countdown ?? "",
+    // Whether the client can open their app — not the name of the field that
+    // makes it true.
+    trip.shareId ? "client can open it" : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
