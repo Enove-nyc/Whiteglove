@@ -110,6 +110,19 @@ export function contentSecurityPolicy(reportPath: string): string {
     "script-src": dedupe([
       "'self'",
       "'unsafe-inline'",
+      // Google Maps' JavaScript API needs BOTH of these, and without them the
+      // map goes blank rather than falling back: the WebGL/vector renderer
+      // compiles code with eval(), and the API loads a worker over a blob:
+      // URL. `new google.maps.Map()` does NOT throw when they are blocked — it
+      // returns a map object that then never paints — so AreaMap has no error
+      // to catch and never drops to the OpenStreetMap fallback; the box just
+      // stays empty. This was missed by the Report-Only pass because the
+      // browser map key was not live then, so Google's eval path was never
+      // exercised under the policy. Google documents both as required; and the
+      // marginal cost is small here, since 'unsafe-inline' above already keeps
+      // this from being a strict script policy.
+      "'unsafe-eval'",
+      "blob:",
       "https://emrldco.com",
       "https://tp.media",
       "https://maps.googleapis.com",
