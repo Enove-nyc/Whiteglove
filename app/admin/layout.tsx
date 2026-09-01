@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   title: "White Glove Admin",
   manifest: "/admin.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "WG Admin" },
+  // WHY THIS IS SET BY HAND. appleWebApp.capable above now emits only the
+  // modern <meta name="mobile-web-app-capable">, which iOS does NOT honour for
+  // "Add to Home Screen": without the Apple-specific tag, iOS saves the admin
+  // icon as a plain Safari bookmark that opens in the browser instead of a
+  // standalone app — exactly the reported symptom. This restores the tag iOS
+  // actually reads. Harmless elsewhere.
+  other: { "apple-mobile-web-app-capable": "yes" },
   icons: { icon: [{ url: "/icon-admin-192.png", sizes: "192x192", type: "image/png" }] },
   robots: { index: false, follow: false },
 };
