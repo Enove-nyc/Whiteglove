@@ -192,7 +192,11 @@ export default function DestinationSearch({
     fetch("/api/search?limit=50", { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : null))
       .then((payload: SearchResponse | null) => {
-        if (payload?.mode === "empty") setEmptyHits(payload.results);
+        // Always resolve to a list, even when the response wasn't the empty-mode
+        // shape (an HTTP error returns null here) — otherwise emptyHits stayed
+        // null and the panel sat on "Loading destinations…" for ever, since this
+        // effect won't re-run until open/trimmed change.
+        setEmptyHits(payload?.mode === "empty" ? payload.results : []);
       })
       .catch(() => {
         if (!controller.signal.aborted) setEmptyHits([]);

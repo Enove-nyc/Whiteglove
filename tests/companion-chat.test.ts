@@ -306,14 +306,20 @@ describe("deleting a whole conversation is fenced", () => {
   });
 
   it("is gated the same as the inbox it clears", () => {
-    assert.match(DEL, /mayServeCompanionClients\(await getPlan\(account\.email\)\)/);
+    // Gated on the BUSINESS's plan (resolveBusinessOwner), like the GET inbox —
+    // so an agency's staff login is judged by its owner's plan, not its own
+    // (which carries no clients).
+    assert.match(DEL, /mayServeCompanionClients\(await getPlan\(owner\)\)/);
+    assert.match(DEL, /resolveBusinessOwner\(account\.email\)/);
   });
 
-  it("proves the conversation belongs to THIS account before clearing it — never trusts the share id alone", () => {
+  it("proves the conversation belongs to THIS business before clearing it — never trusts the share id alone", () => {
     // Otherwise any signed-in advisor could clear any other advisor's
     // conversation just by knowing (or guessing) their client's share id.
-    const body = DEL.slice(DEL.indexOf("const shareId"));
-    assert.match(body, /getTrips\(account\.email\)/);
+    // Ownership is proven against the business's trips (the resolved owner), so
+    // staff can clear their own business's conversations and no one else's.
+    const body = DEL.slice(DEL.indexOf("const body"));
+    assert.match(body, /getTrips\(owner\)/);
     assert.match(body, /t\.shareId === shareId/);
     assert.ok(body.indexOf("getTrips") < body.indexOf("deleteConversation"), "ownership is proven before the store is touched");
   });

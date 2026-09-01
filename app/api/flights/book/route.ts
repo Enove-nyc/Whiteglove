@@ -28,14 +28,20 @@ export async function POST(request: NextRequest) {
   if (!access.ok) return NextResponse.json({ message: access.message, detail: access.detail }, { status: 503 });
   const token = access.token;
 
-  const { offerId, threeDSecureSessionId, traveler } = await request.json() as { offerId?: string; threeDSecureSessionId?: string; traveler?: Traveler };
+  // A malformed body used to throw a raw SyntaxError here and 500 mid-booking;
+  // treat it as the same missing-detail 400 as an incomplete one.
+  const body = (await request.json().catch(() => null)) as { offerId?: string; threeDSecureSessionId?: string; traveler?: Traveler } | null;
+  const { offerId, threeDSecureSessionId, traveler } = body ?? {};
   if (!offerId || !threeDSecureSessionId || !traveler?.firstName || !traveler.lastName || !traveler.email || !traveler.bornOn || !traveler.title || !traveler.gender || !traveler.phone) {
     return NextResponse.json({ message: "Please complete every traveler detail before booking." }, { status: 400 });
   }
 
   const offerResponse = await fetch(`https://api.duffel.com/air/offers/${encodeURIComponent(offerId)}`, { headers: duffelHeaders(token), cache: "no-store" });
   if (!offerResponse.ok) return NextResponse.json({ message: "This flight is no longer available. Please search again for a current price." }, { status: 409 });
-  const offer = (await offerResponse.json()).data;
+  const offer = (await offerResponse.json().catch(() => ({}))).data;
+  // An offer response missing its data would otherwise throw on the next line
+  // and 500 — read it as the flight no longer being available.
+  if (!offer) return NextResponse.json({ message: "This flight is no longer available. Please search again for a current price." }, { status: 409 });
   if (offer.passenger_identity_documents_required && (!traveler.passportNumber || !traveler.passportCountry || !traveler.passportExpires)) return NextResponse.json({ message: "This flight requires passport number, issuing country, and expiry date before it can be booked." }, { status: 422 });
 
   const passenger = {

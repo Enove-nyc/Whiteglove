@@ -115,7 +115,16 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   // account, so the one most worth being findable.
   { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
   { path: "/mikvaos", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/shuls", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/eruvin", priority: 0.5, changeFrequency: "monthly" },
   { path: "/zmanim", priority: 0.5, changeFrequency: "monthly" },
+  // A first-class Kosher-nav finder, and the terminal of the /chabad-europe
+  // redirect — so the target of a live redirect was never itself listed.
+  { path: "/chabad-directory", priority: 0.6, changeFrequency: "monthly" },
+  // Public and indexable (AGENTS.md), linked from the footer and Travel gear.
+  { path: "/packing", priority: 0.5, changeFrequency: "monthly" },
+  // The acknowledgements page, linked site-wide from the footer.
+  { path: "/sources", priority: 0.3, changeFrequency: "monthly" },
   // Who is behind the site. Indexed for the same reason /verification is: it
   // is one of the two pages a cautious person reads before trusting the rest.
   { path: "/about", priority: 0.6, changeFrequency: "monthly" },

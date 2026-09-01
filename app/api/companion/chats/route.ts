@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData, getTrips } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData, getTrips, resolveBusinessOwner } from "@/lib/account-store";
 import { deleteConversation, readChat } from "@/lib/companion-chat-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
@@ -26,11 +26,16 @@ export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  if (!mayServeCompanionClients(await getPlan(account.email))) {
+  // The inbox belongs to the BUSINESS, not the login — an agency's staff login
+  // (whose own account holds no trips) reads its owner's conversations, the same
+  // way account/clients and account/pipeline resolve the owner. Without this,
+  // staff saw an empty inbox.
+  const owner = await resolveBusinessOwner(account.email);
+  if (!mayServeCompanionClients(await getPlan(owner))) {
     return NextResponse.json({ error: `The client inbox is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
 
-  const shared = (await getTrips(account.email).catch(() => [])).filter((t) => t.shareId);
+  const shared = (await getTrips(owner).catch(() => [])).filter((t) => t.shareId);
   const conversations = await Promise.all(
     shared.map(async (t) => {
       const messages = await readChat(t.shareId!);
@@ -72,7 +77,8 @@ export async function DELETE(request: NextRequest) {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  if (!mayServeCompanionClients(await getPlan(account.email))) {
+  const owner = await resolveBusinessOwner(account.email);
+  if (!mayServeCompanionClients(await getPlan(owner))) {
     return NextResponse.json({ error: `The client inbox is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
 
@@ -80,7 +86,9 @@ export async function DELETE(request: NextRequest) {
   const shareId = body?.share?.trim();
   if (!shareId) return NextResponse.json({ error: "Which conversation?" }, { status: 400 });
 
-  const owns = (await getTrips(account.email).catch(() => [])).some((t) => t.shareId === shareId);
+  // Ownership is proven against the business's trips (the owner), so staff can
+  // clear their own business's conversations — and still never someone else's.
+  const owns = (await getTrips(owner).catch(() => [])).some((t) => t.shareId === shareId);
   if (!owns) return NextResponse.json({ error: "That conversation isn't yours." }, { status: 404 });
 
   await deleteConversation(shareId);

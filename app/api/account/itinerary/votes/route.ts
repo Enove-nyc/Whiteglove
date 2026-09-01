@@ -75,6 +75,9 @@ export async function POST(request: NextRequest) {
     kind: body.kind,
     value: body.value,
   });
-  if (!votes) return NextResponse.json({ error: "That could not be saved." }, { status: 400 });
+  // A failed write here is a store outage, not bad input (the kind/value were
+  // validated above and the store was checked up front) — 503, like the clear
+  // path a few lines up, not 400.
+  if (!votes) return NextResponse.json({ error: "That could not be saved right now." }, { status: 503 });
   return NextResponse.json({ votes });
 }

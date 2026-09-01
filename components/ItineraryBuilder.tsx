@@ -914,21 +914,34 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
   async function showNearby() {
     if (!anchor?.coordinates) return;
     const exclude = day.activities.map((a) => a.name).join("|");
-    const res = await fetch(`/api/itinerary/nearby?coordinates=${encodeURIComponent(anchor.coordinates)}&exclude=${encodeURIComponent(exclude)}`);
-    const data = await res.json().catch(() => ({ suggestions: [] }));
-    setNearby(data.suggestions ?? []);
+    try {
+      const res = await fetch(`/api/itinerary/nearby?coordinates=${encodeURIComponent(anchor.coordinates)}&exclude=${encodeURIComponent(exclude)}`);
+      const data = await res.json().catch(() => ({ suggestions: [] }));
+      setNearby(data.suggestions ?? []);
+    } catch {
+      // A network-level failure rejects before res is assigned; without this the
+      // button appeared to do nothing and left an unhandled rejection.
+      setNearby([]);
+    }
   }
   async function askAi() {
     setLoadingAi(true);
     const location = day.activities[0]?.address || day.activities[0]?.name || day.lodging?.address || day.lodging?.name || "";
-    const res = await fetch("/api/itinerary/ai", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ location, date: day.label, freeHours: day.freeHours, alreadyPlanned: day.activities.map((a) => a.name) }),
-    });
-    const data = await res.json().catch(() => ({ available: false, reason: "Failed." }));
-    setAi(data.available ? { text: data.text, suggestions: data.suggestions } : { reason: data.reason });
-    setLoadingAi(false);
+    try {
+      const res = await fetch("/api/itinerary/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location, date: day.label, freeHours: day.freeHours, alreadyPlanned: day.activities.map((a) => a.name) }),
+      });
+      const data = await res.json().catch(() => ({ available: false, reason: "Failed." }));
+      setAi(data.available ? { text: data.text, suggestions: data.suggestions } : { reason: data.reason });
+    } catch {
+      setAi({ reason: "Could not get ideas just now. Check your connection and try again." });
+    } finally {
+      // Always clear the spinner — a rejected fetch used to leave the button
+      // stuck reading "Getting ideas…" for ever.
+      setLoadingAi(false);
+    }
   }
 
   // The day is drawn in clock order.
@@ -2323,6 +2336,10 @@ function TravelerShareLink({ tripId, traveler }: { tripId: string | null; travel
         return;
       }
       setLink(`${window.location.origin}/t/${data.shareId}/app`);
+    } catch {
+      // A network-level failure rejects before res.ok is read, so without this
+      // the button just re-enabled with nothing said. Tell the advisor.
+      setError("Could not create that link. Check your connection and try again.");
     } finally {
       setBusy(false);
     }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import KosherApartmentProviders from "@/components/KosherApartmentProviders";
@@ -136,12 +137,12 @@ export default async function KosherStaysPage({
               Arrange food and Shabbos locally before you travel, and compare places to stay with the search below.
             </p>
             <p className="mt-4 max-w-2xl leading-7 text-stone-600">
-              <a
-                href="#everywhere"
+              <Link
+                href="/destinations"
                 className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
               >
                 Browse the destinations our guides cover
-              </a>
+              </Link>
             </p>
           </div>
         ) : (

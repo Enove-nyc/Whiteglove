@@ -353,6 +353,13 @@ function FlightsForm({
   const [liveDetail, setLiveDetail] = useState("");
   const [rows, setRows] = useState<PartnerResultRow[]>([]);
   const [kayakHref, setKayakHref] = useState("");
+  // The exact search the cached kayakHref was built for. The server hands back a
+  // Kayak link for the route it just priced; without pinning it to that search,
+  // editing the route/dates and then pressing "Compare on Kayak" opened Kayak on
+  // the PREVIOUS route — a wrong hand-off on the revenue path. Cleared implicitly
+  // by not matching once any input changes.
+  const [kayakHrefFor, setKayakHrefFor] = useState("");
+  const flightSig = () => JSON.stringify({ from, to, depart, ret, oneWay, multiCity, nonstop, legs: codedLegs() });
 
   const origin = airportCode(from);
   const destination = airportCode(to);
@@ -450,7 +457,9 @@ function FlightsForm({
 
   function openKayak() {
     if (!validate()) return;
-    const href = kayakHref || flightHandoff("kayak");
+    // Use the server's cached Kayak link only while it still matches the search
+    // on screen; once anything changed, rebuild it from the current inputs.
+    const href = kayakHref && kayakHrefFor === flightSig() ? kayakHref : flightHandoff("kayak");
     if (typeof window !== "undefined") window.open(href, "_blank", "noopener,noreferrer");
     onOpened({ kind: "flight", summary, save: (confirmation) => addToTrip(confirmation) });
   }
@@ -472,6 +481,9 @@ function FlightsForm({
     setRows([]);
     setLiveMessage("");
     setLiveDetail("");
+    // The search this run is for — pinned to the cached Kayak link below so a
+    // later edit can tell the cache has gone stale.
+    const sig = flightSig();
     try {
       const response = await fetch("/api/partners/flights/search", {
         method: "POST",
@@ -486,7 +498,9 @@ function FlightsForm({
         }),
       });
       const data = await response.json();
-      setKayakHref(typeof data?.kayakHref === "string" ? data.kayakHref : "");
+      const nextKayak = typeof data?.kayakHref === "string" ? data.kayakHref : "";
+      setKayakHref(nextKayak);
+      setKayakHrefFor(nextKayak ? sig : "");
       if (data?.ok && data.mode === "live" && Array.isArray(data.flights) && data.flights.length > 0) {
         // Only a real fare, on the network that quoted it, at the address the
         // offer actually lives at — never a Kayak compare row dressed up as a
