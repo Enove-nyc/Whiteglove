@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import AppCodeEntry from "@/components/companion/AppCodeEntry";
+import TripAppCode from "@/components/companion/TripAppCode";
 import CompanionApp from "@/components/companion/CompanionApp";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -18,7 +19,10 @@ import {
   resolveBusinessOwner,
 } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { mayServeCompanionClients, mayUseCompanionApp } from "@/lib/account-limits";
+import { appCoversEveryTrip, mayServeCompanionClients } from "@/lib/account-limits";
+import { mayOpenTripInApp, mayReachTheApp } from "@/lib/companion-access";
+import { readTripPasses } from "@/lib/trip-pass-store";
+import { tripHasPass } from "@/lib/trip-pass";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { emptyItinerary } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
@@ -54,11 +58,16 @@ function firstParam(value: string | string[] | undefined): string {
 /**
  * The White Glove app — a trip in your pocket.
  *
- * EVERY PAID PLAN, in one place. The gate is mayUseCompanionApp in
- * lib/account-limits.ts, and this page is the only door that reads it. Handing a
- * trip to a client stays Advisor Starter and up, behind a separate gate
- * (mayServeCompanionClients) — the Messages inbox below, and the client links,
- * chat and report routes elsewhere.
+ * THE GATE IS THE TRIP'S, NOT THE ACCOUNT'S. Advisor Starter and Pro carry the
+ * app on every trip they run. Everybody else opens the trip a Trip Pass has
+ * been spent on — one trip, the one they are taking. Both questions are asked
+ * by mayOpenTripInApp in lib/companion-access.ts, and this page never decides
+ * either itself. It used to read mayUseCompanionApp alone, which meant one
+ * single purchase opened every trip that account would ever have.
+ *
+ * Handing a trip to a client stays Advisor Starter and up, behind a separate
+ * gate (mayServeCompanionClients) — the Messages inbox below, and the client
+ * links, chat and report routes elsewhere.
  *
  * IT SHOWS THE OWNER'S OWN TRIP, never a sample. `?trip=<id>` opens a specific
  * one (that is what the "Open the app" links carry); otherwise it opens the
@@ -124,7 +133,7 @@ export default async function AppPage({
   }
 
   const plan = await getPlan(who);
-  if (mayUseCompanionApp(plan)) {
+  if (await mayReachTheApp(who, plan)) {
     // Gold has the app for its own trips; only Business hands it to a client.
     // The copy below turns on this, so a Gold member is never offered a client
     // feature they do not have.
@@ -143,8 +152,13 @@ export default async function AppPage({
     const selected =
       trips.find((t) => t.id === wantedId) ?? trips.find((t) => t.active) ?? trips[0] ?? null;
 
+    // A trip only opens if the plan covers every trip, or a pass has been
+    // spent on THIS one. Asked before the itinerary is even read: there is no
+    // point building an app the person may not open.
+    const covered = selected ? await mayOpenTripInApp(who, plan, selected.id) : false;
+
     let companionTrip = null;
-    if (selected) {
+    if (selected && covered) {
       const chosen = await getTripItinerary(who, selected.id).catch(() => null);
       if (chosen) {
         const [brand, prefs] = await Promise.all([
@@ -185,30 +199,44 @@ export default async function AppPage({
       );
     }
 
-    // A Gold or Business account with no trip to show yet — say so plainly, and
-    // offer the way to fix it, rather than pretending with a sample.
+    // Nothing to show yet — say plainly which of the three reasons it is,
+    // rather than pretending with a sample. The trip may not be in the app at
+    // all (no pass spent on it), it may have no dates, or there may be no trip.
     const dated = trips.filter((t) => t.startDate && t.endDate);
+    // Only trips that would actually open are offered as ready. Listing every
+    // dated trip was fine when the app came with the account; with the app
+    // bought a trip at a time it would be a list of doors that do not open.
+    const passes = await readTripPasses(who);
+    const openable = appCoversEveryTrip(plan) ? dated : dated.filter((t) => tripHasPass(passes, t.id));
+    const needsPass = Boolean(selected) && !covered;
     return (
       <main className="min-h-screen bg-[var(--cream)]">
         <Navbar />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">The White Glove app</p>
-          <EmptyState
-            title={selected ? `${selected.name} needs its dates.` : "You don't have a trip yet."}
-            description={
-              selected
-                ? "The app shows a trip a day at a time, so it needs the trip's start and end dates. Open it in the planner, set the dates, and it fills in here, ready for the phone."
-                : servesClients
-                  ? "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app you can hand your client."
-                  : "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app in your pocket."
-            }
-            action={<LinkButton href="/itinerary">Open the planner</LinkButton>}
-          />
-          {dated.length > 0 && (
+          {needsPass && selected ? (
+            // The trip exists and is fine; it simply has no pass on it. This is
+            // its own state rather than an error, and the way out of it is one
+            // button — see components/companion/TripAppCode.tsx.
+            <TripAppCode tripId={selected.id} tripName={selected.name} />
+          ) : (
+            <EmptyState
+              title={selected ? `${selected.name} needs its dates.` : "You don't have a trip yet."}
+              description={
+                selected
+                  ? "The app shows a trip a day at a time, so it needs the trip's start and end dates. Open it in the planner, set the dates, and it fills in here, ready for the phone."
+                  : servesClients
+                    ? "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app you can hand your client."
+                    : "Build a trip in the planner — its dates, where you are staying, and the stops — and it appears here as the app in your pocket."
+              }
+              action={<LinkButton href="/itinerary">Open the planner</LinkButton>}
+            />
+          )}
+          {openable.length > 0 && (
             <div className="mt-2 border-t border-[var(--gold-light)] pt-5">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-stone-500">Trips ready to open</p>
               <ul className="mt-3 flex flex-col gap-2">
-                {dated.map((t) => (
+                {openable.map((t) => (
                   <li key={t.id}>
                     <Link href={`/app?trip=${t.id}`} className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
                       {t.name}
@@ -225,12 +253,12 @@ export default async function AppPage({
     );
   }
 
-  // Signed in with no plan yet — the only state the app is not part of (every
-  // paid plan cleared the gate above). Say what it is, and point at One Trip,
-  // the first and cheapest plan that includes it. It still takes a client's
-  // code, since a client may have their own account and a code from their
-  // adviser at once. The itineraries "See the app" link can land here, so this
-  // is where that promise has to be true.
+  // Signed in, with no advisor plan and no pass ever bought — the one state
+  // the app is not part of. Say what it is and point at the Trip Pass, which
+  // opens one trip. It still takes a client's code, since a client may have
+  // their own account and a code from their adviser at once. The itineraries
+  // "See the app" link can land here, so this is where that promise has to be
+  // true.
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
@@ -254,8 +282,8 @@ export default async function AppPage({
         </div>
 
         <p className="text-base leading-7 text-stone-600">
-          The app comes with every plan. You are on {PLAN_LABELS[plan]}. Choose a plan from your account, and it
-          opens.
+          You are on {PLAN_LABELS[plan]}, which builds the trip. A {PLAN_LABELS.one_trip} opens one trip here, on
+          your phone; {PLAN_LABELS.starter} and {PLAN_LABELS.pro} open every trip you run.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           {/* Main's newer copy ("Choose a plan" — plans are self-serve now, not

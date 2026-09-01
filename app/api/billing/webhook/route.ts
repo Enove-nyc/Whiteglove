@@ -6,6 +6,7 @@ import { isOwner as isAgencyOwner } from "@/lib/agency";
 import { sendSubscriptionNotification } from "@/lib/email";
 import { identityKey } from "@/lib/identity";
 import { isOneTimePlan, isPaidPlan } from "@/lib/plan-billing";
+import { grantTripPass } from "@/lib/trip-pass-store";
 import {
   accountForCustomer,
   ownEntitledPlan,
@@ -40,9 +41,17 @@ export const dynamic = "force-dynamic";
  * and cancelled it, keeps what the owner gave them.
  */
 
-/** Grant a One Trip purchase — the one thing common to it settling immediately
+/** Grant a Trip Pass purchase — the one thing common to it settling immediately
  *  (a card, at checkout) and settling days later (an async payment method). */
-async function grantOneTimePurchase(account: string, plan: AccountPlan): Promise<void> {
+async function grantOneTimePurchase(account: string, plan: AccountPlan, trip?: string): Promise<void> {
+  // THE PASS IS THE THING BOUGHT. It is granted first and its failure is the
+  // loud one, because this — not the plan field — is what actually opens a
+  // trip in the app (lib/companion-access.ts). A pass bought while looking at
+  // a trip lands already spent on it; bought from the pricing page it is spare
+  // until the buyer chooses which trip it is for.
+  if (!(await grantTripPass(account, trip))) {
+    console.error("[billing] paid but the Trip Pass could not be written:", { account, plan, trip });
+  }
   if (!(await setPlan(account, plan, "Stripe one-time purchase"))) {
     console.error("[billing] paid but the plan could not be set:", { account, plan });
   }
@@ -61,6 +70,12 @@ async function accountFor(object: Record<string, unknown>): Promise<string> {
   if (typeof reference === "string" && reference) return reference;
   const customer = customerIdOf(object.customer);
   return customer ? ((await accountForCustomer(customer)) ?? "") : "";
+}
+
+/** The trip a Trip Pass was bought from, if the checkout carried one. */
+function tripFrom(object: Record<string, unknown>): string | undefined {
+  const metadata = (object.metadata ?? {}) as Record<string, string>;
+  return typeof metadata.trip === "string" && metadata.trip ? metadata.trip : undefined;
 }
 
 function planFrom(object: Record<string, unknown>): AccountPlan | null {
@@ -123,7 +138,7 @@ export async function POST(request: NextRequest) {
           console.log("[billing] one-time checkout completed but not yet paid — waiting on async settlement:", { account, plan });
           return NextResponse.json({ received: true });
         }
-        await grantOneTimePurchase(account, plan);
+        await grantOneTimePurchase(account, plan, tripFrom(object));
         return NextResponse.json({ received: true });
       }
 
@@ -174,7 +189,7 @@ export async function POST(request: NextRequest) {
       // Starter/Pro subscription — one that would outlive the subscription
       // itself ending.
       if (object.mode === "payment" || isOneTimePlan(plan)) {
-        await grantOneTimePurchase(account, plan);
+        await grantOneTimePurchase(account, plan, tripFrom(object));
       }
       return NextResponse.json({ received: true });
     }

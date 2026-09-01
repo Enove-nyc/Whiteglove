@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
-import { mayUseCompanionApp } from "@/lib/account-limits";
+import { mayReachTheApp } from "@/lib/companion-access";
 import { getAppPrefs, setAppPrefs } from "@/lib/app-prefs-store";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   // The app's own settings — the same gate the app itself reads: any paid
   // plan carrying its own trip, an advisor handing it out, or both at once.
-  if (!mayUseCompanionApp(await getPlan(email))) {
+  if (!(await mayReachTheApp(email, await getPlan(email)))) {
     return NextResponse.json({ error: "The app is part of every paid plan — choose one first." }, { status: 403 });
   }
   const body = (await request.json().catch(() => null)) as { kosherFeatures?: unknown } | null;
