@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
-import { checkTripFlightStatus, getSharedItineraryByShareId, getTripAlerts } from "@/lib/account-store";
+import { mayOpenTripInApp } from "@/lib/companion-access";
+import { checkTripFlightStatus, getShareKind, getSharedItineraryByShareId, getTripAlerts } from "@/lib/account-store";
 import { emptyItinerary, unitsOf } from "@/data/itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { readBrand } from "@/lib/business-brand-store";
@@ -29,20 +30,38 @@ export const dynamic = "force-dynamic";
  * the document. The client needs no account and no plan — they were given the
  * link, and it opens THIS trip and no other of the agency's.
  *
- * HANDING THE APP TO A CLIENT IS BUSINESS-ONLY. Gold has the app for its own
- * trips, but only a trip whose OWNER is on Business opens this way for a client;
- * anyone else's share link falls back to the ordinary read-only itinerary at
- * /i/[shareId]. The gate is mayServeCompanionClients, the client-facing half.
+ * TWO KINDS OF CODE COME THROUGH HERE, and the difference is who is on the
+ * other end of it — see ShareKind in lib/account-store.ts.
+ *
+ * A CLIENT CODE is an adviser handing a trip to the person taking it. Two
+ * people, so the app carries the conversation with the adviser. Making one is
+ * Advisor Starter and up (mayServeCompanionClients); anyone else's share link
+ * falls back to the ordinary read-only itinerary at /i/[shareId].
+ *
+ * A SELF CODE is somebody carrying their OWN trip on their own phone — the
+ * thing a Trip Pass buys. It opens the identical app, on the strength of a
+ * pass spent on that trip (mayOpenTripInApp), and it is handed NO chat: there
+ * is nobody on the other end to message, so the Messages tab is not rendered
+ * at all rather than shown and disappointed. The routes behind it are closed
+ * too — resolveCompanionShare refuses a self code outright.
  */
 export default async function SharedAppPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
   const shared = await getSharedItineraryByShareId(shareId);
   if (!shared) redirect(`/i/${shareId}`); // the shared view shows the "not available" notice
 
-  // Handing the app to a client is Business-only; a non-Business owner's link
-  // is still a real shared trip, just as the document rather than the app.
   const plan = await getPlan(shared.ownerEmail);
-  if (!mayServeCompanionClients(plan)) redirect(`/i/${shareId}`);
+  const kind = (await getShareKind(shareId)) ?? "client";
+  if (kind === "self") {
+    // The owner's own phone. The gate is the trip's, not the plan's: a Trip
+    // Pass spent on THIS trip, or an advisor plan that covers every trip.
+    // Without one it is still a real shared trip, just as the document.
+    if (!shared.tripId || !(await mayOpenTripInApp(shared.ownerEmail, plan, shared.tripId))) redirect(`/i/${shareId}`);
+  } else if (!mayServeCompanionClients(plan)) {
+    // Handing the app to a CLIENT is Advisor Starter and up; a link from
+    // anyone else is still a real shared trip, just as the document.
+    redirect(`/i/${shareId}`);
+  }
 
   // A whole-trip link only ever shows Payments when the trip has exactly one
   // family/traveler on it — a link not scoped to one unit has no way to know
@@ -73,11 +92,21 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   }
 
   // The client's side of the thread: this link IS the channel to their advisor.
-  const chat = {
-    shareId,
-    side: "client" as const,
-    advisorName: trip.contactName ?? "your advisor",
-  };
+  //
+  // A SELF CODE GETS NONE OF THIS, and that is the whole block. CompanionApp
+  // draws its Messages tab, its unread badge, its polling and the message card
+  // on the home screen from this one prop; passing nothing removes all of them
+  // together. There is no tab to hide and no empty thread to open, because on
+  // a trip somebody planned for themselves the only person to write to is the
+  // person reading.
+  const chat =
+    kind === "self"
+      ? undefined
+      : {
+          shareId,
+          side: "client" as const,
+          advisorName: trip.contactName ?? "your advisor",
+        };
 
   return (
     <main>

@@ -26,6 +26,7 @@ import { PAID_PLANS, type PaidPlan } from "@/lib/plan-billing";
  */
 const FEATURE_LINES: Array<{ key: keyof PlanFeatures; line: string }> = [
   { key: "companionApp", line: "The White Glove app for your own trip — a day at a time, and the wallet on your phone with no signal" },
+  { key: "appOnEveryTrip", line: "On every trip you are running, with no pass to buy for each one" },
   { key: "companionClients", line: "Hand each client their own app by a link, and keep the conversation with them in one inbox" },
   { key: "ownBranding", line: "Your name and logo on the client's app and printed itinerary, in place of ours" },
   { key: "templates", line: "Save a trip as a template and start the next one from it" },
@@ -41,6 +42,13 @@ function limitLines(plan: AccountPlan): string[] {
     lines.push(limits.trips === 1 ? "One trip" : `${limits.trips} trips at a time`);
   } else {
     lines.push("As many trips as you are running");
+  }
+  // The pass buys the app on ONE trip, and the card has to say which trip that
+  // is or it reads as the app on all of them. Said here, next to the ceiling it
+  // qualifies, rather than folded into the feature line — the feature is the
+  // app, and this is its scope.
+  if (PLAN_FEATURES[plan].companionApp && !PLAN_FEATURES[plan].appOnEveryTrip) {
+    lines.push("The app on the one trip you buy the pass for — a second trip is a second pass");
   }
   if (limits.printsPerWeek !== UNLIMITED) {
     lines.push(`${limits.printsPerWeek} printable ${limits.printsPerWeek === 1 ? "copy" : "copies"} a week`);

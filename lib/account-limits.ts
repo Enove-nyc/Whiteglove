@@ -98,6 +98,16 @@ export type PlanFeatures = {
    */
   companionApp: boolean;
   /**
+   * The app on EVERY trip the account runs, rather than one trip at a time.
+   *
+   * Advisor Starter and Pro, whose whole job is running several trips at once.
+   * A Trip Pass is the other shape: it is bought per trip and spent on one
+   * (lib/trip-pass.ts), because a pass that opened every trip forever would be
+   * a subscription sold as a single fee. Personal holds no passes until one is
+   * bought, so it is false here for the same reason.
+   */
+  appOnEveryTrip: boolean;
+  /**
    * The app for OTHER PEOPLE — the client-facing half. Starter and Pro.
    *
    * A link that opens one trip as the app on a client's phone, the chat with
@@ -121,10 +131,10 @@ export type PlanFeatures = {
 };
 
 export const PLAN_FEATURES: Record<AccountPlan, PlanFeatures> = {
-  free: { ownBranding: false, assistantHistory: false, companionApp: false, companionClients: false, templates: false, analytics: false },
-  one_trip: { ownBranding: false, assistantHistory: true, companionApp: true, companionClients: false, templates: false, analytics: false },
-  starter: { ownBranding: false, assistantHistory: true, companionApp: true, companionClients: true, templates: false, analytics: false },
-  pro: { ownBranding: true, assistantHistory: true, companionApp: true, companionClients: true, templates: true, analytics: true },
+  free: { ownBranding: false, assistantHistory: false, companionApp: false, appOnEveryTrip: false, companionClients: false, templates: false, analytics: false },
+  one_trip: { ownBranding: false, assistantHistory: true, companionApp: true, appOnEveryTrip: false, companionClients: false, templates: false, analytics: false },
+  starter: { ownBranding: false, assistantHistory: true, companionApp: true, appOnEveryTrip: true, companionClients: true, templates: false, analytics: false },
+  pro: { ownBranding: true, assistantHistory: true, companionApp: true, appOnEveryTrip: true, companionClients: true, templates: true, analytics: true },
 };
 
 export function featuresFor(plan: AccountPlan): PlanFeatures {
@@ -141,9 +151,25 @@ export function mayBrandOwnItinerary(plan: AccountPlan): boolean {
   return featuresFor(plan).ownBranding;
 }
 
-/** Whether this plan reaches the White Glove app at /app for its own trips. */
+/**
+ * Whether the app is part of this plan at all — what the pricing page
+ * advertises. It does NOT say which trips; that is appCoversEveryTrip below,
+ * and the per-trip answer is mayOpenTripInApp in lib/companion-access.ts.
+ */
 export function mayUseCompanionApp(plan: AccountPlan): boolean {
   return featuresFor(plan).companionApp;
+}
+
+/**
+ * Whether the app comes with every trip, or one trip at a time.
+ *
+ * True is the advisor plans, whose trips are their work. False is everybody
+ * else, where a trip opens in the app because a Trip Pass was spent on it —
+ * see mayOpenTripInApp in lib/companion-access.ts, which is the only thing
+ * that should be asking either question at a door.
+ */
+export function appCoversEveryTrip(plan: AccountPlan): boolean {
+  return featuresFor(plan).appOnEveryTrip;
 }
 
 /** Whether this plan may hand the app to clients — links, chat, the inbox. */
@@ -408,6 +434,7 @@ export function describePrints(prints: PrintEvent[], limits: PlanLimits, now: nu
  */
 const FEATURE_LABELS: Record<keyof PlanFeatures, string> = {
   companionApp: "the White Glove app for your own trip",
+  appOnEveryTrip: "the app on every trip rather than one at a time",
   assistantHistory: "your assistant history",
   companionClients: "handing a client their own app",
   ownBranding: "your own name and logo on it",
