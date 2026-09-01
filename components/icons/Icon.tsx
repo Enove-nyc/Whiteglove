@@ -37,6 +37,8 @@ export type IconName =
   | "star-filled"
   | "lightbulb"
   | "plane"
+  | "sun"
+  | "snow"
   | "bed"
   | "check"
   | "sparkle"
@@ -160,6 +162,20 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M9 18h6" />
       <path d="M10 21h4" />
       <path d="M12 3a6 6 0 0 0-3.4 10.9c.9.7 1.4 1.6 1.4 2.6h4c0-1 .5-1.9 1.4-2.6A6 6 0 0 0 12 3Z" />
+    </>
+  ),
+  // Seasonal, for the "Planning now" chips. Stroke-only at the set's weight,
+  // like everything else here — no fill, no second colour.
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" />
+    </>
+  ),
+  snow: (
+    <>
+      <path d="M12 2v20M3.5 7l17 10M20.5 7l-17 10" />
+      <path d="M9.5 4.2 12 6.5l2.5-2.3M9.5 19.8 12 17.5l2.5 2.3" />
     </>
   ),
   plane: (

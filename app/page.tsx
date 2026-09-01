@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import PromotionBanner from "@/components/PromotionBanner";
 import SearchMemory from "@/components/SearchMemory";
 import SeasonalSpotlight from "@/components/SeasonalSpotlight";
+import { PlanningNowRow } from "@/components/PlanningNowRow";
 import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
@@ -14,6 +15,8 @@ import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
 import { currentSpotlight } from "@/lib/seasonal-spotlight-view";
+import { planningNow } from "@/data/planning-now";
+import { readPlanningChips } from "@/lib/planning-now-store";
 import { website } from "@/lib/structured-data";
 import ItinerariesHome from "@/components/ItinerariesHome";
 import { BRAND_ORIGIN, brandFromRequestHeaders, currentBrand } from "@/lib/site-brand";
@@ -125,7 +128,7 @@ export default async function Home() {
   }
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, caseStudies, booking, spotlight] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, caseStudies, booking, spotlight, planningChips] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
     // Genuine, permitted, approved only — section renders nothing when empty.
@@ -135,6 +138,7 @@ export default async function Home() {
     // all — a seasonal prompt that is always on the front page is not
     // seasonal, it is furniture.
     currentSpotlight(),
+    readPlanningChips(),
   ]);
 
   return (
@@ -174,6 +178,18 @@ export default async function Home() {
           <SeasonalSpotlight window={spotlight} />
         </section>
       )}
+
+      {/* ---- What people are planning right now ---------------------------
+          A quiet row of at most three chips, each opening a destination list
+          the site already has. Below the search and above Featured on
+          purpose: the page still opens on the search and nothing else, and
+          this is a hint about the season rather than a second navigation.
+
+          Which chips are in season is worked out here from the server's date
+          rather than cached with the list, so one cannot outstay its window.
+          When none are, the component renders nothing — no empty container,
+          no gap. ------------------------------------------------------- */}
+      <PlanningNowRow chips={planningNow(planningChips, new Date().toISOString().slice(0, 10))} />
 
       {/* ---- 2. Featured --------------------------------------------------
           The six main sections of the site, as cards — not individual places.
