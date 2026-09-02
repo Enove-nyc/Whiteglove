@@ -6,7 +6,6 @@ import {
   ASSISTANT_HOME_LABEL,
   ASSISTANT_HOME_SUPPORT,
   ASSISTANT_INPUT_NOTICE,
-  SOURCED_LABEL,
   citedSources,
   claimsWhiteGloveReview,
   stripFalseAttribution,

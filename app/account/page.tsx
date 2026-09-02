@@ -1,6 +1,8 @@
 import Link from "next/link";
 import TravelPreferencesPanel from "@/components/TravelPreferencesPanel";
 import RecentPlaces from "@/components/RecentPlaces";
+import TripUpdates from "@/components/TripUpdates";
+import ForwardingAddress from "@/components/ForwardingAddress";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
@@ -149,8 +151,20 @@ export default async function AccountPage() {
           action={canAdmin ? <OpenAdminButton /> : undefined}
         />
 
+        {/* WHAT HAS CHANGED SINCE THEY PLANNED IT — above the trips rather
+            than below, because a delayed flight or a level-4 advisory is the
+            one thing on this page that will not wait. Draws nothing at all
+            when nothing has changed, which is most visits. */}
+        <TripUpdates email={who} today={new Date().toISOString().slice(0, 10)} />
+
         {/* Itineraries, Route, Favorites. */}
         <AccountRoutePanel />
+
+        {/* The address to forward a booking to. In the planner it sits inside
+            Smart Import, which is where it is least useful — forwarding is
+            done in a mail app, so the address has to be somewhere it can be
+            copied from. Absent entirely until inbound mail is actually wired. */}
+        <ForwardingAddress />
 
         <section aria-labelledby="account-packing" className="mt-8">
           <h2 id="account-packing" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Packing list</h2>
