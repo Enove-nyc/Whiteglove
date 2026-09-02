@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TravelPreferencesPanel from "@/components/TravelPreferencesPanel";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
@@ -160,6 +161,18 @@ export default async function AccountPage() {
             <LinkButton href="/optimize" variant="secondary">Review your itinerary</LinkButton>
             <LinkButton href="/translate" variant="secondary">Translate your itinerary</LinkButton>
           </div>
+        </section>
+
+        {/* TRAVEL PREFERENCES — the memory, and the screen that makes it one
+            rather than a rumour. Above Details on purpose: Details is identity,
+            billing and advisor tooling, and this belongs to every account
+            including the free one. Deliberately NOT inside the app card, which
+            is gated on a paid plan. */}
+        <section aria-labelledby="account-preferences" className="mt-8">
+          <h2 id="account-preferences" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
+            Travel preferences
+          </h2>
+          <TravelPreferencesPanel />
         </section>
 
         <section aria-labelledby="account-details" className="mt-8">
