@@ -102,6 +102,17 @@ export default async function PrivacyPolicyPage() {
           <p>We keep your account information for as long as your account is active. Verification and reset codes are short-lived and expire automatically. You can ask us to delete your account and its data at any time using the contact details below.</p>
         </Section>
 
+        {/* THE PREFERENCES AND THE ASSISTANT, because the product now does
+            this and a policy that does not say so is out of date rather than
+            brief. Kept to what a reader needs: what is saved, that they chose
+            it, what it is used for, and how to see it or be rid of it. */}
+        <Section title="Travel preferences and the AI assistant">
+          <p>If you are signed in, you can save travel preferences — the pace you like, your interests, kashrus and Shabbos requirements, where you prefer to stay, how you prefer to get about, and any access needs. You choose these on your account page; nothing is added to them from what you search for, open or ask.</p>
+          <p className="mt-4">When you use the AI assistant while signed in, those saved preferences are sent with your question so the answer suits how you travel. Nothing else about you goes with it — not your name, your email, your trips, or anything you have asked before. Your account page shows the exact wording the assistant is given.</p>
+          <p className="mt-4">Your preferences also fill in the planning questions so you are not asked them twice. Changing an answer while planning a trip applies to that trip and does not change what is saved.</p>
+          <p className="mt-4">You can change any preference, or delete all of them, from your account page at any time. Deleting removes them from our records; it does not affect answers you have already been given. Separately, if you are signed in we keep a short list of the last few places you were reading about, so you can pick up where you left off on another device. That list holds at most eight places, clears itself after a fortnight, is never used for anything else, and has its own button to forget it.</p>
+        </Section>
+
         <Section title="Security">
           <p>We protect your information with industry-standard measures: passwords are salted and hashed, sign-in sessions and account codes are cryptographically signed and time-limited, and traffic is served over encrypted connections. No online service can be perfectly secure, but we work to keep your information safe.</p>
         </Section>
