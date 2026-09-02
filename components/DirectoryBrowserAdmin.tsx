@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ListingQuickPanel } from "@/components/ListingQuickPanel";
 import { useMemo, useState } from "react";
 import {
   countriesIn,
@@ -126,11 +127,13 @@ export default function DirectoryBrowserAdmin({ entries }: { entries: DirectoryE
                   <Link href={entry.editHref} className={smallButton}>
                     Edit
                   </Link>
-                  {entry.viewHref && (
-                    <a href={entry.viewHref} target="_blank" rel="noreferrer" className={smallButton}>
-                      View
-                    </a>
-                  )}
+                  {/* VIEW OPENS HERE, not on the public page. It used to link
+                      out — to the whole directory with no anchor for a
+                      business, or to a list that loads twenty-four at a time
+                      for the rest — so you landed at the top and had to find
+                      your own row again. And an unpublished listing had no
+                      public page to land on at all. */}
+                  <ListingQuickPanel listing={entry.quick} />
                 </div>
               </li>
             ))}

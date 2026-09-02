@@ -116,10 +116,16 @@ export function isOpen(window: SeasonalWindow, today: string): boolean {
 /**
  * The one spotlight to show, or null.
  *
- * ONE, NEVER A ROW OF THEM. Two things shouted at once is nothing shouted, and
- * the point of a seasonal prompt is that it is the thing that matters this
- * month. Featured wins; after that, whichever closes soonest, because it is the
- * one with the least time left to be useful.
+ * ONE SPOTLIGHT, NEVER A ROW OF THEM. Two things shouted at once is nothing
+ * shouted, and the point of a seasonal PROMPT is that it is the thing that
+ * matters this month. Featured wins; after that, whichever closes soonest,
+ * because it is the one with the least time left to be useful.
+ *
+ * This rule is about the spotlight, not about the page. The "Planning now"
+ * chips (data/planning-now.ts) are a different thing at a different volume —
+ * a line of small links under the search, not a panel — and the owner asked
+ * for them alongside this. Neither shouts over the other: the spotlight is
+ * still the only prompt, and the chips are still only links.
  *
  * `hasDestinations` is asked rather than assumed: a window whose category is
  * empty is not shown at all. Passing a predicate keeps this pure — the caller

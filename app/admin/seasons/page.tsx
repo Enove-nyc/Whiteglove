@@ -1,6 +1,8 @@
 import SeasonalWindowsManager from "@/components/SeasonalWindowsManager";
+import PlanningNowManager from "@/components/PlanningNowManager";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { readSeasonalWindowsFresh, seasonalStoreAvailable } from "@/lib/seasonal-windows-store";
+import { planningNowStoreAvailable, readPlanningChipsFresh } from "@/lib/planning-now-store";
 import { spotlightCounts, MIN_SPOTLIGHT_DESTINATIONS } from "@/lib/seasonal-spotlight-view";
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 
@@ -8,7 +10,11 @@ export const dynamic = "force-dynamic";
 
 export default async function SeasonsAdminPage() {
   const today = new Date().toISOString().slice(0, 10);
-  const [windows, destinations] = await Promise.all([readSeasonalWindowsFresh(today), getVacationDestinations()]);
+  const [windows, destinations, chips] = await Promise.all([
+    readSeasonalWindowsFresh(today),
+    getVacationDestinations(),
+    readPlanningChipsFresh(today),
+  ]);
 
   return (
     <>
@@ -27,6 +33,10 @@ export default async function SeasonsAdminPage() {
         minimum={MIN_SPOTLIGHT_DESTINATIONS}
         storeReady={seasonalStoreAvailable()}
       />
+      {/* The other half of "what does the front page say about the time of
+          year" — same screen, separate store, so one being unavailable does
+          not take the other down with it. */}
+      <PlanningNowManager chips={chips} today={today} storeReady={planningNowStoreAvailable()} />
     </>
   );
 }

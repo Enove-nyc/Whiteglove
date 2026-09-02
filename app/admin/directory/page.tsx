@@ -1,3 +1,4 @@
+import { emptyQuickEdit } from "@/data/listing-quick-edit";
 import AdminNavLink from "@/components/AdminNavLink";
 import AdminSectionScreens from "@/components/AdminSectionScreens";
 import DirectoryBrowserAdmin from "@/components/DirectoryBrowserAdmin";
@@ -36,6 +37,25 @@ export default async function AdminDirectoryPage() {
         country: p.regions?.[0] ?? "",
         editHref: `/admin/directory/businesses?slug=${p.slug}`,
         viewHref: "/directory",
+        // The panel View opens. A business IS savable from here — its store
+        // takes a partial update — which is why it was the one kind whose
+        // View pointed at a page with no anchor to scroll to at all.
+        quick: {
+          kind: "business" as const,
+          id: p.slug,
+          savable: true,
+          fullEditHref: `/admin/directory/businesses?slug=${p.slug}`,
+          fields: {
+            ...emptyQuickEdit(),
+            name: p.name,
+            city: p.basedIn ?? "",
+            country: p.regions?.[0] ?? "",
+            phone: p.phone ?? "",
+            website: p.website ?? "",
+            description: p.description ?? "",
+            published: true,
+          },
+        },
         published: true,
         missing: [
           !p.phone && !p.email ? "no way to contact them" : "",

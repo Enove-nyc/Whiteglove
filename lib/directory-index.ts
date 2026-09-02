@@ -7,6 +7,7 @@
 // gathers them into one index the owner can search, and each entry says where
 // it is edited.
 
+import { emptyQuickEdit, type QuickListing } from "@/data/listing-quick-edit";
 import { cemeteries } from "@/data/cemeteries";
 import { destinations } from "@/data/destinations";
 import { heritageTownHref } from "@/lib/route-migration";
@@ -24,6 +25,12 @@ export type DirectoryEntry = {
   editHref: string;
   /** Where a visitor sees it, when it has a public page. */
   viewHref?: string;
+  /**
+   * What the View panel opens with. Built here because this file already has
+   * the whole record in hand — the panel then needs no second read, and the
+   * list cannot show one name while the panel shows another.
+   */
+  quick: QuickListing;
   published: boolean;
   /** Plain-English notes about what is missing — never blocking, just honest. */
   missing: string[];
@@ -71,6 +78,14 @@ export function builtInDirectory(): DirectoryEntry[] {
       editHref: `/admin/kevarim?slug=${c.slug}`,
       viewHref: `/cemeteries/${c.slug}`,
       published: true,
+      quick: {
+        kind: "kever",
+        id: c.slug,
+        savable: false,
+        whyNot: "A beis hachaim is changed in its own editor — its contacts and burials are what this admin writes.",
+        fullEditHref: `/admin/kevarim?slug=${c.slug}`,
+        fields: { ...emptyQuickEdit(), name: c.name, city: c.city, country: c.country, published: true },
+      },
       missing: cemeteryGaps(c),
       haystack: `${c.name} ${c.yiddishName} ${c.city} ${c.yiddishCity} ${c.country} ${c.burials
         .map((b) => `${b.name} ${b.knownAs ?? ""}`)
@@ -88,6 +103,13 @@ export function builtInDirectory(): DirectoryEntry[] {
       editHref: `/admin/destinations?slug=${d.slug}`,
       viewHref: heritageTownHref(d.slug),
       published: true,
+      quick: {
+        kind: "town",
+        id: d.slug,
+        savable: true,
+        fullEditHref: `/admin/destinations?slug=${d.slug}`,
+        fields: { ...emptyQuickEdit(), name: d.city, city: d.city, country: d.country, published: true },
+      },
       missing: [],
       haystack: `${d.city} ${d.yiddishCity ?? ""} ${d.country}`.toLowerCase(),
     });

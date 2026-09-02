@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import MixedText from "@/components/MixedText";
 import CommandCenterNotify from "@/components/CommandCenterNotify";
 import TripAdvisories from "@/components/TripAdvisories";
+import { BeforeYouGo } from "@/components/BeforeYouGo";
 import TripDocuments from "@/components/TripDocuments";
 import { accountCookieName, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
 import { daysUntil, tripReadiness, type StopReadiness } from "@/lib/command-center";
@@ -211,6 +212,14 @@ export default async function CommandCenterPage() {
             know about my trip". */}
         <div className="mt-12 border-t border-[var(--gold-light)] pt-10">
           <TripAdvisories roll={advisories} unavailable={feed.available ? undefined : feed.reason} />
+        </div>
+
+        {/* The official pages for the countries on this trip. Renders nothing
+            when the trip says nowhere it is going, or when the site holds no
+            official page for where it goes — an empty card here would be worse
+            than none, because a reader would take it for "nothing to check". */}
+        <div className="mt-12">
+          <BeforeYouGo countries={advisories.countries.map((c) => c.country)} fetchedAt={feed.available ? feed.fetchedAt : undefined} />
         </div>
 
         <div className="mt-12 border-t border-[var(--gold-light)] pt-10">

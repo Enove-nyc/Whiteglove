@@ -37,8 +37,13 @@ export type IconName =
   | "star-filled"
   | "lightbulb"
   | "plane"
+  | "sun"
+  | "snow"
   | "bed"
   | "check"
+  | "eye"
+  | "eye-off"
+  | "dot"
   | "sparkle"
   | "camera"
   | "video"
@@ -162,6 +167,20 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M12 3a6 6 0 0 0-3.4 10.9c.9.7 1.4 1.6 1.4 2.6h4c0-1 .5-1.9 1.4-2.6A6 6 0 0 0 12 3Z" />
     </>
   ),
+  // Seasonal, for the "Planning now" chips. Stroke-only at the set's weight,
+  // like everything else here — no fill, no second colour.
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" />
+    </>
+  ),
+  snow: (
+    <>
+      <path d="M12 2v20M3.5 7l17 10M20.5 7l-17 10" />
+      <path d="M9.5 4.2 12 6.5l2.5-2.3M9.5 19.8 12 17.5l2.5 2.3" />
+    </>
+  ),
   plane: (
     <>
       <path d="M10.5 13.5 3.5 11l1.2-1.2 5.6.7 4.5-4.5a1.6 1.6 0 0 1 2.3 2.3l-4.5 4.5.7 5.6L12 19.6l-2.5-7" />
@@ -189,6 +208,24 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   check: <path d="M5 12.5 9.5 17 19 7" />,
+  // Seen. The one icon this set was missing, and the reason a preview control
+  // and an "opened" status both had to invent their own before now.
+  eye: (
+    <>
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  // Not seen, and deliberately the same eye so the pair reads as one idea.
+  "eye-off": (
+    <>
+      <path d="M2 12s3.6-6.5 10-6.5c1.6 0 3 .4 4.2 1M22 12s-3.6 6.5-10 6.5c-1.6 0-3-.4-4.2-1" />
+      <path d="M4 4l16 16" />
+    </>
+  ),
+  // A small open ring — "nothing has happened here yet", with no tick to
+  // misread as done.
+  dot: <circle cx="12" cy="12" r="5" />,
   // The assistant's mark: a four-point spark, same 1.6 stroke as the rest.
   sparkle: (
     <>

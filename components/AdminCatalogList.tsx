@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ListingQuickPanel } from "@/components/ListingQuickPanel";
 import { useMemo, useState } from "react";
 import type { AdminCatalogEntry } from "@/lib/admin-listing-catalog";
 
@@ -48,7 +49,13 @@ export default function AdminCatalogList({
                 {item.ownerAdded ? " · added here" : ""}
               </p>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm">
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              {/* The same panel the directory opens. "Public page" stays beside
+                  it, because looking at the live page is still a real thing to
+                  want — it just is not what View meant, and on these lists it
+                  landed at the top rather than on the row, since they load
+                  twenty-four at a time and the anchor is not there yet. */}
+              <ListingQuickPanel listing={item.quick} />
               <Link href={item.viewHref} className="underline decoration-[var(--gold)] underline-offset-4">
                 Public page
               </Link>
