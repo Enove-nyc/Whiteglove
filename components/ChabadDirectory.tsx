@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SaveListingButton } from "@/components/SaveListingButton";
 import {
   CHABAD_FEATURE_KEYS,
   CHABAD_FEATURE_LABELS,
@@ -178,9 +179,21 @@ function ChabadCard({ listing }: { listing: ChabadListing }) {
       <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
         {listing.city}, {listing.country}
       </p>
-      <h3 className="mt-1 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
-        {listing.name}
-      </h3>
+      <div className="mt-1 flex items-start justify-between gap-3">
+        <h3 className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
+          {listing.name}
+        </h3>
+        {/* A shul is one of the things people most want to keep hold of while
+            planning, and it could not be saved at all. */}
+        <SaveListingButton
+          what="shul"
+          place={{
+            id: `shul-${listing.id}`,
+            name: listing.name,
+            address: listing.address || [listing.city, listing.country].filter(Boolean).join(", "),
+          }}
+        />
+      </div>
       <p className="mt-2 text-sm leading-6 text-stone-600">{listing.address}</p>
 
       {confirmed.length > 0 && (

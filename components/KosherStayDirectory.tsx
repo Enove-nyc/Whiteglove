@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SaveListingButton } from "@/components/SaveListingButton";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import MoreActions from "@/components/MoreActions";
@@ -182,7 +183,20 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">
               {s.city} · {s.country} · {s.kind}
             </p>
-            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{s.name}</h2>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{s.name}</h2>
+              {/* Saveable at last. A row rather than a page of its own, so the
+                  control sits on the row — and asks for the account only when
+                  somebody reaches for it. */}
+              <SaveListingButton
+                what="place to stay"
+                place={{
+                  id: `stay-${s.slug}`,
+                  name: s.name,
+                  address: [s.city, s.country].filter(Boolean).join(", "),
+                }}
+              />
+            </div>
             {/* Clamped on the list, whole in the markup. A browse page is
                 read by skimming down it, and an unbounded paragraph on each of
                 twenty-four cards is what made this the longest directory on

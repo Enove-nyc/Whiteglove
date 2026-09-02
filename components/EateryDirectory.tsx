@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SaveListingButton } from "@/components/SaveListingButton";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import SuggestEditPanel from "@/components/SuggestEditPanel";
 import ListToolbar from "@/components/ListToolbar";
@@ -139,7 +140,20 @@ export default function EateryDirectory({
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">
               {[e.city, e.country, e.kind, e.diet].filter(Boolean).join(" · ")}
             </p>
-            <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{e.name}</h3>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h3 className="mt-3 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{e.name}</h3>
+              {/* Saveable at last. A row rather than a page of its own, so the
+                  control sits on the row — and asks for the account only when
+                  somebody reaches for it. */}
+              <SaveListingButton
+                what="restaurant"
+                place={{
+                  id: `eatery-${e.slug}`,
+                  name: e.name,
+                  address: [e.city, e.country].filter(Boolean).join(", "),
+                }}
+              />
+            </div>
 
             {/* The kashrus line comes before anything practical because it is
                 the thing that decides whether the rest matters. The label
