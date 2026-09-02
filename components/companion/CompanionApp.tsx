@@ -158,6 +158,24 @@ const WALLET_ATTACH_KIND: Record<NonNullable<CompanionWalletRow["stopKind"]>, st
  * OFF UNTIL PRESSED. Nothing uploaded before this existed became visible; see
  * the note on ItinAttachment.shared.
  */
+/**
+ * True while the viewport matches `query`. Server and first paint report false
+ * (no matchMedia), then it reconciles to the real value — so a phone never
+ * flashes the desktop layout, and the desktop layout only appears once the
+ * width is actually known.
+ */
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const update = () => setMatches(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, [query]);
+  return matches;
+}
+
 function WalletShareToggle({
   tripId,
   row,
@@ -590,6 +608,11 @@ export default function CompanionApp({
       window.removeEventListener("online", goOnline);
     };
   }, []);
+
+  // On a computer or a tablet a real (non-showcase) trip is not a phone in a
+  // frame but a web page: a side rail of tabs and a wide content column. A
+  // phone (under 768px) and the marketing demo keep the phone layout.
+  const desktopWeb = useMediaQuery("(min-width: 768px)") && !trip.concierge;
 
   const advisor = trip.advisorName;
   const firstName = advisor.split(" ")[0];
@@ -1642,6 +1665,71 @@ export default function CompanionApp({
       </div>
     </div>
   );
+
+  // ── the same app, as a web page on a computer or a tablet ───────────────
+  // Not the phone stretched wide and not a phone in a frame, but the app
+  // re-laid as software you sit at: a navy side rail with the trip and its tabs
+  // down the left, and the chosen screen in a wide content column. Chat and the
+  // inbox fill that column; reading screens sit in a comfortable measure and
+  // scroll. Same screens, same tabs, same actions.
+  const chatty = st.screen === "messages" || st.screen === "chat";
+  const railBtn = (on: boolean): CSSProperties => ({
+    display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 14,
+    border: 0, cursor: "pointer", background: on ? GOLD : "transparent", color: on ? ON_GOLD : CREAM,
+    font: `${on ? 600 : 500} 14px/1 Inter,sans-serif`, textAlign: "left", width: "100%", transition: "background .18s ease",
+  });
+  const webShell = (
+    <div style={{ display: "flex", height: "100dvh", background: "#eef1f4", fontFamily: "Inter,system-ui,sans-serif", color: INK }}>
+      <aside style={{ width: 268, flexShrink: 0, background: NAVY, color: CREAM, display: "flex", flexDirection: "column", padding: "26px 16px 18px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5, padding: "0 8px 22px" }}>
+          <div style={{ font: "600 10px/1 Inter,sans-serif", letterSpacing: ".16em", textTransform: "uppercase", color: GOLD_ON_DARK }}>{kickers.home}</div>
+          <div style={{ font: `400 21px/1.2 ${serif}`, letterSpacing: "-.01em" }}>{titles.home}</div>
+        </div>
+        <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {tabs.map((t) => {
+            const on = t.bg === GOLD && !(t.id === "home" && st.screen === "alerts");
+            return (
+              <button key={t.id} onClick={() => go(t.id)} aria-current={on ? "page" : undefined} style={railBtn(on)}>
+                <span style={{ flex: 1 }}>{t.label}</span>
+                {t.badge && <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 14, background: GOLD }} />}
+              </button>
+            );
+          })}
+        </nav>
+        <button onClick={() => go("alerts")} aria-current={st.screen === "alerts" ? "page" : undefined} style={{ ...railBtn(st.screen === "alerts"), marginTop: "auto" }}>
+          <span style={{ flex: 1 }}>Changes</span>
+          {(open || unacknowledgedAlerts.length > 0) && <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: 14, background: GOLD }} />}
+        </button>
+      </aside>
+      <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "17px 30px", borderBottom: "1px solid rgba(38,50,58,.09)", background: "#fbfaf7" }}>
+          {canBack && <button onClick={back} aria-label="Back" className="wg-fade" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#fff", width: 34, height: 34, borderRadius: 12, cursor: "pointer", fontSize: 15, color: INK, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>←</button>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <div style={{ font: "600 9.5px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#b1852f" }}>{kickers[st.screen]}</div>
+            <div style={{ font: `400 20px/1.1 ${serif}`, letterSpacing: "-.01em" }}>{titles[st.screen]}</div>
+          </div>
+        </div>
+        {isOffline && (
+          <div style={{ flexShrink: 0, padding: "9px 30px", background: "#faf1de", borderBottom: "1px solid rgba(183,138,74,.28)", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 7, height: 7, borderRadius: 14, background: GOLD, flexShrink: 0 }} />
+            <span style={{ font: "600 11.5px/1.3 Inter,sans-serif", color: "#765321" }}>No connection — showing what was last loaded</span>
+          </div>
+        )}
+        <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{body}</div>
+        </div>
+      </main>
+    </div>
+  );
+
+  if (desktopWeb) {
+    return (
+      <>
+        <style>{CSS}</style>
+        {webShell}
+      </>
+    );
+  }
 
   return (
     <div className="wg-app-root">

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import AppCodeEntry from "@/components/companion/AppCodeEntry";
+import ClientCodeMemory from "@/components/companion/ClientCodeMemory";
 import TripAppCode from "@/components/companion/TripAppCode";
 import CompanionApp from "@/components/companion/CompanionApp";
 import Footer from "@/components/Footer";
@@ -12,6 +14,8 @@ import {
   accountCookieName,
   checkTripFlightStatus,
   getCurrentAccountSummary,
+  getSharedItineraryByShareId,
+  getSharedTraveler,
   getTripAlerts,
   getTripItinerary,
   getTrips,
@@ -78,9 +82,10 @@ function firstParam(value: string | string[] | undefined): string {
 export default async function AppPage({
   searchParams,
 }: {
-  searchParams: Promise<{ trip?: string | string[]; share_title?: string | string[]; share_text?: string | string[]; share_url?: string | string[] }>;
+  searchParams: Promise<{ trip?: string | string[]; share_title?: string | string[]; share_text?: string | string[]; share_url?: string | string[]; enter?: string | string[] }>;
 }) {
-  const cookie = (await cookies()).get(accountCookieName())?.value;
+  const cookieStore = await cookies();
+  const cookie = cookieStore.get(accountCookieName())?.value;
   const account = await getCurrentAccountSummary(cookie);
   const sessionEmail = readSessionEmail(cookie);
   const signedInAs = account?.email || sessionEmail || "";
@@ -88,6 +93,26 @@ export default async function AppPage({
   // see lib/account-store.ts's resolveBusinessOwner. An account with no
   // team just resolves to itself.
   const who = signedInAs ? await resolveBusinessOwner(signedInAs) : "";
+  const params = await searchParams;
+
+  // A client opened their trip with a code once; the app should not ask again.
+  // The trip page remembered which app path they were in (ClientCodeMemory),
+  // so a signed-out visitor arriving at /app — the back button, or reopening
+  // the installed app — is taken straight back to it, the way a login resumes.
+  // A stored path that no longer opens a client trip is cleared below rather
+  // than trapping them on a "not available" page; ?enter=1 is the escape hatch.
+  const resumePath = cookieStore.get("wg-app-path")?.value ?? "";
+  let staleResume = false;
+  if (!who && resumePath && firstParam(params.enter) !== "1") {
+    const match = /^\/(i|t)\/([A-Za-z0-9_-]+)\/app$/.exec(resumePath);
+    if (match) {
+      const [, kind, token] = match;
+      const shared = kind === "i" ? await getSharedItineraryByShareId(token).catch(() => null) : await getSharedTraveler(token).catch(() => null);
+      const plan = shared ? await getPlan(shared.ownerEmail).catch(() => "free" as const) : null;
+      if (shared && plan && mayServeCompanionClients(plan)) redirect(resumePath);
+    }
+    staleResume = true; // a code that no longer opens a trip — forget it
+  }
   // Not signed in: the two doors. A client enters the code their adviser sent
   // and opens their one trip with no account; an adviser or a Gold member logs
   // in to their own trips. This replaced a straight redirect to /login, which
@@ -95,6 +120,9 @@ export default async function AppPage({
   if (!who) {
     return (
       <main className="min-h-screen bg-[var(--cream)]">
+        {/* A remembered code that no longer opens a trip clears itself here, so
+            the door is a live code field rather than a bounce to nowhere. */}
+        {staleResume && <ClientCodeMemory path={null} />}
         <Navbar />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <PageHeader
@@ -138,7 +166,6 @@ export default async function AppPage({
     // The copy below turns on this, so a Gold member is never offered a client
     // feature they do not have.
     const servesClients = mayServeCompanionClients(plan);
-    const params = await searchParams;
     const wantedId = firstParam(params.trip);
     // A place shared in from outside — Google Maps' own share sheet, say —
     // arrives here as the OS's Web Share Target params (app/manifest.ts).

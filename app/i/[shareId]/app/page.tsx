@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
+import ClientCodeMemory from "@/components/companion/ClientCodeMemory";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { mayOpenTripInApp } from "@/lib/companion-access";
@@ -110,6 +111,7 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
 
   return (
     <main>
+      <ClientCodeMemory path={`/i/${shareId}/app`} />
       <CompanionApp trip={trip} chat={chat} />
     </main>
   );
