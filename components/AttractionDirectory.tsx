@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SaveListingButton } from "@/components/SaveListingButton";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import MoreActions from "@/components/MoreActions";
@@ -191,7 +192,20 @@ export default function AttractionDirectory({
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">
               {a.city} · {a.country} · {a.kind}
             </p>
-            <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{a.name}</h2>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)]">{a.name}</h2>
+              {/* Saveable at last. A row rather than a page of its own, so the
+                  control sits on the row — and asks for the account only when
+                  somebody reaches for it. */}
+              <SaveListingButton
+                what="attraction"
+                place={{
+                  id: `attraction-${a.slug}`,
+                  name: a.name,
+                  address: [a.city, a.country].filter(Boolean).join(", "),
+                }}
+              />
+            </div>
             <p className="mt-3 text-sm leading-7 text-stone-600">{a.summary}</p>
 
             {a.notes && a.notes.length > 0 && (
