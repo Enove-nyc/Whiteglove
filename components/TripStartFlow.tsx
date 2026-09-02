@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { hasAnything, type TravelPreferences } from "@/data/travel-preferences";
 import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { BRAND_ORIGIN } from "@/lib/site-brand-core";
 import { useSiteBrand } from "@/components/useSiteBrand";
@@ -142,6 +143,47 @@ export default function TripStartFlow({
   // ignored the deployment's own NEXT_PUBLIC_SITE_BRAND. See useSiteBrand.
   const itineraries = useSiteBrand() === "itineraries";
   const headingRef = useRef<HTMLHeadingElement>(null);
+  /**
+   * WHAT THE ACCOUNT ALREADY KNOWS, filled in rather than asked again.
+   *
+   * The five durable answers — pace, interests, kashrus, Shabbos, access — are
+   * the same every trip for most people, and this form asked for them every
+   * time. Signed in with preferences saved, they arrive already ticked and can
+   * be changed here for THIS trip without changing what is remembered: the
+   * planner writes to the browser, and only /account writes preferences.
+   *
+   * Only fills a field that is still empty, so somebody who started answering
+   * before this arrived never has their own words replaced.
+   */
+  const [prefilled, setPrefilled] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/account/preferences", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json().catch(() => null)) as { preferences?: TravelPreferences } | null;
+        const prefs = data?.preferences;
+        if (cancelled || !prefs || !hasAnything(prefs)) return;
+        setAnswers((prev) => {
+          const next = { ...prev };
+          if (!next.pace || next.pace === "unknown") next.pace = (prefs.pace || next.pace) as typeof next.pace;
+          if (!next.interests.length) next.interests = prefs.interests;
+          if (!next.kosher.length) next.kosher = prefs.kosher;
+          if (!next.shabbos.length) next.shabbos = prefs.shabbos;
+          if (!next.accessibility.length) next.accessibility = prefs.accessibility;
+          return next;
+        });
+        setPrefilled(true);
+      } catch {
+        // Signed out, or the store is unreachable. The form simply asks, which
+        // is what it did before any of this existed.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function update(patch: Partial<TripPlanAnswers>) {
     const next = { ...answers, ...patch };
@@ -499,7 +541,13 @@ export default function TripStartFlow({
                     Personalize my recommendations
                   </span>
                   <span className="mt-1 block text-sm leading-6 text-stone-600">
-                    Optional. Pace, interests, kosher standards, Shabbos and access needs.
+                    {/* SAID OUT LOUD WHEN IT HAS BEEN FILLED IN. Pre-ticking
+                        somebody's answers without telling them is the version
+                        of this that feels like being watched, even though the
+                        values are their own. */}
+                    {prefilled
+                      ? "Filled in from your saved travel preferences. Change anything here for this trip — it will not change what is saved."
+                      : "Optional. Pace, interests, kosher standards, Shabbos and access needs."}
                   </span>
                 </span>
                 <span className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">

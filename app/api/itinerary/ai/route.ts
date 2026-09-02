@@ -1,3 +1,7 @@
+import { cookies } from "next/headers";
+import { describeForAssistant } from "@/data/travel-preferences";
+import { accountCookieName, readSessionEmail } from "@/lib/account-store";
+import { getTravelPreferences } from "@/lib/travel-preferences-store";
 import { NextRequest, NextResponse } from "next/server";
 import { mentionsTravelWord } from "@/lib/assistant-topic";
 import { searchSite } from "@/lib/site-search";
@@ -365,7 +369,33 @@ export async function POST(request: NextRequest) {
     return reply({ available: true, text: offTopicMessage(brand), sources: [] });
   }
   const { block, sources } = await publishedContext(clean(body?.question || "", 500));
-  const userMessage = block ? `${baseMessage}\n\n${block}` : baseMessage;
+
+  /**
+   * HOW THIS TRAVELLER TRAVELS, when they have said and are signed in.
+   *
+   * The one piece of memory the assistant gets, and it is worth being precise
+   * about what it is: values the traveller ticked on /account, every one of
+   * them from a fixed list, described by a single function they can read word
+   * for word on that same screen (describeForAssistant). Nothing is inferred
+   * from what they searched, opened or asked before, and no name, email,
+   * account id or trip goes with it.
+   *
+   * Signed out, or with nothing ticked, this is empty and the request is
+   * exactly what it was before — the assistant stays open to everybody.
+   *
+   * Best effort: a preference read that fails must never cost somebody their
+   * answer.
+   */
+  let memory = "";
+  try {
+    const email = readSessionEmail((await cookies()).get(accountCookieName())?.value);
+    if (email) memory = describeForAssistant(await getTravelPreferences(email));
+  } catch {
+    memory = "";
+  }
+  const userMessage = [baseMessage, memory ? `About this traveler (their own saved preferences):\n${memory}` : "", block]
+    .filter(Boolean)
+    .join("\n\n");
 
   /**
    * One exit for every answer, so nothing can reach the page unlabelled.

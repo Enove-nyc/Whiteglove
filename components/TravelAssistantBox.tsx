@@ -190,6 +190,12 @@ export default function TravelAssistantBox({
                 Your question is sent to the AI provider to be answered. We keep no copy of it and no conversation
                 history: leaving this page ends it.
               </li>
+              <li>
+                If you are signed in and have set travel preferences, those are sent with the question so the answer
+                suits how you travel — the pace, the kashrus, the access needs you ticked, and nothing else. Not your
+                name, not your email, not your trips, and nothing you asked before. You can read the exact wording, and
+                empty it, under Travel preferences on your account.
+              </li>
             </ul>
           </details>
 
