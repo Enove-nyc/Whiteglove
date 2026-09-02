@@ -123,6 +123,15 @@ export const CONNECTIONS: Connection[] = [
       "Resend. RESEND_FROM_EMAIL_ITINERARIES is optional and only matters on the deployment serving whitegloveitineraries.com: without it that site's email arrives from the kosher travel address, which tells a recipient who never asked about kosher travel that there is another business behind the one they signed up to. It needs its own verified domain in Resend. Left unset, everything still sends — from the shared address.",
   },
   {
+    vars: ["INBOUND_EMAIL_SECRET"],
+    what: "Forwarding a booking confirmation in by email instead of pasting it.",
+    without:
+      "The forwarding address is never offered, and the webhook refuses everything rather than accepting anything — so nothing arrives and nothing can be posted to it by somebody who found the URL. Smart Import still reads a confirmation you paste, attach as a PDF, screenshot or photograph; forwarding is the third way in, not the only one.",
+    weight: "feature",
+    where:
+      "Your mail provider's inbound-email settings — the signing secret it uses when it posts a parsed message to /api/inbound/confirmation. It also needs MX records pointing the trips@ mailbox at that provider, which is a DNS change rather than a setting here. Until both are in place the address is simply not shown, which is better than printing one that goes nowhere.",
+  },
+  {
     vars: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
     what: "Taking a subscription or one-time payment for a paid plan.",
     without:
