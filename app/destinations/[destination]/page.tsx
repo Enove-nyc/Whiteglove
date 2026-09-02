@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RememberVisit } from "@/components/RememberVisit";
 import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
@@ -648,6 +649,17 @@ export default async function VacationDestinationPage({ params }: { params: Prom
   // editorial sections are in the first byte of HTML either way.
   const booking = await readBookingLink();
 
+  // A breadcrumb for somebody signed in, so they can find their way back to
+  // this page next weekend from another device. Records nothing for a visitor
+  // who is not signed in — see components/RememberVisit.tsx.
+  const remember = (
+    <RememberVisit
+      href={`/destinations/${slug}`}
+      name={destination.name}
+      where={[destination.country].filter(Boolean).join("")}
+    />
+  );
+
   const contents: Array<[string, string]> = [
     ["overview", "Overview"],
     ["where-to-stay", "Where to stay"],
@@ -660,6 +672,7 @@ export default async function VacationDestinationPage({ params }: { params: Prom
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
+      {remember}
       <StructuredData
         data={breadcrumbs([
           { name: "Home", path: "/" },
