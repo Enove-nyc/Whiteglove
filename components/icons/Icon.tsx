@@ -54,7 +54,8 @@ export type IconName =
   | "check-check"
   | "trash"
   | "pin"
-  | "pin-filled";
+  | "pin-filled"
+  | "star-of-david";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -301,6 +302,15 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M8 9.2h8l1.4 4.4H6.6Z" fill="currentColor" stroke="none" />
       <path d="M12 3v6.2" />
       <path d="M12 13.6V21" />
+    </>
+  ),
+  // Magen David — two overlapping triangles, drawn in the same open stroke as
+  // the rest of the set. The heritage mark, so the section reads as Jewish at a
+  // glance rather than as a generic map pin.
+  "star-of-david": (
+    <>
+      <path d="M12 3.5 19.4 16.3H4.6Z" />
+      <path d="M12 20.5 4.6 7.7H19.4Z" />
     </>
   ),
 };

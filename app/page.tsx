@@ -113,7 +113,7 @@ const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: strin
   { label: "Things to do", blurb: "Attractions across every destination.", href: "/things-to-do", icon: "camera" },
   { label: "Where to stay", blurb: "Places to stay and kosher apartments.", href: "/hotels", icon: "bed" },
   { label: "Kosher food", blurb: "Restaurants, bakeries and groceries.", href: "/kosher", icon: "utensils" },
-  { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage", icon: "pin" },
+  { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage", icon: "star-of-david" },
   { label: "Map", blurb: "Everything on the site, placed.", href: "/map", icon: "map" },
   { label: "Local help", blurb: "Drivers, guides and agencies — their businesses, not ours.", href: "/directory", icon: "account" },
 ];
