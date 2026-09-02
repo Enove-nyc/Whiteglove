@@ -1,10 +1,12 @@
+import { accountCookieName, getTrips, readSessionEmail } from "@/lib/account-store";
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { requireSignedIn } from "@/lib/require-signed-in";
 import Footer from "@/components/Footer";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
+import ContinueInItineraries from "@/components/ContinueInItineraries";
 import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
 import TravelEssentials from "@/components/TravelEssentials";
@@ -53,6 +55,15 @@ export default async function ItineraryPage() {
   // Through the view, so a destination the owner added is offered as a
   // starting point like any other.
   const templates = templatesFrom(await getVacationDestinations(), await loadVacationSources());
+  // Whether there is anything to carry on with. An invitation to continue a
+  // trip that does not exist yet is an advertisement, so the hand-off below
+  // is not offered in front of an empty planner.
+  const hasTrip = await (async () => {
+    const cookie = (await cookies()).get(accountCookieName())?.value;
+    const email = readSessionEmail(cookie);
+    if (!email) return false;
+    return (await getTrips(email).catch(() => [])).length > 0;
+  })();
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -89,6 +100,13 @@ export default async function ItineraryPage() {
       </section>
 
       {/* After the planner — not above it — so essentials sit beside a real trip. */}
+      {/* The one door from this site to the other product. Under the planner
+          and nowhere else, and only once somebody has a trip to carry — see
+          lib/itineraries-handoff.ts for why it goes one way only. */}
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <ContinueInItineraries hasTrip={hasTrip} />
+      </div>
+
       <TravelEssentials
         pageType="itinerary"
         heading="Travel essentials for this trip"
