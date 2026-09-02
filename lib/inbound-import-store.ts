@@ -23,6 +23,20 @@ export function inboundStoreAvailable() {
   return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
 }
 
+/**
+ * Whether a forwarded email can actually arrive, not merely be stored.
+ *
+ * A queue with nowhere for mail to land is not forwarding, and an address
+ * shown before the mail provider is wired is a promise the site cannot keep —
+ * somebody forwards their booking to it, nothing comes back, and they learn
+ * that the feature does not work rather than that it is not switched on yet.
+ * The inbound route refuses everything without INBOUND_EMAIL_SECRET, so the
+ * same secret is what decides whether an address is worth showing.
+ */
+export function inboundMailReady() {
+  return inboundStoreAvailable() && Boolean(process.env.INBOUND_EMAIL_SECRET?.trim());
+}
+
 async function redis<T>(path: string, body?: string): Promise<T | null> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;

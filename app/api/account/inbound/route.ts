@@ -5,6 +5,7 @@ import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "
 import {
   clearPending,
   ensureInboundToken,
+  inboundMailReady,
   inboundStoreAvailable,
   readPending,
   rotateInboundToken,
@@ -37,7 +38,14 @@ async function who(): Promise<string> {
 export async function GET() {
   const email = await who();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
+  // No address until mail can actually reach it — see inboundMailReady.
+  // Anything already queued is still handed back, because a message that got
+  // in before the provider was reconfigured is still somebody's booking.
   if (!inboundStoreAvailable()) return NextResponse.json({ address: "", pending: [] });
+  if (!inboundMailReady()) {
+    const waiting = await readPending(email).catch(() => []);
+    return NextResponse.json({ address: "", pending: pendingToShow(waiting, new Date().toISOString()) });
+  }
   const [token, pending] = await Promise.all([ensureInboundToken(email), readPending(email)]);
   return NextResponse.json({
     address: inboundAddress(token, BRAND_DOMAIN[await currentBrand()]),
