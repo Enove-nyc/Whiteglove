@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TravelPreferencesPanel from "@/components/TravelPreferencesPanel";
+import RecentPlaces from "@/components/RecentPlaces";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AccountPlanPanel, { type PlanOffer } from "@/components/AccountPlanPanel";
@@ -168,6 +169,12 @@ export default async function AccountPage() {
             billing and advisor tooling, and this belongs to every account
             including the free one. Deliberately NOT inside the app card, which
             is gated on a paid plan. */}
+        {/* Where they had got to, above the preferences: this is the thing
+            somebody signs in to continue, and it is deliberately its own list
+            with its own forget button — it never feeds the preferences and is
+            never sent to an assistant. */}
+        <RecentPlaces />
+
         <section aria-labelledby="account-preferences" className="mt-8">
           <h2 id="account-preferences" className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">
             Travel preferences
