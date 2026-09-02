@@ -34,5 +34,16 @@
         "1C:34:41:92:1C:08:DA:75:FE:21:1C:1C:62:D6:08:39:E2:F4:D2:47:1C:86:29:34:9C:C1:8D:EC:24:92:44:05"
       ]
     }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.whitegloveadmin.app",
+      "sha256_cert_fingerprints": [
+        "40:26:FF:77:3E:B1:C4:E1:FF:C3:62:B9:AE:42:AD:94:00:86:3F:E4:E2:76:07:A2:80:59:4C:DF:86:7C:05:82",
+        "83:E1:CF:83:C5:9D:D8:77:F7:3F:B9:F2:84:D9:9B:30:08:C4:50:07:B8:5A:5E:F2:62:84:6E:FB:42:DF:F1:2B"
+      ]
+    }
   }
 ]
