@@ -35,6 +35,9 @@ const KOSHER_LINKS = [
   // signed-in page and there was nothing to link a visitor to.
   { label: "What to pack", href: "/packing" },
   { label: "Contact", href: "/contact" },
+  // A door that lands on the support form already chosen, for a customer who
+  // wants help rather than the general contact page — see lib/contact-reasons.
+  { label: "Support", href: "/contact?reason=help" },
   { label: "Advertise", href: "/contact?reason=advertise" },
   { label: "Sources", href: "/sources" },
   { label: "Terms", href: "/terms" },
@@ -51,6 +54,7 @@ const KOSHER_LINKS = [
 const ITINERARIES_LINKS = [
   { label: "Pricing", href: "/pricing" },
   { label: "Contact", href: "/contact" },
+  { label: "Support", href: "/contact?reason=help" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
 ];
