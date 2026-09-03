@@ -10,6 +10,7 @@ import { useCallback, useState, useSyncExternalStore } from "react";
 import { placeDirectionsUrl, placeRole, withPlaceFirst, withPlaceLast, type SavedPlace } from "@/data/route-utils";
 import { useSignedIn } from "@/lib/use-signed-in";
 import { AddedToTrip, useAddToItinerary } from "@/components/useAddToItinerary";
+import { useSavedPlaces as useAccountFavorites } from "@/components/useSavedPlaces";
 
 /**
  * Everything you can do with a destination, in one bar, on every destination
@@ -26,7 +27,6 @@ import { AddedToTrip, useAddToItinerary } from "@/components/useAddToItinerary";
  */
 
 const ROUTE_KEY = "whiteGloveMyRoute";
-const FAVORITES_KEY = "whiteGloveFavorites";
 
 export type NearbyAirport = { code: string; name: string; km: string; directionsUrl: string };
 
@@ -108,8 +108,14 @@ export default function DestinationActions({
   const requireSignIn = useRequireSignIn();
   const booking = useBookingLink();
   const route = useSavedPlaces(ROUTE_KEY);
-  const favorites = useSavedPlaces(FAVORITES_KEY);
-  const favorite = favorites.some((item) => item.id === place.id);
+  // Favorites are ACCOUNT-FIRST (optimistic, with rollback) — the account is
+  // the truth, so a place saved on a phone is there on the laptop, and a failed
+  // save never leaves a filled heart the traveller only discovers on another
+  // device. This is the same hook the listing cards use; the old localStorage-
+  // first path here silently broke the cross-device saving the account is sold
+  // on. (Route is still local — a separate collection this hook doesn't hold.)
+  const { isSaved: isFavorite, toggle: toggleAccountFavorite } = useAccountFavorites();
+  const favorite = isFavorite(place.id);
   // One implementation of adding a stop, shared with the attraction
   // cards: it reads the account, and asks which trip when the account
   // holds more than one.
@@ -133,13 +139,7 @@ export default function DestinationActions({
     saveRoute(role === "absent" ? [...route, place] : route.filter((item) => item.id !== place.id));
 
   const toggleFavorite = () => {
-    const next = favorite ? favorites.filter((item) => item.id !== place.id) : [...favorites, place];
-    write(FAVORITES_KEY, next);
-    void fetch("/api/account/places", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ collection: "favorites", action: "toggle", place }),
-    }).catch(() => undefined);
+    void toggleAccountFavorite(place);
   };
 
 
