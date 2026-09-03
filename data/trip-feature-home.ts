@@ -33,6 +33,7 @@ export const ON_BOTH: readonly string[] = [
   "app/api/account/packing/route.ts",
   "app/api/account/smart-import/route.ts",
   "app/api/account/trips/route.ts",
+  "app/api/cron/trip-alerts/route.ts",
   "app/api/cron/trip-reminders/route.ts",
   "app/api/inbound/confirmation/route.ts",
   "app/api/itinerary/ai/route.ts",
@@ -43,12 +44,14 @@ export const ON_BOTH: readonly string[] = [
   "app/itinerary/print/layout.tsx",
   "app/itinerary/print/page.tsx",
   "app/packing/page.tsx",
+  "components/CommandCenterNotify.tsx",
   "components/DayProgress.tsx",
   "components/ItinerariesHome.tsx",
   "components/ItineraryBuilder.tsx",
   "components/ItineraryFooter.tsx",
   "components/ItineraryOptimizationPanel.tsx",
   "components/ItineraryTranslationPanel.tsx",
+  "components/OfflineDocuments.tsx",
   "components/PackingListPanel.tsx",
   "components/SmartImportPanel.tsx",
   "components/TripActivityFeed.tsx",
@@ -81,6 +84,7 @@ export const ON_BOTH: readonly string[] = [
   "data/trip-parties.ts",
   "data/trip-payments.ts",
   "data/trip-pipeline.ts",
+  "data/trip-reminders.ts",
   "lib/command-center-data.ts",
   "lib/command-center.ts",
   "lib/day-progress.ts",
@@ -120,33 +124,24 @@ export const ON_BOTH: readonly string[] = [
  */
 export const KOSHER_ONLY: Record<string, string> = {
   "data/packing-gear-match.ts":
-    "Links a packing line to the travel-gear shelf. The shelf is a settled decision of THIS product with exactly two homes, and a general planner hanging affiliate links off a packing list is what the owner turned down. Deliberately not ported.",
+    "Links a packing line to the travel-gear shelf. The shelf is a settled decision of THIS product with exactly two homes, and a general planner hanging affiliate links off a packing list is what the owner turned down.",
   "lib/itineraries-handoff.ts":
     "The marketing link to the other product. One-directional by settled decision — porting it would have Itineraries pointing home at a kosher site.",
+  "lib/offline-documents.ts":
+    "Clears the kept-documents cache on sign-out. Itineraries already had lib/offline-forget.ts doing that and more, whose own note says there is ONE cleaner because this is the failure that matters — so the port added a cache name there rather than a second implementation. Not a gap.",
 };
 
 /**
- * BUILT HERE, OWED TO ITINERARIES. Each is trip-management work — build,
- * organise, manage — sitting on the discover-and-plan product because that is
- * where the session happened to be.
+ * BUILT HERE, OWED TO ITINERARIES — trip-management work sitting on the
+ * discover-and-plan product because that is where the session happened to be.
  *
- * Each is blocked on something real rather than forgotten, and the reason says
- * what. None was half-ported: a button that quietly saves nothing is worse
- * than an absent one. Two subsystems account for all five — the service
- * worker's second cache, and push notifications.
+ * EMPTY, AND THAT IS THE POINT. It held seventeen files; they are all across
+ * now. A name arriving here is an admission rather than a plan, and it should
+ * be short-lived: the rule in AGENTS.md is that this kind of work is built in
+ * the itineraries repository FIRST, so nothing should ever need to be listed
+ * here again.
  */
-export const OWED_TO_ITINERARIES: Record<string, string> = {
-  "app/api/cron/trip-alerts/route.ts":
-    "The nightly flight-status check that raises a trip's alerts. Needs the push-notification and alert-email subsystem, which is its own feature and not yet on that side.",
-  "components/CommandCenterNotify.tsx":
-    "Asks for permission to send those alerts to a phone. Blocked on the same push subsystem as the cron above.",
-  "components/OfflineDocuments.tsx":
-    "The control for the above. Blocked on the same service-worker merge — a button that quietly saves nothing is worse than an absent one.",
-  "data/trip-reminders.ts":
-    "Pipeline nudges (badly named — what needs the ADVISOR's attention, not a client reminder). Needs lib/needs-attention and a merge into a PipelineDashboard that has diverged there.",
-  "lib/offline-documents.ts":
-    "Documents kept on the phone — needs the other repository's service worker to hold a second cache, and the two have diverged by 193 lines. A surgical merge on live caching, not a copy.",
-};
+export const OWED_TO_ITINERARIES: Record<string, string> = {};
 
 /** Every trip-shaped file, accounted for exactly once. */
 export function accountedFor(): Set<string> {
