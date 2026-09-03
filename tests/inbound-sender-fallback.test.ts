@@ -146,3 +146,37 @@ test("both screens say when a sender could not be confirmed", () => {
   assert.match(panel, /Sender not confirmed/);
   assert.match(account, /pending\.some\(isUnconfirmed\)/);
 });
+
+/* ------------------------------------------------- which domain it arrives at */
+
+test("the receiving domain can be a subdomain, and falls back to the site's own", async () => {
+  const { inboundDomain } = await import("@/lib/inbound-import-store");
+  const before = process.env.INBOUND_EMAIL_DOMAIN;
+  try {
+    delete process.env.INBOUND_EMAIL_DOMAIN;
+    assert.equal(inboundDomain("whiteglovekoshertravel.com"), "whiteglovekoshertravel.com");
+
+    process.env.INBOUND_EMAIL_DOMAIN = "Mail.WhiteGloveKosherTravel.com";
+    assert.equal(inboundDomain("whiteglovekoshertravel.com"), "mail.whiteglovekoshertravel.com");
+
+    process.env.INBOUND_EMAIL_DOMAIN = "@mail.example.com";
+    assert.equal(inboundDomain("whiteglovekoshertravel.com"), "mail.example.com");
+
+    // Half a pasted URL in an email address is worse than no address at all.
+    for (const bad of ["https://mail.example.com", "mail.example.com/inbound", "mail example com", "localhost", ""]) {
+      process.env.INBOUND_EMAIL_DOMAIN = bad;
+      assert.equal(inboundDomain("whiteglovekoshertravel.com"), "whiteglovekoshertravel.com", `"${bad}" was accepted`);
+    }
+  } finally {
+    if (before === undefined) delete process.env.INBOUND_EMAIL_DOMAIN;
+    else process.env.INBOUND_EMAIL_DOMAIN = before;
+  }
+});
+
+test("only the address SHOWN depends on the domain — routing never does", () => {
+  const store = readFileSync(new URL("../lib/inbound-import-store.ts", import.meta.url), "utf8");
+  const route = readFileSync(new URL("../app/api/inbound/confirmation/route.ts", import.meta.url), "utf8");
+  // The account route builds the address with it; the inbound route never reads it.
+  assert.ok(!route.includes("INBOUND_EMAIL_DOMAIN"), "the inbound route must not care which domain mail arrived on");
+  assert.match(store, /export function inboundDomain/);
+});
