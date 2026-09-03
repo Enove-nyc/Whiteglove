@@ -233,6 +233,17 @@ describe("what the traveller is told", () => {
     // A remembered "yes" that disagrees with an empty cache is worse than no
     // memory: it tells somebody at a gate that their pass is there when it is
     // not.
-    assert.match(CONTROL, /caches\s*\n?\s*\.has\("wg-offline-docs-v1"\)/);
+    //
+    // This asked for caches.has() once, which only says the cache EXISTS. The
+    // control now checks that each of this page's own documents is in it —
+    // strictly stronger, and the case the weaker check got wrong is real: keep
+    // one trip's passes, open another trip's documents, and caches.has() says
+    // "saved on this device" about passes that were never cached. So what is
+    // asserted here is the per-document lookup, not the cache's existence.
+    assert.match(CONTROL, /caches\.open\("wg-offline-docs-v1"\)/);
+    assert.match(CONTROL, /for \(const id of ids\)/);
+    assert.match(CONTROL, /cache\.match\(/);
+    // And no stored flag standing in for any of it.
+    assert.doesNotMatch(CONTROL, /localStorage/);
   });
 });

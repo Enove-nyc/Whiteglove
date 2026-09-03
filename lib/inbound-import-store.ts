@@ -25,6 +25,29 @@ export function inboundStoreAvailable() {
 }
 
 /**
+ * The domain forwarded mail actually arrives at.
+ *
+ * NOT ALWAYS THE SITE'S OWN DOMAIN, and that is the mail provider's rule
+ * rather than a preference. Receiving is enabled per domain with an MX record,
+ * and a domain can only have one lowest-priority MX — so putting the
+ * provider's record on whiteglovekoshertravel.com would take over every
+ * address at it, the owner's own mail included. The provider's own advice is a
+ * subdomain, which leaves existing mail untouched, and INBOUND_EMAIL_DOMAIN is
+ * where that subdomain is named.
+ *
+ * Only the ADDRESS SHOWN depends on this. Nothing about reading an arriving
+ * message does: a message is routed on the token in front of the @, and the
+ * mailbox check looks at the local part, so mail that arrives on any domain
+ * the provider is configured for is handled the same.
+ */
+export function inboundDomain(fallback: string): string {
+  const configured = process.env.INBOUND_EMAIL_DOMAIN?.trim().toLowerCase().replace(/^@/, "");
+  // A hostname or nothing. A stray protocol, path or space means somebody
+  // pasted a URL, and half a URL in an email address is worse than no address.
+  return configured && /^[a-z0-9.-]+\.[a-z]{2,}$/.test(configured) ? configured : fallback;
+}
+
+/**
  * Whether a forwarded email can actually arrive, not merely be stored.
  *
  * A queue with nowhere for mail to land is not forwarding, and an address

@@ -5,6 +5,7 @@ import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "
 import {
   clearPending,
   ensureInboundToken,
+  inboundDomain,
   inboundMailReady,
   inboundStoreAvailable,
   readPending,
@@ -48,7 +49,7 @@ export async function GET() {
   }
   const [token, pending] = await Promise.all([ensureInboundToken(email), readPending(email)]);
   return NextResponse.json({
-    address: inboundAddress(token, BRAND_DOMAIN[await currentBrand()]),
+    address: inboundAddress(token, inboundDomain(BRAND_DOMAIN[await currentBrand()])),
     pending: pendingToShow(pending, new Date().toISOString()),
   });
 }
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
 
   if (body?.action === "rotate") {
     const token = await rotateInboundToken(email);
-    return NextResponse.json({ ok: true, address: inboundAddress(token, BRAND_DOMAIN[await currentBrand()]) });
+    return NextResponse.json({ ok: true, address: inboundAddress(token, inboundDomain(BRAND_DOMAIN[await currentBrand()])) });
   }
   if (body?.action === "clear" && typeof body.id === "string") {
     const ok = await clearPending(email, body.id);
