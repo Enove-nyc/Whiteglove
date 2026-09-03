@@ -1,7 +1,8 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { tokenFromRecipients, type PendingImport } from "@/data/inbound-import";
+import { addressedToMailbox, senderAddress, tokenFromRecipients, type MatchedBy, type PendingImport } from "@/data/inbound-import";
 import { readImportDataUrl } from "@/data/smart-import-files";
+import { isAccountVerified, resolveBusinessOwner } from "@/lib/account-store";
 import { accountForToken, addPending, inboundStoreAvailable } from "@/lib/inbound-import-store";
 import { extractSmartImport } from "@/lib/smart-import";
 
@@ -27,6 +28,23 @@ export const maxDuration = 60;
  * who knows an email address put rows on that account's trip; From is not a
  * credential and is trivial to forge. The unguessable token in the recipient
  * address is the credential, and the owner can rotate it.
+ *
+ * THERE IS A SENDER FALLBACK, AND IT IS NOT A SECOND CREDENTIAL. A message
+ * sent to the plain mailbox with no token in it gets its From line looked up
+ * against the account list, because people forward from whatever mail app is
+ * open — a work address, a phone alias, an old account — and dropping those
+ * silently is its own failure. What comes of it is marked "sender": queued
+ * against a tighter cap of its own so forged mail cannot crowd out real
+ * confirmations, shown on screen as unconfirmed, and still added to nothing
+ * until somebody reads it. The address remains the only thing that proves
+ * anything; the fallback only decides which queue an unproven message waits in.
+ *
+ * AND THE FALLBACK ONLY APPLIES TO MAIL ACTUALLY SENT HERE. Without a token,
+ * something has to say the message was meant for this site at all, and the
+ * only thing that can is the mailbox it was addressed to — otherwise a bounce
+ * or a misdirected reply would get its From line resolved to somebody's
+ * account. An unverified account is never matched: a stranger must not be
+ * able to open a queue by registering an address and never confirming it.
  *
  * AND IT VERIFIES THE PROVIDER'S SIGNATURE FIRST. Without that, this URL is an
  * open door: anybody who learns a token could post to it directly. An
@@ -92,12 +110,31 @@ export async function POST(request: NextRequest) {
   }
 
   const recipients = Array.isArray(message.to) ? message.to.map(String) : [String(message.to ?? "")];
+  const from = typeof message.from === "string" ? message.from : "";
+
+  // The address first, and only then the sender — a token that resolves is
+  // proof, and nothing about the From line may override it.
   const token = tokenFromRecipients(recipients);
-  const account = token ? await accountForToken(token) : "";
+  let account = token ? await accountForToken(token) : "";
+  let matchedBy: MatchedBy = "address";
+
+  if (!account && !token && addressedToMailbox(recipients)) {
+    const sender = senderAddress(from);
+    // A verified account only. Somebody who registered an address and never
+    // confirmed it does not get a queue, and so cannot be used to open one.
+    if (sender && (await isAccountVerified(sender).catch(() => false))) {
+      // Resolved the same way every trip screen resolves, so a staff member
+      // forwarding lands in the business's queue rather than a private one
+      // nobody ever opens.
+      account = (await resolveBusinessOwner(sender).catch(() => sender)) || sender;
+      matchedBy = "sender";
+    }
+  }
+
   if (!account) {
     // Answered 200 on purpose: a provider retries anything else for days, and
     // a message to an address nobody owns is not a failure to retry.
-    console.warn("[inbound] a message arrived for an address with no account behind it.");
+    console.warn("[inbound] a message arrived that matched no account, by address or sender.");
     return NextResponse.json({ received: true });
   }
 
@@ -130,9 +167,10 @@ export async function POST(request: NextRequest) {
     id: randomBytes(9).toString("base64url"),
     at: new Date().toISOString(),
     subject: typeof message.subject === "string" ? message.subject.slice(0, 200) : "",
-    from: typeof message.from === "string" ? message.from.slice(0, 200) : "",
+    from: from.slice(0, 200),
     items: result.items,
     warnings: result.warnings,
+    matchedBy,
   };
   await addPending(account, entry);
   return NextResponse.json({ received: true });

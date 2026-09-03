@@ -10,7 +10,7 @@ import {
   isImportMediaType,
 } from "@/data/smart-import-files";
 import { ANSWER_LABEL } from "@/lib/assistant-disclosure";
-import { waitingLine, type PendingImport } from "@/data/inbound-import";
+import { isUnconfirmed, waitingLine, type PendingImport } from "@/data/inbound-import";
 
 const inputClass =
   "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
@@ -213,6 +213,15 @@ export default function SmartImportPanel({ onImport, onCancel }: { onImport: (it
                     <span className="min-w-0 text-xs text-stone-600">
                       <span className="font-semibold text-[var(--navy)]">{entry.subject || "A confirmation"}</span>
                       {entry.from ? ` · from ${entry.from}` : ""}
+                      {/* SAID BEFORE IT IS OPENED, not after. This one came to
+                          the plain mailbox and was matched on its From line,
+                          which anybody can type — so the planner should know
+                          that before they read a word of it. */}
+                      {isUnconfirmed(entry) && (
+                        <span className="mt-0.5 block font-semibold text-[var(--gold-ink)]">
+                          Sender not confirmed — check who sent this before you use it
+                        </span>
+                      )}
                     </span>
                     <button
                       type="button"

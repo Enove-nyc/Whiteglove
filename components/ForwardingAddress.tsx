@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { waitingLine, type PendingImport } from "@/data/inbound-import";
+import { isUnconfirmed, waitingLine, type PendingImport } from "@/data/inbound-import";
 
 /**
  * THE ADDRESS TO FORWARD A CONFIRMATION TO, WHERE SOMEBODY WOULD LOOK FOR IT.
@@ -24,6 +24,8 @@ export default function ForwardingAddress() {
   const [address, setAddress] = useState("");
   const [pending, setPending] = useState<PendingImport[]>([]);
   const [copied, setCopied] = useState(false);
+  const [rotating, setRotating] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,6 +46,33 @@ export default function ForwardingAddress() {
   }, []);
 
   if (!address) return null;
+
+  /**
+   * A new address, and the old one stops working immediately.
+   *
+   * ASKED BEFORE IT HAPPENS, because it cannot be undone and because anybody
+   * who has saved the old address in their contacts — including the person
+   * doing this — will be forwarding into a dead letter box afterwards. It is
+   * also how an account issued one of the old character addresses gets a
+   * memorable one.
+   */
+  async function rotate() {
+    setRotating(true);
+    try {
+      const res = await fetch("/api/account/inbound", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "rotate" }),
+      });
+      const data = (await res.json().catch(() => null)) as { address?: string } | null;
+      if (data?.address) setAddress(data.address);
+      setConfirming(false);
+    } catch {
+      // Left as it was. The address on screen is still the working one.
+    } finally {
+      setRotating(false);
+    }
+  }
 
   async function copy() {
     try {
@@ -77,7 +106,48 @@ export default function ForwardingAddress() {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <p className="mt-2 text-xs leading-5 text-stone-500">This address is yours alone. Keep it to yourself.</p>
+      <p className="mt-2 text-xs leading-5 text-stone-500">
+        This address is yours alone — the four words are what tell us it is your trip, so keep them to yourself. Send
+        from a different email address and it still arrives, marked for you to confirm.
+      </p>
+      {confirming ? (
+        <div className="mt-3 rounded-lg border border-[var(--gold-light)] bg-white p-3">
+          <p className="text-xs leading-5 text-stone-600">
+            The address above stops working straight away. Anywhere you have saved it — your own contacts included —
+            will need the new one.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={rotate}
+              disabled={rotating}
+              className="inline-flex min-h-11 items-center rounded-full bg-[var(--navy)] px-4 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-60"
+            >
+              {rotating ? "Changing…" : "Yes, change it"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              className="inline-flex min-h-11 items-center rounded-full border border-stone-300 px-4 text-xs font-bold text-[var(--navy)]"
+            >
+              Keep this one
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          className="mt-3 text-xs font-semibold text-stone-500 underline"
+        >
+          Change this address
+        </button>
+      )}
+      {pending.some(isUnconfirmed) && (
+        <p className="mt-2 text-xs leading-5 text-stone-500">
+          Something is waiting that was sent from an address we could not match to you. The planner says which.
+        </p>
+      )}
       {pending.length > 0 && (
         <p className="mt-3 text-sm font-semibold text-[var(--gold-ink)]">
           {waitingLine(pending.length)} —{" "}
