@@ -30,17 +30,31 @@ type State = "unsupported" | "off" | "working" | "on" | "error";
 export default function OfflineDocuments({ ids }: { ids: string[] }) {
   const [state, setState] = useState<State>("off");
   const [message, setMessage] = useState("");
+  // A stable key for this page's document set, so the "already kept?" check
+  // below re-runs when the documents change but not on every render.
+  const idsKey = ids.join(",");
 
   useEffect(() => {
     let active = true;
     const supported = typeof window !== "undefined" && "serviceWorker" in navigator && "caches" in window;
     const settle: Promise<State> = supported
-      ? // Already kept? Ask the cache rather than remembering in storage that
-        // could disagree with what is actually there.
-        caches
-          .has("wg-offline-docs-v1")
-          .then((held) => (held ? "on" : "off"))
-          .catch(() => "off" as State)
+      ? // Already kept? Ask the cache whether THIS page's own documents are
+        // present — not merely whether the cache exists. A traveller who kept
+        // one trip's passes then opened another trip's document page must not
+        // be told "saved on this device" about passes that were never cached.
+        (async () => {
+          try {
+            if (ids.length === 0) return "off" as State;
+            const cache = await caches.open("wg-offline-docs-v1");
+            for (const id of ids) {
+              const hit = await cache.match(`/api/account/attachments?id=${encodeURIComponent(id)}`);
+              if (!hit) return "off" as State;
+            }
+            return "on" as State;
+          } catch {
+            return "off" as State;
+          }
+        })()
       : Promise.resolve("unsupported");
     settle.then((next) => {
       if (active) setState(next);
@@ -48,7 +62,9 @@ export default function OfflineDocuments({ ids }: { ids: string[] }) {
     return () => {
       active = false;
     };
-  }, []);
+    // Re-checks when the page's own document set changes (keyed by id).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   /** Send one instruction to the service worker and wait for its answer. */
   async function tell(type: string, payload: Record<string, unknown> = {}): Promise<{ ok?: boolean; kept?: number; asked?: number }> {

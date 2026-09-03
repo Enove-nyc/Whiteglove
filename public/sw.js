@@ -8,7 +8,7 @@
 // styles are therefore network-first: the newest version always wins when
 // online, and the cache is only a fallback when offline. Only truly static
 // media (images, fonts) is cache-first.
-const CACHE = "wg-cache-v2";
+const CACHE = "wg-cache-v3";
 const PRECACHE = ["/", "/offline", "/icon-192.png", "/icon-512.png"];
 
 /**
@@ -93,7 +93,17 @@ self.addEventListener("activate", (event) => {
 // to know the connection is the problem, not wonder if the app lost their
 // trip.
 function networkFirst(req) {
-  return fetch(req)
+  // `cache: "reload"` bypasses the HTTP cache for the request outright and
+  // repopulates it — the crucial part. This build emits stable (non
+  // content-hashed) filenames under /_next/static, so a plain fetch could be
+  // served the frozen `immutable` copy the browser cached a year ago; reload
+  // forces the new bytes when a deploy has changed them. A navigation Request
+  // cannot be rebuilt through `new Request(req, init)`, so those reload by URL.
+  const fresh =
+    req.mode === "navigate"
+      ? fetch(req.url, { cache: "reload", credentials: "same-origin" })
+      : fetch(new Request(req, { cache: "reload" }));
+  return fresh
     .then((res) => {
       if (res && res.ok) {
         const copy = res.clone();
@@ -221,9 +231,18 @@ self.addEventListener("fetch", (event) => {
 
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin") || url.pathname.startsWith("/access")) return;
 
-  // Pages and app code (scripts, styles): always prefer the network so a new
-  // release takes effect immediately.
-  if (req.mode === "navigate" || req.destination === "script" || req.destination === "style") {
+  // Pages and app code: always prefer the network so a new release takes effect
+  // immediately. Matched by PATH as well as request destination — in a WebView
+  // a dynamically-imported chunk or a preload can arrive with an empty
+  // `destination`, so keying only on `=== "script"` let the frozen
+  // /_next/static chunks slip through to the immutable HTTP cache. The path
+  // check closes that.
+  if (
+    req.mode === "navigate" ||
+    req.destination === "script" ||
+    req.destination === "style" ||
+    url.pathname.startsWith("/_next/static/")
+  ) {
     event.respondWith(networkFirst(req));
     return;
   }
