@@ -174,7 +174,16 @@ describe("private pages do not outlive the session either", () => {
 
   it("the page sweeps them too, for when the worker is not awake", () => {
     assert.match(HELPER, /async function sweepPrivatePages/);
-    assert.match(HELPER, /caches\.open\("wg-cache-v2"\)/);
+    // Across every app-shell cache, not one pinned version. The worker bumps
+    // its cache name on deploy (v2 → v3 → …); a page that opened one fixed name
+    // would sweep an empty cache the morning after a release while the rendered
+    // itinerary sat in the new one. It walks caches.keys() instead, and never
+    // opens a single hard-coded wg-cache-vN.
+    assert.match(HELPER, /await caches\.keys\(\)/);
+    assert.doesNotMatch(HELPER, /caches\.open\("wg-cache-v\d"\)/);
+    // Still never the documents cache — forgetOfflineDocuments deletes that
+    // outright, and the sweep must skip it rather than re-open it.
+    assert.match(HELPER, /name !== "wg-offline-docs-v1"/);
   });
 
   it("both lists of private paths agree, exactly", () => {

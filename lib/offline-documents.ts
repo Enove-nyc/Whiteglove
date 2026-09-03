@@ -75,11 +75,29 @@ function isPrivatePath(pathname: string): boolean {
   );
 }
 
-/** Delete every cached page belonging to the session that has just ended. */
+/**
+ * Delete every cached page belonging to the session that has just ended.
+ *
+ * Across EVERY app-shell cache, whatever its version — the worker bumps its
+ * cache name on its own release schedule (wg-cache-v2, then v3, and on), and a
+ * page that opened one pinned version would sweep an empty cache the morning
+ * after a deploy while the rendered itinerary sat safely in the new one. The
+ * documents cache is left to forgetOfflineDocuments above, which deletes it
+ * outright.
+ */
 async function sweepPrivatePages(): Promise<void> {
-  const cache = await caches.open("wg-cache-v2");
-  const requests = await cache.keys();
+  const names = await caches.keys();
   await Promise.all(
-    requests.filter((request) => isPrivatePath(new URL(request.url).pathname)).map((request) => cache.delete(request)),
+    names
+      .filter((name) => name !== "wg-offline-docs-v1")
+      .map(async (name) => {
+        const cache = await caches.open(name);
+        const requests = await cache.keys();
+        await Promise.all(
+          requests
+            .filter((request) => isPrivatePath(new URL(request.url).pathname))
+            .map((request) => cache.delete(request)),
+        );
+      }),
   );
 }
