@@ -23,7 +23,10 @@ import {
  * mechanism, and it costs nothing when the answer is obvious.
  */
 
-const ROOTS = ["lib", "data", "components"];
+// app/ is walked too: a feature's page and its API route are as much a part
+// of it as the module behind them, and a port that brings the module without
+// them ships something unreachable.
+const ROOTS = ["lib", "data", "components", "app"];
 
 function walk(dir: string): string[] {
   const out: string[] = [];
@@ -48,7 +51,7 @@ const tripFiles = ROOTS.flatMap(walk)
 test("there are trip-shaped files to check at all — the guard has not gone blind", () => {
   // A regex that stops matching would make every assertion below pass while
   // checking nothing, which is the one way this test could quietly die.
-  assert.ok(tripFiles.length > 40, `only ${tripFiles.length} trip files matched — has TRIP_FILE been narrowed?`);
+  assert.ok(tripFiles.length > 80, `only ${tripFiles.length} trip files matched — has TRIP_FILE been narrowed?`);
 });
 
 test("every trip-shaped file says which product it is for", () => {
@@ -96,4 +99,29 @@ test("AGENTS.md carries the rule this guard enforces", () => {
   const agents = readFileSync("AGENTS.md", "utf8");
   assert.match(agents, /decided BEFORE it is written/);
   assert.match(agents, /built in the itineraries repository FIRST/);
+});
+
+test("the pattern catches a name written without hyphens", () => {
+  // This is how components/OfflineDocuments.tsx escaped the guard on its first
+  // day: the rule said "offline-documents" and the file is OfflineDocuments.
+  for (const name of [
+    "components/OfflineDocuments.tsx",
+    "lib/offline-documents.ts",
+    "components/SmartImportPanel.tsx",
+    "data/smart-import.ts",
+    "app/command-center/page.tsx",
+    "lib/command-center.ts",
+    "lib/day-progress.ts",
+    "components/DayProgress.tsx",
+    "data/itinerary.ts",
+    "lib/itineraries-handoff.ts",
+  ]) {
+    assert.ok(TRIP_FILE.test(name), `${name} would slip past the guard`);
+  }
+});
+
+test("it does not match things that merely contain the words", () => {
+  for (const name of ["lib/stripe.ts", "components/Navbar.tsx", "data/airports.ts"]) {
+    assert.ok(!TRIP_FILE.test(name), `${name} should not be treated as trip machinery`);
+  }
 });
