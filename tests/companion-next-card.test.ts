@@ -28,7 +28,7 @@ describe("what is next is the first thing on the screen", () => {
 
   it("it appears only while the trip is actually running", () => {
     // Not before it, not after it, and not on a day with nothing timed left.
-    assert.match(APP, /const showNextCard = Boolean\(sel\.today\) && !trip\.tripFinished && Boolean\(nowOrNext\)/);
+    assert.match(APP, /const showNextCard = selIsToday && !trip\.tripFinished && Boolean\(nowOrNext\)/);
   });
 
   it("it shows what is happening now in preference to what is next", () => {
@@ -38,7 +38,7 @@ describe("what is next is the first thing on the screen", () => {
   it("it opens the right stop, through the helper the day rows already use", () => {
     // Hand-rolled navigation here first, and set a field that does not exist
     // on the state — which would have opened whichever stop was last viewed.
-    assert.match(APP, /onClick=\{\(\) => openActivity\(st\.selDay, nowOrNextIsNow \? nowIdx! : nextIdx!\)\}/);
+    assert.match(APP, /onClick=\{\(\) => openActivity\(curDay, nowOrNextIsNow \? nowIdx! : nextIdx!\)\}/);
   });
 });
 

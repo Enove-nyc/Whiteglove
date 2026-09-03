@@ -608,6 +608,18 @@ export default function CompanionApp({
       window.removeEventListener("online", goOnline);
     };
   }, []);
+  // The OS/browser Back button steps back through the app's own screens (see
+  // pushScreenHistory/go/back). A popstate restores the screen the popped entry
+  // names, or the home screen at the base entry — one more Back then leaves.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPop = (e: PopStateEvent) => {
+      const target = ((e.state as { wgScreen?: Screen } | null)?.wgScreen) ?? "home";
+      setSt((s) => (s.screen === target ? s : { ...s, screen: target, prev: null }));
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   // On a computer or a tablet a real (non-showcase) trip is not a phone in a
   // frame but a web page: a side rail of tabs and a wide content column. A
@@ -628,10 +640,30 @@ export default function CompanionApp({
     return { ...d, items: d.items.map((it) => (it.swappable ? swapped : it)) };
   });
 
+  // Forward navigation records a browser history entry, so the phone's own Back
+  // gesture (and the desktop Back button) steps back through the app's screens
+  // instead of closing the whole app — the most common way a customer would
+  // otherwise get thrown out. From the trip home, Back leaves as before.
+  function pushScreenHistory(screen: Screen) {
+    if (typeof window === "undefined") return;
+    try {
+      window.history.pushState({ wgScreen: screen }, "");
+    } catch {
+      // A sandboxed webview may refuse pushState — the header ← still works.
+    }
+  }
   function go(screen: Screen) {
+    if (st.screen === screen) return;
     setSt((s) => ({ ...s, screen, prev: s.screen }));
+    pushScreenHistory(screen);
   }
   function back() {
+    // Unwind one history entry; the popstate handler restores the screen that
+    // entry names, so the header ← and the OS Back stay in lockstep.
+    if (typeof window !== "undefined") {
+      window.history.back();
+      return;
+    }
     setSt((s) => ({ ...s, screen: s.prev && s.prev !== s.screen ? s.prev : "home", prev: null }));
   }
 
@@ -670,8 +702,29 @@ export default function CompanionApp({
    * went nowhere, which read as the whole feature being broken.
    */
   const usesRealChat = hasMessages;
-  const sel = days[st.selDay];
+  const { nowMinutes, today: deviceToday } = useDeviceClock();
+  // The traveler's real today, by the clock where THEY are — not the server's
+  // UTC date. trip.todayIndex is baked on the server from UTC; for an audience
+  // mostly east of UTC that points at the wrong day for the hours between local
+  // and UTC midnight. Match the device's own date to a day instead, and fall
+  // back to the server index only before the device clock resolves or when no
+  // day matches today.
+  const todayIdx = (() => {
+    if (deviceToday) {
+      const i = days.findIndex((d) => d.date === deviceToday);
+      if (i >= 0) return i;
+    }
+    return trip.todayIndex;
+  })();
+  // The day the trip screen shows: the traveler's real today until they tap a
+  // specific day (selDay no longer the server default), then their pick. Opens
+  // the app on the right day without a state-syncing effect. Also guards a day
+  // index out of range rather than crashing on sel.items.
+  const curDay = st.selDay === trip.todayIndex ? todayIdx : st.selDay;
+  const sel = days[curDay] ?? days[trip.todayIndex] ?? days[0];
   const items = sel.items.map(decorate);
+  // Whether the day on screen is the traveler's own today (device clock).
+  const selIsToday = deviceToday ? sel.date === deviceToday : Boolean(sel.today);
 
   /**
    * Where the traveler actually is on today's plan, by the clock on their own
@@ -682,9 +735,8 @@ export default function CompanionApp({
    * app. Only computed for the day that IS today — a browsed future or past
    * day has no "now" on it.
    */
-  const { nowMinutes } = useDeviceClock();
   const followStops: FollowStop[] = items.map((it, i) => ({ id: String(i), name: it.title, arrivalTime: it.time || undefined }));
-  const follow = sel.today ? followAlong({ stops: followStops, nowMinutes }) : null;
+  const follow = selIsToday ? followAlong({ stops: followStops, nowMinutes }) : null;
   const nowIdx = follow?.now ? Number(follow.now.id) : null;
   const nextIdx = follow?.next ? Number(follow.next.id) : null;
   const hasSwap = Boolean(trip.swaps);
@@ -714,7 +766,7 @@ export default function CompanionApp({
   };
   const kickers: Record<Screen, string> = {
     home: trip.homeKicker,
-    day: `Day ${st.selDay + 1} of ${trip.days.length}`,
+    day: `Day ${curDay + 1} of ${trip.days.length}`,
     activity: sel.name,
     chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
     messages: advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
@@ -763,10 +815,13 @@ export default function CompanionApp({
         { from: "them", text: reply },
       ],
     }));
+    pushScreenHistory("day");
   };
 
-  const openActivity = (di: number, i: number) =>
+  const openActivity = (di: number, i: number) => {
     setSt((s) => ({ ...s, screen: "activity", prev: s.screen, actIdx: i, actDay: di }));
+    pushScreenHistory("activity");
+  };
 
   // Concierge mode's tab opens the real thread the moment one exists, so
   // there is only ever one door to "talk to your advisor" rather than a real
@@ -831,12 +886,12 @@ export default function CompanionApp({
    */
   const nowOrNext = nowIdx !== null ? items[nowIdx] : nextIdx !== null ? items[nextIdx] : null;
   const nowOrNextIsNow = nowIdx !== null;
-  const showNextCard = Boolean(sel.today) && !trip.tripFinished && Boolean(nowOrNext);
+  const showNextCard = selIsToday && !trip.tripFinished && Boolean(nowOrNext);
 
   const nextCard = nowOrNext && (
     <button
       type="button"
-      onClick={() => openActivity(st.selDay, nowOrNextIsNow ? nowIdx! : nextIdx!)}
+      onClick={() => openActivity(curDay, nowOrNextIsNow ? nowIdx! : nextIdx!)}
       className="wg-press"
       style={{ display: "block", width: "calc(100% - 28px)", textAlign: "left", margin: "14px 14px 0", padding: "18px 20px", borderRadius: 20, background: `linear-gradient(155deg, ${GOLD} 0%, #b07f38 100%)`, color: ON_GOLD, border: 0, cursor: "pointer" }}
     >
@@ -899,7 +954,7 @@ export default function CompanionApp({
           <span>{trip.tripDates}</span>
           <span style={{ width: 4, height: 4, borderRadius: 14, background: "#a8a29e" }} />
           <span style={{ background: "#e7edf1", color: "#1f3f5c", fontWeight: 600, padding: "4px 10px", borderRadius: 14, fontSize: 11.5 }}>
-            {trip.tripFinished ? "Trip finished" : `Day ${trip.todayIndex + 1} of ${trip.days.length}`}
+            {trip.tripFinished ? "Trip finished" : `Day ${todayIdx + 1} of ${trip.days.length}`}
           </span>
         </div>
       </div>
@@ -927,9 +982,11 @@ export default function CompanionApp({
       </div>
       <div style={{ display: "flex", gap: 9, overflowX: "auto", padding: "12px 20px 4px", scrollbarWidth: "none" }}>
         {days.map((d, i) => {
-          const on = i === st.selDay;
+          const on = i === curDay;
+          // "Today" by the traveler's own clock (todayIdx), not the server's.
+          const dToday = i === todayIdx;
           return (
-            <button key={i} onClick={() => setSt((s) => ({ ...s, selDay: i, screen: "day", prev: "home" }))} className="wg-press" style={{ flex: "none", width: 64, padding: "11px 0 12px", borderRadius: 16, border: `1px solid ${on ? GOLD : d.today ? GOLD : "rgba(38,50,58,.1)"}`, background: on ? GOLD : d.today ? "#f7eee0" : "#ffffff", color: on ? ON_GOLD : INK, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <button key={i} onClick={() => { setSt((s) => ({ ...s, selDay: i, screen: "day", prev: "home" })); pushScreenHistory("day"); }} className="wg-press" style={{ flex: "none", width: 64, padding: "11px 0 12px", borderRadius: 16, border: `1px solid ${on ? GOLD : dToday ? GOLD : "rgba(38,50,58,.1)"}`, background: on ? GOLD : dToday ? "#f7eee0" : "#ffffff", color: on ? ON_GOLD : INK, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
               <span style={{ font: "600 10px/1 Inter,sans-serif", letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.75 }}>{d.dow}</span>
               <span style={{ font: `400 20px/1 ${serif}` }}>{d.dom}</span>
               <span style={{ fontSize: 9.5, opacity: 0.75, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 56 }}>{d.short}</span>
@@ -950,15 +1007,15 @@ export default function CompanionApp({
             on the start of the list, as it always did. */}
         {items
           .map((it, i) => ({ it, i }))
-          .slice(sel.today ? (nowIdx ?? nextIdx ?? 0) : 0, (sel.today ? (nowIdx ?? nextIdx ?? 0) : 0) + 3)
+          .slice(selIsToday ? (nowIdx ?? nextIdx ?? 0) : 0, (selIsToday ? (nowIdx ?? nextIdx ?? 0) : 0) + 3)
           .map(({ it, i }) => {
-          const isNow = Boolean(sel.today) && i === nowIdx;
-          const isNext = Boolean(sel.today) && i === nextIdx;
+          const isNow = selIsToday && i === nowIdx;
+          const isNext = selIsToday && i === nextIdx;
           const highlight = isNow || isNext;
           return (
             <button
               key={i}
-              onClick={() => openActivity(st.selDay, i)}
+              onClick={() => openActivity(curDay, i)}
               className="wg-fade"
               style={{
                 textAlign: "left",
@@ -1097,11 +1154,11 @@ export default function CompanionApp({
   const railView = (
     <div style={{ display: "flex", flexDirection: "column" }}>
       {items.map((it, i) => {
-        const isNow = Boolean(sel.today) && i === nowIdx;
-        const isNext = Boolean(sel.today) && i === nextIdx;
+        const isNow = selIsToday && i === nowIdx;
+        const isNext = selIsToday && i === nextIdx;
         // Behind them, by the clock — shown a little quieter, never hidden:
         // a stop that already happened is still worth tapping back into.
-        const isDone = Boolean(sel.today) && nowMinutes !== null && follow?.done.some((d) => d.id === String(i));
+        const isDone = selIsToday && nowMinutes !== null && follow?.done.some((d) => d.id === String(i));
         return (
           <div key={i} style={{ display: "flex", gap: 12, opacity: isDone ? 0.55 : 1 }}>
             <div style={{ flex: "none", width: 54, paddingTop: 3, textAlign: "right", font: `600 12.5px/1.4 ui-monospace,Menlo,monospace`, color: isNow ? "#765321" : MUTED }}>{it.time}</div>
@@ -1111,7 +1168,7 @@ export default function CompanionApp({
             </div>
             <div style={{ flex: 1, minWidth: 0, paddingBottom: 18, display: "flex", flexDirection: "column", gap: 8 }}>
               <button
-                onClick={() => openActivity(st.selDay, i)}
+                onClick={() => openActivity(curDay, i)}
                 className="wg-warm"
                 style={{
                   textAlign: "left",
@@ -1155,7 +1212,7 @@ export default function CompanionApp({
       {railView}
       <button
         onClick={() => {
-          setSt((s) => ({ ...s, chatSubject: `Day ${st.selDay + 1} — ${sel.name}` }));
+          setSt((s) => ({ ...s, chatSubject: `Day ${curDay + 1} — ${sel.name}` }));
           go(usesRealChat ? "messages" : "chat");
         }}
         className="wg-warm"

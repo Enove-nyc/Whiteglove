@@ -51,7 +51,7 @@ describe("the profile screen is honest about who is looking at it", () => {
 
 describe("a finished trip never opens as if it were day one", () => {
   it("the home screen's day pill reads the trip's own tripFinished flag", () => {
-    assert.match(APP, /trip\.tripFinished \? "Trip finished" : `Day \$\{trip\.todayIndex \+ 1\} of \$\{trip\.days\.length\}`/);
+    assert.match(APP, /trip\.tripFinished \? "Trip finished" : `Day \$\{todayIdx \+ 1\} of \$\{trip\.days\.length\}`/);
   });
 });
 

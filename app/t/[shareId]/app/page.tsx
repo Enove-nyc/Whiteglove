@@ -40,10 +40,10 @@ export const dynamic = "force-dynamic";
 export default async function TravelerAppPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
   const shared = await getSharedTraveler(shareId);
-  if (!shared) redirect("/");
+  if (!shared) redirect("/app");
 
   const plan = await getPlan(shared.ownerEmail);
-  if (!mayServeCompanionClients(plan)) redirect("/");
+  if (!mayServeCompanionClients(plan)) redirect("/app");
 
   const label = shared.traveler.family?.trim() || shared.traveler.name;
   const [brand, prefs, payment] = await Promise.all([
@@ -58,7 +58,7 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
     client: label,
     kosher: prefs.kosherFeatures,
   });
-  if (!trip) redirect("/");
+  if (!trip) redirect("/app");
   if (payment) trip.payment = payment;
   await checkTripFlightStatus(shared.ownerEmail, shared.tripId).catch(() => []);
   trip.liveAlerts = await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
