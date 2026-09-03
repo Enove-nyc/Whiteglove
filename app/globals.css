@@ -608,10 +608,12 @@ nav :where(svg, .glove-mark),
   /* A deeper mushroom for subtle layering (dividers, sunk fields, alt rows).
    * Derived one step down from --cream; documented shade, not a new brand hue. */
   --cream-deep: #C7BFB1;
-  --surface: #FAF8F3;
+  /* Lifted a shade brighter than a flat warm white, so cards separate more
+   * clearly from the Mushroom ground — the "more pop" tweak. Still warm. */
+  --surface: #FEFDFB;
   --ink: #102F35;
   --wg-radius: 1rem;
-  --wg-shadow: 0 12px 35px rgba(16, 47, 53, 0.12);
+  --wg-shadow: 0 14px 40px rgba(16, 47, 53, 0.14);
 
   /* Semantic aliases (approved names) — same values, so nothing competes.
    * --color-background/--color-foreground are owned by the @theme block above. */
@@ -661,8 +663,17 @@ p {
   border-radius: 0.75rem;
 }
 
-:where(button, a[class*="bg-"], a[class*="border"]) {
-  border-radius: 0.75rem;
+/* Fully-rounded (pill) buttons by default, to match the rounded-full design-
+ * system Button and echo the round compass in the mark.
+ *
+ * THE :not() IS LOAD-BEARING. Anything that sets its own radius class
+ * (rounded-xl on a card, rounded-full on the Button component) is EXCLUDED from
+ * this rule outright, so it keeps exactly the corners it asked for — cards stay
+ * soft-cornered rectangles and the pill only ever lands on button-shaped things
+ * that had no radius of their own. Selecting by attribute alone could not tell
+ * a bordered link-card from a bordered button; excluding declared radii can. */
+:where(button, a[class*="bg-"], a[class*="border"]):not([class*="rounded"]) {
+  border-radius: 999px;
 }
 
 .wg-page-hero {
