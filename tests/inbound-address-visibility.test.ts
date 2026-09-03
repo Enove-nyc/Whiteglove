@@ -47,3 +47,12 @@ test("it is reachable from the account page", () => {
 test("trip updates sit above the trips on the account page", () => {
   assert.ok(account.indexOf("<TripUpdates") < account.indexOf("<AccountRoutePanel"), "updates must come before the trips list");
 });
+
+test("the address can be changed, and never without being asked first", () => {
+  assert.match(panel, /action: "rotate"/);
+  // The confirm step gates the call — the button that rotates is only rendered
+  // once `confirming` is true, and the visible one only sets it.
+  assert.match(panel, /onClick=\{\(\) => setConfirming\(true\)\}/);
+  assert.match(panel, /\{confirming \? \(/);
+  assert.match(panel, /stops working straight away/);
+});

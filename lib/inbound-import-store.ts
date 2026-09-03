@@ -11,9 +11,10 @@
  * not to become a second inbox.
  */
 
-import { randomBytes } from "crypto";
+import { randomInt } from "crypto";
 import { identityKey } from "@/lib/identity";
-import { MAX_PENDING, TOKEN_LENGTH, isStale, type PendingImport } from "@/data/inbound-import";
+import { INBOUND_WORDS } from "@/data/inbound-words";
+import { TOKEN_WORDS, pendingToShow, type PendingImport } from "@/data/inbound-import";
 
 const TOKEN_PREFIX = "white-glove:inbound-token:";
 const QUEUE_PREFIX = "white-glove:inbound-pending:";
@@ -59,6 +60,18 @@ async function redis<T>(path: string, body?: string): Promise<T | null> {
 const key = (prefix: string, value: string) => encodeURIComponent(`${prefix}${value}`);
 
 /**
+ * A new address, in words somebody can read out.
+ *
+ * randomInt, not a hash of anything and not Math.random: this is a credential,
+ * and the whole strength of it is that the four words were drawn evenly and
+ * unpredictably from the list. Repeats are allowed — refusing them would leak
+ * a little about what was drawn and buys nothing.
+ */
+function makeToken(): string {
+  return Array.from({ length: TOKEN_WORDS }, () => INBOUND_WORDS[randomInt(INBOUND_WORDS.length)]).join("-");
+}
+
+/**
  * This account's forwarding token, made on first use and stable after.
  *
  * Both directions are written: the token finds the account when a message
@@ -70,7 +83,7 @@ export async function ensureInboundToken(account: string): Promise<string> {
   const id = identityKey(account);
   const existing = await redis<string>(`get/${key(ADDRESS_PREFIX, id)}`);
   if (existing) return existing;
-  const token = randomBytes(TOKEN_LENGTH).toString("base64url").slice(0, TOKEN_LENGTH);
+  const token = makeToken();
   const wrote = await redis(`set/${key(TOKEN_PREFIX, token)}`, JSON.stringify({ account, at: new Date().toISOString() }));
   if (wrote === null) return "";
   await redis(`set/${key(ADDRESS_PREFIX, id)}`, token);
@@ -125,8 +138,10 @@ async function writePending(account: string, entries: PendingImport[]): Promise<
 export async function addPending(account: string, entry: PendingImport): Promise<boolean> {
   if (!account || !inboundStoreAvailable()) return false;
   const now = new Date().toISOString();
-  const kept = (await readPending(account)).filter((e) => !isStale(e, now));
-  return writePending(account, [entry, ...kept].slice(0, MAX_PENDING));
+  // Trimmed by pendingToShow rather than by a plain slice, so a message that
+  // only matched on its sender can never push a confirmed one off the end —
+  // see MAX_UNCONFIRMED_PENDING in data/inbound-import.ts.
+  return writePending(account, pendingToShow([entry, ...(await readPending(account))], now));
 }
 
 /** Taken off the queue once the planner has kept or discarded its rows. */
