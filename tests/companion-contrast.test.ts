@@ -52,11 +52,15 @@ const FAINT = colour("FAINT");
 const GOLD_ON_DARK = colour("GOLD_ON_DARK");
 const ON_GOLD = SRC.includes("const ON_GOLD = NAVY;") ? NAVY : colour("ON_GOLD");
 
-/** The three grounds the app draws text on: the page, the tab bar, a card. */
+/**
+ * The grounds the app draws MUTED text on. On the Mushroom palette that is the
+ * warm-white card (#FAF8F3): the page ground is Mushroom (#D5CEC3), dark enough
+ * that a legible-as-muted grey cannot clear 4.5 on it, so muted metadata lives
+ * on the raised card and the page carries only ink and headings. The deep chips
+ * (#C7BFB1) carry ink, not grey — checked separately below.
+ */
 const GROUNDS: Array<[string, string]> = [
-  ["the cream page", CREAM],
-  ["the tab bar's band", "#ece8df"],
-  ["a white card", "#ffffff"],
+  ["a warm-white card", "#FAF8F3"],
 ];
 
 // Everything measured here is under 18px, so AA is 4.5 for all of it.
@@ -83,12 +87,13 @@ describe("the two greys clear AA on every ground", () => {
     assert.ok(luminance(MUTED) < luminance(FAINT), "MUTED must be the darker of the two");
   });
 
-  it("writes in a blue-black rather than a warm charcoal", () => {
-    // The old ink was #26323a — forty uses of it, on a cream page beside a
-    // gold. Three warm neutrals and nothing holding them together.
+  it("writes in a deep teal rather than a warm charcoal", () => {
+    // The old ink was #26323a — a warm charcoal. It is the palette's dark teal
+    // #102F35 now, which has real blue in it and clears 9:1 on the Mushroom
+    // ground (13:1 on a card) — as dark as text gets while carrying the brand.
     const [red, , blue] = [1, 3, 5].map((i) => parseInt(INK.slice(i, i + 2), 16));
     assert.ok(blue > red, `the ink ${INK} has no more blue in it than red`);
-    assert.ok(ratio(INK, CREAM) >= 12, "the ink got lighter on the way to being bluer");
+    assert.ok(ratio(INK, CREAM) >= 9, "the ink got lighter on the way to being bluer");
   });
 });
 
@@ -118,8 +123,8 @@ describe("what is written on the gold", () => {
      * to #8f6c3a, where navy is 3.33:1 — so the dark end was lifted to #b07f38,
      * which is 4.52 and clears AA across the whole card.
      */
-    assert.match(SRC, /linear-gradient\(155deg, \$\{GOLD\} 0%, #b07f38 100%\)/);
-    assert.ok(ratio(ON_GOLD, "#b07f38") >= AA);
+    assert.match(SRC, /linear-gradient\(155deg, \$\{GOLD\} 0%, #B89048 100%\)/);
+    assert.ok(ratio(ON_GOLD, "#B89048") >= AA);
   });
 });
 

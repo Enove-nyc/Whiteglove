@@ -87,7 +87,7 @@ function HeritageBody({ card, compact }: { card: Extract<DirectoryCard, { kind: 
         <span className="block text-sm leading-6 text-stone-600 line-clamp-3">{card.summary}</span>
       )}
       <span className="mt-auto flex flex-wrap gap-2 pt-4">
-        <span className="inline-flex items-start gap-1.5 rounded-md border border-[var(--gold)] bg-[#fcf6e9] px-2.5 py-1.5 text-[11px] font-semibold leading-4 text-[var(--navy)]">
+        <span className="inline-flex items-start gap-1.5 rounded-md border border-[var(--gold)] bg-[#FAF8F3] px-2.5 py-1.5 text-[11px] font-semibold leading-4 text-[var(--navy)]">
           {/* THE COUNT, NOT WHAT WE HOLD ABOUT IT. This first read "3 batei
               hachaim on record", which describes the site's own filing rather
               than the town — the same habit as "checked information" and
@@ -136,7 +136,7 @@ export default function VacationCard({ card, compact = false }: { card: Director
             content (kevarim rather than the kosher and Shabbos signals), so it
             is the one that needs saying. */}
         {card.kind === "heritage" && (
-          <span className="absolute left-6 top-5 inline-flex items-center rounded-md border border-[var(--gold)] bg-[#fcf6e9] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--navy)]">
+          <span className="absolute left-6 top-5 inline-flex items-center rounded-md border border-[var(--gold)] bg-[#FAF8F3] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--navy)]">
             Heritage
           </span>
         )}

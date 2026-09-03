@@ -58,7 +58,7 @@ export default function CurrentUpdatesManager({
 
   if (!storeReady) {
     return (
-      <p className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-600">
+      <p className="mt-8 border border-[var(--gold-light)] bg-[#FAF8F3] px-4 py-3 text-sm leading-6 text-stone-600">
         The private store is not connected, so updates cannot be saved yet.
       </p>
     );
@@ -89,7 +89,7 @@ export default function CurrentUpdatesManager({
       )}
 
       {updates.length === 0 ? (
-        <p className="mt-5 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600">
+        <p className="mt-5 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600">
           Nothing current. Add one when something changes that a traveler would want to know before they go.
         </p>
       ) : (

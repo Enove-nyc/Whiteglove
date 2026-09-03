@@ -299,7 +299,7 @@ function OptionEditor({
   // landing in the list as an untitled row waiting to be found again.
   const [addedId, setAddedId] = useState<string | null>(null);
   return (
-    <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+    <div className="rounded-2xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5">
       <div className="flex items-start justify-between gap-3">
         <input
           value={option.name}

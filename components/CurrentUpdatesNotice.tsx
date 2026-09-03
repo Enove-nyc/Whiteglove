@@ -33,7 +33,7 @@ export default function CurrentUpdatesNotice({ updates }: { updates: CurrentUpda
         {updates.map((update) => (
           <li
             key={update.id}
-            className="rounded-lg border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3"
+            className="rounded-lg border-l-4 border-[var(--gold)] bg-[#FAF8F3] px-4 py-3"
           >
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
               {UPDATE_KIND_LABEL[update.kind]}

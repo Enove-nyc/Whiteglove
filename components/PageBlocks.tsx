@@ -66,7 +66,7 @@ function Block({ block }: { block: PageBlock }) {
                   )}
                 </>
               );
-              const shell = "wg-card border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6";
+              const shell = "wg-card border border-[var(--gold-light)] bg-[#FAF8F3] p-5 sm:p-6";
               // A card with somewhere to go is a link; one without stays an
               // article, so nothing looks clickable that is not.
               return item.href ? (
@@ -157,7 +157,7 @@ function Block({ block }: { block: PageBlock }) {
         <section className="wg-page-section mx-auto max-w-7xl px-5 py-8 sm:px-8">
           <p
             className={`max-w-3xl rounded-r-lg border-l-4 px-5 py-4 text-sm leading-7 ${
-              block.tone === "warn" ? "border-amber-400 bg-amber-50 text-amber-900" : "border-[var(--gold)] bg-[#fcfaf6] text-stone-700"
+              block.tone === "warn" ? "border-amber-400 bg-amber-50 text-amber-900" : "border-[var(--gold)] bg-[#FAF8F3] text-stone-700"
             }`}
           >
             {block.body}

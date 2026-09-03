@@ -120,7 +120,7 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
 
   if (sent) {
     return (
-      <div className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-8 text-center shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-10">
+      <div className="rounded-3xl border border-[var(--gold-light)] bg-[#FAF8F3] p-8 text-center shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-10">
         <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">We have your flight details.</p>
         <p className="mt-3 text-sm leading-7 text-stone-600">
           A person reads this and comes back to you with what is available and what it costs. For anything urgent,
@@ -138,7 +138,7 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-3xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-8 lg:p-10">
+    <form onSubmit={submit} className="rounded-3xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5 shadow-[0_18px_50px_rgba(23,45,82,.08)] sm:p-8 lg:p-10">
       <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Send us the flight</h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
         Fill in what you know. A person reads it and comes back to you with the options and what they cost.

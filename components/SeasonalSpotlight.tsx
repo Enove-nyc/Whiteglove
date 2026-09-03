@@ -24,7 +24,7 @@ export default function SeasonalSpotlight({ window }: { window: SeasonalWindow |
   return (
     <Link
       href={href}
-      className="group flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-lg border border-[var(--gold)] bg-[#fcf6e9] px-4 py-3"
+      className="group flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-lg border border-[var(--gold)] bg-[#FAF8F3] px-4 py-3"
     >
       <span className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
         {copy.headline}

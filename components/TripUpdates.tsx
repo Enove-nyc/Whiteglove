@@ -40,7 +40,7 @@ export default async function TripUpdates({ email, today }: { email: string; tod
       </h2>
       <ul className="mt-4 flex flex-col gap-3">
         {updates.map((update) => (
-          <li key={update.id} className={`rounded-lg border-l-4 bg-[#fcfaf6] px-4 py-3 ${TONES[update.tone]}`}>
+          <li key={update.id} className={`rounded-lg border-l-4 bg-[#FAF8F3] px-4 py-3 ${TONES[update.tone]}`}>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{update.label}</p>
             <p className="mt-1 font-semibold leading-6 text-[var(--navy)]">{update.title}</p>
             <p className="mt-0.5 text-sm leading-6 text-stone-600">{update.detail}</p>

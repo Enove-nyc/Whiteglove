@@ -222,7 +222,7 @@ export default async function BookPage({
             <span>With miles &amp; points</span>
           </div>
           {COMPARISON.map(([category, cash, points]) => (
-            <div key={category} className="grid gap-4 bg-[#fcfaf6] px-5 py-6 sm:grid-cols-[8rem_1fr_1fr] sm:gap-6 sm:px-6">
+            <div key={category} className="grid gap-4 bg-[#FAF8F3] px-5 py-6 sm:grid-cols-[8rem_1fr_1fr] sm:gap-6 sm:px-6">
               <h3 className="flex items-center gap-2 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
                 <GloveMark size="sm" />
                 {category}

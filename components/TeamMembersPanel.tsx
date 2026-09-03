@@ -106,7 +106,7 @@ export default function TeamMembersPanel() {
       {team.length > 0 && (
         <ul className="mt-4 flex flex-col gap-2">
           {team.map((m) => (
-            <li key={m.email} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3">
+            <li key={m.email} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] px-4 py-3">
               <div>
                 <span className="block font-semibold text-[var(--navy)]">{m.email}</span>
                 <span className="block text-xs text-stone-500">{m.status === "active" ? "Active" : "Invited — waiting to join"}</span>

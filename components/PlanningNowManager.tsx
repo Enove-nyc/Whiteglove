@@ -54,7 +54,7 @@ export default function PlanningNowManager({
 
   if (!storeReady) {
     return (
-      <p className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-600">
+      <p className="mt-8 border border-[var(--gold-light)] bg-[#FAF8F3] px-4 py-3 text-sm leading-6 text-stone-600">
         The private store is not connected, so these cannot be changed yet.
       </p>
     );
@@ -172,7 +172,7 @@ export default function PlanningNowManager({
         <p
           role="status"
           className={`mt-4 border px-4 py-3 text-sm leading-6 ${
-            message.ok ? "border-[var(--gold-light)] bg-[#fcfaf6] text-[var(--navy)]" : "border-red-300 bg-red-50 text-red-800"
+            message.ok ? "border-[var(--gold-light)] bg-[#FAF8F3] text-[var(--navy)]" : "border-red-300 bg-red-50 text-red-800"
           }`}
         >
           {message.message}

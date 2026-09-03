@@ -107,7 +107,7 @@ export default function FlatFileListEditor({
       )}
 
       {added.length === 0 ? (
-        <p className="mt-5 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600">
+        <p className="mt-5 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600">
           {emptyLabel}
         </p>
       ) : (
@@ -117,7 +117,7 @@ export default function FlatFileListEditor({
               <button
                 type="button"
                 onClick={() => setEditing({ item: entry })}
-                className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]"
+                className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]"
               >
                 <span className="min-w-0">
                   <span className="block truncate font-semibold text-[var(--navy)] underline decoration-[var(--gold-light)] decoration-2 underline-offset-4">

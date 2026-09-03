@@ -237,7 +237,7 @@ export default function SiteAssistant() {
           role="dialog"
           aria-modal="false"
           aria-label={SITE_ASSISTANT_LABEL}
-          className="fixed bottom-[calc(8rem+env(safe-area-inset-bottom))] right-4 z-[var(--wg-z-popover)] flex max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] flex-col rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-[0_24px_60px_rgba(23,45,82,.24)] outline-none sm:bottom-20"
+          className="fixed bottom-[calc(8rem+env(safe-area-inset-bottom))] right-4 z-[var(--wg-z-popover)] flex max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] flex-col rounded-2xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_24px_60px_rgba(23,45,82,.24)] outline-none sm:bottom-20"
         >
           <div className="flex items-start justify-between gap-3 border-b border-[var(--gold-light)] px-4 py-3">
             <div>

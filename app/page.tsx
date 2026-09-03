@@ -153,7 +153,7 @@ export default async function Home() {
       <section className="relative bg-[var(--navy)] px-5 py-14 text-white sm:px-8 sm:py-20">
         {/* The photograph slot: wash first, then the navy overlay that keeps
             the words readable over whatever eventually sits underneath it. */}
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#24405f] to-[#3a5462]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#193F46] to-[#193F46]" />
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgba(13,25,45,.78),rgba(13,25,45,.30)_45%,transparent_80%)]" />
         <div className="relative mx-auto max-w-7xl">
           {/* The whole opening is the search, at the owner's word: no visible

@@ -44,7 +44,7 @@ export default function TravelExtras({
   const amazon = needsAmazonDisclosure(extras);
 
   return (
-    <section className="border-t border-[var(--gold-light)] bg-[#fcfaf6] px-5 py-14 sm:px-8 sm:py-16">
+    <section className="border-t border-[var(--gold-light)] bg-[#FAF8F3] px-5 py-14 sm:px-8 sm:py-16">
       <div className="mx-auto max-w-6xl">
         <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{heading}</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{intro}</p>

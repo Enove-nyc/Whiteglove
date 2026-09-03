@@ -15,7 +15,7 @@ const captionClass = "text-[11px] font-bold uppercase tracking-[0.12em] text-sto
 const submitClass =
   "border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60";
 const choiceClass =
-  "flex h-full flex-col border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-left transition hover:border-[var(--gold)] hover:bg-white";
+  "flex h-full flex-col border border-[var(--gold-light)] bg-[#FAF8F3] p-6 text-left transition hover:border-[var(--gold)] hover:bg-white";
 
 function Status({ state }: { state: ActionResult | null }) {
   if (!state) return null;

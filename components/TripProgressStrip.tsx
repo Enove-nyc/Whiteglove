@@ -152,7 +152,7 @@ export default function TripProgressStrip({
 
   const during = progress.phase === "during";
   const tone = during
-    ? "border-[var(--gold)] bg-[#fffdf4]"
+    ? "border-[var(--gold)] bg-[#FAF8F3]"
     : progress.phase === "after"
       ? "border-[var(--gold-light)] bg-[var(--surface)]"
       : "border-[var(--gold-light)] bg-[var(--surface)]";

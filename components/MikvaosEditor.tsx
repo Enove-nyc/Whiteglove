@@ -105,7 +105,7 @@ export default function MikvaosEditor({
       )}
 
       {shown.length === 0 ? (
-        <p className="mt-5 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600">
+        <p className="mt-5 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600">
           {rows.length === 0 ? "No mikvah listings yet." : "Nothing matches that search."}
         </p>
       ) : (
@@ -135,14 +135,14 @@ export default function MikvaosEditor({
                   <button
                     type="button"
                     onClick={() => setEditing(row)}
-                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]"
+                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]"
                   >
                     {body}
                   </button>
                 ) : (
                   <Link
                     href={row.townHref}
-                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]"
+                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]"
                   >
                     {body}
                   </Link>

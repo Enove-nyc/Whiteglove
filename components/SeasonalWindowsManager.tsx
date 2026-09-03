@@ -51,7 +51,7 @@ export default function SeasonalWindowsManager({
 
   if (!storeReady) {
     return (
-      <p className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-600">
+      <p className="mt-8 border border-[var(--gold-light)] bg-[#FAF8F3] px-4 py-3 text-sm leading-6 text-stone-600">
         The private store is not connected, so these cannot be changed yet.
       </p>
     );
@@ -87,7 +87,7 @@ export default function SeasonalWindowsManager({
                       {showing ? "Showing now" : "Not showing"}
                     </span>
                     {window.featured && (
-                      <span className="shrink-0 rounded-full border border-[var(--gold)] bg-[#fcf6e9] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">
+                      <span className="shrink-0 rounded-full border border-[var(--gold)] bg-[#FAF8F3] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">
                         Featured
                       </span>
                     )}

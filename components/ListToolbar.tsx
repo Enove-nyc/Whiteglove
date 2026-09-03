@@ -80,7 +80,7 @@ export default function ListToolbar({
        to scroll back to the top to reach. top-16 is the header's scrolled
        height (min-h-16 in Navbar); by the time this reaches the top of the
        viewport the header has already shrunk to it. */
-    <div className="sticky top-16 z-[var(--wg-z-list-toolbar)] rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 shadow-[0_6px_16px_rgba(23,45,82,.06)]">
+    <div className="sticky top-16 z-[var(--wg-z-list-toolbar)] rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5 shadow-[0_6px_16px_rgba(23,45,82,.06)]">
       <div className="flex flex-wrap items-end gap-3">
         <label className="block min-w-0 flex-1 basis-64">
           <span className={captionClass}>{searchLabel}</span>

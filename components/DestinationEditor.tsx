@@ -199,7 +199,7 @@ function ActionForm({
       <Hidden values={hidden} />
 
       {offer && draft && (
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-l-4 border-[var(--gold)] bg-[#FAF8F3] px-4 py-3">
           <p className="text-sm leading-6 text-stone-700">
             You typed something here {describeDraft(draft, now)} and did not save it. It is still on this
             computer.
@@ -329,7 +329,7 @@ function EditRow({ title, subtitle, badge, onClick }: { title: string; subtitle?
       <button
         type="button"
         onClick={onClick}
-        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]"
+        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]"
       >
         <span className="min-w-0">
           <span className="flex flex-wrap items-center gap-2">
@@ -347,7 +347,7 @@ function EditRow({ title, subtitle, badge, onClick }: { title: string; subtitle?
 const addButtonClass =
   "min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
 const emptyListClass =
-  "mt-4 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600";
+  "mt-4 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600";
 const listClass = "mt-4 divide-y divide-[var(--gold-light)] rounded-lg border border-[var(--gold-light)] bg-white";
 
 function SectionHeader({ eyebrow, title, hint }: { eyebrow: string; title: string; hint?: string; count?: number }) {

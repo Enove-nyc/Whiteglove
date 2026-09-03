@@ -20,7 +20,7 @@ import type { TeamMember } from "@/lib/admin-roles";
  */
 
 const inputClass =
-  "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)] disabled:bg-[#f4f1ea] disabled:text-stone-500";
+  "mt-1.5 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)] disabled:bg-[#D5CEC3] disabled:text-stone-500";
 const captionClass = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
 const submitClass =
   "min-h-[44px] border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60";
@@ -64,7 +64,7 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
         </p>
       )}
 
-      <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <section className="border border-[var(--gold-light)] bg-[#FAF8F3] p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Who has access</h2>
           <button type="button" onClick={() => setEditing("new")} disabled={!storageReady} className={addButtonClass}>
@@ -109,7 +109,7 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
                     <button
                       type="button"
                       onClick={() => setEditing(m)}
-                      className="flex w-full items-start justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]"
+                      className="flex w-full items-start justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]"
                     >
                       {detail}
                       <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--gold-ink)]">Edit</span>
@@ -177,7 +177,7 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
 
               <fieldset className="mt-5">
                 <legend className={captionClass}>What may they do?</legend>
-                <label className="mt-3 flex items-start gap-3 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+                <label className="mt-3 flex items-start gap-3 border border-[var(--gold-light)] bg-[#FAF8F3] p-4">
                   <input type="checkbox" name="siteAccess" defaultChecked={member ? member.siteAccess : true} className="mt-1 h-4 w-4 accent-[var(--navy)]" />
                   <span>
                     <span className="block font-semibold text-[var(--navy)]">See the site while it is closed</span>
@@ -186,7 +186,7 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
                     </span>
                   </span>
                 </label>
-                <label className="mt-3 flex items-start gap-3 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+                <label className="mt-3 flex items-start gap-3 border border-[var(--gold-light)] bg-[#FAF8F3] p-4">
                   <input
                     type="checkbox"
                     name="admin"
@@ -205,7 +205,7 @@ export default function TeamEditor({ members, storageReady }: { members: TeamMem
               </fieldset>
 
               {adminChecked && (
-                <fieldset className="mt-5 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+                <fieldset className="mt-5 border border-[var(--gold-light)] bg-[#FAF8F3] p-4">
                   <legend className={captionClass}>Which parts of the admin?</legend>
                   <p className="mt-2 text-sm leading-6 text-stone-600">
                     Untick anything they should not reach. Leave all five ticked and they can do everything you can,

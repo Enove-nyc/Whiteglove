@@ -223,7 +223,7 @@ export default function TripStartFlow({
   return (
     <div>
       {/* ---- where you are ------------------------------------------------ */}
-      <nav aria-label="Progress through planning" className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+      <nav aria-label="Progress through planning" className="rounded-2xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5">
         <ol className="flex flex-wrap gap-x-6 gap-y-2">
           {STEPS.map((entry) => {
             const state = entry.number === step ? "current" : entry.number < step ? "done" : "todo";
@@ -514,7 +514,7 @@ export default function TripStartFlow({
                 itineraries brand is left with the planner, which is its whole
                 point. */}
             {!itineraries && (
-              <div className="rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] p-5 sm:p-6">
+              <div className="rounded-2xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5 sm:p-6">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Not decided</p>
                 <p className="mt-2 leading-7 text-stone-600">Your answers stay in this browser.</p>
                 <button
@@ -630,7 +630,7 @@ export default function TripStartFlow({
                     form for everybody, and it told a vacation customer this
                     site was not for them. */}
                 {isHeritage && (
-                  <label className="block rounded-xl border border-[var(--gold)] bg-[#fcfaf6] p-5">
+                  <label className="block rounded-xl border border-[var(--gold)] bg-[#FAF8F3] p-5">
                     <span className={label}>Kevarim, towns or tzaddikim you want to reach</span>
                     <textarea
                       rows={3}

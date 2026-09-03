@@ -31,7 +31,7 @@ const caption = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-50
 const addButtonClass =
   "min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-50";
 const rowClass =
-  "flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]";
+  "flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]";
 
 function Modal({
   title,
@@ -103,7 +103,7 @@ export default function AirportAdmin({
 
   if (!storeReady) {
     return (
-      <p className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-600">
+      <p className="mt-8 border border-[var(--gold-light)] bg-[#FAF8F3] px-4 py-3 text-sm leading-6 text-stone-600">
         The private store is not connected, so nothing can be added yet. The {merged.length} built-in airports and{" "}
         {Object.keys(metros).length} city groups are working as they always have.
       </p>
@@ -117,7 +117,7 @@ export default function AirportAdmin({
   return (
     <div className="mt-8 space-y-8">
       {/* Airports */}
-      <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <section className="border border-[var(--gold-light)] bg-[#FAF8F3] p-6">
         <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Add or correct</p>
         <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Airports</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
@@ -170,7 +170,7 @@ export default function AirportAdmin({
       </section>
 
       {/* City groups */}
-      <section className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+      <section className="border border-[var(--gold-light)] bg-[#FAF8F3] p-6">
         <p className="text-xs font-bold uppercase tracking-[0.17em] text-[var(--gold-ink)]">Searched together</p>
         <h2 className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">City groups</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">

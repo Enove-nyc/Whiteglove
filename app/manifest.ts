@@ -21,8 +21,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
       : "Thoughtfully planned kosher travel and Jewish heritage journeys — kevarim, kosher food, minyanim, and trip planning.",
     start_url: "/",
     display: "standalone",
-    background_color: "#14213d",
-    theme_color: "#14213d",
+    background_color: "#102F35",
+    theme_color: "#102F35",
     orientation: "portrait",
     categories: ["travel", "lifestyle"],
     // Lets the OS share sheet offer White Glove itself as a destination —

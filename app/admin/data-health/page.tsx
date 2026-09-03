@@ -39,7 +39,7 @@ export default function DataHealthPage() {
       </header>
 
       {checks.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600">
+        <p className="mt-8 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600">
           Nothing is missing that this knows how to look for.
         </p>
       ) : (

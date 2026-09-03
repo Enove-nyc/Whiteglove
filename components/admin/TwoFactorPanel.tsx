@@ -227,7 +227,7 @@ export default function TwoFactorPanel({ enrolled, who, shared }: { enrolled: bo
       )}
 
       {forgotten && (
-        <p className="mt-4 border-l-4 border-[var(--gold)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-700">
+        <p className="mt-4 border-l-4 border-[var(--gold)] bg-[#FAF8F3] px-4 py-3 text-sm leading-6 text-stone-700">
           Every device will be asked for a code again next time it signs in. Your authenticator and your recovery codes
           are unchanged.
         </p>

@@ -196,11 +196,11 @@ export const COMPANION_KIND: Record<
   CompanionKind,
   { dot: string; tint: string; label: string; fg: string }
 > = {
-  travel: { dot: "#78716c", tint: "#f7f5f0", label: "Travel", fg: "#57534e" },
-  sight: { dot: "#b78a4a", tint: "#f7eee0", label: "On foot", fg: "#765321" },
-  meal: { dot: "#15324b", tint: "#e7edf1", label: "Eating", fg: "#1f3f5c" },
+  travel: { dot: "#78716c", tint: "#D5CEC3", label: "Travel", fg: "#57534e" },
+  sight: { dot: "#C6A15B", tint: "#FAF8F3", label: "On foot", fg: "#6B4A1C" },
+  meal: { dot: "#193F46", tint: "#FAF8F3", label: "Eating", fg: "#193F46" },
   rest: { dot: "#a8a29e", tint: "#ffffff", label: "Nothing planned", fg: "#78716c" },
-  shabbos: { dot: "#15324b", tint: "#e7edf1", label: "Shabbos", fg: "#1f3f5c" },
+  shabbos: { dot: "#193F46", tint: "#FAF8F3", label: "Shabbos", fg: "#193F46" },
 };
 
 export const COMPANION_DEMO_TRIP: CompanionTrip = {
@@ -350,8 +350,8 @@ export const COMPANION_DEMO_TRIP: CompanionTrip = {
     {
       name: "Kosher, near you",
       items: [
-        { title: "Lunch in the Ghetto", note: "Twenty minutes on foot from the Forum. Supervision changes hands — ask to see the current teudah.", tint: "#e7edf1" },
-        { title: "Shopping for Shabbos", note: "Everything on the usual list is within the quarter, a few minutes from the hotel.", tint: "#e7edf1" },
+        { title: "Lunch in the Ghetto", note: "Twenty minutes on foot from the Forum. Supervision changes hands — ask to see the current teudah.", tint: "#FAF8F3" },
+        { title: "Shopping for Shabbos", note: "Everything on the usual list is within the quarter, a few minutes from the hotel.", tint: "#FAF8F3" },
       ],
     },
     {
@@ -364,8 +364,8 @@ export const COMPANION_DEMO_TRIP: CompanionTrip = {
     {
       name: "Nearby, worth the walk",
       items: [
-        { title: "The Colosseum", note: "Book the timed entry ahead. The Arch of Titus is a few minutes from the exit.", tint: "#f7eee0" },
-        { title: "The Pantheon and Trevi Fountain", note: "Both are open squares, free to stand in — the kind of stop that works with small children.", tint: "#f7eee0" },
+        { title: "The Colosseum", note: "Book the timed entry ahead. The Arch of Titus is a few minutes from the exit.", tint: "#FAF8F3" },
+        { title: "The Pantheon and Trevi Fountain", note: "Both are open squares, free to stand in — the kind of stop that works with small children.", tint: "#FAF8F3" },
       ],
     },
   ],
@@ -404,10 +404,10 @@ export const COMPANION_DEMO_TRIP: CompanionTrip = {
       family: "The Cohen family",
       where: "Rome · day 3 of 8",
       status: "Needs you",
-      statusBg: "#f7eee0",
-      statusFg: "#765321",
+      statusBg: "#FAF8F3",
+      statusFg: "#6B4A1C",
       bg: "#ffffff",
-      border: "rgba(183,138,74,.3)",
+      border: "rgba(198, 161, 91,.3)",
       line: "Rain from three. Two afternoons drafted and held until five — send them and let them pick.",
       action: "Send the two options",
       go: "alerts",
@@ -416,10 +416,10 @@ export const COMPANION_DEMO_TRIP: CompanionTrip = {
       family: "The Adler family",
       where: "Zurich · arriving Thursday",
       status: "To plan",
-      statusBg: "#ece8df",
+      statusBg: "#C7BFB1",
       statusFg: "#57534e",
       bg: "#ffffff",
-      border: "rgba(38,50,58,.08)",
+      border: "rgba(16, 47, 53,.08)",
       line: "Friday lands at 14:10 and candle-lighting is 16:34. The transfer needs to be the early one.",
       action: null,
     },
@@ -427,10 +427,10 @@ export const COMPANION_DEMO_TRIP: CompanionTrip = {
       family: "The Weiss family",
       where: "Rome · home Sunday",
       status: "To plan",
-      statusBg: "#e7edf1",
-      statusFg: "#1f3f5c",
+      statusBg: "#FAF8F3",
+      statusFg: "#193F46",
       bg: "#ffffff",
-      border: "rgba(38,50,58,.08)",
+      border: "rgba(16, 47, 53,.08)",
       line: "Nothing outstanding. Printed itinerary went out on the 12th.",
       action: null,
     },

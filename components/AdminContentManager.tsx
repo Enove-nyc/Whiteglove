@@ -18,8 +18,8 @@ function statusClass(status: string) {
 const cmAddButton =
   "min-h-11 border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]";
 const cmList = "divide-y divide-[var(--gold-light)] rounded-lg border border-[var(--gold-light)] bg-white";
-const cmEmpty = "rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600";
-const cmRow = "flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]";
+const cmEmpty = "rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600";
+const cmRow = "flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]";
 
 // One record opened over its list, rather than a page-long stack of open forms.
 function ContentModal({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
@@ -375,7 +375,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
       )}
 
       {tab === "settings" && (
-        <div className="mt-6 grid gap-4 border border-[var(--gold-light)] bg-[#fcfaf6] p-6">
+        <div className="mt-6 grid gap-4 border border-[var(--gold-light)] bg-[#FAF8F3] p-6">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Site settings</h2>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Hero title" value={siteSettings.heroTitle} onChange={(value) => setSiteSettings((current) => ({ ...current, heroTitle: value }))} />
@@ -434,7 +434,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
       )}
 
       {tab === "bulk" && (
-        <div className="mt-6 border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+        <div className="mt-6 border border-[var(--gold-light)] bg-[#FAF8F3] p-5">
           <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Bulk import locations</h2>
           <p className="mt-3 text-sm leading-6 text-stone-600">
             Paste CSV rows for cemetery and tzaddik records here. Use English and Yiddish fields together so the public pages stay searchable in both languages.
@@ -527,7 +527,7 @@ export default function AdminContentManager({ initialBundle, configured, initial
 // A count is a question — which ones? — so it is a button that answers it.
 function Metric({ label, value, onClick }: { label: string; value: number; onClick?: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
+    <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{label}</p>
       <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p>
       <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-400">Show them →</p>
@@ -537,7 +537,7 @@ function Metric({ label, value, onClick }: { label: string; value: number; onCli
 
 function ReportCard({ title, value, note, onClick }: { title: string; value: number; note: string; onClick?: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
+    <button type="button" onClick={onClick} className="border border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-left transition hover:border-[var(--gold)] hover:shadow-md">
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{title}</p>
       <p className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">{value}</p>
       <p className="mt-3 text-sm leading-6 text-stone-600">{note}</p>
@@ -559,7 +559,7 @@ function Field({ label, value, onChange, textarea = false }: { label: string; va
 function LocationEditor({ item, onSave, saving }: { item: EditableLocation; onSave: (item: EditableLocation) => void; saving: boolean }) {
   const [draft, setDraft] = useState(item);
   return (
-    <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+    <article className="border border-[var(--gold-light)] bg-[#FAF8F3] p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{draft.category}</p>
@@ -600,7 +600,7 @@ function LocationEditor({ item, onSave, saving }: { item: EditableLocation; onSa
 function AccommodationEditor({ item, onSave, saving }: { item: EditableAccommodation; onSave: (item: EditableAccommodation) => void; saving: boolean }) {
   const [draft, setDraft] = useState(item);
   return (
-    <article className="border border-[var(--gold-light)] bg-[#fcfaf6] p-5">
+    <article className="border border-[var(--gold-light)] bg-[#FAF8F3] p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{draft.locationId}</p>

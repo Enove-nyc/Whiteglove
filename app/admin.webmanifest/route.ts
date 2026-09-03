@@ -40,8 +40,8 @@ export async function GET() {
     start_url: base,
     scope: base,
     display: "standalone",
-    background_color: "#f3ecd9",
-    theme_color: "#14213d",
+    background_color: "#D5CEC3",
+    theme_color: "#102F35",
     orientation: "portrait",
     categories: ["business", "productivity"],
     icons: [

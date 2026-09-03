@@ -149,7 +149,7 @@ export default function TravelEssentialsForm({
       {/* The two master switches stay in the open — they are the whole section's
           on/off, not one service's. */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex items-start gap-3 rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+        <label className="flex items-start gap-3 rounded-lg border border-[var(--gold-light)] bg-[#FAF8F3] p-4">
           <input
             type="checkbox"
             checked={settings.sectionEnabled}
@@ -163,7 +163,7 @@ export default function TravelEssentialsForm({
             </span>
           </span>
         </label>
-        <label className="flex items-start gap-3 rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+        <label className="flex items-start gap-3 rounded-lg border border-[var(--gold-light)] bg-[#FAF8F3] p-4">
           <input
             type="checkbox"
             checked={settings.showDisclosure}
@@ -327,7 +327,7 @@ export default function TravelEssentialsForm({
                       </div>
 
                       {(cfg.extra ?? []).map((offer, offerIndex) => (
-                        <div key={offerIndex} className="mt-3 rounded-lg border border-[var(--gold-light)] bg-[#fcfaf6] p-3">
+                        <div key={offerIndex} className="mt-3 rounded-lg border border-[var(--gold-light)] bg-[#FAF8F3] p-3">
                           <div className="flex items-center justify-between gap-3">
                             <span className={label}>Also offer</span>
                             <div className="flex items-center gap-3">

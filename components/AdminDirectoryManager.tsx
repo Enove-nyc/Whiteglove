@@ -99,7 +99,7 @@ export default function AdminDirectoryManager() {
   }
 
   if (!available) {
-    return <div className="border border-[var(--gold-light)] bg-[#fcfaf6] p-6 text-sm text-stone-600">The private store isn&apos;t connected, so directory listings can&apos;t be saved yet.</div>;
+    return <div className="border border-[var(--gold-light)] bg-[#FAF8F3] p-6 text-sm text-stone-600">The private store isn&apos;t connected, so directory listings can&apos;t be saved yet.</div>;
   }
 
   return (
@@ -112,7 +112,7 @@ export default function AdminDirectoryManager() {
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto border border-[var(--gold-light)] bg-[#fcfaf6]">
+      <div className="mt-6 overflow-x-auto border border-[var(--gold-light)] bg-[#FAF8F3]">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-[var(--gold-light)] text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">
             <tr><th className="px-4 py-3">Name</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Contact</th><th className="px-4 py-3">Status</th><th className="px-4 py-3" /></tr>
@@ -183,7 +183,7 @@ export default function AdminDirectoryManager() {
                 <label className="block"><span className={caption}>Date you last checked this listing</span><DateField value={form.verifiedAt} onChange={(v) => setForm({ ...form, verifiedAt: v })} className={inputClass} ariaLabel="Date you last checked this listing" /></label>
 
                 {/* Permission to publish their number. Off unless somebody asked. */}
-                <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+                <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#FAF8F3] p-4">
                   <label className="flex min-h-11 items-center gap-2">
                     <input type="checkbox" className="h-4 w-4" checked={form.contactConsent} onChange={(e) => setForm({ ...form, contactConsent: e.target.checked })} />
                     <span className="text-sm font-semibold text-[var(--navy)]">They agreed their phone number may be published</span>
@@ -199,7 +199,7 @@ export default function AdminDirectoryManager() {
                   )}
                 </div>
 
-                <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#fcfaf6] p-4">
+                <div className="sm:col-span-2 border border-[var(--gold-light)] bg-[#FAF8F3] p-4">
                   <label className="flex min-h-11 items-center gap-2">
                     <input type="checkbox" className="h-4 w-4" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
                     <span className="text-sm font-semibold text-[var(--navy)]">Featured — shown first in its category</span>

@@ -22,7 +22,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 export const dynamic = "force-dynamic";
 
 const cardClass =
-  "rounded-xl border border-[var(--gold-light)] bg-[#fffdf9] shadow-[0_1px_2px_rgba(23,45,82,.04)]";
+  "rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_1px_2px_rgba(23,45,82,.04)]";
 
 function QuickAction({ href, title, detail }: { href: string; title: string; detail: string }) {
   return (
@@ -42,7 +42,7 @@ function QuickAction({ href, title, detail }: { href: string; title: string; det
 }
 
 const totalCardClass =
-  "rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] p-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2";
+  "rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] p-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2";
 
 function TotalCard({
   label,

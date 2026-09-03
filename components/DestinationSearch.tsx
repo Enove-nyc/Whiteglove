@@ -304,7 +304,7 @@ export default function DestinationSearch({
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label={ariaLabel}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold)] bg-[#fcfaf6] px-4 text-sm font-semibold text-[var(--navy)] shadow-[0_8px_20px_rgba(23,45,82,.06)] transition hover:bg-[var(--cream-deep)]"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--gold)] bg-[#FAF8F3] px-4 text-sm font-semibold text-[var(--navy)] shadow-[0_8px_20px_rgba(23,45,82,.06)] transition hover:bg-[var(--cream-deep)]"
         >
           <SearchGlyph className="h-4 w-4 text-[var(--gold-ink)]" />
           <span>Search</span>
@@ -378,7 +378,7 @@ export default function DestinationSearch({
         <div
           id={listId}
           role="listbox"
-          className="absolute z-20 mt-2 max-h-[min(28rem,70vh)] w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-[#fcfaf6] shadow-xl"
+          className="absolute z-20 mt-2 max-h-[min(28rem,70vh)] w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-xl"
         >
           {response?.interpretedAs && trimmed && !searching ? (
             <p className="border-b border-[var(--gold-light)] px-5 py-2 text-xs text-stone-500">
@@ -392,7 +392,7 @@ export default function DestinationSearch({
             <>
               {groups.map((group) => (
                 <div key={group.key} role="group" aria-label={group.heading}>
-                  <p className="sticky top-0 border-b border-[var(--gold-light)] bg-[#f7f3eb] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
+                  <p className="sticky top-0 border-b border-[var(--gold-light)] bg-[#D5CEC3] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">
                     {group.heading}
                   </p>
                   {group.hits.map((match) => {

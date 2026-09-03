@@ -261,7 +261,7 @@ export default async function AccountPage() {
                       <li key={item.href}>
                         <Link
                           href={item.href}
-                          className="flex flex-col rounded-xl border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 transition hover:border-[var(--gold)]"
+                          className="flex flex-col rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] px-4 py-3 transition hover:border-[var(--gold)]"
                         >
                           <span className="font-semibold text-[var(--navy)]">{item.label}</span>
                           <span className="text-sm text-stone-600">{item.description}</span>

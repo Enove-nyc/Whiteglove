@@ -28,9 +28,9 @@ export default function ItinerariesHome() {
       <Navbar brand="itineraries" />
 
       <section className="relative overflow-hidden bg-[var(--navy)] px-5 py-20 text-white sm:px-8 sm:py-28">
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#24405f] to-[#3a5462]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#193F46] to-[#193F46]" />
         <div className="relative mx-auto max-w-3xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e7d3ad]">White Glove Itineraries</p>
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#D8BC7A]">White Glove Itineraries</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight sm:text-6xl">
             The trip you plan, in your client&apos;s pocket.
           </h1>

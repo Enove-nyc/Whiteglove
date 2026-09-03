@@ -178,7 +178,7 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
       {/* The list: a name per row, pressable to edit. This is what the page is
           now — the fields live in the pop-up, not stacked down the screen. */}
       {rows.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600">
+        <p className="mt-6 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600">
           Nothing on the shelf yet. Press <strong className="text-[var(--navy)]">Add one</strong> to put the first item up.
         </p>
       ) : (
@@ -192,7 +192,7 @@ export default function TravelGearForm({ current, storeReady }: { current: Trave
                 <button
                   type="button"
                   onClick={() => openEdit(row)}
-                  className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#fcfaf6]"
+                  className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#FAF8F3]"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-semibold text-[var(--navy)]">

@@ -107,7 +107,7 @@ export default function CaseStudiesForm({
 
   if (!storeReady) {
     return (
-      <p className="mt-8 border border-[var(--gold-light)] bg-[#fcfaf6] px-4 py-3 text-sm leading-6 text-stone-600">
+      <p className="mt-8 border border-[var(--gold-light)] bg-[#FAF8F3] px-4 py-3 text-sm leading-6 text-stone-600">
         The private store is not connected. Case studies cannot be saved yet — and nothing invented is shown publicly.
       </p>
     );
@@ -138,7 +138,7 @@ export default function CaseStudiesForm({
       {/* The list: a study per row, pressable to edit. The eleven fields live in
           the pop-up, not stacked down the page. */}
       {studies.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#fcfaf6] p-5 text-sm leading-6 text-stone-600">
+        <p className="mt-6 rounded-lg border border-dashed border-[var(--gold-light)] bg-[#FAF8F3] p-5 text-sm leading-6 text-stone-600">
           None yet — and that is correct. Do not invent any. Press <strong className="text-[var(--navy)]">Add a case
           study</strong> when a real client has permitted one.
         </p>
