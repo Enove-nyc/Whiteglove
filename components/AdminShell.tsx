@@ -106,7 +106,7 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
     // wg-admin scopes the control-sizing rule in globals.css. The admin is
     // dozens of screens built at different times; sizing them one by one is
     // how three of them end up at 42px again next month.
-    <div className="wg-admin min-h-screen bg-[var(--cream)]">
+    <div className="wg-admin flex min-h-screen flex-col bg-[var(--cream)]">
       <a
         href="#admin-main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:border focus:border-[var(--navy)] focus:bg-white focus:px-3 focus:py-2 focus:text-sm"
@@ -114,7 +114,14 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
         Skip to the page
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-[var(--gold-light)] bg-[#FAF8F3]">
+      {/* Edge-to-edge inside the installed admin app, the status bar sits over
+          the header — the "Menu" button ends up under the clock. Padding the
+          header by the top safe-area inset drops it clear; the inset is 0 in an
+          ordinary browser, so the website is unchanged. */}
+      <header
+        className="sticky top-0 z-30 border-b border-[var(--gold-light)] bg-[#FAF8F3]"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
           <button
             type="button"
@@ -152,7 +159,7 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
           each screen having to remember to draw it. */}
       <AdminTrail areas={areas} />
 
-      <div className="mx-auto flex max-w-7xl gap-8 px-4 py-6 sm:px-6">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-6 sm:px-6">
         <aside
           id="admin-nav"
           className={`${navOpen ? "block" : "hidden"} w-full shrink-0 lg:sticky lg:top-20 lg:block lg:max-h-[calc(100vh-6rem)] lg:w-64 lg:overflow-y-auto`}
@@ -164,6 +171,26 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
           {children}
         </main>
       </div>
+
+      {/* A real footer so the admin app has a bottom edge of its own rather than
+          content running under the gesture bar. Brand-neutral — this dashboard
+          runs both sides of White Glove — and NOT the public footer#contact, so
+          the in-app footer-hide rule leaves it alone. The bottom safe-area inset
+          is 0 in a browser, so the website admin is unchanged. */}
+      <footer
+        className="mt-auto border-t border-[var(--gold-light)] bg-[#FAF8F3]"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-stone-500 sm:px-6">
+          <span className="font-semibold uppercase tracking-[0.12em] text-[var(--gold-ink)]">White Glove admin</span>
+          <a
+            href={CANONICAL_ORIGIN}
+            className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+          >
+            View site
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
