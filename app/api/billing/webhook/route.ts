@@ -6,6 +6,7 @@ import { isOwner as isAgencyOwner } from "@/lib/agency";
 import { sendSubscriptionNotification } from "@/lib/email";
 import { identityKey } from "@/lib/identity";
 import { isOneTimePlan, isPaidPlan } from "@/lib/plan-billing";
+import { getTrips } from "@/lib/account-store";
 import { grantTripPass } from "@/lib/trip-pass-store";
 import {
   accountForCustomer,
@@ -49,7 +50,17 @@ async function grantOneTimePurchase(account: string, plan: AccountPlan, trip?: s
   // trip in the app (lib/companion-access.ts). A pass bought while looking at
   // a trip lands already spent on it; bought from the pricing page it is spare
   // until the buyer chooses which trip it is for.
-  if (!(await grantTripPass(account, trip))) {
+  // AND CHECKED AGAIN HERE, because time passes between reaching Stripe's page
+  // and this arriving — seconds for a card, days for a delayed payment method.
+  // The trip can be deleted in that gap, and a pass bound to a trip that is
+  // already gone is a purchase the buyer can never use: the only thing that
+  // releases one runs when a trip is deleted, which has by then already
+  // happened. Granting it spare instead costs them one choice and nothing else.
+  const stillTheirs = trip ? (await getTrips(account).catch(() => [])).some((t) => t.id === trip) : false;
+  if (trip && !stillTheirs) {
+    console.warn("[billing] the trip a pass was bought for is gone; granting it spare instead:", { account, trip });
+  }
+  if (!(await grantTripPass(account, stillTheirs ? trip : undefined))) {
     console.error("[billing] paid but the Trip Pass could not be written:", { account, plan, trip });
   }
   if (!(await setPlan(account, plan, "Stripe one-time purchase"))) {
@@ -87,6 +98,45 @@ function periodEnd(object: Record<string, unknown>): string | undefined {
   const seconds = object.current_period_end;
   if (typeof seconds !== "number" || !Number.isFinite(seconds)) return undefined;
   return new Date(seconds * 1000).toISOString();
+}
+
+/**
+ * Has this checkout session's grant already been handled?
+ *
+ * Stripe redelivers events — a slow 200, a manual resend — and grantTripPass
+ * APPENDS a pass, so a second delivery of the same completed session would mint
+ * a second (spare) pass for a single $9 payment. The checkout session id is
+ * stable across redeliveries of that purchase, so claiming it once with a TTL'd
+ * set-if-absent makes the grant idempotent: the first delivery claims it and
+ * proceeds, every later one is turned away here.
+ *
+ * A store that is not configured, or a write that fails, returns false — better
+ * to risk handling a rare duplicate than to drop a real payment when Redis is
+ * down. The TTL is comfortably longer than Stripe's own retry window.
+ */
+const PROCESSED_PREFIX = "white-glove:stripe-events:";
+const PROCESSED_TTL_SECONDS = 60 * 60 * 24 * 3;
+
+async function grantAlreadyHandled(object: Record<string, unknown>): Promise<boolean> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const sessionId = typeof object.id === "string" ? object.id : "";
+  if (!url || !token || !sessionId) return false;
+  try {
+    const key = encodeURIComponent(`${PROCESSED_PREFIX}${sessionId}`);
+    const res = await fetch(`${url.replace(/\/$/, "")}/set/${key}/1?NX=true&EX=${PROCESSED_TTL_SECONDS}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return false;
+    const payload = (await res.json()) as { result?: unknown };
+    // "OK" — we just claimed it, so this is the first time. null — NX found the
+    // key already there, so the grant has run before and must not run again.
+    return payload.result !== "OK";
+  } catch {
+    return false;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -138,6 +188,10 @@ export async function POST(request: NextRequest) {
           console.log("[billing] one-time checkout completed but not yet paid — waiting on async settlement:", { account, plan });
           return NextResponse.json({ received: true });
         }
+        // A REDELIVERED EVENT MUST NOT MINT A SECOND PASS. Stripe resends on a
+        // slow 200 and the owner can resend by hand, and grantTripPass APPENDS —
+        // so one $9 payment would become two passes. See grantAlreadyHandled.
+        if (await grantAlreadyHandled(object)) return NextResponse.json({ received: true });
         await grantOneTimePurchase(account, plan, tripFrom(object));
         return NextResponse.json({ received: true });
       }
@@ -189,6 +243,10 @@ export async function POST(request: NextRequest) {
       // Starter/Pro subscription — one that would outlive the subscription
       // itself ending.
       if (object.mode === "payment" || isOneTimePlan(plan)) {
+        // A REDELIVERED EVENT MUST NOT MINT A SECOND PASS. Stripe resends on a
+        // slow 200 and the owner can resend by hand, and grantTripPass APPENDS —
+        // so one $9 payment would become two passes. See grantAlreadyHandled.
+        if (await grantAlreadyHandled(object)) return NextResponse.json({ received: true });
         await grantOneTimePurchase(account, plan, tripFrom(object));
       }
       return NextResponse.json({ received: true });
