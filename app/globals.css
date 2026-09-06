@@ -752,6 +752,23 @@ p {
   }
 }
 
+/* The marketing footer is website chrome — the mark, the brand name, the
+ * sales/legal links. Inside the installed app it is a website surface bleeding
+ * into an app that has its own navigation, so hide it everywhere in the app.
+ * The media query covers every TWA and installed PWA (which run standalone)
+ * with no flash; [data-app-shell] on <html>, set by AppShellFlag, covers the
+ * native Capacitor shell (which does not report standalone), the iOS
+ * navigator.standalone flag, and the android-app:// referrer. An ordinary
+ * browser tab matches none of these and keeps the footer. */
+@media (display-mode: standalone) {
+  footer#contact {
+    display: none !important;
+  }
+}
+html[data-app-shell] footer#contact {
+  display: none !important;
+}
+
 /* THESE SIZES ARE CAPS IN components/CappedGrid.tsx, AND HAVE TO BE.
  * CSS cannot read a value from the component — there is no
  * nth-child(n + var(--cap)) — so the sizes are declared once over there and
