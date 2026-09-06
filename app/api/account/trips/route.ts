@@ -43,6 +43,14 @@ export async function GET() {
   const email = await signedInEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const trips = await getTrips(email);
+  // AND HEAL A PASS LEFT ON A TRIP THAT IS GONE. Releasing orphans used to run
+  // only when a trip was deleted, so a pass orphaned any other way — a trip
+  // deleted between paying and the webhook landing, an id that was never this
+  // account's — stayed spent on nothing for ever, with the account page
+  // insisting every pass was on a trip. This read already has the live trip
+  // ids in hand, so it costs one lookup and writes only when something needs
+  // handing back.
+  await releaseDeletedTripPasses(email, trips.map((trip) => trip.id)).catch(() => {});
   return NextResponse.json({ trips, activeId: trips.find((t) => t.active)?.id ?? null });
 }
 
