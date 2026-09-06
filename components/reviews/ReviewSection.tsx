@@ -199,7 +199,7 @@ export function ReviewSection({
   }
 
   return (
-    <section aria-label={sacred ? "Visitor experience" : "Reviews"}>
+    <section aria-label={sacred ? "Visitor experience" : "Reviews"} aria-busy={reviews === null}>
       <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
         {sacred ? "Visitor experience" : "Reviews"}
       </h2>
@@ -219,7 +219,24 @@ export function ReviewSection({
       )}
 
       {reviews === null ? (
-        <p className="mt-4 text-sm text-stone-500">Loading</p>
+        /**
+         * A SKELETON WITH NO WORDS IN IT.
+         *
+         * This was the literal text "Loading", and this component renders on
+         * the server before the browser has fetched anything — so the word sat
+         * in the HTML of roughly 350 heritage and cemetery pages, under a
+         * heading promising practical notes from visitors. That is what a
+         * search engine indexed and what somebody with a slow connection read.
+         *
+         * The bars carry no text, so there is nothing to index and nothing to
+         * mistake for content. aria-busy on the section is what tells a screen
+         * reader the region is still filling — the correct primitive for it,
+         * and one that adds no words either.
+         */
+        <div aria-hidden="true" className="mt-4 space-y-2">
+          <div className="h-3 w-2/3 rounded bg-[var(--cream-deep)]" />
+          <div className="h-3 w-1/2 rounded bg-[var(--cream-deep)]" />
+        </div>
       ) : (
         <>
           {shown.length > 0 && (
