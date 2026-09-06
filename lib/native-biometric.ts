@@ -98,6 +98,23 @@ export async function unlockSecret(server: string, reason: string): Promise<stri
   }
 }
 
+/**
+ * Like unlockSecret, but for a door that needs a username too (an account
+ * login: email + password). Returns both, or null on cancel / nothing stored.
+ */
+export async function unlockCredential(server: string, reason: string): Promise<{ username: string; password: string } | null> {
+  const p = plugin();
+  if (!p) return null;
+  try {
+    await p.verifyIdentity({ reason, title: "White Glove", subtitle: reason });
+    const creds = await p.getCredentials({ server });
+    if (!creds?.password) return null;
+    return { username: creds.username, password: creds.password };
+  } catch {
+    return null;
+  }
+}
+
 /** Forget the stored secret for this door (on sign-out, or a failed sign-in). */
 export async function forgetSecret(server: string): Promise<void> {
   const p = plugin();
