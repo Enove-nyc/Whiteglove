@@ -323,9 +323,11 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // /version is the deployment health check and contains no private content.
-  // It stays reachable while the site is locked so health checks keep working.
-  if (pathname !== "/access" && pathname !== "/version" && !pathname.startsWith("/admin")) {
+  // /version and /api/health are the deployment checks and contain no private
+  // content. Both stay reachable while the site is locked: Railway calls the
+  // health path before it moves traffic, so a locked site that redirected it
+  // would fail every deploy while the site itself was perfectly fine.
+  if (pathname !== "/access" && pathname !== "/version" && pathname !== "/api/health" && !pathname.startsWith("/admin")) {
     let locked = hostIsOpen(request) ? false : await edgeSiteIsLocked();
     if (!locked && !hostIsOpen(request)) {
       const lockedPaths = await edgeLockedPaths();
