@@ -104,6 +104,12 @@ export function reviewQueueKindLabel(kind: ReviewQueueKind): string {
   return KIND_LABEL[kind];
 }
 
+/**
+ * Still waiting on a decision. A duplicate is NOT open work: the queue's
+ * "Awaiting verification" count leaves duplicates out, and the "review one at a
+ * time" panel counts by this same rule, so the two numbers agree. Duplicates
+ * have their own card.
+ */
 export function isOpenReviewStatus(status: ReviewQueueItemStatus): boolean {
-  return status === "NEEDS_REVIEW" || status === "AWAITING_VERIFICATION" || status === "DUPLICATE";
+  return status === "NEEDS_REVIEW" || status === "AWAITING_VERIFICATION";
 }

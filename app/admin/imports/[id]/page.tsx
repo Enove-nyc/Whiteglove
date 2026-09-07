@@ -4,6 +4,7 @@ import ContentImportCandidateEditor from "@/components/ContentImportCandidateEdi
 import { contentImportCandidatePath } from "@/lib/bulk-content";
 import { getContentImportCandidate } from "@/lib/content-imports";
 import { listDestinationsForAdmin } from "@/lib/content-admin";
+import { nextReviewCandidateAfter } from "@/lib/import-review-queue";
 
 export const dynamic = "force-dynamic";
 
@@ -28,11 +29,25 @@ export default async function ContentImportCandidatePage({
     .then((rows) => rows.map((d) => ({ slug: d.slug, city: d.city, country: d.country })))
     .catch(() => [] as Array<{ slug: string; city: string; country: string }>);
 
+  // The next one waiting, so a candidate that needs more work than there is
+  // time for can be left for later without deciding anything about it.
+  const next = candidate.status === "NEEDS_REVIEW" ? await nextReviewCandidateAfter(candidate.id).catch(() => null) : null;
+
   return (
     <>
-      <Link href="/admin/imports" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
-        ← Back to bulk content imports
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/admin/imports" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+          ← Back to bulk content imports
+        </Link>
+        {next && (
+          <Link
+            href={next.href}
+            className="inline-flex min-h-11 items-center border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)]"
+          >
+            Skip — next waiting: {next.name} →
+          </Link>
+        )}
+      </div>
       {just && (
         <p className="mt-6 border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
           The previous one was {just}. This is the next candidate waiting for review.
@@ -46,7 +61,7 @@ export default async function ContentImportCandidatePage({
         </p>
       </header>
       <section className="mt-8 max-w-5xl">
-        <ContentImportCandidateEditor candidate={candidate} destinations={destinations} />
+        <ContentImportCandidateEditor key={candidate.id} candidate={candidate} destinations={destinations} />
       </section>
     </>
   );

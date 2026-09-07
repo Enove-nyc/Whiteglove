@@ -32,7 +32,7 @@ import {
   normalizeSourceUrl,
 } from "@/lib/bulk-content";
 import { bustTag } from "@/lib/cache-tags";
-import { createAttraction, createKosherStay, isDbEnabled } from "@/lib/content-admin";
+import { createAttraction, createKosherStay, ensureDestinationForCity, isDbEnabled } from "@/lib/content-admin";
 import {
   keepBothIdsFromEvidence,
   mergeKeepBothEvidence,
@@ -954,6 +954,38 @@ export async function confirmLinkedKosherImportCandidate(id: string): Promise<{ 
 }
 
 /**
+ * The town page a practical or kosher food listing goes on — MADE IF MISSING.
+ *
+ * A listing in a town the site has no page for used to be blocked with "link
+ * this to an existing destination", and there was no way to add the town from
+ * here: the owner had to leave, create the town, and come back. Now the chosen
+ * town wins; failing that, the town whose city and country match; failing
+ * that, a page is created for the city (ensureDestinationForCity, the same
+ * rule the quick-add stay uses) and the listing goes on it.
+ */
+async function destinationIdFor(prepared: PreparedBulkContentCandidate): Promise<string> {
+  const prisma = await db();
+  if (prepared.destinationSlug) {
+    const chosen = await prisma.destination.findUnique({ where: { slug: prepared.destinationSlug }, select: { id: true } });
+    if (chosen) return chosen.id;
+  }
+  const byCity = () =>
+    prisma.destination.findFirst({
+      where: {
+        city: { equals: prepared.city, mode: "insensitive" },
+        ...(prepared.country ? { country: { equals: prepared.country, mode: "insensitive" } } : {}),
+      },
+      select: { id: true },
+    });
+  const existing = await byCity();
+  if (existing) return existing.id;
+  await ensureDestinationForCity(prepared.city, prepared.country);
+  const made = await byCity();
+  if (!made) throw new Error(`A town page for ${prepared.city} could not be made. Add the town under Destinations, then publish again.`);
+  return made.id;
+}
+
+/**
  * Publish one reviewed candidate, never a whole batch. Kosher food remains a
  * deliberate exception: a source directory can create a review lead but may
  * not, by itself, create a public kosher claim.
@@ -968,16 +1000,16 @@ export async function confirmLinkedKosherImportCandidate(id: string): Promise<{ 
  * order; when the pack is done, the first waiting anywhere; when nothing is
  * waiting, null — and the caller returns to the queue.
  */
-export async function nextContentImportCandidateAfter(afterId: string): Promise<{ id: string; sourceId: string } | null> {
+/**
+ * Which source pack a candidate came from — for "the next one waiting in the
+ * same pack". The next candidate itself is chosen by the review queue
+ * (lib/import-review-queue.ts, nextReviewCandidateAfter), so that "next" walks
+ * exactly the rows the Needs review count counts, and nothing outside them.
+ */
+export async function contentImportCandidateBatchSlug(id: string): Promise<string | null> {
   const prisma = await db();
-  const current = await prisma.contentImportCandidate.findUnique({ where: { id: afterId }, select: { sourceId: true } });
-  const select = { id: true, sourceId: true } as const;
-  const orderBy = [{ name: "asc" as const }, { id: "asc" as const }];
-  const samePack = current
-    ? await prisma.contentImportCandidate.findFirst({ where: { status: "NEEDS_REVIEW", sourceId: current.sourceId, id: { not: afterId } }, select, orderBy })
-    : null;
-  if (samePack) return samePack;
-  return prisma.contentImportCandidate.findFirst({ where: { status: "NEEDS_REVIEW", id: { not: afterId } }, select, orderBy });
+  const row = await prisma.contentImportCandidate.findUnique({ where: { id }, select: { batch: { select: { slug: true } } } });
+  return row?.batch.slug ?? null;
 }
 
 export async function publishContentImportCandidate(id: string): Promise<{ kind: string; id: string }> {
@@ -987,6 +1019,11 @@ export async function publishContentImportCandidate(id: string): Promise<{ kind:
     include: { batch: { select: { slug: true, name: true } } },
   });
   if (!stored) throw new Error("That import candidate no longer exists.");
+  if (stored.status === "DUPLICATE") {
+    throw new Error(
+      `It looks like a duplicate${stored.duplicateOf ? ` of ${stored.duplicateOf}` : ""}. If it is a different place, press Keep both, then publish again.`,
+    );
+  }
   if (stored.status !== "NEEDS_REVIEW") throw new Error("Only a candidate waiting for review can be published.");
   const candidate = viewFromStored(stored as unknown as StorageCandidate);
   const prepared = prepareBulkContentCandidate(storedInput(candidate));
@@ -1027,14 +1064,33 @@ export async function publishContentImportCandidate(id: string): Promise<{ kind:
     });
     published = { kind: "stay", id: row.slug };
   } else if (prepared.kind === "KOSHER_FOOD") {
-    // This remains unreachable because prepareBulkContentCandidate blocks it.
-    // Keeping the explicit error makes a future validator change fail closed.
-    throw new Error("Kosher food must be confirmed in the destination editor before it can be public.");
+    // Kosher food publishes from the review screen like everything else. The
+    // reviewer has set the status to "checked" (a publish blocker otherwise),
+    // and that is the confirmation — there is no second screen to do it on.
+    const destinationId = await destinationIdFor(prepared);
+    const kosherLine = prepared.kosherSourceUrl ? `Kosher status checked. Certification listed at ${prepared.kosherSourceUrl}.` : "Kosher status checked.";
+    const row = await prisma.practicalPlace.create({
+      data: {
+        category: "KOSHER_FOOD",
+        name: prepared.name,
+        address: prepared.address,
+        website: prepared.website,
+        coordinates: prepared.coordinates,
+        kosherInfo: kosherLine,
+        notes: [prepared.summary, sourceNote].filter(Boolean).join("\n\n"),
+        status: "PUBLISHED",
+        verification: "VERIFIED",
+        sourceUrl: prepared.kosherSourceUrl || prepared.sourceUrl,
+        lastVerified: new Date(),
+        destinationId,
+      },
+      select: { id: true },
+    });
+    invalidateSiteSearchIndex();
+    await bustTag(PRACTICAL_PLACES_PUBLIC_TAG);
+    published = { kind: "food", id: row.id };
   } else {
-    const destination = prepared.destinationSlug
-      ? await prisma.destination.findUnique({ where: { slug: prepared.destinationSlug }, select: { id: true } })
-      : null;
-    if (!destination) throw new Error("Choose an existing destination before publishing this practical listing.");
+    const destinationId = await destinationIdFor(prepared);
     const row = await prisma.practicalPlace.create({
       data: {
         category: prepared.category as never,
@@ -1047,7 +1103,7 @@ export async function publishContentImportCandidate(id: string): Promise<{ kind:
         verification: "VERIFIED",
         sourceUrl: prepared.sourceUrl,
         lastVerified: new Date(),
-        destinationId: destination.id,
+        destinationId,
       },
       select: { id: true },
     });

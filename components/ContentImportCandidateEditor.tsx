@@ -19,8 +19,50 @@ const labelClass = "block text-xs font-bold uppercase tracking-[0.12em] text-[va
 
 export type DestinationChoice = { slug: string; city: string; country: string };
 
+/** Every typed field, as the text in its box. */
+function fieldValues(candidate: ContentImportCandidateView): Record<string, string> {
+  return {
+    name: candidate.name,
+    aliases: candidate.aliases.join(", "),
+    city: candidate.city,
+    region: candidate.region ?? "",
+    country: candidate.country,
+    summary: candidate.summary ?? "",
+    address: candidate.address ?? "",
+    coordinates: candidate.coordinates ?? "",
+    website: candidate.website ?? "",
+    anchorName: candidate.anchorName ?? "",
+    anchorCoords: candidate.anchorCoords ?? "",
+    kosherClaim: candidate.kosherClaim === "confirmed" || candidate.kosherClaim === "reported" ? candidate.kosherClaim : "none",
+    kosherSourceUrl: candidate.kosherSourceUrl ?? "",
+    sourceUrl: candidate.sourceUrl,
+    sourceId: candidate.sourceId,
+    sourceName: candidate.sourceName,
+    attribution: candidate.attribution,
+    license: candidate.license ?? "",
+    sourceEvidence:
+      candidate.sourceEvidence == null
+        ? ""
+        : typeof candidate.sourceEvidence === "string"
+          ? candidate.sourceEvidence
+          : JSON.stringify(candidate.sourceEvidence, null, 2),
+  };
+}
+
 export default function ContentImportCandidateEditor({ candidate, destinations = [] }: { candidate: ContentImportCandidateView; destinations?: DestinationChoice[] }) {
   const [kind, setKind] = useState<BulkContentKind>(candidate.kind);
+  // EVERY FIELD IS CONTROLLED, ON PURPOSE. A form submitted through an action
+  // is reset by React when the action returns, and an uncontrolled input goes
+  // back to its defaultValue — the candidate as the server last rendered it.
+  // So a refused publish saved the edits to the database and then wiped them
+  // off the screen: "forty-five minutes of work going into the garbage." What
+  // is typed here stays here until the page itself changes.
+  const [values, setValues] = useState(() => fieldValues(candidate));
+  const bind = (field: string) => ({
+    name: field,
+    value: values[field] ?? "",
+    onChange: (event: { target: { value: string } }) => setValues((current) => ({ ...current, [field]: event.target.value })),
+  });
   // Which town it is linked to, kept in state so the guidance below can point
   // straight at that town's editor rather than tell the owner to go and find it.
   const [destinationSlug, setDestinationSlug] = useState(candidate.destinationSlug ?? "");
@@ -92,29 +134,29 @@ export default function ContentImportCandidateEditor({ candidate, destinations =
           />
           <label className={labelClass}>
             Canonical name
-            <input name="name" required defaultValue={candidate.name} className={fieldClass} />
+            <input {...bind("name")} required className={fieldClass} />
           </label>
           <label className={labelClass}>
             Aliases
-            <input name="aliases" defaultValue={candidate.aliases.join(", ")} className={fieldClass} />
+            <input {...bind("aliases")} className={fieldClass} />
           </label>
           <label className={labelClass}>
             City
-            <input name="city" required defaultValue={candidate.city} className={fieldClass} />
+            <input {...bind("city")} required className={fieldClass} />
           </label>
           <label className={labelClass}>
             Region
-            <input name="region" defaultValue={candidate.region ?? ""} className={fieldClass} />
+            <input {...bind("region")} className={fieldClass} />
           </label>
           <label className={labelClass}>
             Country
-            <input name="country" required defaultValue={candidate.country} className={fieldClass} />
+            <input {...bind("country")} required className={fieldClass} />
           </label>
           {(kind === "PRACTICAL" || kind === "KOSHER_FOOD" || kind === "PLACE_TO_STAY") && (
             <label className={labelClass}>
-              Destination — the town page this belongs to
+              Destination — the town page this goes on
               <select name="destinationSlug" value={destinationSlug} onChange={(event) => setDestinationSlug(event.target.value)} className={fieldClass}>
-                <option value="">— choose a town —</option>
+                <option value="">— same as the city above —</option>
                 {destinations.map((d) => (
                   <option key={d.slug} value={d.slug}>{d.city}, {d.country}</option>
                 ))}
@@ -122,9 +164,9 @@ export default function ContentImportCandidateEditor({ candidate, destinations =
                   <option value={destinationSlug}>{destinationSlug}</option>
                 )}
               </select>
-              {kind !== "PLACE_TO_STAY" && (
-                <span className="mt-1 block text-xs font-normal normal-case tracking-normal text-stone-500">Required before this can be published.</span>
-              )}
+              <span className="mt-1 block text-xs font-normal normal-case tracking-normal text-stone-500">
+                Optional. Left as is, it goes on the page for {values.city || "that city"} — and if there is no page for it yet, one is made when you publish.
+              </span>
             </label>
           )}
         </section>
@@ -132,19 +174,19 @@ export default function ContentImportCandidateEditor({ candidate, destinations =
         <section className="grid gap-4 border border-[var(--gold-light)] bg-[#FAF8F3] p-5 md:grid-cols-2">
           <label className={`${labelClass} md:col-span-2`}>
             Customer-ready summary
-            <textarea name="summary" defaultValue={candidate.summary ?? ""} rows={4} className={fieldClass} />
+            <textarea {...bind("summary")} rows={4} className={fieldClass} />
           </label>
           <label className={`${labelClass} md:col-span-2`}>
             Published address
-            <input name="address" defaultValue={candidate.address ?? ""} className={fieldClass} />
+            <input {...bind("address")} className={fieldClass} />
           </label>
           <label className={labelClass}>
             Coordinates
-            <input name="coordinates" defaultValue={candidate.coordinates ?? ""} placeholder="41.8921, 12.4780" className={fieldClass} />
+            <input {...bind("coordinates")} placeholder="41.8921, 12.4780" className={fieldClass} />
           </label>
           <label className={labelClass}>
             Website (confirm before publishing)
-            <input type="url" name="website" defaultValue={candidate.website ?? ""} className={fieldClass} />
+            <input type="url" {...bind("website")} className={fieldClass} />
           </label>
         </section>
 
@@ -163,66 +205,65 @@ export default function ContentImportCandidateEditor({ candidate, destinations =
             </p>
             <label className={labelClass}>
               Quarter or shul
-              <input name="anchorName" defaultValue={candidate.anchorName ?? ""} className={fieldClass} />
+              <input {...bind("anchorName")} className={fieldClass} />
             </label>
             <label className={labelClass}>
               Anchor coordinates
-              <input name="anchorCoords" defaultValue={candidate.anchorCoords ?? ""} placeholder="41.8921, 12.4780" className={fieldClass} />
+              <input {...bind("anchorCoords")} placeholder="41.8921, 12.4780" className={fieldClass} />
             </label>
             <input type="hidden" name="kosherClaim" value="none" />
           </section>
         )}
 
         {kind === "KOSHER_FOOD" && (
-          <section className="border border-amber-300 bg-amber-50 p-5">
-            <p className="text-sm leading-6 text-amber-950">
-              <strong>Kosher food is never published from this screen.</strong> It keeps the directory source as evidence, and that is all.
-              To make it public: choose the town above,{" "}
-              {townEditor ? (
-                <Link href={townEditor} className="font-semibold underline decoration-2 underline-offset-2">open the town&rsquo;s page</Link>
-              ) : (
-                <>open that town&rsquo;s page</>
-              )}
-              , add the listing there, then come back and press <strong>Link verified public listing</strong>.
+          <section className="grid gap-4 border border-[var(--gold-light)] bg-[#FAF8F3] p-5 md:grid-cols-2">
+            <p className="md:col-span-2 text-sm leading-6 text-stone-600">
+              Publishing puts this in the kosher food section of its town. You confirm the kosher status here: set it to{" "}
+              <strong>Checked — kosher</strong> once you have checked it, then press <strong>Save and publish</strong>.
             </p>
-            <input type="hidden" name="kosherClaim" value={candidate.kosherClaim === "reported" ? "reported" : "none"} />
-            <label className={`${labelClass} mt-4`}>
-              Official community or certification source
-              <input type="url" name="kosherSourceUrl" defaultValue={candidate.kosherSourceUrl ?? ""} className={fieldClass} />
+            <label className={labelClass}>
+              Kosher status
+              <select {...bind("kosherClaim")} className={fieldClass}>
+                <option value="none">Not checked yet</option>
+                <option value="reported">Reported kosher — not checked</option>
+                <option value="confirmed">Checked — kosher</option>
+              </select>
             </label>
+            <label className={labelClass}>
+              Where the certification is listed (optional)
+              <input type="url" {...bind("kosherSourceUrl")} className={fieldClass} />
+            </label>
+            <p className="md:col-span-2 text-xs leading-5 text-stone-500">
+              Already on the town page? Choose the town above and press <strong>Link verified public listing</strong> instead, and this candidate closes against that listing.
+            </p>
           </section>
         )}
 
         <section className="grid gap-4 border border-[var(--gold-light)] bg-[#FAF8F3] p-5 md:grid-cols-2">
           <label className={`${labelClass} md:col-span-2`}>
             Source record URL
-            <input type="url" name="sourceUrl" required defaultValue={candidate.sourceUrl} className={fieldClass} />
+            <input type="url" {...bind("sourceUrl")} required className={fieldClass} />
           </label>
           <label className={labelClass}>
             Stable source ID
-            <input name="sourceId" required defaultValue={candidate.sourceId} className={fieldClass} />
+            <input {...bind("sourceId")} required className={fieldClass} />
           </label>
           <label className={labelClass}>
             Source name
-            <input name="sourceName" required defaultValue={candidate.sourceName} className={fieldClass} />
+            <input {...bind("sourceName")} required className={fieldClass} />
           </label>
           <label className={labelClass}>
             Attribution
-            <input name="attribution" required defaultValue={candidate.attribution} className={fieldClass} />
+            <input {...bind("attribution")} required className={fieldClass} />
           </label>
           <label className={labelClass}>
             Licence
-            <input name="license" defaultValue={candidate.license ?? ""} className={fieldClass} />
+            <input {...bind("license")} className={fieldClass} />
           </label>
           <label className={`${labelClass} md:col-span-2`}>
             Source evidence / review note
             <textarea
-              name="sourceEvidence"
-              defaultValue={candidate.sourceEvidence == null
-                ? ""
-                : typeof candidate.sourceEvidence === "string"
-                  ? candidate.sourceEvidence
-                  : JSON.stringify(candidate.sourceEvidence, null, 2)}
+              {...bind("sourceEvidence")}
               rows={5}
               placeholder="What was checked on the source page, including the date when useful."
               className={fieldClass}

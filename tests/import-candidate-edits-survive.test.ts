@@ -30,3 +30,28 @@ test("the destination is a picker of real towns, and the guidance links to the t
   assert.match(editor, /\/admin\/destinations\?slug=/);
   assert.match(editor, /Link verified public listing<\/strong>/);
 });
+
+test("the fields are controlled, so a returned action cannot reset what was typed", () => {
+  // React resets a form submitted through an action; an uncontrolled input
+  // then snaps back to its defaultValue. Every typed field binds to state.
+  assert.doesNotMatch(editor, /defaultValue=\{candidate\./);
+  assert.match(editor, /const \[values, setValues\] = useState\(\(\) => fieldValues\(candidate\)\)/);
+  assert.match(editor, /\{\.\.\.bind\("summary"\)\}/);
+});
+
+test("kosher food and practical listings publish from the review screen; the town is made if missing", () => {
+  const bulk = readFileSync("lib/bulk-content.ts", "utf8");
+  assert.doesNotMatch(bulk, /Confirm current kosher status in the destination editor/);
+  assert.doesNotMatch(bulk, /Link this (kosher food|practical) listing to an existing destination/);
+  assert.match(bulk, /kosherClaim !== "confirmed"/);
+  assert.match(imports, /async function destinationIdFor\(/);
+  assert.match(imports, /await ensureDestinationForCity\(prepared\.city, prepared\.country\)/);
+  assert.doesNotMatch(imports, /Kosher food must be confirmed in the destination editor/);
+  assert.match(editor, /Checked — kosher/);
+});
+
+test("a candidate can be skipped for the next one waiting", () => {
+  const page = readFileSync("app/admin/imports/[id]/page.tsx", "utf8");
+  assert.match(page, /nextReviewCandidateAfter\(candidate\.id\)/);
+  assert.match(page, /key=\{candidate\.id\}/);
+});

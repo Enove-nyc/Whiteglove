@@ -7,10 +7,15 @@ import assert from "node:assert/strict";
  * (or back to the queue), rather than leaving him on the finished screen.
  */
 const actions = readFileSync("app/admin/imports/actions.ts", "utf8");
-const imports = readFileSync("lib/content-imports.ts", "utf8");
+const queue = readFileSync("lib/import-review-queue.ts", "utf8");
 
 test("publish, reject, duplicate, merge and link all move on; save and reopen stay", () => {
-  assert.match(imports, /export async function nextContentImportCandidateAfter\(/);
+  // "Next" is drawn from the review queue's own rows, so it walks exactly what
+  // the Needs review count counts — never a table row the queue leaves out.
+  assert.match(queue, /export async function nextReviewCandidateAfter\(/);
+  assert.match(queue, /const queue = await getImportReviewQueue\(\);\n  const waiting = queue\.items\.filter\(/);
+  assert.match(actions, /nextReviewCandidateAfter\(id\)/);
+  assert.doesNotMatch(actions, /nextContentImportCandidateAfter/);
   for (const just of ["published", "merged", "linked"]) {
     assert.match(actions, new RegExp(`onward\\("${just}"\\)`), `${just} moves on`);
   }

@@ -111,7 +111,7 @@ describe("bulk content source requirements", () => {
 });
 
 describe("bulk content publication boundaries", () => {
-  it("requires both category and destination for a practical listing", () => {
+  it("requires a category for a practical listing, but never a pre-existing destination", () => {
     const incomplete = prepareBulkContentCandidate({
       ...officialSourceAttraction,
       kind: "PRACTICAL",
@@ -120,28 +120,37 @@ describe("bulk content publication boundaries", () => {
     });
     assert.equal(incomplete.canPublish, false);
     assert.ok(incomplete.publishBlockers.some((error) => /category/i.test(error)));
-    assert.ok(incomplete.publishBlockers.some((error) => /destination/i.test(error)));
+    // The town page is made at publish time when there is none
+    // (destinationIdFor in lib/content-imports.ts), so a listing in a new town
+    // is not sent away to create the town first.
+    assert.ok(!incomplete.publishBlockers.some((error) => /destination/i.test(error)));
 
     const ready = prepareBulkContentCandidate({
       ...incomplete,
       category: "TRANSPORT",
-      destinationSlug: "london",
     });
     assert.equal(ready.canPublish, true);
   });
 
-  it("never bulk-publishes a kosher food claim", () => {
-    const candidate = prepareBulkContentCandidate({
+  it("publishes kosher food only once the reviewer has marked the status checked", () => {
+    const unchecked = prepareBulkContentCandidate({
       ...officialSourceAttraction,
       kind: "KOSHER_FOOD",
       category: "KOSHER_FOOD",
-      destinationSlug: "london",
       summary: "A food listing with a current directory source for the editor to review.",
       kosherSourceUrl: "https://example.org/kosher-directory/example",
+      kosherClaim: "reported",
     });
-    assert.equal(candidate.canStage, true);
-    assert.equal(candidate.canPublish, false);
-    assert.ok(candidate.publishBlockers.some((error) => /destination editor/i.test(error)));
+    assert.equal(unchecked.canStage, true);
+    assert.equal(unchecked.canPublish, false);
+    assert.ok(unchecked.publishBlockers.some((error) => /Checked — kosher/.test(error)));
+    // The confirmation happens on the review screen itself; there is no
+    // second screen it is sent to.
+    assert.ok(!unchecked.publishBlockers.some((error) => /destination editor/i.test(error)));
+
+    const checked = prepareBulkContentCandidate({ ...unchecked, kosherClaim: "confirmed" });
+    assert.equal(checked.kosherClaim, "confirmed");
+    assert.equal(checked.canPublish, true);
   });
 
   it("requires a real public anchor for a place to stay", () => {

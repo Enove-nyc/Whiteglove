@@ -43,7 +43,9 @@ describe("import needs-review queue", () => {
   it("treats needs-review and awaiting-verification as open work", () => {
     assert.equal(isOpenReviewStatus("NEEDS_REVIEW"), true);
     assert.equal(isOpenReviewStatus("AWAITING_VERIFICATION"), true);
-    assert.equal(isOpenReviewStatus("DUPLICATE"), true);
+    // A duplicate is not open work — the Awaiting verification count leaves it
+    // out, and the one-at-a-time panel counts by the same rule.
+    assert.equal(isOpenReviewStatus("DUPLICATE"), false);
     assert.equal(isOpenReviewStatus("PUBLISHED"), false);
     assert.equal(isOpenReviewStatus("REJECTED"), false);
   });
