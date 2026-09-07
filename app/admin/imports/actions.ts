@@ -165,7 +165,16 @@ export async function reviewContentImportCandidateAction(
       return { ok: true, message: `Linked to the verified public ${linked.kind} listing. This import row is complete.` };
     }
     if (intent === "publish") {
-      const published = await publishContentImportCandidate(id);
+      // The edits above are already saved. If publishing is refused, say so —
+      // the owner was reading a refusal as "nothing was kept" and starting over.
+      let published: { kind: string; id: string };
+      try {
+        published = await publishContentImportCandidate(id);
+      } catch (error) {
+        const why = error instanceof Error ? error.message : "It does not meet the public-listing rules yet.";
+        const reasons = why.split(/(?<=[.!?])\s+(?=[A-Z])/).filter(Boolean);
+        return { ok: false, message: ["Your edits are saved. It is not public yet, because:", ...reasons.map((r) => `• ${r}`)].join("\n") };
+      }
       revalidatePublishedTripContent();
       revalidatePath("/admin/imports");
       revalidatePath(`/admin/imports/${id}`);

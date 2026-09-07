@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import ContentImportCandidateEditor from "@/components/ContentImportCandidateEditor";
 import { contentImportCandidatePath } from "@/lib/bulk-content";
 import { getContentImportCandidate } from "@/lib/content-imports";
+import { listDestinationsForAdmin } from "@/lib/content-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,14 @@ export default async function ContentImportCandidatePage({
   const candidate = await getContentImportCandidate(id, candidateId);
   if (!candidate) notFound();
   if (id === candidate.id) permanentRedirect(contentImportCandidatePath(candidate.sourceId, candidate.id));
+  // The towns this listing can be linked to — a picker, not a slug to type.
+  // "Link this to an existing destination" was a free-text field asking for an
+  // internal slug ("e.g. miami"), which is the thing the owner could not
+  // understand. An unreachable database leaves the list empty rather than
+  // breaking the page.
+  const destinations = await listDestinationsForAdmin()
+    .then((rows) => rows.map((d) => ({ slug: d.slug, city: d.city, country: d.country })))
+    .catch(() => [] as Array<{ slug: string; city: string; country: string }>);
 
   return (
     <>
@@ -32,7 +41,7 @@ export default async function ContentImportCandidatePage({
         </p>
       </header>
       <section className="mt-8 max-w-5xl">
-        <ContentImportCandidateEditor candidate={candidate} />
+        <ContentImportCandidateEditor candidate={candidate} destinations={destinations} />
       </section>
     </>
   );

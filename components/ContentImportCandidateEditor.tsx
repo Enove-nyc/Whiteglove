@@ -1,6 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { adminHref } from "@/lib/admin-nav";
 import {
   BULK_CONTENT_KINDS,
   bulkContentKindLabel,
@@ -14,8 +17,16 @@ import { normalizeListingCategory } from "@/data/listing-categories";
 const fieldClass = "mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)]";
 const labelClass = "block text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]";
 
-export default function ContentImportCandidateEditor({ candidate }: { candidate: ContentImportCandidateView }) {
+export type DestinationChoice = { slug: string; city: string; country: string };
+
+export default function ContentImportCandidateEditor({ candidate, destinations = [] }: { candidate: ContentImportCandidateView; destinations?: DestinationChoice[] }) {
   const [kind, setKind] = useState<BulkContentKind>(candidate.kind);
+  // Which town it is linked to, kept in state so the guidance below can point
+  // straight at that town's editor rather than tell the owner to go and find it.
+  const [destinationSlug, setDestinationSlug] = useState(candidate.destinationSlug ?? "");
+  const pathname = usePathname();
+  // The chosen town's editor — written for whichever hostname we are on.
+  const townEditor = destinationSlug ? adminHref(`/admin/destinations?slug=${encodeURIComponent(destinationSlug)}`, pathname) : null;
   const [state, action, pending] = useActionState(reviewContentImportCandidateAction, null);
   const editable = candidate.status !== "PUBLISHED";
   const categoryDefault = normalizeListingCategory(candidate.category) ?? candidate.category ?? "";
@@ -27,7 +38,7 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
 
       {state && (
         <p className={`border-l-4 px-4 py-3 text-sm leading-6 ${state.ok ? "border-emerald-500 bg-emerald-50 text-emerald-900" : "border-rose-500 bg-rose-50 text-rose-900"}`}>
-          {state.message}
+          <span className="whitespace-pre-line">{state.message}</span>
         </p>
       )}
 
@@ -99,10 +110,21 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
             Country
             <input name="country" required defaultValue={candidate.country} className={fieldClass} />
           </label>
-          {(kind === "PRACTICAL" || kind === "KOSHER_FOOD") && (
+          {(kind === "PRACTICAL" || kind === "KOSHER_FOOD" || kind === "PLACE_TO_STAY") && (
             <label className={labelClass}>
-              Destination slug
-              <input name="destinationSlug" defaultValue={candidate.destinationSlug ?? ""} placeholder="e.g. miami" className={fieldClass} />
+              Destination — the town page this belongs to
+              <select name="destinationSlug" value={destinationSlug} onChange={(event) => setDestinationSlug(event.target.value)} className={fieldClass}>
+                <option value="">— choose a town —</option>
+                {destinations.map((d) => (
+                  <option key={d.slug} value={d.slug}>{d.city}, {d.country}</option>
+                ))}
+                {destinationSlug && !destinations.some((d) => d.slug === destinationSlug) && (
+                  <option value={destinationSlug}>{destinationSlug}</option>
+                )}
+              </select>
+              {kind !== "PLACE_TO_STAY" && (
+                <span className="mt-1 block text-xs font-normal normal-case tracking-normal text-stone-500">Required before this can be published.</span>
+              )}
             </label>
           )}
         </section>
@@ -129,7 +151,15 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
         {kind === "PLACE_TO_STAY" && (
           <section className="grid gap-4 border border-[var(--gold-light)] bg-[#FAF8F3] p-5 md:grid-cols-2">
             <p className="md:col-span-2 text-sm leading-6 text-stone-600">
-              A place to stay is published only with the quarter or shul it is near. These coordinates belong to the anchor, not the hotel. Kosher status is completed in the destination editor, not from a bulk source.
+              Publishing puts this on the site as an <strong>ordinary place to stay</strong>. It needs the quarter or shul it is near
+              (distances are measured from there, not from the hotel). Kosher status is <strong>not</strong> set on this screen:
+              publish first, then{" "}
+              {townEditor ? (
+                <Link href={townEditor} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-2">open the town&rsquo;s page</Link>
+              ) : (
+                <>choose the town above and open its page</>
+              )}{" "}
+              and mark the kosher status there.
             </p>
             <label className={labelClass}>
               Quarter or shul
@@ -146,7 +176,14 @@ export default function ContentImportCandidateEditor({ candidate }: { candidate:
         {kind === "KOSHER_FOOD" && (
           <section className="border border-amber-300 bg-amber-50 p-5">
             <p className="text-sm leading-6 text-amber-950">
-              This queue can preserve an official directory source, but it cannot publish a kosher claim. Confirm it in the destination editor before it becomes public.
+              <strong>Kosher food is never published from this screen.</strong> It keeps the directory source as evidence, and that is all.
+              To make it public: choose the town above,{" "}
+              {townEditor ? (
+                <Link href={townEditor} className="font-semibold underline decoration-2 underline-offset-2">open the town&rsquo;s page</Link>
+              ) : (
+                <>open that town&rsquo;s page</>
+              )}
+              , add the listing there, then come back and press <strong>Link verified public listing</strong>.
             </p>
             <input type="hidden" name="kosherClaim" value={candidate.kosherClaim === "reported" ? "reported" : "none"} />
             <label className={`${labelClass} mt-4`}>

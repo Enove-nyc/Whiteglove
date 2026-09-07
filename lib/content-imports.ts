@@ -739,7 +739,12 @@ async function ownedDuplicateFor(
  */
 export async function updateContentImportCandidate(id: string, input: BulkContentCandidateInput): Promise<ContentImportCandidateView> {
   const prepared = prepareBulkContentCandidate(input);
-  if (!prepared.canStage) throw new Error(prepared.stageErrors.join(" "));
+  // SAVING NEVER REFUSES. This used to throw on any stage error — a coordinate
+  // typed a little off, a missing attribution — BEFORE writing anything, so the
+  // owner's edits lived only on screen and vanished the moment he followed the
+  // blocker's advice to another page and came back: "it keeps going back to
+  // the original one." A candidate is a private draft; the same errors are
+  // already listed as publish blockers, and publishing is where they bite.
   const prisma = await db();
   const existing = await prisma.contentImportCandidate.findUnique({ where: { id }, select: { sourceEvidence: true } });
   if (!existing) throw new Error("That import candidate no longer exists.");
