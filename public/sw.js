@@ -8,7 +8,7 @@
 // styles are therefore network-first: the newest version always wins when
 // online, and the cache is only a fallback when offline. Only truly static
 // media (images, fonts) is cache-first.
-const CACHE = "wg-cache-v3";
+const CACHE = "wg-cache-v4";
 const PRECACHE = ["/", "/offline", "/icon-192.png", "/icon-512.png"];
 
 /**
@@ -93,25 +93,35 @@ self.addEventListener("activate", (event) => {
 // to know the connection is the problem, not wonder if the app lost their
 // trip.
 function networkFirst(req) {
-  // `cache: "reload"` bypasses the HTTP cache for the request outright and
-  // repopulates it — the crucial part. This build emits stable (non
-  // content-hashed) filenames under /_next/static, so a plain fetch could be
-  // served the frozen `immutable` copy the browser cached a year ago; reload
-  // forces the new bytes when a deploy has changed them. A navigation Request
-  // cannot be rebuilt through `new Request(req, init)`, so those reload by URL.
-  const fresh =
-    req.mode === "navigate"
-      ? fetch(req.url, { cache: "reload", credentials: "same-origin" })
-      : fetch(new Request(req, { cache: "reload" }));
+  const isNav = req.mode === "navigate";
+  const store = (res) => {
+    if (res && res.ok) {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+    }
+    return res;
+  };
+  // NAVIGATIONS FETCH NORMALLY — no `cache: "reload"`.
+  //
+  // A page's HTML is served `no-store`, so it is never frozen in the HTTP cache
+  // and needs none of the reload bypass the app CODE below does. And
+  // `cache: "reload"` on the navigation path is what some mobile networks,
+  // carrier proxies and Android WebViews reset outright — a reset is a rejected
+  // fetch, which drops a perfectly online page to the offline shell. That was
+  // the "You're offline while online" report. A plain credentialed fetch always
+  // hits the network for the no-store HTML and does not trip those.
+  //
+  // App CODE keeps `cache: "reload"`: those /_next/static files ARE served
+  // immutable with stable filenames, so without the bypass an installed app
+  // would keep running a year-old copy of its own code. A navigation Request
+  // also cannot be rebuilt through `new Request(req, init)`, the other reason
+  // the two split.
+  const fresh = isNav
+    ? fetch(req.url, { credentials: "same-origin" })
+    : fetch(new Request(req, { cache: "reload" }));
   return fresh
-    .then((res) => {
-      if (res && res.ok) {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
-      }
-      return res;
-    })
-    .catch(() => caches.match(req).then((r) => r || (req.mode === "navigate" ? caches.match("/offline") : undefined)));
+    .then(store)
+    .catch(() => caches.match(req).then((r) => r || (isNav ? caches.match("/offline") : undefined)));
 }
 
 /**
