@@ -16,7 +16,7 @@ import {
   publishContentImportCandidate,
   setContentImportCandidateStatus,
   stageBuiltInContentBatch,
-  updateContentImportCandidate,,
+  updateContentImportCandidate,
   nextContentImportCandidateAfter,
 } from "@/lib/content-imports";
 import { isValidAccessToken } from "@/lib/secure-access";
