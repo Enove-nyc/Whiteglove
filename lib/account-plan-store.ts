@@ -19,6 +19,7 @@ import {
   planOf,
 } from "@/lib/account-plans";
 import { identityKey } from "@/lib/identity";
+import { ownerEmail } from "@/lib/admin-roles";
 
 const REQUESTS_KEY = "white-glove:plan-requests";
 const ACCOUNT_PREFIX = "white-glove:account:";
@@ -61,8 +62,20 @@ async function readAccount(account: string): Promise<StoredAccount | null> {
   }
 }
 
-/** Which plan an account is on. Nothing bought yet for anything unset or unreadable. */
+/**
+ * Which plan an account is on. Nothing bought yet for anything unset or unreadable.
+ *
+ * THE OWNER IS ALWAYS ON THE TOP PLAN. One account and one plan follow the
+ * customer across both sites, so this rule lives on both. The owner runs the
+ * product and buys nothing for his own account, so its stored plan is whatever
+ * it happened to be — and on the itineraries side that sent him to the
+ * one-trip app and showed him the advisor dashboard's paywall. Keyed on
+ * OWNER_EMAIL, the same fact admin-roles keys the admin on. Unset OWNER_EMAIL
+ * (tests, a fresh environment) leaves this a no-op.
+ */
 export async function getPlan(account: string): Promise<AccountPlan> {
+  const owner = ownerEmail();
+  if (owner && identityKey(account) === identityKey(owner)) return "pro";
   return planOf(await readAccount(account));
 }
 
