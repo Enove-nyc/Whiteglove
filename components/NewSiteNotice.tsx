@@ -35,6 +35,11 @@ function subscribeDismissal(onChange: () => void) {
 // Both remembered facts in one snapshot string: whether this wording was
 // dismissed, and whether it has already been shown once. JSON keeps the two
 // values apart safely, whatever the owner types as a version.
+/** Is the admin shell on this page? False on the server; real on the client. */
+function adminShellNow(): boolean {
+  return typeof document !== "undefined" && document.querySelector(".wg-admin") !== null;
+}
+
 function dismissalNow(): string {
   try {
     return `known:${JSON.stringify([
@@ -74,13 +79,21 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
   // dismissed it, then vanish on hydration.
   const snapshot = useSyncExternalStore(subscribeDismissal, dismissalNow, () => UNKNOWN);
   const known = snapshot !== UNKNOWN;
+  // NEVER OVER THE ADMIN. The path rule in shouldShow cannot see the admin
+  // hostname, where the bare path IS the screen (admin.…/add, admin.…/), so the
+  // notice was appearing over the owner's own forms — and its Close then fell
+  // through onto the form's backdrop and shut the form he was halfway through.
+  // The one exact signal, whichever hostname served it, is the admin shell:
+  // every admin screen renders inside .wg-admin. Read the same hydration-safe
+  // way as the storage above (server answers false, client answers for real).
+  const onAdmin = useSyncExternalStore(subscribeDismissal, adminShellNow, () => false);
   const { dismissedVersion, shownVersion } = known
     ? readSnapshot(snapshot)
     : { dismissedVersion: null, shownVersion: null };
   // Would it arm on this page? Off once this wording has been dismissed OR
   // already shown once — the second is what stops it returning on the next
   // page load when the visitor read it but did not press Close.
-  const eligibleHere = known && !answered && shouldShow(notice, { dismissedVersion, path });
+  const eligibleHere = known && !answered && !onAdmin && shouldShow(notice, { dismissedVersion, path });
   // Off once this wording has already been shown once — the marker that stops
   // it returning on the next page load when the visitor read it but did not
   // press Close.

@@ -5,7 +5,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import ListingCategoryField from "@/components/ListingCategoryField";
 
 import Link from "next/link";
-import { type ReactNode, useActionState, useState } from "react";
+import { type ReactNode, useActionState, useState, useRef } from "react";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { type ActionResult, addAttractionAction, addCemeteryAction, addInfoPageAction, addKosherStayAction } from "@/app/admin/add/actions";
 
@@ -26,10 +26,22 @@ type Which = "cemetery" | "attraction" | "stay" | "page";
 
 function Modal({ label, onClose, children }: { label: string; onClose: () => void; children: ReactNode }) {
   const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose);
+  // A backdrop press closes the pop-up — but only a press that STARTED on the
+  // backdrop. A click is delivered to whatever is under the pointer on
+  // release, so when an overlay above this one (the site notice) vanishes on
+  // its own Close, the release used to land here and shut the form the owner
+  // was halfway through, taking every field with it. Requiring the pointer to
+  // have gone down on the backdrop too makes that click-through a no-op.
+  const pressedBackdrop = useRef(false);
   return (
     <div
       className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
-      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+      onPointerDown={(event) => { pressedBackdrop.current = event.target === event.currentTarget; }}
+      onClick={(event) => {
+        const onBackdrop = event.target === event.currentTarget && pressedBackdrop.current;
+        pressedBackdrop.current = false;
+        if (onBackdrop) onClose();
+      }}
     >
       <div
         ref={dialogRef}
