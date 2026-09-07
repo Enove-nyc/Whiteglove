@@ -12,10 +12,10 @@ export default async function ContentImportCandidatePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ candidate?: string }>;
+  searchParams: Promise<{ candidate?: string; just?: string }>;
 }) {
   const { id } = await params;
-  const { candidate: candidateId } = await searchParams;
+  const { candidate: candidateId, just } = await searchParams;
   const candidate = await getContentImportCandidate(id, candidateId);
   if (!candidate) notFound();
   if (id === candidate.id) permanentRedirect(contentImportCandidatePath(candidate.sourceId, candidate.id));
@@ -33,6 +33,11 @@ export default async function ContentImportCandidatePage({
       <Link href="/admin/imports" className="text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
         ← Back to bulk content imports
       </Link>
+      {just && (
+        <p className="mt-6 border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
+          The previous one was {just}. This is the next candidate waiting for review.
+        </p>
+      )}
       <header className="mt-7">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">{candidate.kindLabel} · {candidate.city}, {candidate.country}</p>
         <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--navy)]">{candidate.name}</h1>

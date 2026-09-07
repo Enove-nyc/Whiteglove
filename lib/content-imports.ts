@@ -958,6 +958,28 @@ export async function confirmLinkedKosherImportCandidate(id: string): Promise<{ 
  * deliberate exception: a source directory can create a review lead but may
  * not, by itself, create a public kosher claim.
  */
+/**
+ * Where to go once a decision has been made on a candidate.
+ *
+ * Publishing, rejecting, merging or linking one and then staying on it is a
+ * dead end: the screen is finished, and the next thing to review is a click
+ * and a hunt away. The queue (lib/import-review-queue.ts) orders by name, so
+ * "next" is the first candidate still waiting in the same source pack by that
+ * order; when the pack is done, the first waiting anywhere; when nothing is
+ * waiting, null — and the caller returns to the queue.
+ */
+export async function nextContentImportCandidateAfter(afterId: string): Promise<{ id: string; sourceId: string } | null> {
+  const prisma = await db();
+  const current = await prisma.contentImportCandidate.findUnique({ where: { id: afterId }, select: { sourceId: true } });
+  const select = { id: true, sourceId: true } as const;
+  const orderBy = [{ name: "asc" as const }, { id: "asc" as const }];
+  const samePack = current
+    ? await prisma.contentImportCandidate.findFirst({ where: { status: "NEEDS_REVIEW", sourceId: current.sourceId, id: { not: afterId } }, select, orderBy })
+    : null;
+  if (samePack) return samePack;
+  return prisma.contentImportCandidate.findFirst({ where: { status: "NEEDS_REVIEW", id: { not: afterId } }, select, orderBy });
+}
+
 export async function publishContentImportCandidate(id: string): Promise<{ kind: string; id: string }> {
   const prisma = await db();
   const stored = await prisma.contentImportCandidate.findUnique({

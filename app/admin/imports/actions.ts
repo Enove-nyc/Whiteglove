@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import {
   BULK_CONTENT_KINDS,
@@ -15,7 +16,8 @@ import {
   publishContentImportCandidate,
   setContentImportCandidateStatus,
   stageBuiltInContentBatch,
-  updateContentImportCandidate,
+  updateContentImportCandidate,,
+  nextContentImportCandidateAfter,
 } from "@/lib/content-imports";
 import { isValidAccessToken } from "@/lib/secure-access";
 import { VACATION_SOURCES_TAG } from "@/lib/vacation-sources";
@@ -117,6 +119,17 @@ export async function reviewContentImportCandidateAction(
   const intent = text(formData, "intent", 40);
   if (!id) return { ok: false, message: "Missing import candidate." };
 
+  // A DECISION MOVES YOU ON. After publish, reject, duplicate, merge or link,
+  // the screen is finished; staying on it left the owner hunting for the next
+  // one. The target is worked out inside the try (it reads the database) and
+  // the redirect is thrown OUTSIDE it — redirect() works by throwing, and the
+  // catch below would otherwise swallow it and report a failure.
+  let goTo: string | null = null;
+  const onward = async (just: string) => {
+    const next = await nextContentImportCandidateAfter(id);
+    return next ? `${contentImportCandidatePath(next.sourceId, next.id)}&just=${just}` : `/admin/imports/needs-review?just=${just}`;
+  };
+  let result: ContentImportActionResult;
   try {
     if (intent === "reject" || intent === "reopen" || intent === "duplicate") {
       const status = intent === "reject" ? "REJECTED" : intent === "duplicate" ? "DUPLICATE" : "NEEDS_REVIEW";
@@ -124,7 +137,8 @@ export async function reviewContentImportCandidateAction(
       revalidatePath("/admin/imports");
       revalidatePath("/admin/imports/needs-review");
       revalidatePath(`/admin/imports/${id}`);
-      return {
+      if (intent !== "reopen") goTo = await onward(intent === "reject" ? "rejected" : "duplicate");
+      result = {
         ok: true,
         message:
           intent === "reject"
@@ -133,27 +147,26 @@ export async function reviewContentImportCandidateAction(
               ? "Marked as a duplicate. Both records were kept."
               : "Candidate returned to the review queue.",
       };
-    }
+    } else
     if (intent === "keep-both") {
       await keepBothContentImportCandidate(id);
       revalidatePath("/admin/imports");
       revalidatePath("/admin/imports/needs-review");
       revalidatePath(`/admin/imports/${id}`);
-      return { ok: true, message: "Kept both. This pair will not be flagged again." };
-    }
-    if (intent === "merge") {
+      result = { ok: true, message: "Kept both. This pair will not be flagged again." };
+    } else if (intent === "merge") {
       const merged = await mergeContentImportCandidate(id);
       revalidatePath("/admin/imports");
       revalidatePath("/admin/imports/needs-review");
       revalidatePath(`/admin/imports/${id}`);
-      return {
+      goTo = await onward("merged");
+      result = {
         ok: true,
         message: merged.aliasesAdded
           ? `Merged unique names onto ${merged.kept}. This candidate was kept as a duplicate record.`
           : `Marked as a duplicate of ${merged.kept}. Nothing was deleted.`,
       };
-    }
-
+    } else {
     const updated = await updateContentImportCandidate(id, candidateInput(formData));
     if (intent === "confirm-linked") {
       const linked = await confirmLinkedKosherImportCandidate(id);
@@ -162,9 +175,9 @@ export async function reviewContentImportCandidateAction(
       revalidatePath("/admin/imports/needs-review");
       revalidatePath(`/admin/imports/${id}`);
       revalidatePath(contentImportCandidatePath(updated.sourceId, updated.id));
-      return { ok: true, message: `Linked to the verified public ${linked.kind} listing. This import row is complete.` };
-    }
-    if (intent === "publish") {
+      goTo = await onward("linked");
+      result = { ok: true, message: `Linked to the verified public ${linked.kind} listing. This import row is complete.` };
+    } else if (intent === "publish") {
       // The edits above are already saved. If publishing is refused, say so —
       // the owner was reading a refusal as "nothing was kept" and starting over.
       let published: { kind: string; id: string };
@@ -179,14 +192,18 @@ export async function reviewContentImportCandidateAction(
       revalidatePath("/admin/imports");
       revalidatePath(`/admin/imports/${id}`);
       revalidatePath(contentImportCandidatePath(updated.sourceId));
-      return { ok: true, message: `Published as ${published.kind}. The public directories and search were refreshed.` };
+      goTo = await onward("published");
+      result = { ok: true, message: `Published as ${published.kind}. The public directories and search were refreshed.` };
+    } else {
+      revalidatePath("/admin/imports");
+      revalidatePath(`/admin/imports/${id}`);
+      revalidatePath(contentImportCandidatePath(updated.sourceId));
+      result = { ok: true, message: "Candidate saved. It remains private until you publish it." };
     }
-
-    revalidatePath("/admin/imports");
-    revalidatePath(`/admin/imports/${id}`);
-    revalidatePath(contentImportCandidatePath(updated.sourceId));
-    return { ok: true, message: "Candidate saved. It remains private until you publish it." };
+    }
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "The review change could not be saved." };
   }
+  if (goTo) redirect(goTo);
+  return result;
 }
