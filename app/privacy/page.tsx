@@ -22,7 +22,19 @@ export async function generateMetadata() {
   });
 }
 
-const UPDATED = "July 26, 2026";
+/**
+ * The date this policy last changed in substance.
+ *
+ * IT IS NOT DECORATION. The policy itself promises, further down, to revise
+ * this whenever it changes — and it did change in September, when the travel
+ * preferences and AI assistant section was added, while this still read July.
+ * A policy that misstates its own currency is the one claim on the page a
+ * reader can check without taking anything on trust.
+ *
+ * tests/privacy-policy-current.test.ts fails if the preferences section is
+ * present and this date predates it.
+ */
+const UPDATED = "September 6, 2026";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
