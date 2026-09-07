@@ -4,7 +4,8 @@ import { revalidatePath, updateTag } from "next/cache";
 import { VACATION_SOURCES_TAG } from "@/lib/vacation-sources";
 import { cookies } from "next/headers";
 import type { ContentStatus } from "@prisma/client";
-import { createAttraction, createCemetery, createInfoPage, createKosherStay } from "@/lib/content-admin";
+import { createAttraction, createCemetery, createInfoPage, createKosherStay, ensureDestinationForCity } from "@/lib/content-admin";
+import { anchorFor, missingForPublish, savedStayMessage, statusForNewStay } from "@/lib/stay-quick-add";
 import { isValidAccessToken } from "@/lib/secure-access";
 
 export type ActionResult = { ok: boolean; message: string };
@@ -137,30 +138,31 @@ export async function addKosherStayAction(_prev: ActionResult | null, formData: 
   const name = str(formData, "name");
   const city = str(formData, "city");
   const summary = str(formData, "summary");
-  const anchorName = str(formData, "anchorName");
-  const anchorCoords = str(formData, "anchorCoords");
   const sourceUrl = str(formData, "sourceUrl");
+  // ONLY A NAME AND A CITY ARE REQUIRED — the same terms the cemetery form has
+  // always offered. Everything else decides whether the stay is published or
+  // waits in review (lib/stay-quick-add.ts), never whether it can be saved.
   if (!name) return { ok: false, message: "A name is required." };
   if (!city) return { ok: false, message: "A city is required." };
-  if (!summary) return { ok: false, message: "Write one line saying what it is." };
-  if (!anchorName || !anchorCoords) {
-    // The anchor is the whole point of a stay entry: what it is near, and how
-    // near. Without it the listing says nothing a booking site does not.
-    return { ok: false, message: "Name the shul or quarter this is measured from, and give that place's coordinates — distances are measured from there, never from the hotel." };
-  }
-  if (!/^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(anchorCoords)) {
-    return { ok: false, message: "Coordinates should look like 41.8921, 12.4780." };
-  }
-  if (!sourceUrl) return { ok: false, message: "A source is required — where this listing came from." };
+  const anchor = anchorFor({
+    name,
+    anchorName: str(formData, "anchorName"),
+    anchorCoords: str(formData, "anchorCoords"),
+    ownCoords: str(formData, "coordinates"),
+  });
+  const completeness = { summary, sourceUrl, ...anchor };
+  const status = statusForNewStay(completeness);
+  const country = str(formData, "country") || "—";
   try {
     await createKosherStay({
       name,
       city,
-      country: str(formData, "country") || "—",
+      country,
       kind: str(formData, "kind") || "Ordinary hotel, well placed",
       summary,
-      anchorName,
-      anchorCoords: anchorCoords.trim(),
+      anchorName: anchor.anchorName,
+      anchorCoords: anchor.anchorCoords,
+      status,
       season: nullable(formData, "season"),
       kosherClaim: str(formData, "kosherClaim") || "none",
       website: nullable(formData, "website"),
@@ -178,8 +180,11 @@ export async function addKosherStayAction(_prev: ActionResult | null, formData: 
       kosherKitchen: str(formData, "kosherKitchen"),
       walkingDistanceToJewishArea: str(formData, "walkingDistanceToJewishArea"),
     });
+    // A city with no destination page gets one, in review, so the hotel is not
+    // left pointing at a page that does not exist. Never fails the save.
+    const destinationMade = await ensureDestinationForCity(city, country);
     revalidateTripContent("stay");
-    return { ok: true, message: `Added “${name}”. It is in the where-to-stay list, the search and the hotel picker now.` };
+    return { ok: true, message: savedStayMessage(name, status, missingForPublish(completeness), destinationMade) };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Something went wrong." };
   }

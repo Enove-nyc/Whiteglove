@@ -17,6 +17,7 @@ import { recordChange } from "@/lib/changes-store";
 import { invalidateSiteSearchIndex } from "@/lib/site-search-index";
 import { CEMETERIES_PUBLIC_TAG } from "@/lib/cemeteries-view";
 import { assertVerifiedListing } from "@/lib/listing-verification";
+import { destinationSlugFor } from "@/lib/stay-quick-add";
 
 const DB_OFF_MESSAGE =
   "The content database is not connected yet. Add DATABASE_URL (see docs/DATABASE.md) to edit content.";
@@ -128,6 +129,45 @@ export async function createDestination(fields: NewDestinationFields) {
   });
   await contentChanged();
   return row;
+}
+
+/**
+ * A stay names a city; a city with no destination page gets one.
+ *
+ * THE OWNER'S RULE: "any place to stay that gets added that does not have that
+ * destination yet should automatically create a destination of that name."
+ * The page is made in review — createDestination already lands every new row
+ * as NEEDS_REVIEW / NEEDS_VERIFICATION — so nothing reaches a customer until
+ * the owner has filled it in; what he gets is a row waiting where he expects
+ * it rather than a hotel pointing at a page that does not exist.
+ *
+ * Matching is by city name alone, case-insensitive, and by country as well
+ * only when a real one was given — the add form writes "—" for a blank
+ * country, and "Rome, —" must find Rome, not make a second one. Returns the
+ * city name when a page was made, null when one was already there, and never
+ * throws: a destination that cannot be made is not a reason to lose the stay
+ * that was just saved.
+ */
+export async function ensureDestinationForCity(city: string, country: string): Promise<string | null> {
+  const name = city.trim();
+  if (!name) return null;
+  const known = country.trim() && country.trim() !== "—" ? country.trim() : null;
+  try {
+    const prisma = await db();
+    const existing = await prisma.destination.findFirst({
+      where: known
+        ? { city: { equals: name, mode: "insensitive" }, country: { equals: known, mode: "insensitive" } }
+        : { city: { equals: name, mode: "insensitive" } },
+      select: { slug: true },
+    });
+    if (existing) return null;
+    const slug = destinationSlugFor(name);
+    if (!slug) return null;
+    await createDestination({ slug, city: name, yiddishCity: name, country: known ?? "—", sourceUrl: null });
+    return name;
+  } catch {
+    return null;
+  }
 }
 
 export async function updateDestinationFields(slug: string, fields: DestinationFields) {
@@ -1105,6 +1145,12 @@ export type NewStayFields = {
   notes: string[];
   sourceUrl: string;
   /**
+   * PUBLISHED unless the caller says otherwise. The admin quick-add passes
+   * NEEDS_REVIEW for a stay saved from a pin with the rest still to fill in —
+   * see lib/stay-quick-add.ts for exactly what decides that.
+   */
+  status?: ContentStatus;
+  /**
    * Kosher / Shabbos attributes — each "yes" | "no" | "unknown", defaulting to
    * "unknown" when the form leaves them alone. Never inferred from kind or
    * kosherClaim.
@@ -1206,7 +1252,7 @@ export async function createKosherStay(fields: NewStayFields) {
       website: fields.website,
       notes: fields.notes,
       sourceUrl: fields.sourceUrl,
-      status: "PUBLISHED",
+      status: fields.status ?? "PUBLISHED",
       onSiteKosherFood: confirmedField(fields.onSiteKosherFood),
       kosherBreakfast: confirmedField(fields.kosherBreakfast),
       shabbosMeals: confirmedField(fields.shabbosMeals),

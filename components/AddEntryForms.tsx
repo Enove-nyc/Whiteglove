@@ -189,8 +189,10 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">New place to stay</p>
             <h2 className="mt-1 font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Add somewhere to stay</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
-              Distances are measured from the shul or quarter it is near, not from the hotel — so that is what you fill in.
-              It appears on the where-to-stay page, in the search, and in the planner&rsquo;s hotel picker.
+              Only a name and city are required — fill in the rest later. With a summary, a source and the shul or quarter it
+              is measured from, it goes straight onto the where-to-stay page, the search and the planner&rsquo;s hotel picker;
+              with anything missing it waits in review until you finish it. A city with no destination page gets one started
+              for you.
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <label className="block"><span className={captionClass}>Name *</span><input name="name" defaultValue={prefillName} className={inputClass} required /></label>
@@ -205,9 +207,10 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
               </label>
               <label className="block"><span className={captionClass}>City *</span><input name="city" className={inputClass} required /></label>
               <label className="block"><span className={captionClass}>Country</span><input name="country" className={inputClass} /></label>
-              <label className="block sm:col-span-2"><span className={captionClass}>One line — what it is *</span><input name="summary" className={inputClass} required /></label>
-              <label className="block"><span className={captionClass}>Measured from — the shul or quarter *</span><input name="anchorName" className={inputClass} placeholder="Great Synagogue of Rome" required /></label>
-              <label className="block"><span className={captionClass}>That place&rsquo;s coordinates *</span><input name="anchorCoords" className={inputClass} placeholder="41.8921, 12.4780" required /></label>
+              <label className="block sm:col-span-2"><span className={captionClass}>One line — what it is</span><input name="summary" className={inputClass} /></label>
+              <label className="block sm:col-span-2"><span className={captionClass}>The hotel&rsquo;s own pin — coordinates, if that is all you have</span><input name="coordinates" className={inputClass} placeholder="43.5875, -110.8272" /></label>
+              <label className="block"><span className={captionClass}>Measured from — the shul or quarter</span><input name="anchorName" className={inputClass} placeholder="Great Synagogue of Rome" /></label>
+              <label className="block"><span className={captionClass}>That place&rsquo;s coordinates</span><input name="anchorCoords" className={inputClass} placeholder="41.8921, 12.4780" /></label>
               <label className="block"><span className={captionClass}>Kashrus</span>
                 <select name="kosherClaim" className={inputClass} defaultValue="none">
                   <option value="none">No kosher claim — listed for where it stands</option>
@@ -218,7 +221,7 @@ export default function AddEntryForms({ prefillName }: { prefillName?: string })
               <label className="block"><span className={captionClass}>Season, if it is a programme rather than a place</span><input name="season" className={inputClass} placeholder="Pesach only; July–August" /></label>
               <label className="block sm:col-span-2"><span className={captionClass}>Website</span><input name="website" className={inputClass} /></label>
               <label className="block sm:col-span-2"><span className={captionClass}>Notes — one per line</span><textarea name="notes" rows={3} className={inputClass} /></label>
-              <label className="block sm:col-span-2"><span className={captionClass}>Source *</span><input name="sourceUrl" className={inputClass} placeholder="https://…" required /></label>
+              <label className="block sm:col-span-2"><span className={captionClass}>Source</span><input name="sourceUrl" className={inputClass} placeholder="https://…" /></label>
             </div>
             <p className="mt-4 max-w-2xl text-xs leading-5 text-stone-500">
               Choose <strong>Confirmed</strong> only for kashrus you checked with the hotel or its mashgiach yourself. A
