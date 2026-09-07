@@ -12,7 +12,11 @@ const APP = readFileSync("components/companion/CompanionApp.tsx", "utf8");
 
 describe("a page miss while offline lands on /offline, not the marketing homepage", () => {
   it("the navigation fallback goes to /offline", () => {
-    assert.match(SW, /caches\.match\(req\)\.then\(\(r\) => r \|\| \(req\.mode === "navigate" \? caches\.match\("\/offline"\) : undefined\)\)/);
+    // The navigation check moved into a local (`isNav`) when navigations stopped
+    // using `cache: "reload"` — the fallback itself is unchanged: a page miss
+    // with no network lands on /offline, never on the cached homepage.
+    assert.match(SW, /const isNav = req\.mode === "navigate";/);
+    assert.match(SW, /caches\.match\(req\)\.then\(\(r\) => r \|\| \(isNav \? caches\.match\("\/offline"\) : undefined\)\)/);
   });
 
   it("/offline is precached, so it's available with no network at all", () => {
