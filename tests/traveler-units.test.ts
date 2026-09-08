@@ -139,6 +139,19 @@ describe("a group trip where each unit has its own flights, stay and stops", () 
     assert.deepEqual(redacted.lodging.map((l) => l.id), ["l-green"]);
   });
 
+  it("the builder is where a unit is chosen — every form that makes one of these offers it", () => {
+    const BUILDER = readFileSync("components/ItineraryBuilder.tsx", "utf8");
+    assert.equal((BUILDER.match(/Who is this for/g) ?? []).length, 3, "flights, stays and stops each need the selector");
+    assert.match(BUILDER, /unitsOf\(itin\)/);
+    // A selector that is never read back on save is decorative — which is
+    // exactly what it was here until the three submit handlers carried it.
+    assert.equal(
+      (BUILDER.match(/unitKey: [fla]\.unitKey \|\| undefined/g) ?? []).length,
+      3,
+      "each form must save the unit it was given, not just show the box",
+    );
+  });
+
   it("a viewer id that matches no traveler on the trip sees only the shared plan, never a guess", () => {
     const redacted = redactForTraveler(itin, "nobody");
     assert.deepEqual(redacted.flights.map((f) => f.id), ["f-shared"]);
