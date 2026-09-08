@@ -96,3 +96,42 @@ proxy settings. `curl` works; the browser does not. So the live sites can only
 be checked with `curl`, and anything needing a rendered page has to run against
 the local server. Say so plainly in any report rather than implying the live
 site was clicked.
+
+## What has actually been pressed
+
+The read half of the site was crawled first; the write half was the honest gap,
+because `admin-crawl.mjs` deliberately never presses Save. On 8 September 2026
+the write paths were driven by hand through a real browser against this rig —
+UI, action, API, database, reload, public page — and four things were wrong.
+
+A listing's quick-edit panel (the one View opens on `/admin/directory/food`)
+opened with Phone, Website and Description **blank whatever the row held**, and
+the save writes those three straight back. Correcting a spelling on Chez David
+in Preshburg deleted its phone number, its website and its notes, from the
+database and from `/preshburg`. The panel also showed "Live on the site" ticked
+for a row that was a draft, so any correction published it. Both came from
+`listAdminCatalog` seeding the panel with three fields while
+`/api/admin/listing` wrote back seven.
+
+Every one of those rows also carried a "Public page" button pointing at
+`/destinations/<slug>`, which is the vacation hub — a 404 for all eleven of
+them. There is one rule for which page a town lives on and it is
+`destinationHrefFor` in `lib/shuls.ts`; the admin had quietly grown a second.
+
+On `/admin/advertisements`, publishing said "Published — it is live now"
+directly above "No advertisements yet", and Delete said "Deleted." with the row
+still on screen. The writes were always fine — `AdManager` read
+`data.promotions` from a response that has always answered `{ bundle }`.
+
+What was exercised and found correct: a listing edit reaching the public page,
+accepting a visitor's submission from `/submit` through
+`/admin/content?tab=suggestions`, deleting a listing and restoring it from
+Deleted, and uploading a picture and publishing it — including the credit gate,
+which correctly refuses to publish and saves as a draft instead.
+
+Two notes for whoever runs this next. Visitor photo submissions are closed
+(`/api/photos` answers 410), so the only live photo path is the owner's own
+upload in the destination editor. And the full-screen site notice has to be
+dismissed before anything can be clicked; seeding `whiteGloveBetaNotice` and
+`whiteGloveBetaNoticeShown` in localStorage through `addInitScript` is the same
+thing as pressing its button.

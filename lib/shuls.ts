@@ -114,8 +114,14 @@ function isAllowedSource(sourceUrl: string | null | undefined): boolean {
  * defaults to the built-in list so a synchronous caller still resolves the
  * twenty shipped destinations; pass the merged one and a destination the owner
  * added links to itself rather than falling through to a heritage town.
+ *
+ * EXPORTED BECAUSE THE ADMIN NEEDS THE SAME ANSWER. The admin's listing
+ * catalog built its own "public page" address as `/destinations/<slug>` and
+ * every one of them was a 404 — a town with a written guide lives at `/<slug>`
+ * and one without lives under /heritage/towns. There is one rule for this and
+ * it is here; a second copy is how the admin came to disagree with the site.
  */
-function destinationHrefFor(
+export function destinationHrefFor(
   slug: string,
   city: string,
   known: readonly VacationDestination[] = vacationDestinations,

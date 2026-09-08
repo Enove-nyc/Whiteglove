@@ -9,6 +9,7 @@ import { emptyQuickEdit, type QuickListing } from "@/data/listing-quick-edit";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDbEnabled } from "@/lib/content-admin";
+import { destinationHrefFor } from "@/lib/shuls";
 
 export type AdminCatalogKind = "attraction" | "stay" | "food";
 
@@ -74,7 +75,19 @@ export async function listAdminCatalog(kind: AdminCatalogKind): Promise<AdminCat
           ? {}
           : { whyNot: "This stay comes with the site rather than from the database, so there is no row here to change." }),
         fullEditHref: item.ownerAdded ? `/admin/directory/stays/${item.slug}/edit` : "/admin/add",
-        fields: { ...emptyQuickEdit(), name: item.name, city: item.city, country: item.country, published: true },
+        // SEEDED FROM THE RECORD, not from three fields. The save writes
+        // `website: fields.website || null` straight from this panel, so a
+        // panel that opened with an empty box wiped the real address the
+        // moment somebody corrected the name.
+        fields: {
+          ...emptyQuickEdit(),
+          name: item.name,
+          city: item.city,
+          country: item.country,
+          website: item.website ?? "",
+          description: item.summary ?? "",
+          published: true,
+        },
       },
       // Only an owner-added stay has a database row to edit. A stay the site
       // shipped with (in data/kosher-stays.ts) has nowhere to save a change to
@@ -113,6 +126,13 @@ export async function listAdminCatalog(kind: AdminCatalogKind): Promise<AdminCat
         name: true,
         category: true,
         sourceUrl: true,
+        // Read because the SAVE writes them back. /api/admin/listing sets
+        // phone, website and notes from this panel's boxes, so anything not
+        // read here opens blank and is written away as blank.
+        phone: true,
+        website: true,
+        notes: true,
+        status: true,
         destination: { select: { slug: true, city: true, country: true } },
       },
       orderBy: [{ destination: { country: "asc" } }, { destination: { city: "asc" } }, { name: "asc" }],
@@ -126,7 +146,11 @@ export async function listAdminCatalog(kind: AdminCatalogKind): Promise<AdminCat
         city: item.destination.city,
         country: item.destination.country,
         sourceUrl: item.sourceUrl ?? "",
-        viewHref: `/destinations/${item.destination.slug}`,
+        // The town's own page, by the site's one rule for it. This was
+        // `/destinations/<slug>` and every listing's "Public page" was a 404 —
+        // that address belongs to the vacation hub, and a town with a guide
+        // lives at `/<slug>`.
+        viewHref: destinationHrefFor(item.destination.slug, item.destination.city),
         editHref: `/admin/destinations?slug=${item.destination.slug}`,
         ownerAdded: true,
         quick: {
@@ -134,12 +158,19 @@ export async function listAdminCatalog(kind: AdminCatalogKind): Promise<AdminCat
           id: item.id,
           savable: true,
           fullEditHref: `/admin/destinations?slug=${item.destination.slug}`,
+          // THE RECORD, NOT A SUMMARY OF IT. The save writes phone, website,
+          // notes and status back from these boxes, so a panel seeded with
+          // three fields wiped a listing's phone number and its notes and
+          // published a draft the moment somebody corrected a spelling.
           fields: {
             ...emptyQuickEdit(),
             name: item.name,
             city: item.destination.city,
             country: item.destination.country,
-            published: true,
+            phone: item.phone ?? "",
+            website: item.website ?? "",
+            description: item.notes ?? "",
+            published: item.status === "PUBLISHED",
           },
         },
       })),
