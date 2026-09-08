@@ -40,6 +40,17 @@ This section is the memory that carries across chats. It is loaded at the start 
 
   AND THE PORT IS PART OF THE JOB, NOT A FOLLOW-UP. The two deployments run from two codebases, so merging here does not put anything on whitegloveitineraries.com. A trip feature is not finished until it exists on the side it is for. When only one side can be done in a sitting, say so in plain words in the same message — never leave it implied.
 
+  THE ITINERARIES REPOSITORY IS NOT IN A SESSION BY DEFAULT, and a session that
+  does not notice will "port" a feature by writing it here twice. GitHub access
+  is scoped to `enove-nyc/whiteglove` alone; the other one is
+  `Enove-nyc/Whiteglove-Itineraries` and has to be asked for with `add_repo`
+  (owner `Enove-nyc`, repo `Whiteglove-Itineraries`, access `push`) and then
+  cloned beside this one — `/home/user/whiteglove-itineraries` is where every
+  session so far has put it, and the paths in this file assume that. Do this
+  BEFORE starting anything that touches both, not after. Its remote answers to
+  the lowercase name too, but pushes print a "repository moved" notice; the
+  capitalised name is the real one.
+
   THE ONE THING THAT STAYS ONE-DIRECTIONAL is the marketing link: `ContinueInItineraries` and `lib/itineraries-handoff.ts` are Kosher Travel's alone and must never be ported. Their absence from the itineraries repository is correct, not drift.
 
 - **Forwarding a booking in by email is wired, and the DNS behind it is not obvious.** White Glove Itineraries receives at **`trips.whitegloveitineraries.com`** — a subdomain, and it had to be. The root `whitegloveitineraries.com` and `whiteglovekoshertravel.com` both carry Cloudflare Email Routing MX records for the owner's real mail, and `mail.whitegloveitineraries.com` is delegated to Brevo's own nameservers. A receiving MX on any of those three takes over mail that is already working. Resend's Cloudflare integration wrote the records for the new subdomain itself, so there was nothing to add by hand.
