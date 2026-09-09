@@ -144,7 +144,12 @@ export default function AccessForm({ scope, next }: { scope: "admin" | "site"; n
   async function unlock() {
     setMessage("");
     const secret = await unlockSecret(bioServer, scope === "admin" ? "Unlock the admin dashboard" : "Unlock White Glove");
-    if (!secret) return;
+    if (!secret) {
+      // Cancelled, not recognised, or nothing readable — say so, rather than
+      // going quiet and leaving the button looking broken.
+      setMessage("Not unlocked. Try the fingerprint again, or type the password below.");
+      return;
+    }
     await runAccess(secret, "", true);
   }
   if (minutes) {
