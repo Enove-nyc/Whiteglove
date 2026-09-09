@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { addressedToMailbox, senderAddress, tokenFromRecipients, type MatchedBy, type PendingImport } from "@/data/inbound-import";
 import { readImportDataUrl } from "@/data/smart-import-files";
 import { isAccountVerified, resolveBusinessOwner } from "@/lib/account-store";
-import { accountForToken, addPending, inboundStoreAvailable } from "@/lib/inbound-import-store";
+import { accountForToken, accountForTrustedSender, addPending, inboundStoreAvailable } from "@/lib/inbound-import-store";
 import { extractSmartImport } from "@/lib/smart-import";
 
 export const dynamic = "force-dynamic";
@@ -172,14 +172,28 @@ export async function POST(request: NextRequest) {
 
   if (!account && !token && addressedToMailbox(recipients)) {
     const sender = senderAddress(from);
-    // A verified account only. Somebody who registered an address and never
-    // confirmed it does not get a queue, and so cannot be used to open one.
-    if (sender && (await isAccountVerified(sender).catch(() => false))) {
-      // Resolved the same way every trip screen resolves, so a staff member
-      // forwarding lands in the business's queue rather than a private one
-      // nobody ever opens.
-      account = (await resolveBusinessOwner(sender).catch(() => sender)) || sender;
-      matchedBy = "sender";
+    if (sender) {
+      // A verified account only. Somebody who registered an address and never
+      // confirmed it does not get a queue, and so cannot be used to open one.
+      if (await isAccountVerified(sender).catch(() => false)) {
+        // Resolved the same way every trip screen resolves, so a staff member
+        // forwarding lands in the business's queue rather than a private one
+        // nobody ever opens.
+        account = (await resolveBusinessOwner(sender).catch(() => sender)) || sender;
+        matchedBy = "sender";
+      } else {
+        // Not the account's own login address — maybe a spouse or a travel
+        // agent, forwarding on somebody's behalf, from THEIR address rather
+        // than the traveller's. Only reaches an account that put this
+        // address on its own list; see addTrustedSender. Resolved through the
+        // same business-owner lookup, so a staff member's trusted sender lands
+        // in the business's queue too.
+        const trusted = await accountForTrustedSender(sender).catch(() => "");
+        if (trusted) {
+          account = (await resolveBusinessOwner(trusted).catch(() => trusted)) || trusted;
+          matchedBy = "sender";
+        }
+      }
     }
   }
 
