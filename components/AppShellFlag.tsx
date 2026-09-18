@@ -37,7 +37,32 @@ export default function AppShellFlag() {
       window.matchMedia?.("(display-mode: standalone)")?.matches === true ||
       nav.standalone === true ||
       document.referrer.startsWith("android-app://");
-    if (inApp) document.documentElement.setAttribute("data-app-shell", "1");
+    if (!inApp) return;
+    document.documentElement.setAttribute("data-app-shell", "1");
+
+    /**
+     * AND THE SAFE AREAS BECOME REAL NUMBERS.
+     *
+     * `env(safe-area-inset-*)` is ZERO unless the viewport is declared
+     * `viewport-fit=cover` — that is in the spec, not a browser quirk. So the
+     * site's existing insets were all writing nothing: the phone bottom bar's
+     * `pb-[env(safe-area-inset-bottom)]`, and the room reserved for it in
+     * globals.css. And with Android 15 forcing apps edge to edge, the web view
+     * now draws behind the status bar, so the header sat under the clock with
+     * no inset to push it down. That is the report: "the top header bumps into
+     * the top of the phone in the app."
+     *
+     * Set HERE rather than in the viewport export, so it applies inside the
+     * app and nowhere else. On the open website `cover` would also put a page
+     * under an iPhone's notch in landscape, where every gutter is 20px and the
+     * inset is 44 — a regression on the public site to fix something only the
+     * app has.
+     */
+    const meta = document.querySelector('meta[name="viewport"]');
+    const content = meta?.getAttribute("content");
+    if (meta && content && !/viewport-fit/.test(content)) {
+      meta.setAttribute("content", `${content}, viewport-fit=cover`);
+    }
   }, []);
   return null;
 }
