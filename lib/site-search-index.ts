@@ -19,9 +19,11 @@ import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
 import { bustTag, cachedRead } from "@/lib/cache-tags";
+import { listAllHeritageCemeteries } from "@/lib/heritage-cemeteries";
 import { notableMikvahListings, staticMikvahListings } from "@/lib/mikvaos";
 import { heritageTownHref } from "@/lib/route-migration";
 import { extraSpellings, normalize } from "@/lib/place-search";
+import { notableShulListings } from "@/lib/shuls";
 import { compact } from "@/lib/site-search-match";
 import { sectionForKind, type SearchDocument } from "@/lib/site-search-types";
 import { allTzaddikim } from "@/lib/tzaddikim";
@@ -109,10 +111,12 @@ export async function buildSearchIndex(): Promise<SearchDocument[]> {
   pushVacationDestinations(docs, destinations);
   pushHeritageTowns(docs);
   pushCemeteries(docs);
+  await pushHeritageCemeteries(docs);
   pushTzaddikim(docs);
   await pushAttractionsStaysAreas(docs);
   await pushPublishedPracticalPlaces(docs);
   pushStaticPracticalPlaces(docs, destinations);
+  pushNotableShuls(docs);
   pushEateries(docs);
   pushSitePages(docs);
   await pushPublishedInfoPages(docs);
@@ -234,6 +238,64 @@ function pushCemeteries(docs: DraftDoc[]) {
       country: c.country,
       rankWeight: index,
       heritage: true,
+      vacation: false,
+    });
+  });
+}
+
+/**
+ * The Nesiya Tova locator set — batei hachaim with no page of their own
+ * beyond /cemeteries/heritage/<slug> — missing from search entirely until
+ * now. "Gibraltar" found nothing here even though two of its three listings
+ * are in this set, the same shape of bug the mikvaos fix below already
+ * records: a place the site holds the answer for and the search box did not
+ * know about.
+ */
+async function pushHeritageCemeteries(docs: DraftDoc[]) {
+  const heritage = await listAllHeritageCemeteries();
+  heritage.forEach((c, index) => {
+    docs.push({
+      id: `heritage-cemetery-${c.slug}`,
+      kind: "Beis hachaim",
+      section: sectionForKind("Beis hachaim"),
+      title: c.name,
+      subtitle: `${c.city} · ${c.country}`,
+      href: `/cemeteries/heritage/${c.slug}`,
+      names: [c.name, c.city, c.country, extraSpellings([c.slug, c.city])].filter(Boolean),
+      keywords: ["beis hachaim", "beit hachaim", "cemetery", "kever", "kevarim", "batei hachaim"],
+      body: "",
+      city: c.city,
+      country: c.country,
+      rankWeight: index,
+      heritage: true,
+      vacation: false,
+    });
+  });
+}
+
+/**
+ * The landmark worldwide shuls (data/notable-shuls.ts) — the third of
+ * Gibraltar's three listings, and the same gap as the heritage cemeteries
+ * just above: on the shuls directory and the map, absent from search. Each
+ * now carries notableShulListings' own href — its own row on /shuls, never
+ * the outside link (see lib/shuls.ts).
+ */
+function pushNotableShuls(docs: DraftDoc[]) {
+  notableShulListings().forEach((shul, index) => {
+    docs.push({
+      id: `search-${shul.id}`,
+      kind: "Practical travel",
+      section: sectionForKind("Practical travel"),
+      title: shul.name,
+      subtitle: `${shul.city} · ${shul.country} · Shul`,
+      href: shul.href,
+      names: [shul.name, shul.city, shul.country, extraSpellings([shul.id, shul.city])].filter(Boolean),
+      keywords: ["shul", "shuls", "synagogue", "minyan", "minyanim", "daven", "davening"],
+      body: shul.notes ?? "",
+      city: shul.city,
+      country: shul.country,
+      rankWeight: index,
+      heritage: false,
       vacation: false,
     });
   });
