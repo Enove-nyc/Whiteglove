@@ -82,7 +82,10 @@ import { placeMapUrl } from "@/data/route-utils";
  * returned, and this route has no loading.tsx of its own to serve ahead of it.
  * Move either of those and a wrong address starts answering 200 again.
  */
-export const revalidate = 900;
+// A day. The rule, and why it is safe, is in lib/cache-windows.ts;
+// tests/cache-windows.test.ts holds this number to it. Written out
+// because Next reads this export statically and refuses an import.
+export const revalidate = 86_400;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
