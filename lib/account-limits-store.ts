@@ -20,6 +20,7 @@ import { unstable_cache, updateTag } from "next/cache";
 import { type AccountPlan, ACCOUNT_PLANS } from "@/lib/account-plans";
 import { describePrints, describeTrips, type LimitOverrides, type PlanLimits, type PrintEvent, WEEK_MS } from "@/lib/account-limits";
 import { identityKey } from "@/lib/identity";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const LIMITS_KEY = "white-glove:plan-limits";
 const PRINTS_PREFIX = "white-glove:prints:";
@@ -68,7 +69,7 @@ async function readOverrides(): Promise<LimitOverrides> {
   }
 }
 
-const cachedOverrides = unstable_cache(readOverrides, ["plan-limits"], { tags: [LIMITS_TAG], revalidate: 3600 });
+const cachedOverrides = unstable_cache(readOverrides, ["plan-limits"], { tags: [LIMITS_TAG], revalidate: PURGED_STORE });
 
 /** Read on every trip creation and every print, so it is cached. */
 export async function getLimitOverrides(): Promise<LimitOverrides> {

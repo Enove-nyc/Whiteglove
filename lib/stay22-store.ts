@@ -9,6 +9,7 @@
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { AFFILIATE_CONFIG_TAG } from "@/lib/affiliate/config";
 import { aidProblem, mergeStay22, stay22FromEnv, type Stay22Settings } from "@/lib/stay22";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:stay22";
 export const STAY22_TAG = "stay22";
@@ -49,7 +50,7 @@ async function readStored(): Promise<Stay22Settings> {
   }
 }
 
-const cached = unstable_cache(readStored, ["stay22"], { tags: [STAY22_TAG], revalidate: 3600 });
+const cached = unstable_cache(readStored, ["stay22"], { tags: [STAY22_TAG], revalidate: PURGED_STORE });
 
 /** For /book. Never throws. */
 export async function readStay22(): Promise<Stay22Settings> {

@@ -12,8 +12,9 @@
  * on /cemeteries and each entry's own page read one merged list.
  */
 
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import type { HeritageCemeteryListing } from "@/lib/heritage-cemeteries";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:heritage-cemeteries-added";
 const TAG = "heritage-cemeteries-added";
@@ -53,7 +54,7 @@ async function read(): Promise<HeritageCemeteryListing[]> {
   }
 }
 
-const cached = unstable_cache(read, ["heritage-cemeteries-added"], { tags: [TAG], revalidate: 3600 });
+const cached = unstable_cache(read, ["heritage-cemeteries-added"], { tags: [TAG], revalidate: PURGED_STORE });
 
 /** The owner-added heritage cemeteries, cached until one is saved. */
 export function getStoredHeritageCemeteries(): Promise<HeritageCemeteryListing[]> {
@@ -62,6 +63,13 @@ export function getStoredHeritageCemeteries(): Promise<HeritageCemeteryListing[]
 
 async function write(list: HeritageCemeteryListing[]): Promise<boolean> {
   if ((await redis(`set/${KEY}`, JSON.stringify(list))) === null) return false;
+  // THE PAGE CACHE IS NOT THE DATA CACHE, and purging one without the other
+  // is why an added listing did not appear for up to an hour. revalidatePath
+  // below rebuilds the pages; the rebuild then calls getStored…(), which is
+  // wrapped in unstable_cache under TAG and hands back the SAME stale list it
+  // had before. The page was rebuilt around unchanged data and looked correct.
+  // updateTag drops that entry, so the rebuild reads the store it just wrote.
+  updateTag(TAG);
   // The locator on /cemeteries, the map, each entry's page and the admin screen.
   revalidatePath("/cemeteries");
   revalidatePath("/map");

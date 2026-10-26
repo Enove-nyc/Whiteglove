@@ -15,6 +15,7 @@ import { LANDING_PRODUCTS, type AffiliateConfig, type EssentialsLandings } from 
 import { readTravelEssentials } from "@/lib/travel-essentials-store";
 import { travelpayoutsMarker } from "@/lib/travelpayouts-api";
 import { landingUrlProblem } from "@/lib/travel-essentials";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 export const AFFILIATE_CONFIG_TAG = "affiliate-config";
 
@@ -58,7 +59,7 @@ const cached = unstable_cache(
     };
   },
   ["affiliate-config"],
-  { tags: [AFFILIATE_CONFIG_TAG], revalidate: 3600 },
+  { tags: [AFFILIATE_CONFIG_TAG], revalidate: PURGED_STORE },
 );
 
 export async function readAffiliateConfig(): Promise<AffiliateConfig> {

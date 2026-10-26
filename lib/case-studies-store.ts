@@ -10,6 +10,7 @@ import {
   type CaseStudy,
   type CaseStudyDraft,
 } from "@/data/case-studies";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:case-studies";
 export const CASE_STUDIES_TAG = "case-studies";
@@ -87,7 +88,7 @@ async function writeAll(list: CaseStudy[]): Promise<boolean> {
 const cachedPublic = unstable_cache(
   async (): Promise<CaseStudy[]> => sortCaseStudiesForPublic((await readAll()).filter(caseStudyIsPublic)),
   ["case-studies-public"],
-  { tags: [CASE_STUDIES_TAG], revalidate: 3600 },
+  { tags: [CASE_STUDIES_TAG], revalidate: PURGED_STORE },
 );
 
 export async function readPublicCaseStudies(): Promise<CaseStudy[]> {

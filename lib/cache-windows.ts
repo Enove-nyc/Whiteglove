@@ -27,3 +27,20 @@ export const PURGED_ON_WRITE = 86_400; // a day
  * everything, so the window is a formality.
  */
 export const BUILT_IN_CONTENT = 86_400; // a day
+
+/**
+ * For a store whose cache entry is dropped by name when it is written —
+ * updateTag(TAG) in its own write path.
+ *
+ * THESE SET THE FLOOR UNDER EVERY PAGE THAT READS THEM. Next takes the
+ * SHORTEST cache lifetime anywhere in a render as the route's own, so an hour
+ * here capped /cemeteries/[cemetery] and /tzaddikim/[person] at an hour however
+ * long their own window said. That hour was never buying freshness: the purge
+ * does that, the instant something is saved.
+ *
+ * NOT FOR A CACHE THAT REFRESHES BY TIME ALONE. lib/travel-advisories.ts reads
+ * somebody else's data, which changes without anybody writing here, so nothing
+ * can purge it and the clock is the only thing keeping it true. A day-old
+ * travel advisory is a traveller's problem, so it keeps the short window.
+ */
+export const PURGED_STORE = 86_400; // a day

@@ -11,6 +11,7 @@ import {
   mergeTravelEssentials,
   type TravelEssentialsSettings,
 } from "@/lib/travel-essentials";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 /** Must match AFFILIATE_CONFIG_TAG in lib/affiliate/config.ts — not imported (avoids a cycle). */
 const AFFILIATE_CONFIG_TAG = "affiliate-config";
@@ -53,7 +54,7 @@ async function readStored(): Promise<TravelEssentialsSettings> {
 
 const cached = unstable_cache(readStored, ["travel-essentials"], {
   tags: [TRAVEL_ESSENTIALS_TAG],
-  revalidate: 3600,
+  revalidate: PURGED_STORE,
 });
 
 export async function readTravelEssentials(): Promise<TravelEssentialsSettings> {

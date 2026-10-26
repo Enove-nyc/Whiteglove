@@ -20,6 +20,7 @@
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { type SiteWords } from "@/data/site-words";
 import { mergeWords, onlyChangedWords, scrubObsoleteWords, type StoredWords } from "@/lib/site-words";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:site-words";
 export const WORDS_TAG = "site-words";
@@ -72,7 +73,7 @@ const cached = unstable_cache(
   ["site-words"],
   // An hour is the backstop for a change made somewhere this process cannot
   // see. The ordinary path is the tag, cleared the moment he presses Save.
-  { tags: [WORDS_TAG], revalidate: 3600 },
+  { tags: [WORDS_TAG], revalidate: PURGED_STORE },
 );
 
 export async function readWords(): Promise<SiteWords> {

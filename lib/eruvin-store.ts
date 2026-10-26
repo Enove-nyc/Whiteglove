@@ -13,8 +13,9 @@
  * the honest size of it, and it needs no migration to ship.
  */
 
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import type { EruvListing } from "@/lib/eruvin";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:eruvin-added";
 const TAG = "eruvin-added";
@@ -64,7 +65,7 @@ async function read(): Promise<EruvListing[]> {
   }
 }
 
-const cached = unstable_cache(read, ["eruvin-added"], { tags: [TAG], revalidate: 3600 });
+const cached = unstable_cache(read, ["eruvin-added"], { tags: [TAG], revalidate: PURGED_STORE });
 
 /** The owner-added eruvin, cached until one is saved. */
 export function getStoredEruvin(): Promise<EruvListing[]> {
@@ -73,6 +74,13 @@ export function getStoredEruvin(): Promise<EruvListing[]> {
 
 async function write(list: EruvListing[]): Promise<boolean> {
   if ((await redis(`set/${KEY}`, JSON.stringify(list))) === null) return false;
+  // THE PAGE CACHE IS NOT THE DATA CACHE, and purging one without the other
+  // is why an added listing did not appear for up to an hour. revalidatePath
+  // below rebuilds the pages; the rebuild then calls getStored…(), which is
+  // wrapped in unstable_cache under TAG and hands back the SAME stale list it
+  // had before. The page was rebuilt around unchanged data and looked correct.
+  // updateTag drops that entry, so the rebuild reads the store it just wrote.
+  updateTag(TAG);
   // The public list and the admin screen both read this.
   revalidatePath("/eruvin");
   revalidatePath("/admin/eruvin");

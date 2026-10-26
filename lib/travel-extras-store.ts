@@ -10,6 +10,7 @@
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { listProblem, type TravelExtra } from "@/lib/travel-extras";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:travel-extras";
 export const EXTRAS_TAG = "travel-extras";
@@ -48,7 +49,7 @@ async function readStored(): Promise<TravelExtra[]> {
   }
 }
 
-const cached = unstable_cache(readStored, ["travel-extras"], { tags: [EXTRAS_TAG], revalidate: 3600 });
+const cached = unstable_cache(readStored, ["travel-extras"], { tags: [EXTRAS_TAG], revalidate: PURGED_STORE });
 
 /** For the public page. Never throws. */
 export async function readExtras(): Promise<TravelExtra[]> {

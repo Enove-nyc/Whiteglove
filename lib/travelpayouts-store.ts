@@ -22,6 +22,7 @@ import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { AFFILIATE_CONFIG_TAG } from "@/lib/affiliate/config";
 import { linkProblem, SLOTS, type TravelpayoutsLinks } from "@/lib/travelpayouts";
 import { isPartnerKey, type PartnerChoices, TRAVEL_PARTNERS } from "@/lib/travel-partners";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:travelpayouts";
 
@@ -101,7 +102,7 @@ async function readStored(): Promise<TravelpayoutsSettings> {
   }
 }
 
-const cached = unstable_cache(readStored, ["travelpayouts-links"], { tags: [TRAVELPAYOUTS_TAG], revalidate: 3600 });
+const cached = unstable_cache(readStored, ["travelpayouts-links"], { tags: [TRAVELPAYOUTS_TAG], revalidate: PURGED_STORE });
 
 /** The links and partner choices for this visitor's searches. Never throws. */
 export async function readTravelpayouts(): Promise<TravelpayoutsSettings> {

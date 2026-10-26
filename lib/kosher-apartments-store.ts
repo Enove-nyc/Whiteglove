@@ -13,8 +13,9 @@
  * honest size of it, and it needs no migration to ship.
  */
 
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import type { ApartmentProvider } from "@/lib/kosher-apartments";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:kosher-apartments-added";
 const TAG = "kosher-apartments-added";
@@ -54,7 +55,7 @@ async function read(): Promise<ApartmentProvider[]> {
   }
 }
 
-const cached = unstable_cache(read, ["kosher-apartments-added"], { tags: [TAG], revalidate: 3600 });
+const cached = unstable_cache(read, ["kosher-apartments-added"], { tags: [TAG], revalidate: PURGED_STORE });
 
 /** The owner-added providers, cached until one is saved. */
 export function getStoredApartments(): Promise<ApartmentProvider[]> {
@@ -63,6 +64,13 @@ export function getStoredApartments(): Promise<ApartmentProvider[]> {
 
 async function write(list: ApartmentProvider[]): Promise<boolean> {
   if ((await redis(`set/${KEY}`, JSON.stringify(list))) === null) return false;
+  // THE PAGE CACHE IS NOT THE DATA CACHE, and purging one without the other
+  // is why an added listing did not appear for up to an hour. revalidatePath
+  // below rebuilds the pages; the rebuild then calls getStored…(), which is
+  // wrapped in unstable_cache under TAG and hands back the SAME stale list it
+  // had before. The page was rebuilt around unchanged data and looked correct.
+  // updateTag drops that entry, so the rebuild reads the store it just wrote.
+  updateTag(TAG);
   // The public list (on Where to stay) and the admin screen both read this.
   revalidatePath("/hotels");
   revalidatePath("/admin/kosher-apartments");

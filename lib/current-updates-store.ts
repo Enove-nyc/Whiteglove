@@ -26,6 +26,7 @@ import {
   type CurrentUpdateDraft,
   type UpdateKind,
 } from "@/data/current-updates";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:current-updates";
 export const CURRENT_UPDATES_TAG = "current-updates";
@@ -100,7 +101,7 @@ async function writeAll(list: CurrentUpdate[]): Promise<boolean> {
 const cachedPublished = unstable_cache(
   async (): Promise<CurrentUpdate[]> => (await readAll()).filter((u) => u.published),
   ["current-updates-published"],
-  { tags: [CURRENT_UPDATES_TAG], revalidate: 3600 },
+  { tags: [CURRENT_UPDATES_TAG], revalidate: PURGED_STORE },
 );
 
 /**

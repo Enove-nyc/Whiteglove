@@ -20,12 +20,13 @@
 import { unstable_cache } from "next/cache";
 import { bookingLink, type BookingLink } from "@/lib/booking-access";
 import { getLockedPaths } from "@/lib/site-analytics";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 export const BOOKING_ACCESS_TAG = "booking-access";
 
 const cached = unstable_cache(async (): Promise<BookingLink> => bookingLink(await getLockedPaths()), ["booking-access"], {
   tags: [BOOKING_ACCESS_TAG],
-  revalidate: 3600,
+  revalidate: PURGED_STORE,
 });
 
 export async function readBookingLink(): Promise<BookingLink> {

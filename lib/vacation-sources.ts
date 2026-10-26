@@ -34,12 +34,13 @@ import { kosherEateries } from "@/data/kosher-eateries";
 import type { VacationDestination } from "@/data/vacation-destinations";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import type { VacationSources } from "@/lib/vacation-ideas";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 /** Cleared whenever the owner publishes or edits an attraction, stay or quarter. */
 export const VACATION_SOURCES_TAG = "vacation-sources";
 
 /** Fifteen minutes is the backstop; the tag is the ordinary path. */
-const REVALIDATE = 900;
+const REVALIDATE = PURGED_STORE;
 
 const allSources = unstable_cache(
   async (): Promise<VacationSources> => {

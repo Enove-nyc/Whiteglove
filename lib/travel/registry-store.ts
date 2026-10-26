@@ -7,6 +7,7 @@
 
 import { unstable_cache, updateTag } from "next/cache";
 import { DEFAULT_STAGES, type ProviderStages } from "@/lib/travel/registry";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 export const TRAVEL_STAGES_TAG = "travel-provider-stages";
 const KEY = "white-glove:travel-provider-stages";
@@ -46,7 +47,7 @@ const cached = unstable_cache(
     }
   },
   ["travel-provider-stages"],
-  { tags: [TRAVEL_STAGES_TAG], revalidate: 3600 },
+  { tags: [TRAVEL_STAGES_TAG], revalidate: PURGED_STORE },
 );
 
 export async function readProviderStages(): Promise<ProviderStages> {

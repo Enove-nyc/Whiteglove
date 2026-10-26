@@ -11,6 +11,7 @@
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { type BetaNotice, DEFAULT_NOTICE, noticeFrom } from "@/lib/beta-notice";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:beta-notice";
 const TAG = "beta-notice";
@@ -67,7 +68,7 @@ async function read(): Promise<BetaNotice> {
  * a 500. Caching it takes the fetch out of the render, and saving the notice
  * clears the cache.
  */
-const cached = unstable_cache(read, ["beta-notice"], { tags: [TAG], revalidate: 3600 });
+const cached = unstable_cache(read, ["beta-notice"], { tags: [TAG], revalidate: PURGED_STORE });
 
 export async function getBetaNotice(): Promise<BetaNotice> {
   if (!betaStoreAvailable()) return DEFAULT_NOTICE;

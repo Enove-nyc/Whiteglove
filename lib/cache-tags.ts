@@ -22,11 +22,19 @@
  */
 
 /** Read something through a tagged cache, or run it uncached if next/cache isn't available. */
+import { PURGED_STORE } from "@/lib/cache-windows";
+
 export async function cachedRead<T>(
   fn: () => Promise<T>,
   keyParts: string[],
   tags: string[],
-  revalidateSeconds = 3600,
+  // A DAY, BECAUSE THE PURGE IS WHAT KEEPS THESE TRUE. Every tag that goes
+  // through here is busted by its own write path — checked, all seven of them
+  // — so this number never governed freshness. What it governed was the floor
+  // under every page that reads one: Next takes the shortest cache lifetime in
+  // a render as the route's own, so an hour here held /cemeteries/[cemetery]
+  // at an hour no matter what the page itself asked for. See lib/cache-windows.ts.
+  revalidateSeconds = PURGED_STORE,
 ): Promise<T> {
   try {
     const { unstable_cache } = await import("next/cache");

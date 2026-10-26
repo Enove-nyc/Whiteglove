@@ -122,3 +122,59 @@ describe("the loudest crawlers are asked to stop", () => {
     assert.match(robots, /userAgent: "\*",\s*allow: "\/",\s*disallow: PRIVATE_PATHS\.flatMap\(disallowFor\),/);
   });
 });
+
+describe("the floor under every page: the stores they read", () => {
+  /**
+   * NEXT TAKES THE SHORTEST CACHE LIFETIME IN A RENDER as the route's own, so
+   * a store set to an hour held pages at an hour however long they asked for.
+   * That hour was never buying freshness — every one of these is dropped by
+   * name when it is written. It was buying a rebuild an hour, per page, for
+   * content nobody had touched.
+   */
+  const storeFiles = () => {
+    const out: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) walk(path);
+        else if (entry.name.endsWith(".ts")) out.push(path);
+      }
+    };
+    walk("lib");
+    return out;
+  };
+
+  it("no tagged store is left on the old hour", () => {
+    const stragglers = storeFiles().filter((f) => /revalidate: 3600/.test(readFileSync(f, "utf8")) && /tags: \[/.test(readFileSync(f, "utf8")));
+    assert.deepEqual(stragglers, [], `still rebuilding hourly: ${stragglers.join(", ")}`);
+  });
+
+  it("the shared cachedRead wrapper defaults to the long window", () => {
+    // Every tag that goes through it is busted by its own write path.
+    assert.match(readFileSync("lib/cache-tags.ts", "utf8"), /revalidateSeconds = PURGED_STORE,/);
+  });
+
+  it("but the government advisory feed keeps its hour, and that is the point", () => {
+    // Nobody here writes it, so nothing can purge it — the clock is the only
+    // thing keeping it true, and a day-old travel advisory is a traveller's
+    // problem. It is why /cemeteries/[cemetery] and /tzaddikim/[person] sit at
+    // an hour: both show a country's advisory, and should.
+    const src = readFileSync("lib/travel-advisories.ts", "utf8");
+    assert.match(src, /next: \{ revalidate: 3600 \}/);
+    assert.doesNotMatch(src, /PURGED_STORE/);
+    for (const page of ["app/cemeteries/[cemetery]/page.tsx", "app/tzaddikim/[person]/page.tsx"]) {
+      assert.match(readFileSync(page, "utf8"), /TravelAdvisoryBadge/, `${page} no longer shows an advisory`);
+    }
+  });
+
+  it("the four stores that purged the page but not their own data now purge both", () => {
+    // revalidatePath rebuilt the page; the rebuild then read the same stale
+    // list back out of the data cache, so an added shul or eruv did not appear
+    // for up to an hour and the page looked correctly rebuilt.
+    for (const f of ["shuls", "eruvin", "heritage-cemeteries", "kosher-apartments"]) {
+      const src = readFileSync(`lib/${f}-store.ts`, "utf8");
+      assert.match(src, /updateTag\(TAG\);/, `lib/${f}-store.ts still only purges the page`);
+      assert.ok(src.indexOf("updateTag(TAG);") < src.indexOf("revalidatePath("), `lib/${f}-store.ts purges the page before the data`);
+    }
+  });
+});

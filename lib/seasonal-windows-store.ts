@@ -27,6 +27,7 @@ import {
   type SpotlightKey,
 } from "@/data/seasonal-spotlight";
 import { derivedWindows } from "@/lib/seasonal-calendar";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:seasonal-windows";
 export const SEASONAL_WINDOWS_TAG = "seasonal-windows";
@@ -113,7 +114,7 @@ export function mergeWindows(stored: readonly SeasonalWindow[], today: string): 
 
 const cachedStored = unstable_cache(readStored, ["seasonal-windows"], {
   tags: [SEASONAL_WINDOWS_TAG],
-  revalidate: 3600,
+  revalidate: PURGED_STORE,
 });
 
 /** What the public surfaces read: the calendar, with the owner's changes on top. */

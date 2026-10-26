@@ -27,6 +27,7 @@ import {
   type PlanningChip,
   type PlanningChipDraft,
 } from "@/data/planning-now";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:planning-now";
 export const PLANNING_NOW_TAG = "planning-now";
@@ -91,7 +92,7 @@ async function readStored(): Promise<PlanningChip[]> {
   }
 }
 
-const cachedStored = unstable_cache(readStored, ["planning-now"], { tags: [PLANNING_NOW_TAG], revalidate: 3600 });
+const cachedStored = unstable_cache(readStored, ["planning-now"], { tags: [PLANNING_NOW_TAG], revalidate: PURGED_STORE });
 
 /** The public read — cached, because the homepage carries it. */
 export async function readPlanningChips(): Promise<PlanningChip[]> {

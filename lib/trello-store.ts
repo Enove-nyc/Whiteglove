@@ -24,6 +24,7 @@ import {
   NO_TRELLO,
   sendsCardFor,
 } from "@/lib/trello";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:trello";
 export const TRELLO_TAG = "trello";
@@ -77,7 +78,7 @@ async function readStored(): Promise<TrelloSettings> {
   }
 }
 
-const cached = unstable_cache(readStored, ["trello"], { tags: [TRELLO_TAG], revalidate: 3600 });
+const cached = unstable_cache(readStored, ["trello"], { tags: [TRELLO_TAG], revalidate: PURGED_STORE });
 
 /** Read on every submission, so it is cached. */
 export async function readTrello(): Promise<TrelloSettings> {

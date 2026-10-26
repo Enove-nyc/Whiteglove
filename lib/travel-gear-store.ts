@@ -10,6 +10,7 @@
 
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { gearListProblem, type TravelGearItem } from "@/lib/travel-gear";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:travel-gear";
 export const GEAR_TAG = "travel-gear";
@@ -48,7 +49,7 @@ async function readStored(): Promise<TravelGearItem[]> {
   }
 }
 
-const cached = unstable_cache(readStored, ["travel-gear"], { tags: [GEAR_TAG], revalidate: 3600 });
+const cached = unstable_cache(readStored, ["travel-gear"], { tags: [GEAR_TAG], revalidate: PURGED_STORE });
 
 /** For the public page. Never throws. */
 export async function readGear(): Promise<TravelGearItem[]> {

@@ -5,6 +5,7 @@
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { EMPTY_ABOUT_PROFILE, type AboutProfile } from "@/data/about-profile";
 import { mergeAboutProfile, onlyFilledAbout, type StoredAboutProfile } from "@/lib/about-profile";
+import { PURGED_STORE } from "@/lib/cache-windows";
 
 const KEY = "white-glove:about-profile";
 export const ABOUT_PROFILE_TAG = "about-profile";
@@ -46,7 +47,7 @@ async function readStored(): Promise<StoredAboutProfile> {
 const cached = unstable_cache(
   async (): Promise<AboutProfile> => mergeAboutProfile(await readStored()),
   ["about-profile"],
-  { tags: [ABOUT_PROFILE_TAG], revalidate: 3600 },
+  { tags: [ABOUT_PROFILE_TAG], revalidate: PURGED_STORE },
 );
 
 export async function readAboutProfile(): Promise<AboutProfile> {
