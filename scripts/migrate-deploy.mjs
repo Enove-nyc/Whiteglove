@@ -151,6 +151,19 @@ async function main() {
       console.error("[migrate] The migration itself failed — not retrying.");
       return 1;
     }
+    if (attempt >= DELAYS_MS.length && isUnreachable(output)) {
+      // Not locked — gone. In October 2026 the free-plan database ran out of
+      // monthly compute and refused every connection, and because this step
+      // failed, the fix for the very thing that had used up the hours could not
+      // ship. The site already runs without the database (every read falls back
+      // to the built-in content), so a deploy that cannot reach it goes ahead.
+      // Any migration in it is applied by the next deploy that can connect.
+      console.warn(
+        "[migrate] The database could not be reached at all — skipping migrations so the deploy can go ahead. " +
+          "If this deploy adds a migration, deploy again once the database is back.",
+      );
+      return 0;
+    }
     if (attempt >= DELAYS_MS.length) {
       console.error(
         "[migrate] The database stayed locked or unreachable through every retry. " +
