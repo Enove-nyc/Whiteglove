@@ -44,6 +44,7 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { readdirSync } from "node:fs";
 
 /** Roughly two and a half minutes of waiting, then give up and report. */
 const DELAYS_MS = [5_000, 10_000, 20_000, 40_000, 60_000];
@@ -138,6 +139,80 @@ function attemptMigrate() {
   return last;
 }
 
+/**
+ * THE NEWEST MIGRATION THIS IMAGE SHIPS, by name.
+ *
+ * Same rule readiness uses (lib/readiness.ts): the folders sort, the last one
+ * wins. Kept here as its own copy because this script runs before anything is
+ * compiled.
+ */
+function shippedMigration() {
+  try {
+    return readdirSync("prisma/migrations", { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort()
+      .pop() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * WHAT THE SCHEMA WAS, LAST TIME A MIGRATION SUCCEEDED — kept in Redis, which
+ * is a different supplier from the database on purpose.
+ *
+ * THE DEADLOCK THIS EXISTS TO BREAK. On 26 October the Neon project went over
+ * its monthly compute quota and was suspended. Every connection was refused,
+ * so this script exhausted its retries and failed the deploy — which meant the
+ * one change that would have REDUCED that compute load could not ship, because
+ * the database it was trying to stop hammering was down. A quota breach locked
+ * the owner out of fixing the quota breach.
+ *
+ * Failing shut is still right when there is a migration to apply: starting a
+ * container against a schema it does not expect is worse than not starting.
+ * But when the image ships nothing newer than what is already applied, there
+ * is NOTHING to run, and refusing to deploy buys safety nobody needed. This
+ * note is how the script can tell those apart without being able to ask the
+ * database.
+ */
+const APPLIED_KEY = "white-glove:migrate:applied";
+
+async function redis(path, body) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  try {
+    const res = await fetch(`${url.replace(/\/$/, "")}/${path}`, {
+      method: body === undefined ? "GET" : "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body,
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return (await res.json())?.result ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const rememberApplied = (name) => redis(`set/${encodeURIComponent(APPLIED_KEY)}`, name);
+const lastApplied = () => redis(`get/${encodeURIComponent(APPLIED_KEY)}`);
+
+/**
+ * May this deploy go ahead with the database unreachable?
+ *
+ * Only when the note says the schema is already at or past what this image
+ * ships. No note, or an older one, means there may be a migration waiting —
+ * and then stopping is still the right answer.
+ */
+async function nothingLeftToApply() {
+  const shipped = shippedMigration();
+  if (!shipped) return false;
+  const applied = await lastApplied();
+  return Boolean(applied) && applied >= shipped;
+}
+
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main() {
@@ -145,6 +220,10 @@ async function main() {
     const { ok, output } = attemptMigrate();
     if (ok) {
       if (attempt > 0) console.log(`[migrate] Applied after ${attempt + 1} attempts.`);
+      // So a later deploy that cannot reach the database can still tell
+      // whether it has anything to run. Best effort: a store that is also
+      // down simply leaves the next deploy to fail shut, as it did before.
+      await rememberApplied(shippedMigration());
       return 0;
     }
     if (!isTransientMigrateError(output)) {
@@ -152,6 +231,20 @@ async function main() {
       return 1;
     }
     if (attempt >= DELAYS_MS.length) {
+      // Unreachable is not the same as locked. A database that is SUSPENDED —
+      // over its quota, or simply down — will never answer, and if this image
+      // ships no migration beyond what is already applied there is nothing for
+      // this step to do. Deploying then is strictly better than not: the
+      // container serves from its caches, and readiness still refuses to call
+      // itself ready if the schema turns out to be behind.
+      if (isUnreachable(output) && (await nothingLeftToApply())) {
+        console.warn(
+          "[migrate] The database is unreachable, but the last successful migration matches what this " +
+            "image ships, so there is nothing to apply. Letting the deploy through rather than locking " +
+            "the site out of its own fix. Check the database: it may be suspended or over quota.",
+        );
+        return 0;
+      }
       console.error(
         "[migrate] The database stayed locked or unreachable through every retry. " +
           "Another deploy may still be migrating; this one is stopping rather than forcing it.",

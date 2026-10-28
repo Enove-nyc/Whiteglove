@@ -91,3 +91,52 @@ describe("which connection the migration uses", () => {
     assert.match(SOURCE, /env:\s*\{\s*\.\.\.process\.env/);
   });
 });
+
+/**
+ * A QUOTA BREACH MUST NOT LOCK THE SITE OUT OF ITS OWN FIX.
+ *
+ * On 26 October the Neon project went over its monthly compute quota and was
+ * suspended. Every connection was refused, so this script exhausted its
+ * retries and failed the deploy — and the change waiting to ship was the one
+ * that would have REDUCED that compute load. The database being hammered was
+ * the reason the fix for hammering it could not go out.
+ *
+ * Failing shut is still right when there is a migration to apply. The
+ * difference this draws is between "locked" (another deploy holds it; wait)
+ * and "unreachable with nothing to run" (deploy; the container serves from its
+ * caches and readiness still refuses if the schema turns out to be behind).
+ */
+describe("a suspended database does not block a deploy that has nothing to migrate", () => {
+  it("remembers the applied migration somewhere that is not the database", () => {
+    // Redis, deliberately: a different supplier. A note kept inside Postgres
+    // would be unreadable in exactly the case it is needed.
+    assert.match(SOURCE, /const APPLIED_KEY = "white-glove:migrate:applied";/);
+    assert.match(SOURCE, /UPSTASH_REDIS_REST_URL/);
+  });
+
+  it("writes that note only after a migration actually succeeded", () => {
+    const success = SOURCE.slice(SOURCE.indexOf("if (ok) {"), SOURCE.indexOf("if (!isTransientMigrateError"));
+    assert.match(success, /await rememberApplied\(shippedMigration\(\)\);/);
+  });
+
+  it("lets the deploy through only when the note is at or past what this image ships", () => {
+    assert.match(SOURCE, /return Boolean\(applied\) && applied >= shipped;/);
+    // No note at all means it cannot know — and then stopping is correct.
+    assert.match(SOURCE, /if \(!shipped\) return false;/);
+  });
+
+  it("and only when the database was UNREACHABLE, never when it was locked", () => {
+    // A lock means another deploy is mid-migration. Pushing past that is the
+    // one thing this script has always refused to do.
+    assert.match(SOURCE, /if \(isUnreachable\(output\) && \(await nothingLeftToApply\(\)\)\) \{/);
+  });
+
+  it("says out loud why it let the deploy through", () => {
+    assert.match(SOURCE, /may be suspended or over quota/);
+  });
+
+  it("still fails shut when there is a migration waiting", () => {
+    // The old behaviour, unchanged, for the case it was written for.
+    assert.match(SOURCE, /this one is stopping rather than forcing it/);
+  });
+});
