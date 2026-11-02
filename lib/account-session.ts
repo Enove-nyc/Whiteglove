@@ -43,7 +43,15 @@ export function parseAccountSession(value?: string) {
   const encodedEmail = value.slice(0, separator);
   const signature = value.slice(separator + 1);
   if (!encodedEmail || !signature) return null;
-  const email = decodeURIComponent(encodedEmail);
+  // HMAC-SHA256 uses 43 base64url characters. Reject malformed input before
+  // decoding it or passing unequal byte lengths to timingSafeEqual.
+  if (!/^[A-Za-z0-9_-]{43}$/.test(signature)) return null;
+  let email: string;
+  try {
+    email = decodeURIComponent(encodedEmail);
+  } catch {
+    return null;
+  }
   const key = secret();
   // No secret, no valid session — nobody is authenticated rather than everybody.
   if (!key) return null;
