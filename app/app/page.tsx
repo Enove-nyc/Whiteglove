@@ -1,3 +1,4 @@
+import DevelopmentNotice from "@/components/DevelopmentNotice";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -124,6 +125,7 @@ export default async function AppPage({
             the door is a live code field rather than a bounce to nowhere. */}
         {staleResume && <ClientCodeMemory path={null} />}
         <Navbar />
+        <DevelopmentNotice />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <PageHeader
             eyebrow="The White Glove app"
@@ -241,6 +243,7 @@ export default async function AppPage({
     return (
       <main className="min-h-screen bg-[var(--cream)]">
         <Navbar />
+        <DevelopmentNotice />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">The White Glove app</p>
           {needsPass && selected ? (
@@ -291,6 +294,7 @@ export default async function AppPage({
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+        <DevelopmentNotice />
       <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
         <PageHeader
           eyebrow="The White Glove app"

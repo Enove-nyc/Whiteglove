@@ -1,3 +1,4 @@
+import DevelopmentNotice from "@/components/DevelopmentNotice";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -91,6 +92,7 @@ export default async function PricingPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
+      <DevelopmentNotice />
 
       <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
         {/* THE PRODUCT BEING PRICED IS NAMED, and it was not.
@@ -163,7 +165,7 @@ export default async function PricingPage() {
                     // nothing about money — never a placeholder, and never a
                     // note about why. See the header of this file.
                     <p className="mt-1 text-sm font-semibold text-stone-700">
-                      {card.oneTime ? "A single, one-time fee" : "A monthly subscription"}
+                      {card.oneTime ? "Planned one-time app upgrade" : "Planned subscription"}
                     </p>
                   )}
 
@@ -185,7 +187,7 @@ export default async function PricingPage() {
                   </ul>
 
                   <div className="mt-6">
-                    <LinkButton href="/account">View {card.name} options</LinkButton>
+                    <LinkButton href="https://www.whitegloveitineraries.com">Explore the development preview</LinkButton>
                   </div>
                 </div>
               );

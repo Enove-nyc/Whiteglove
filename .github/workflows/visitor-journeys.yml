@@ -45,7 +45,9 @@ jobs:
           cache: npm
       - run: sudo apt-get update -qq && sudo apt-get install -y redis-tools
       - run: npm ci
-      - run: npm install --no-save --package-lock=false @axe-core/playwright
+      - name: Complete regression suite
+        run: env -u DATABASE_URL -u UPSTASH_REDIS_REST_URL -u UPSTASH_REDIS_REST_TOKEN -u WHITE_GLOVE_SESSION_SECRET -u ADMIN_PASSWORD -u OWNER_EMAIL npm test
+      - run: npm install --ignore-scripts --no-save --package-lock=false @axe-core/playwright
       - run: npx playwright install --with-deps chromium
       - name: Start disposable stores and install schema
         run: |
@@ -53,10 +55,8 @@ jobs:
           sudo node scripts/ws-pg-bridge.mjs > /tmp/pg-bridge.log 2>&1 &
           node scripts/visitor-redis.mjs > /tmp/redis-rest.log 2>&1 &
           npx prisma migrate deploy
-      - name: Complete regression suite
-        run: env -u DATABASE_URL -u UPSTASH_REDIS_REST_URL -u UPSTASH_REDIS_REST_TOKEN -u WHITE_GLOVE_SESSION_SECRET -u ADMIN_PASSWORD -u OWNER_EMAIL npm test
       - run: npx tsc --noEmit
-      - run: npx eslint components/Navbar.tsx components/LoginForm.tsx components/DateField.tsx components/SampleItineraryViews.tsx app/pricing/page.tsx app/sample-itinerary/page.tsx app/packing/page.tsx app/offline/page.tsx components/PackingListPanel.tsx components/SiteTracker.tsx components/TravelAssistantBox.tsx app/app/page.tsx app/app/preview/page.tsx components/companion/CompanionApp.tsx data/companion-demo.ts components/ContentImportCandidateEditor.tsx
+      - run: npx eslint components/Navbar.tsx components/LoginForm.tsx components/DateField.tsx components/SampleItineraryViews.tsx app/pricing/page.tsx app/sample-itinerary/page.tsx app/packing/page.tsx app/offline/page.tsx components/PackingListPanel.tsx components/SiteTracker.tsx components/TravelAssistantBox.tsx app/app/page.tsx app/app/preview/page.tsx components/companion/CompanionApp.tsx data/companion-demo.ts components/ContentImportCandidateEditor.tsx app/page.tsx app/sources/page.tsx data/homepage-photos.ts components/HomepagePhotoCredits.tsx tests/homepage-sections.test.ts app/pricing/page.tsx app/account/page.tsx app/app/page.tsx lib/plan-billing-store.ts app/api/account/billing/checkout/route.ts lib/launch-status.ts components/DevelopmentNotice.tsx
       - run: npm run build
         env:
           NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/scripts/ws.crt

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
@@ -81,42 +82,22 @@ describe("what the owner settled about this page still holds", () => {
   });
 });
 
-describe("the six section cards are told apart above their labels", () => {
-  const PAGE = readFileSync("app/page.tsx", "utf8");
-
-  /**
-   * EVERY ONE OF THEM DREW THE SAME AEROPLANE. The card's picture was
-   * lib/default-photo.ts — the branded stand-in used wherever a section has no
-   * image of its own — so the page whose whole job is to show a first-time
-   * visitor the six shapes of the site showed them one picture six times.
-   * Nothing separated Kosher food from Heritage above the label, which is the
-   * only place a picture could have been doing any work.
-   *
-   * NOT SOLVED WITH PHOTOGRAPHS. Six licensed images is a purchase the owner
-   * has not made, and a stock stand-in is worse than the default it replaces —
-   * it claims to be somewhere. A mark on the site's own navy is what the
-   * design system already owns.
-   */
-  it("each carries its own icon", () => {
-    const block = PAGE.slice(PAGE.indexOf("const HOME_CATEGORIES"), PAGE.indexOf("export default async function Home"));
-    const icons = [...block.matchAll(/icon: "([a-z-]+)"/g)].map((match) => match[1]);
-    assert.equal(icons.length, 6, "not every section card has a mark");
-    assert.equal(new Set(icons).size, 6, `two sections share a mark: ${icons.join(", ")}`);
-  });
-
-  it("every icon it names is one the set actually draws", () => {
-    // A name with no drawing behind it renders an empty box, which is exactly
-    // the blank the default photo existed to prevent.
-    const block = PAGE.slice(PAGE.indexOf("const HOME_CATEGORIES"), PAGE.indexOf("export default async function Home"));
-    const icons = [...block.matchAll(/icon: "([a-z-]+)"/g)].map((match) => match[1]);
-    const set = readFileSync("components/icons/Icon.tsx", "utf8");
-    for (const icon of icons) {
-      assert.match(set, new RegExp(`^\\s*"?${icon}"?: \\(`, "m"), `Icon.tsx does not draw "${icon}"`);
-      assert.match(set, new RegExp(`\\| "${icon}"`), `"${icon}" is not in IconName`);
+describe("the six licensed section photographs", () => {
+  it("ships distinct photographic files with traceable commercial-use licenses", () => {
+    const photos = JSON.parse(readFileSync("data/homepage-photo-sources.json", "utf8")) as Array<{ key: string; file: string; license: string; licenseUrl: string; author: string; sourcePage: string; sha256: string }>;
+    assert.equal(photos.length, 6);
+    assert.equal(new Set(photos.map((photo) => photo.key)).size, 6);
+    assert.equal(new Set(photos.map((photo) => photo.sha256)).size, 6);
+    for (const photo of photos) {
+      assert.ok(["CC0", "CC BY 4.0", "CC BY-SA 4.0"].includes(photo.license), photo.key);
+      assert.equal(new URL(photo.sourcePage).hostname, "commons.wikimedia.org");
+      assert.equal(new URL(photo.licenseUrl).hostname, "creativecommons.org");
+      assert.ok(photo.author.trim());
+      assert.match(photo.file, /^\/photos\/homepage\/[a-z-]+\.webp$/);
+      const bytes = readFileSync("public" + photo.file);
+      assert.equal(bytes.toString("ascii", 0, 4), "RIFF");
+      assert.equal(bytes.toString("ascii", 8, 12), "WEBP");
+      assert.equal(createHash("sha256").update(bytes).digest("hex"), photo.sha256);
     }
-  });
-
-  it("no longer paints the same photograph behind all six", () => {
-    assert.doesNotMatch(PAGE, /backgroundImage: `url\(\$\{DEFAULT_PHOTO\}\)`/);
   });
 });
