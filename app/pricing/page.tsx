@@ -68,7 +68,6 @@ const WHAT_IT_DOES = [
 ] as const;
 
 export default async function PricingPage() {
-  const brand = await currentBrand();
   const offering = await readPlanOffering();
 
   // The same read the account page does, so the two pages can never quote

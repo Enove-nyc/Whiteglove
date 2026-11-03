@@ -11,14 +11,13 @@ export default function AccountInvitationsPanel() {
   const [link, setLink] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const load = useCallback(async () => {
-    try {
-      const response = await fetch("/api/admin/account-invitations", { cache: "no-store" });
+  const load = useCallback(() => fetch("/api/admin/account-invitations", { cache: "no-store" })
+    .then(async response => {
       const data = await response.json() as { invitations?: AccountInvitation[]; error?: string };
       if (!response.ok || !data.invitations) throw new Error(data.error || "Invitations could not be loaded.");
       setInvitations(data.invitations); setNow(Date.now());
-    } catch (error) { setMessage(error instanceof Error ? error.message : "Invitations could not be loaded."); }
-  }, []);
+    })
+    .catch(error => { setMessage(error instanceof Error ? error.message : "Invitations could not be loaded."); }), []);
   useEffect(() => { void load(); }, [load]);
 
   async function create(event: FormEvent<HTMLFormElement>) {

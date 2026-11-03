@@ -63,7 +63,7 @@ jobs:
           INVITE_INTEGRATION: '1'
       - run: npx next typegen
       - run: npx tsc --noEmit
-      - run: npx eslint lib/account-invitations.ts lib/account-store.ts app/api/account/register/route.ts app/api/account/invitation/route.ts app/join/page.tsx components/InvitationJoin.tsx components/LoginForm.tsx components/SignInGate.tsx app/login/page.tsx app/pricing/page.tsx lib/beta-notice.ts lib/account-invitation-owner.ts app/api/admin/account-invitations/route.ts components/AccountInvitationsPanel.tsx app/admin/accounts/page.tsx components/Navbar.tsx
+      - run: npx eslint components/TravelpayoutsScript.tsx lib/account-invitations.ts lib/account-store.ts app/api/account/register/route.ts app/api/account/invitation/route.ts app/join/page.tsx components/InvitationJoin.tsx components/LoginForm.tsx components/SignInGate.tsx app/login/page.tsx app/pricing/page.tsx lib/beta-notice.ts lib/account-invitation-owner.ts app/api/admin/account-invitations/route.ts components/AccountInvitationsPanel.tsx app/admin/accounts/page.tsx components/Navbar.tsx
       - run: npm run build
         if: contains(github.event.head_commit.message, '[validate visitors]') || github.event_name == 'workflow_dispatch'
         env:
