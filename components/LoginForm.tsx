@@ -174,9 +174,9 @@ export default function LoginForm({
 
     if (mode === "signup") {
       if (!invitationToken) { setMessage("New accounts require an invitation."); setSaving(false); return; }
-      if (!agreed) { setMessage("Please agree to the terms and the privacy policy to create an account."); return; }
+      if (!agreed) { setMessage("Please agree to the terms and the privacy policy to create an account."); setSaving(false); return; }
       const problem = passwordProblem(password);
-      if (problem) { setMessage(problem); return; }
+      if (problem) { setMessage(problem); setSaving(false); return; }
     }
     const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
     const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name, phone: contactPhone, invitationToken } : { email, password };
