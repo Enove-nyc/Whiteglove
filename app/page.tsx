@@ -179,9 +179,12 @@ export default async function Home() {
           so a screen reader lists "Where to stay" rather than "Explore" six
           times. */}
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+        <div className="flex items-center justify-between gap-4">
         <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
           Featured
         </h2>
+          <Link href="/sources#photography" className="inline-flex min-h-11 items-center text-xs text-stone-700 underline underline-offset-4">Photo credits</Link>
+        </div>
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {HOME_CATEGORIES.map((category) => (
             <li key={category.href}>
@@ -208,7 +211,6 @@ export default async function Home() {
             </li>
           ))}
         </ul>
-        <p className="mt-5 text-right text-xs text-stone-700"><Link href="/sources#photography" className="inline-flex min-h-11 items-center underline underline-offset-4">Photo credits</Link></p>
       </section>
 
       {/* ---- 3. The three ways in, as compact icon cards ------------------

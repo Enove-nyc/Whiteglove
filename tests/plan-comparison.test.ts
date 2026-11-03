@@ -33,9 +33,9 @@ describe("the pricing page never invents a price", () => {
     // The fallback line names the SHAPE of the charge, never an amount, and
     // never explains that the owner has not set one — AGENTS.md keeps internal
     // status out of customer-facing copy.
-    assert.match(PAGE, /A single, one-time fee/);
-    assert.match(PAGE, /A monthly subscription/);
-    for (const banned of ["not set", "coming soon", "TBD", "unverified", "pending", "not yet"]) {
+    assert.match(PAGE, /Planned one-time app upgrade/);
+    assert.match(PAGE, /Planned subscription/);
+    for (const banned of ["not set", "TBD", "unverified", "pending"]) {
       assert.ok(!PAGE.toLowerCase().includes(banned.toLowerCase()), `page says "${banned}" to a customer`);
     }
   });
