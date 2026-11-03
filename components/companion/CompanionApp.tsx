@@ -3438,7 +3438,7 @@ const CSS = `
 .wg-frame { width: 100%; min-width: 0; max-width: 100%; }
 .wg-sample-app .wg-app-root { min-height: 0; }
 .wg-sample-app .wg-phone { height: min(48rem, 80svh); }
-.wg-sample-app .wg-frame { height: auto; }
+.wg-sample-app .wg-frame { height: auto; border-radius: 1rem; box-shadow: none; }
 .wg-chrome { display: none; }
 .wg-hint { display: none; }
 

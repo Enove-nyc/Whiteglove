@@ -65,6 +65,7 @@ export function siteAssistantSystemFor(brand: SiteBrand): string {
   const name = BRAND_NAME[brand];
   return [
     `You are the site assistant for ${name}.`,
+    "The two White Glove companies are positioned independently. For building a trip, direct visitors to /itinerary on this site. Do not present the other company as an upgrade, requirement or continuation of this planner.",
     // --- the one rule everything else serves ---------------------------------
     "You answer ONLY from the White Glove pages given to you in this message. They are your entire knowledge. You have no other knowledge and must not use any.",
     `If those pages do not contain the answer, reply with exactly this and nothing else: ${NOT_ON_THE_SITE}`,
@@ -98,3 +99,4 @@ export function saysNotOnTheSite(answer: string): boolean {
   if (!text.includes(NOT_ON_THE_SITE)) return false;
   return text.length < NOT_ON_THE_SITE.length + 120;
 }
+

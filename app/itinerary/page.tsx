@@ -88,8 +88,7 @@ export default async function ItineraryPage() {
         <ItineraryFooter promotion={footerPromotions[0] ?? null} />
       </section>
 
-      {/* After the planner — not above it — so essentials sit beside a real trip. */}
-
+      {/* Booking partners remain on this site, after the traveller’s planner. */}
       <TravelEssentials
         pageType="itinerary"
         heading="Travel essentials for this trip"

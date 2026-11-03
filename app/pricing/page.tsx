@@ -68,6 +68,7 @@ const WHAT_IT_DOES = [
 ] as const;
 
 export default async function PricingPage() {
+  const brand = await currentBrand();
   const offering = await readPlanOffering();
 
   // The same read the account page does, so the two pages can never quote
@@ -94,18 +95,6 @@ export default async function PricingPage() {
       <DevelopmentNotice />
 
       <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
-        {/* THE PRODUCT BEING PRICED IS NAMED, and it was not.
-            BRAND_NAME[brand] put the reader's own domain in this sentence, so
-            on whiteglovekoshertravel.com it read "White Glove Kosher Travel is
-            where you build a trip, hand it to the person taking it, and stay
-            with them while they travel" — which is a description of the other
-            product. Kosher Travel does not hand anybody a trip and does not
-            travel with them; that is White Glove Itineraries, and these plans
-            are its plans on either domain.
-
-            Naming it here is the one-directional link the two products are
-            allowed: Kosher Travel may point at Itineraries. Nothing on the
-            other side points back. */}
         <PageHeader
           eyebrow="Plans and pricing"
           title="Your itinerary, built here."
@@ -191,14 +180,6 @@ export default async function PricingPage() {
             })}
           </div>
 
-          {/* AGENCY IS A DOOR, NOT A CARD WITH A PRICE ON IT.
-              A company with several advisers under one subscription is a real
-              customer and there is no settled price for one, so it gets a way
-              to start the conversation and no number — never a placeholder,
-              never "from", never a coming-soon badge on a fourth card
-              pretending to be the others. It sits under the three rather than
-              beside them, because it is not a thing to compare: it is what to
-              do when the three do not fit. */}
 
         </div>
       </section>
@@ -207,10 +188,9 @@ export default async function PricingPage() {
         <h2 className="text-xl font-bold text-[var(--navy)]">Questions worth answering first</h2>
         <dl className="mt-6 flex flex-col gap-6">
           <div>
-            <dt className="text-sm font-bold text-[var(--navy)]">Does my client need an account?</dt>
+            <dt className="text-sm font-bold text-[var(--navy)]">Do I need an account?</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              No. You send them a link that opens their trip and nothing else. There is no sign-up, no password, and
-              they cannot see anybody else&apos;s trip.
+              Yes. Sign in to build and save your itinerary, then return to it when your plans change.
             </dd>
           </div>
           <div>
@@ -228,8 +208,7 @@ export default async function PricingPage() {
           <div>
             <dt className="text-sm font-bold text-[var(--navy)]">Can I stop, or move to a smaller plan?</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              Yes, from your account page at any time — switch plan or stop altogether. It opens the same billing page
-              you would use to change your card, and the trips you have already built stay yours.
+              Existing subscribers can manage their billing from the account page. New purchases are not yet available. Your saved itineraries remain accessible.
             </dd>
           </div>
           <div>
