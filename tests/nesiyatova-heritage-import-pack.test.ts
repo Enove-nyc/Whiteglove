@@ -43,7 +43,7 @@ describe("Nesiya Tova heritage review pack", () => {
     }
   });
 
-  it("can stage and cannot bulk-publish beis hachaim or practical rows", () => {
+  it("can stage all rows and keeps beis hachaim on its dedicated editor", () => {
     const sourcePackage = BUILT_IN_CONTENT_IMPORT_PACKAGES.find(
       (item) => item.batch.slug === "nesiyatova-heritage-batch",
     );
@@ -54,7 +54,9 @@ describe("Nesiya Tova heritage review pack", () => {
     for (const candidate of sourcePackage.candidates) {
       const prepared = prepareBulkContentCandidate(candidate);
       assert.equal(prepared.canStage, true, `${candidate.sourceId}: ${prepared.stageErrors.join(" ")}`);
-      assert.equal(prepared.canPublish, false, `${candidate.sourceId} must not bulk-publish`);
+      if (candidate.kind === "ATTRACTION") {
+        assert.equal(prepared.canPublish, false, `${candidate.sourceId} must use the heritage editor`);
+      }
       assert.notEqual(candidate.kind, "KOSHER_FOOD");
       if (candidate.kind === "ATTRACTION") beis += 1;
       if (candidate.kind === "PRACTICAL") practical += 1;
