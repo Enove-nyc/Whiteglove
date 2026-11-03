@@ -53,6 +53,13 @@ for(const width of [1280,390]){
  });
  await ctx.close();
 }
+if(!isolated){
+ const ctx=await context(390);page=await ctx.newPage();
+ await scenario('cache refresh endpoint rejects unsigned notices',async()=>{const response=await ctx.request.post(origin+'/api/internal/content-cache',{data:{}});assert.equal(response.status(),401);});
+ await scenario('public review empty state remains available',async()=>{const response=await ctx.request.get(origin+'/api/reviews?placeKind=listing&placeRef=anonymous-live-verification-empty-place');assert.equal(response.status(),200);assert.deepEqual((await response.json()).reviews,[]);});
+ if(brand==='travel')await scenario('database-backed cemetery and town pages remain usable',async()=>{for(const path of ['/cemeteries/gorlice-baruch-halberstam','/uman']){await go(path);assert(!/application error|internal server error/i.test(await page.title()));assert(await page.locator('main').first().innerText());assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));}});
+ await ctx.close();
+}
 if(isolated){
  const ctx=await context(1280);page=await ctx.newPage();
  const email='owner@audit.local',password='Audit-local-pass-1!';
