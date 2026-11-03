@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   isolated:
-    if: contains(github.event.head_commit.message, '[validate visitors]') || github.event_name == 'workflow_dispatch'
+    if: contains(github.event.head_commit.message, '[validate visitors]') || contains(github.event.head_commit.message, '[validate browser]') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -47,6 +47,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt-get install -y redis-tools
       - run: npm ci
       - name: Complete regression suite
+        if: ${{ !contains(github.event.head_commit.message, '[validate browser]') }}
         run: env -u DATABASE_URL -u UPSTASH_REDIS_REST_URL -u UPSTASH_REDIS_REST_TOKEN -u WHITE_GLOVE_SESSION_SECRET -u ADMIN_PASSWORD -u OWNER_EMAIL npm test
       - run: npm install --ignore-scripts --no-save --package-lock=false @axe-core/playwright
       - run: npx playwright install --with-deps chromium

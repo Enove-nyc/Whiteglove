@@ -93,7 +93,7 @@ if(isolated){
    const persisted=await guest.request.get(origin+'/api/account/itinerary');const data=await persisted.json();assert.equal(data.itinerary.activities[0].name,'Morning walk in Rome');
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    const screenshot=await page.screenshot({path:out+'/planner-390.jpg',type:'jpeg',quality:60,fullPage:true});console.log('SITE_PREVIEW_IMAGE|'+brand+'|planner-390.jpg|'+screenshot.toString('base64'));
-   const print=await guest.request.get(origin+'/itinerary/print');assert.equal(print.status(),200);assert.match(await print.text(),/Morning walk in Rome/);
+   const printPage=await guest.newPage();const print=await printPage.goto(origin+'/itinerary/print');assert.equal(print.status(),200);await printPage.getByText('Morning walk in Rome',{exact:true}).first().waitFor({timeout:15000});await printPage.close();
   }finally{await guest.close();page=ownerPage;}
  });
  await scenario('logout invalidates account session',async()=>{assert.equal((await api('/api/account/logout',{})).status,200);const me=await api('/api/account/me');assert(!me.json.signedIn&&!me.json.account?.email);});
