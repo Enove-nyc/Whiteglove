@@ -54,7 +54,7 @@ jobs:
           npx prisma migrate deploy
       - run: npx tsx --test tests/account-plans.test.ts tests/account-limits.test.ts tests/plan-billing.test.ts
       - run: npx tsc --noEmit
-      - run: npx eslint components/Navbar.tsx components/LoginForm.tsx components/DateField.tsx components/SampleItineraryViews.tsx app/pricing/page.tsx app/sample-itinerary/page.tsx app/packing/page.tsx app/offline/page.tsx components/PackingListPanel.tsx components/SiteTracker.tsx components/TravelAssistantBox.tsx app/app/page.tsx app/app/preview/page.tsx
+      - run: npx eslint components/Navbar.tsx components/LoginForm.tsx components/DateField.tsx components/SampleItineraryViews.tsx app/pricing/page.tsx app/sample-itinerary/page.tsx app/packing/page.tsx app/offline/page.tsx components/PackingListPanel.tsx components/SiteTracker.tsx components/TravelAssistantBox.tsx app/app/page.tsx app/app/preview/page.tsx components/companion/CompanionApp.tsx data/companion-demo.ts
       - run: npm run build
         env:
           NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/scripts/ws.crt
@@ -79,6 +79,7 @@ jobs:
         if: failure()
         run: cat /tmp/visitor-app.log /tmp/pg-bridge.log /tmp/redis-rest.log
   live:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
