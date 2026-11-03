@@ -137,7 +137,7 @@ export default function TravelAssistantBox({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="travel-assistant-panel"
-        aria-label={ASSISTANT_HOME_LABEL}
+        aria-label="AI assistant — ask a travel question"
         title={ASSISTANT_HOME_LABEL}
         className="inline-flex min-h-11 items-center gap-2 rounded-md border border-[var(--gold-light)] bg-[#FAF8F3] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
       >
