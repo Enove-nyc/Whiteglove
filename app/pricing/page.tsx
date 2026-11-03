@@ -98,7 +98,7 @@ export default async function PricingPage() {
         <PageHeader
           eyebrow="Plans and pricing"
           title="Your itinerary, built here."
-          description="Build your own itinerary with White Glove Kosher Travel: organise flights, places to stay and activities in one day-by-day plan. New paid options are not yet available."
+          description="Build your own itinerary with White Glove Kosher Travel: organise flights, places to stay and activities in one day-by-day plan."
         />
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
@@ -151,7 +151,7 @@ export default async function PricingPage() {
                     // nothing about money — never a placeholder, and never a
                     // note about why. See the header of this file.
                     <p className="mt-1 text-sm font-semibold text-stone-700">
-                      {card.oneTime ? "Planned one-time app upgrade" : "Planned subscription"}
+                      {card.oneTime ? "App access for your own trip" : "Adviser account"}
                     </p>
                   )}
 
@@ -208,7 +208,7 @@ export default async function PricingPage() {
           <div>
             <dt className="text-sm font-bold text-[var(--navy)]">Can I stop, or move to a smaller plan?</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              Existing subscribers can manage their billing from the account page. New purchases are not yet available. Your saved itineraries remain accessible.
+              Existing subscribers can manage their billing from the account page. New accounts are available by invitation. Your saved itineraries remain accessible.
             </dd>
           </div>
           <div>
@@ -241,4 +241,5 @@ export default async function PricingPage() {
     </main>
   );
 }
+
 

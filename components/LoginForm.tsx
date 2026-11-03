@@ -70,10 +70,14 @@ export default function LoginForm({
   next,
   googleAvailable = false,
   googleProblem,
+  invitationToken,
+  invitationIdentity,
   onSuccess,
-  initialMode = "signup",
+  initialMode = "login",
 }: {
   phoneSignupAvailable?: boolean;
+  invitationToken?: string;
+  invitationIdentity?: string;
   /** Where to go once they are in — set when they were sent here mid-task. */
   next?: string;
   /** Whether the Google button can work. Off unless both keys are set. */
@@ -87,23 +91,11 @@ export default function LoginForm({
    * that signing in worked.
    */
   onSuccess?: () => void;
-  /**
-   * Which tab the form opens on.
-   *
-   * /login OPENS ON LOG IN, because that is what the page is called and what
-   * somebody typing it is there to do — a returning visitor was landing on a
-   * registration form and had to notice a tab to get past it. The password
-   * recovery link lives under the password on that tab too, so it was a
-   * screen behind as well.
-   *
-   * The sign-in GATE keeps signing up as its default: it appears when
-   * somebody without an account tries to save something, where creating one
-   * is the likelier next step. Two situations, two answers, one component.
-   */
+  /** Public pages open on login; an invitation may open account creation. */
   initialMode?: "signup" | "login";
 }) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(invitationIdentity ?? "");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -112,7 +104,7 @@ export default function LoginForm({
   // A way to reach them, not a way to sign in. Never required.
   const [contactPhone, setContactPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">(initialMode);
+  const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">(invitationToken && initialMode === "signup" ? "signup" : "login");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   // Signing in was a bare await fetch too. Losing the connection on the
@@ -181,12 +173,13 @@ export default function LoginForm({
     }
 
     if (mode === "signup") {
+      if (!invitationToken) { setMessage("New accounts require an invitation."); setSaving(false); return; }
       if (!agreed) { setMessage("Please agree to the terms and the privacy policy to create an account."); return; }
       const problem = passwordProblem(password);
       if (problem) { setMessage(problem); return; }
     }
     const endpoint = mode === "signup" ? "/api/account/register" : mode === "login" ? "/api/account/login" : "/api/account/verify";
-    const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name, phone: contactPhone } : { email, password };
+    const payload = mode === "verify" ? { email, code } : mode === "signup" ? { email, password, name, phone: contactPhone, invitationToken } : { email, password };
     const result = await saveJson<Delivery>(
       endpoint,
       { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
@@ -222,7 +215,7 @@ export default function LoginForm({
       {/* A LINK, not a form. Google's flow is a redirect this server starts,
           and the sign-in page is already one <form> — a second one inside it
           would be dropped by the browser. */}
-      {googleAvailable && (mode === "signup" || mode === "login") && (
+      {googleAvailable && mode === "login" && (
         <div>
           {googleProblem && (
             <p className="mb-4 border border-red-300 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{googleProblem}</p>
@@ -253,12 +246,7 @@ export default function LoginForm({
         </div>
       )}
 
-      {(mode === "signup" || mode === "login") && (
-        <div className="grid grid-cols-2 border border-[var(--gold-light)] p-1">
-          <button type="button" onClick={() => { setMode("signup"); setMessage(""); }} className={`min-h-11 px-4 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "signup" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Sign up</button>
-          <button type="button" onClick={() => { setMode("login"); setMessage(""); }} className={`min-h-11 px-4 py-2 text-xs font-bold uppercase tracking-[0.13em] transition ${mode === "login" ? "bg-[var(--navy)] text-white" : "text-[var(--navy)]"}`}>Log in</button>
-        </div>
-      )}
+      {!invitationToken && mode === "login" && <p className="text-sm leading-6 text-stone-700">New accounts are available by invitation.</p>}
 
       {mode === "signup" && (
         <label className="block text-sm font-semibold text-[var(--navy)]">Your name
@@ -270,6 +258,7 @@ export default function LoginForm({
         {phoneSignupAvailable ? "Email address or phone number" : "Email address"}
         <input
           value={email}
+          readOnly={mode === "signup" && Boolean(invitationIdentity)}
           onChange={(event) => setEmail(event.target.value)}
           // Not type="email" once numbers are allowed: the browser would
           // refuse to submit a perfectly good phone number.

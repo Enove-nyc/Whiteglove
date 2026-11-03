@@ -268,7 +268,6 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
             </span>
           </Link>
 
-          {!isItineraries && <span role="status" aria-label="Demo mode — in development" className="mr-auto shrink-0 rounded-full border border-[#e7d7b1] bg-[#fff5df] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-[#76511d] lg:mr-1">Demo</span>}
 
           {/* The four dropdowns. Hidden below lg (~1024px), where the hamburger
               carries the same categories as an accordion. */}
@@ -511,5 +510,6 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
     </>
   );
 }
+
 
 

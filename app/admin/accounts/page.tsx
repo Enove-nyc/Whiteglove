@@ -1,4 +1,6 @@
 import Link from "next/link";
+import AccountInvitationsPanel from "@/components/AccountInvitationsPanel";
+import { accountInvitationOwner } from "@/lib/account-invitation-owner";
 import AdminAccountsTable from "@/components/AdminAccountsTable";
 import PlanRequests from "@/components/PlanRequests";
 import { listPlanRequests } from "@/lib/account-plan-store";
@@ -9,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminAccountsPage() {
   const available = hasAccountStorage();
+  const mayInvite = Boolean(await accountInvitationOwner());
   const [accounts, requests] = available
     ? await Promise.all([listAllAccounts(), listPlanRequests()])
     : [[], []];
@@ -36,6 +39,7 @@ export default async function AdminAccountsPage() {
           </div>
         ) : (
           <>
+            {mayInvite ? <AccountInvitationsPanel /> : <p className="mb-6 text-sm leading-7 text-stone-700">Only the owner’s verified account can create invitation links. <Link href="/login?next=%2Fadmin%2Faccounts" className="font-semibold text-[var(--navy)] underline">Log in</Link> with that account to continue.</p>}
             <div className="mb-6 flex flex-wrap gap-6 border border-[var(--gold-light)] bg-[var(--cream-deep)] p-5">
               <div><p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{accounts.length}</p><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Total accounts</p></div>
               <div><p className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">{verified}</p><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500">Email-verified</p></div>
@@ -60,3 +64,4 @@ export default async function AdminAccountsPage() {
     </>
   );
 }
+
