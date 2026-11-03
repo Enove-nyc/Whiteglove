@@ -1,0 +1,33 @@
+name: Live visitor verification
+on:
+  push:
+    branches: [codex/live-site-verification]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        brand: [itineraries]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm install --ignore-scripts --no-save --package-lock=false @axe-core/playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/visitor-journeys.mjs
+        env:
+          AUDIT_BRAND: ${{ matrix.brand }}
+          AUDIT_FAIL_ON_FINDINGS: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-verification-${{ matrix.brand }}
+          path: journey-results/
+          retention-days: 7
