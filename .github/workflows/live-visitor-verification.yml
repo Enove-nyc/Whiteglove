@@ -17,11 +17,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npm install --ignore-scripts --no-save --package-lock=false @axe-core/playwright
-      - run: npx playwright install --with-deps chromium
-      - run: node scripts/visitor-journeys.mjs
+      - name: Install only the browser verification dependencies
+        run: |
+          mkdir -p /tmp/wg-live-checks
+          cp scripts/visitor-journeys.mjs /tmp/wg-live-checks/visitor-journeys.mjs
+          npm install --prefix /tmp/wg-live-checks --ignore-scripts --no-audit --no-fund playwright@1.62.0 @axe-core/playwright
+          /tmp/wg-live-checks/node_modules/.bin/playwright install --with-deps chromium
+      - run: node /tmp/wg-live-checks/visitor-journeys.mjs
         env:
           AUDIT_BRAND: ${{ matrix.brand }}
           AUDIT_FAIL_ON_FINDINGS: '1'
@@ -31,3 +33,4 @@ jobs:
           name: live-verification-${{ matrix.brand }}
           path: journey-results/
           retention-days: 7
+
