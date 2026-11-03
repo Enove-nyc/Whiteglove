@@ -26,7 +26,8 @@ test("a refused publish says the edits were kept, one reason per line", () => {
 });
 
 test("the destination is a picker of real towns, and the guidance links to the town page", () => {
-  assert.match(editor, /<select name="destinationSlug"/);
+  assert.match(editor, /SearchableSelect/);
+  assert.match(editor, /type="hidden" name="destinationSlug" value=\{destinationSlug\}/);
   assert.match(editor, /\/admin\/destinations\?slug=/);
   assert.match(editor, /Link verified public listing<\/strong>/);
 });

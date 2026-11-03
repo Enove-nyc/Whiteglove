@@ -75,7 +75,7 @@ describe("kosher food finder review pack", () => {
       assert.equal(candidate.kind, "KOSHER_FOOD");
       assert.equal(prepared.canStage, true, `${candidate.sourceId}: ${prepared.stageErrors.join(" ")}`);
       assert.equal(prepared.canPublish, false);
-      assert.ok(prepared.publishBlockers.some((blocker) => /destination editor/i.test(blocker)));
+      assert.ok(prepared.publishBlockers.some((blocker) => /kosher status|Checked.*kosher/i.test(blocker)));
       assert.equal(prepared.kosherClaim, "reported");
       assert.ok(prepared.kosherSourceUrl?.startsWith("http"));
     }

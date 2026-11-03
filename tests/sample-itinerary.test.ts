@@ -80,7 +80,7 @@ describe("the sample itinerary", () => {
   it("SAYS IT IS A SAMPLE, on the page and in the data", () => {
     assert.match(SAMPLE_NOTICE, /sample, not a booking/i);
     assert.match(SAMPLE_PAGE, /SAMPLE_NOTICE/);
-    assert.match(SAMPLE_PAGE, /as it arrives/i);
+    assert.match(SAMPLE_PAGE, /A week in Rome/i);
   });
 
   it("shows the parts an ordinary itinerary gets wrong", () => {
@@ -236,3 +236,4 @@ describe("the sample is the trip, not only the printout", () => {
     assert.match(SAMPLE_PAGE, /The same week, three ways/);
   });
 });
+

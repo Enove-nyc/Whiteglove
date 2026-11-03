@@ -36,7 +36,7 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * tools) and sign-out in place and drops only the four public categories.
  */
 
-export default function Navbar({ brand: brandProp, minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
+export default function Navbar({ brand: brandProp, minimal = false, bottomBar = true }: { brand?: "kosher" | "itineraries"; minimal?: boolean; bottomBar?: boolean } = {}) {
   /**
    * WHICH BRAND THIS IS, DECIDED AS EARLY AS IT CAN BE.
    *
@@ -153,9 +153,10 @@ export default function Navbar({ brand: brandProp, minimal = false }: { brand?: 
   // set only while Navbar is mounted, so /admin — which never renders this
   // component — is never affected.
   useEffect(() => {
+    if (!bottomBar) return;
     document.body.classList.add("wg-has-mobile-bar");
     return () => document.body.classList.remove("wg-has-mobile-bar");
-  }, []);
+  }, [bottomBar]);
 
   // The header becomes slightly smaller once the page has moved under it —
   // a small cue that it's the same bar, not a different one.
@@ -262,7 +263,7 @@ export default function Navbar({ brand: brandProp, minimal = false }: { brand?: 
             {/* Shown from 360px: a 390px phone is the common case, and hiding
                 the site's own name there left the header as a bare mark. */}
             <span className="hidden flex-col leading-none min-[360px]:flex">
-              <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">White Glove</span>
+              <span className="font-[family-name:var(--font-display)] text-lg text-[var(--navy)]">White Glove{" "}</span>
               <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{isItineraries ? "Itineraries" : "Kosher Travel"}</span>
             </span>
           </Link>
@@ -347,7 +348,7 @@ export default function Navbar({ brand: brandProp, minimal = false }: { brand?: 
                             role="menuitem"
                             href={link.href}
                             aria-current={linkCurrent ? "page" : undefined}
-                            aria-label={link.description}
+                            aria-description={link.description}
                             title={link.description}
                             onClick={closeAll}
                             className={`flex min-h-11 items-center px-4 py-2 text-sm transition ${
@@ -504,7 +505,8 @@ export default function Navbar({ brand: brandProp, minimal = false }: { brand?: 
         )}
       </nav>
       <SitePromotions />
-      <MobileBottomBar signedIn={signedIn} />
+      {bottomBar && <MobileBottomBar signedIn={signedIn} />}
     </>
   );
 }
+

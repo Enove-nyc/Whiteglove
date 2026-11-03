@@ -1,3 +1,4 @@
+import DevelopmentNotice from "@/components/DevelopmentNotice";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -123,7 +124,8 @@ export default async function AppPage({
         {/* A remembered code that no longer opens a trip clears itself here, so
             the door is a live code field rather than a bounce to nowhere. */}
         {staleResume && <ClientCodeMemory path={null} />}
-        <Navbar />
+        <Navbar bottomBar={false} />
+        <DevelopmentNotice />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <PageHeader
             eyebrow="The White Glove app"
@@ -143,9 +145,11 @@ export default async function AppPage({
             </div>
           </div>
 
+          <p className="text-sm leading-6 text-stone-700">Not sure what it looks like? <Link href="/app/preview" className="font-semibold text-[var(--navy)] underline">Open a sample trip</Link> — a made-up family’s week, shown in full.</p>
+
           <div className="rounded-2xl border border-[var(--gold-light)] bg-white p-6">
             <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-              Travel adviser or Gold member?
+              Travel adviser or member?
             </h2>
             <p className="mt-1 text-sm leading-6 text-stone-600">
               Log in to open your own trips in the app.
@@ -238,7 +242,8 @@ export default async function AppPage({
     const needsPass = Boolean(selected) && !covered;
     return (
       <main className="min-h-screen bg-[var(--cream)]">
-        <Navbar />
+        <Navbar bottomBar={false} />
+        <DevelopmentNotice />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">The White Glove app</p>
           {needsPass && selected ? (
@@ -288,7 +293,8 @@ export default async function AppPage({
   // true.
   return (
     <main className="min-h-screen bg-[var(--cream)]">
-      <Navbar />
+      <Navbar bottomBar={false} />
+        <DevelopmentNotice />
       <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
         <PageHeader
           eyebrow="The White Glove app"
@@ -323,3 +329,4 @@ export default async function AppPage({
     </main>
   );
 }
+

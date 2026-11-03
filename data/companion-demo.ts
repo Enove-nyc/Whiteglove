@@ -132,6 +132,8 @@ export type CompanionTrip = {
    * concierge backend exists, a real trip can carry it too.
    */
   concierge: boolean;
+  /** Public demo shown as the traveller receives it; hide showcase role/mode switches. */
+  previewAsClient?: boolean;
   /** The trip's own id, for the advisor's "add a boarding pass or ticket"
    *  control on the wallet — only set on a real, wired trip. */
   tripId?: string;

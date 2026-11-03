@@ -52,7 +52,7 @@ export default async function PackingPage() {
         <div className="mt-8">
           <PackingListPanel gear={shelf} signedIn={signedIn} />
         </div>
-        {amazon && <p className="mt-8 text-xs leading-5 text-stone-500">{AMAZON_DISCLOSURE}</p>}
+        {amazon && <p className="mt-8 text-xs leading-5 text-stone-700">{AMAZON_DISCLOSURE}</p>}
       </section>
       <Footer />
     </main>

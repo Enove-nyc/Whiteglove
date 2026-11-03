@@ -691,7 +691,8 @@ export default function CompanionApp({
   }
 
   const hasConcierge = trip.concierge;
-  const isConcierge = hasConcierge && st.tmode === "concierge";
+  const showcaseSwitches = hasConcierge && !trip.previewAsClient;
+  const isConcierge = hasConcierge && (trip.previewAsClient || st.tmode === "concierge");
   const isGuideMode = !isConcierge;
   /**
    * A REAL advisor thread exists (hasMessages), as opposed to the showcase's
@@ -752,7 +753,7 @@ export default function CompanionApp({
   const liveAlerts = trip.liveAlerts ?? [];
   const unacknowledgedAlerts = liveAlerts.filter((a) => !a.acknowledged);
   const advisorTrips = trip.advisorTrips ?? [];
-  const advisorHome = hasConcierge && st.role === "advisor" && st.screen === "home";
+  const advisorHome = showcaseSwitches && st.role === "advisor" && st.screen === "home";
 
   const titles: Record<Screen, string> = {
     home: trip.homeTitle,
@@ -833,7 +834,7 @@ export default function CompanionApp({
   // You — so a real trip's Guide notes live inside the You tab (see
   // guideSection below) rather than getting a tab of their own.
   const tabDefs: [Screen, string][] = [["home", "Trip"]];
-  if (hasConcierge) tabDefs.push([conciergeTabScreen, isGuideMode ? "Guide" : "Concierge"]);
+  if (hasConcierge) tabDefs.push([conciergeTabScreen, trip.previewAsClient ? "Advisor" : isGuideMode ? "Guide" : "Concierge"]);
   if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", advisorInbox ? "Messages" : "Advisor"]);
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
@@ -1605,7 +1606,7 @@ export default function CompanionApp({
       {/* Trip kind — Concierge or Guide — lives here on the phone, where the
           desktop showcase has it as a toolbar above the frame. Only when a
           live advisor is attached; a wired trip is read one way. */}
-      {hasConcierge && (
+      {showcaseSwitches && (
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <div style={{ ...kicker(NAVY), paddingLeft: 4 }}>How you are reading this trip</div>
           <div style={{ display: "flex", gap: 6, padding: 5, background: "#C7BFB1", borderRadius: 14, alignSelf: "flex-start" }}>
@@ -1627,7 +1628,7 @@ export default function CompanionApp({
               ? "The advisor side: the trips you are holding today, and the one that needs a decision from you."
               : "The trip is in your name. Two others can look at it; nobody but you can change it."}
         </p>
-        {hasConcierge && (
+        {showcaseSwitches && (
           <div style={{ display: "flex", gap: 6, padding: 5, background: "rgba(255,255,255,.8)", borderRadius: 14, alignSelf: "flex-start" }}>
             {roleOpts.map((r) => (
               <button key={r.id} onClick={r.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, background: r.bg, color: r.fg }}>{r.label}</button>
@@ -1799,7 +1800,7 @@ export default function CompanionApp({
           <div className="wg-chrome-intro">
             <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#C6A15B" }}>White Glove · app</div>
           </div>
-          {hasConcierge && (
+          {showcaseSwitches && (
             <div className="wg-toolbar-group">
               <div className="wg-toolbar-label">Trip kind</div>
               <div className="wg-toolbar">
@@ -1816,7 +1817,7 @@ export default function CompanionApp({
         <div className="wg-frame">{phone}</div>
       </div>
 
-      {hasConcierge && (
+      {showcaseSwitches && (
         <p className="wg-hint">Try it: open the rain notice, pick one of the two afternoons, then look at Tuesday again. The day, the chat and the notice all move together. Switch to the advisor side under <strong style={{ fontWeight: 600, color: "#D8BC7A" }}>You</strong>.</p>
       )}
     </div>
@@ -3433,8 +3434,11 @@ const CSS = `
 
 /* Phone: full screen on a phone, a device in a frame on a desktop. */
 .wg-phone { height: 100dvh; width: 100%; }
-.wg-stage { display: flex; justify-content: center; }
-.wg-frame { width: 100%; }
+.wg-stage { display: flex; justify-content: center; min-width: 0; max-width: 100%; }
+.wg-frame { width: 100%; min-width: 0; max-width: 100%; }
+.wg-sample-app .wg-app-root { min-height: 0; }
+.wg-sample-app .wg-phone { height: min(48rem, 80svh); }
+.wg-sample-app .wg-frame { height: auto; border-radius: 1rem; box-shadow: none; }
 .wg-chrome { display: none; }
 .wg-hint { display: none; }
 
@@ -3456,3 +3460,4 @@ const CSS = `
   .wg-hint { display: block; max-width: 620px; margin: 0; text-align: center; font-size: 13px; line-height: 1.6; color: #cdd6dd; text-wrap: pretty; }
 }
 `;
+
