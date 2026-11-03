@@ -12,6 +12,7 @@ import {
 import type { ContentImportCandidateView } from "@/lib/content-imports";
 import { reviewContentImportCandidateAction } from "@/app/admin/imports/actions";
 import ListingCategoryField from "@/components/ListingCategoryField";
+import SearchableSelect from "@/components/SearchableSelect";
 import { normalizeListingCategory } from "@/data/listing-categories";
 
 const fieldClass = "mt-1 w-full border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)]";
@@ -66,6 +67,7 @@ export default function ContentImportCandidateEditor({ candidate, destinations =
   // Which town it is linked to, kept in state so the guidance below can point
   // straight at that town's editor rather than tell the owner to go and find it.
   const [destinationSlug, setDestinationSlug] = useState(candidate.destinationSlug ?? "");
+  const destinationPickerId = `candidate-destination-${candidate.id}`;
   const pathname = usePathname();
   // The chosen town's editor — written for whichever hostname we are on.
   const townEditor = destinationSlug ? adminHref(`/admin/destinations?slug=${encodeURIComponent(destinationSlug)}`, pathname) : null;
@@ -153,21 +155,23 @@ export default function ContentImportCandidateEditor({ candidate, destinations =
             <input {...bind("country")} required className={fieldClass} />
           </label>
           {(kind === "PRACTICAL" || kind === "KOSHER_FOOD" || kind === "PLACE_TO_STAY") && (
-            <label className={labelClass}>
-              Destination — the town page this goes on
-              <select name="destinationSlug" value={destinationSlug} onChange={(event) => setDestinationSlug(event.target.value)} className={fieldClass}>
-                <option value="">— same as the city above —</option>
-                {destinations.map((d) => (
-                  <option key={d.slug} value={d.slug}>{d.city}, {d.country}</option>
-                ))}
-                {destinationSlug && !destinations.some((d) => d.slug === destinationSlug) && (
-                  <option value={destinationSlug}>{destinationSlug}</option>
-                )}
-              </select>
-              <span className="mt-1 block text-xs font-normal normal-case tracking-normal text-stone-500">
-                Optional. Left as is, it goes on the page for {values.city || "that city"} — and if there is no page for it yet, one is made when you publish.
-              </span>
-            </label>
+            <div>
+              <label htmlFor={destinationPickerId} className={labelClass}>Destination — the town page this goes on</label>
+              <input type="hidden" name="destinationSlug" value={destinationSlug} />
+              <SearchableSelect
+                id={destinationPickerId}
+                value={destinationSlug}
+                onChange={setDestinationSlug}
+                className="mt-1"
+                placeholder="Search for a destination"
+                options={[
+                  { value: "", label: "Same as the city above" },
+                  ...destinations.map((d) => ({ value: d.slug, label: d.city, hint: d.country, keywords: d.slug })),
+                  ...(destinationSlug && !destinations.some((d) => d.slug === destinationSlug) ? [{ value: destinationSlug, label: destinationSlug }] : []),
+                ]}
+              />
+              <p className="mt-1 text-xs leading-6 text-stone-700">Optional. Left as is, it goes on the page for {values.city || "that city"} — and if there is no page for it yet, one is made when you publish.</p>
+            </div>
           )}
         </section>
 
