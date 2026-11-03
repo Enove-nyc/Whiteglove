@@ -28,7 +28,7 @@ const NO_AUTH_NEEDED = new Set([
 // list, so two genuinely guarded routes read as unguarded here for months and
 // the suite sat red — which is the worst state for a tripwire: a REAL
 // unguarded route would have arrived as one more line of familiar noise.
-const GUARD = /isAdmin\(|isValidAccessToken\(|requireAdmin\(|\badmin\(request\)|currentAdmin\(/;
+const GUARD = /isAdmin\(|isValidAccessToken\(|requireAdmin\(|\badmin\(request\)|currentAdmin\(|accountInvitationOwner\(/;
 const ADMIN_ACTIONS = ["app/admin/add/actions.ts", "app/admin/kevarim/actions.ts", "app/admin/shomrim/actions.ts", "app/admin/destinations/actions.ts", "app/admin/pages/actions.ts", "app/admin/directory/actions.ts"];
 
 function routeFiles(dir: string): string[] {
@@ -91,7 +91,7 @@ describe("admin authorisation", () => {
       // Two ways to check the same cookie: isValidAccessToken("admin", …)
       // inline, or currentAdmin() — which calls exactly that against the same
       // jar (lib/admin-current.ts) and additionally resolves who it is.
-      const checksIt = /isValidAccessToken\(\s*["']admin["']/.test(source) || /currentAdmin\(/.test(source);
+      const checksIt = /isValidAccessToken\(\s*["']admin["']/.test(source) || /currentAdmin\(/.test(source) || (/accountInvitationOwner\(/.test(source) && /currentAdmin\(/.test(readFileSync("lib/account-invitation-owner.ts", "utf8")));
       assert.ok(checksIt, `${rel} does not verify the admin cookie — every admin route must`);
     });
 
@@ -188,3 +188,4 @@ describe("secrets never reach the browser", () => {
     }
   });
 });
+
