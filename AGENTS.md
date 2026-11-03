@@ -158,7 +158,7 @@ The immediate public-site focus is White Glove Kosher Travel. Its homepage keeps
 
 ## Owner direction — 3 November 2026, independent companies
 
-The owner now wants White Glove Kosher Travel and White Glove Itineraries positioned as two separate companies. Kosher Travel must offer a complete self-service itinerary section on its own domain; do not funnel travellers into Itineraries or describe it as the fuller planner. This supersedes the earlier one-company/one-way marketing handoff. Existing shared account and trip data must be preserved; separating authentication, stores and billing requires a reviewed migration, not a silent namespace or credential change.
+The owner now wants White Glove Kosher Travel and White Glove Itineraries positioned as two separate companies. Kosher Travel must offer a complete self-service itinerary section on its own domain; do not funnel travellers into Itineraries or describe it as the fuller planner. This supersedes the earlier one-company/one-way marketing handoff. The owner explicitly chose to KEEP the current shared login details and trips. The two company identities share the existing customer backend. Do not split account namespaces, migrate trips, or reopen the shared-account decision.
 
 Use concise, professional development copy: the company is in development, preparing for launch, and looks forward to welcoming visitors soon. Do not describe the website as what the final product will look like. Keep the full site available and purchases closed until launch is explicitly approved. Real examples may remain clearly labelled as samples.
 
