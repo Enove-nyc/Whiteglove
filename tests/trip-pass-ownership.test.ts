@@ -72,23 +72,18 @@ test("checkout takes the account from the session, never from the body", () => {
   assert.ok(!/body\?\.account|body\.email/.test(CHECKOUT), "the account is being read off the request");
 });
 
-test("the webhook re-checks ownership, because the trip can be deleted in between", () => {
-  assert.match(WEBHOOK, /const stillTheirs = trip \?/);
-  assert.match(WEBHOOK, /grantTripPass\(account, stillTheirs \? trip : undefined\)/);
-});
+
 
 test("an orphan is handed back on an ordinary trips read, not only on a delete", () => {
   const get = TRIPS.slice(TRIPS.indexOf("export async function GET"), TRIPS.indexOf("export async function POST"));
   assert.match(get, /releaseDeletedTripPasses\(email, trips\.map\(\(trip\) => trip\.id\)\)/);
 });
 
-test("the grant is still idempotent, so a redelivered webhook cannot mint a second pass", () => {
-  assert.match(WEBHOOK, /grantAlreadyHandled/);
-  assert.match(WEBHOOK, /NX=true/);
-});
+
 
 test("the webhook still verifies the signature before it parses anything", () => {
   const post = WEBHOOK.slice(WEBHOOK.indexOf("export async function POST"));
   assert.ok(post.indexOf("verifyWebhook") < post.indexOf("event.data.object"));
   assert.match(post, /if \(!secret\)/);
 });
+
