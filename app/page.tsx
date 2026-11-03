@@ -121,7 +121,7 @@ export default async function Home() {
   ]);
 
   return (
-    <main className="min-h-screen overflow-x-clip bg-[var(--cream)] text-[var(--ink)]">
+    <main className="wg-travel-home min-h-screen overflow-x-clip bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData data={website()} />
       <SearchMemory />
       <Navbar />
@@ -129,11 +129,11 @@ export default async function Home() {
       {/* ---- 1. The hero: one place, one search ---------------------------
           NO overflow-hidden on this section — the search dropdown is
           absolutely positioned and reaches below the hero's edge. */}
-      <section className="relative bg-[var(--navy)] px-5 py-14 text-white sm:px-8 sm:py-20">
+      <section className="wg-travel-hero relative bg-[var(--navy)] px-5 py-14 text-white sm:px-8 sm:py-20">
         {/* The photograph slot: wash first, then the navy overlay that keeps
             the words readable over whatever eventually sits underneath it. */}
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#193F46] to-[#193F46]" />
-        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgba(13,25,45,.78),rgba(13,25,45,.30)_45%,transparent_80%)]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[#164b60] via-[#247f87] to-[#75b6b0]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgba(13,42,52,.16),transparent_75%)]" />
         <div className="relative mx-auto max-w-7xl">
           {/* The whole opening is the search, at the owner's word: no visible
               headline, no eyebrow, no pitch paragraph, no browse links — the
@@ -185,12 +185,12 @@ export default async function Home() {
         </h2>
           <Link href="/sources#photography" className="inline-flex min-h-11 items-center text-xs text-stone-700 underline underline-offset-4">Photo credits</Link>
         </div>
-        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="wg-travel-categories mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {HOME_CATEGORIES.map((category) => (
             <li key={category.href}>
               <Link
                 href={category.href}
-                className="wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
+                className="wg-travel-card wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
               >
                 <Image
                   src={HOME_PHOTOS[category.photo].image}
@@ -201,7 +201,7 @@ export default async function Home() {
                   loading="lazy"
                   className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                 />
-                <div className="p-5">
+                <div className="wg-travel-card-copy p-5">
                   <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
                     {category.label}
                   </p>
@@ -231,9 +231,9 @@ export default async function Home() {
               href={card.href}
               aria-label={card.name}
               title={card.name}
-              className="wg-card flex min-h-28 flex-col items-center justify-center gap-2 border border-[var(--gold-light)] bg-[var(--surface)] p-5 text-[var(--navy)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
+              className="wg-travel-start wg-card flex min-h-28 flex-col items-center justify-center gap-2 border border-[var(--gold-light)] bg-[var(--surface)] p-5 text-[var(--navy)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
             >
-              <Icon name={card.icon} className="h-7 w-7" />
+              <span className="wg-travel-start-icon"><Icon name={card.icon} className="h-6 w-6" /></span>
               <span className="text-sm font-bold uppercase tracking-[0.12em]">{card.label}</span>
             </Link>
           ))}
@@ -248,7 +248,7 @@ export default async function Home() {
           is in lib/assistant-disclosure.ts, so the wording here, the wording
           beside the input and the label on every answer cannot drift apart. */}
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <div className="rounded-xl border border-dashed border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
+        <div className="wg-travel-assistant rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
           <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{ASSISTANT_HOME_LABEL}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{ASSISTANT_HOME_SUPPORT}</p>
           <div className="mt-4">
@@ -272,4 +272,5 @@ export default async function Home() {
     </main>
   );
 }
+
 

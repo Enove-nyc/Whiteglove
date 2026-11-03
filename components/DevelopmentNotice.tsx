@@ -4,11 +4,12 @@ import { currentBrand } from "@/lib/site-brand";
 export default async function DevelopmentNotice() {
   const brand = await currentBrand();
   const message = brand === "kosher"
-    ? "White Glove Kosher Travel is in development. We look forward to welcoming you soon. We are not open for business yet."
+    ? "Demo · White Glove Kosher Travel is in development."
     : ITINERARIES_DEVELOPMENT_MESSAGE;
   return (
-    <aside aria-label="Development status" className="border-b border-white/20 bg-[var(--navy)] px-5 py-3 text-center text-sm leading-6 text-white">
+    <aside aria-label="Development status" className="border-b border-[#dce9e5] bg-[#f0f7f4] px-4 py-2 text-center text-xs leading-5 text-[#355b52]">
       <p className="mx-auto max-w-5xl">{message}</p>
     </aside>
   );
 }
+
