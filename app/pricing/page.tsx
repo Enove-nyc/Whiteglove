@@ -56,19 +56,18 @@ const WHAT_IT_DOES = [
       "Build the trip day by day — flights, hotels, drivers, tours and meals in the order they happen. Import a confirmation email and it files itself.",
   },
   {
-    step: "Hand it over",
+    step: "Keep it together",
     detail:
-      "Send your client a link. It opens as an app on their phone: today's plan, the map, their travel wallet, and a way to reach you.",
+      "Keep the schedule, places and practical details together as your plans develop.",
   },
   {
-    step: "Stay in touch",
+    step: "Take it with you",
     detail:
-      "Their questions land in one inbox, against the right trip. You see what has been paid, what is outstanding, and what leaves next.",
+      "Return to your saved itinerary, make changes and print a copy for your journey.",
   },
 ] as const;
 
 export default async function PricingPage() {
-  const brand = await currentBrand();
   const offering = await readPlanOffering();
 
   // The same read the account page does, so the two pages can never quote
@@ -87,7 +86,7 @@ export default async function PricingPage() {
     if (line) lines.set(plan, line);
   }
 
-  const cards = planCards();
+  const cards = planCards().filter((card) => card.free || card.oneTime);
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -109,10 +108,8 @@ export default async function PricingPage() {
             other side points back. */}
         <PageHeader
           eyebrow="Plans and pricing"
-          title="The trip you plan, in your client's pocket."
-          description={`${BRAND_NAME.itineraries} is where you build a trip, hand it to the person taking it, and stay with them while they travel.${
-            brand === "itineraries" ? "" : " The guide on this site stays free."
-          }`}
+          title="Your itinerary, built here."
+          description="Build your own itinerary with White Glove Kosher Travel: organise flights, places to stay and activities in one day-by-day plan. New paid options are not yet available."
         />
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
@@ -138,7 +135,7 @@ export default async function PricingPage() {
               lib/account-limits.ts computes it now, and the account page reads
               the same function, so the two cannot drift apart again. */}
           <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-6 text-stone-600">
-            One trip for yourself, or the tools to run clients. {planParitySentence()}
+            Plan your own trip on this site. {planParitySentence()}
           </p>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -187,7 +184,7 @@ export default async function PricingPage() {
                   </ul>
 
                   <div className="mt-6">
-                    <LinkButton href="https://www.whitegloveitineraries.com">Explore the development preview</LinkButton>
+                    <LinkButton href="/itinerary">Open the itinerary planner</LinkButton>
                   </div>
                 </div>
               );
@@ -202,20 +199,7 @@ export default async function PricingPage() {
               pretending to be the others. It sits under the three rather than
               beside them, because it is not a thing to compare: it is what to
               do when the three do not fit. */}
-          <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border border-[var(--gold-light)] bg-white p-6">
-            <div>
-              <h3 className="text-lg font-bold text-[var(--navy)]">Agency</h3>
-              <p className="mt-1 text-sm leading-6 text-stone-600">
-                Several advisers in one company, working the same clients and trips.
-              </p>
-            </div>
-            <Link
-              href="/contact?reason=agency"
-              className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-            >
-              Talk to us
-            </Link>
-          </div>
+
         </div>
       </section>
 
@@ -268,7 +252,7 @@ export default async function PricingPage() {
           </Link>
           , or read how{" "}
           <Link href="/app" className="font-semibold text-[var(--gold-ink)] underline">
-            the app reaches your client
+            the companion app works
           </Link>
           .
         </p>
@@ -278,3 +262,4 @@ export default async function PricingPage() {
     </main>
   );
 }
+

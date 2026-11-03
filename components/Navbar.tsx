@@ -36,7 +36,7 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * tools) and sign-out in place and drops only the four public categories.
  */
 
-export default function Navbar({ brand: brandProp, minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
+export default function Navbar({ brand: brandProp, minimal = false, bottomBar = true }: { brand?: "kosher" | "itineraries"; minimal?: boolean; bottomBar?: boolean } = {}) {
   /**
    * WHICH BRAND THIS IS, DECIDED AS EARLY AS IT CAN BE.
    *
@@ -153,9 +153,10 @@ export default function Navbar({ brand: brandProp, minimal = false }: { brand?: 
   // set only while Navbar is mounted, so /admin — which never renders this
   // component — is never affected.
   useEffect(() => {
+    if (!bottomBar) return;
     document.body.classList.add("wg-has-mobile-bar");
     return () => document.body.classList.remove("wg-has-mobile-bar");
-  }, []);
+  }, [bottomBar]);
 
   // The header becomes slightly smaller once the page has moved under it —
   // a small cue that it's the same bar, not a different one.
@@ -504,7 +505,8 @@ export default function Navbar({ brand: brandProp, minimal = false }: { brand?: 
         )}
       </nav>
       <SitePromotions />
-      <MobileBottomBar signedIn={signedIn} />
+      {bottomBar && <MobileBottomBar signedIn={signedIn} />}
     </>
   );
 }
+

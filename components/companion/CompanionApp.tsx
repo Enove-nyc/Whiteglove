@@ -3434,8 +3434,11 @@ const CSS = `
 
 /* Phone: full screen on a phone, a device in a frame on a desktop. */
 .wg-phone { height: 100dvh; width: 100%; }
-.wg-stage { display: flex; justify-content: center; }
-.wg-frame { width: 100%; }
+.wg-stage { display: flex; justify-content: center; min-width: 0; max-width: 100%; }
+.wg-frame { width: 100%; min-width: 0; max-width: 100%; }
+.wg-sample-app .wg-app-root { min-height: 0; }
+.wg-sample-app .wg-phone { height: min(48rem, 80svh); }
+.wg-sample-app .wg-frame { height: auto; }
 .wg-chrome { display: none; }
 .wg-hint { display: none; }
 
@@ -3457,3 +3460,4 @@ const CSS = `
   .wg-hint { display: block; max-width: 620px; margin: 0; text-align: center; font-size: 13px; line-height: 1.6; color: #cdd6dd; text-wrap: pretty; }
 }
 `;
+

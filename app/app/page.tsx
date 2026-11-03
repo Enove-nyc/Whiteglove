@@ -124,7 +124,7 @@ export default async function AppPage({
         {/* A remembered code that no longer opens a trip clears itself here, so
             the door is a live code field rather than a bounce to nowhere. */}
         {staleResume && <ClientCodeMemory path={null} />}
-        <Navbar />
+        <Navbar bottomBar={false} />
         <DevelopmentNotice />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <PageHeader
@@ -242,7 +242,7 @@ export default async function AppPage({
     const needsPass = Boolean(selected) && !covered;
     return (
       <main className="min-h-screen bg-[var(--cream)]">
-        <Navbar />
+        <Navbar bottomBar={false} />
         <DevelopmentNotice />
         <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">The White Glove app</p>
@@ -293,7 +293,7 @@ export default async function AppPage({
   // true.
   return (
     <main className="min-h-screen bg-[var(--cream)]">
-      <Navbar />
+      <Navbar bottomBar={false} />
         <DevelopmentNotice />
       <section className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
         <PageHeader
@@ -329,3 +329,4 @@ export default async function AppPage({
     </main>
   );
 }
+
