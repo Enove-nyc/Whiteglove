@@ -1,0 +1,23 @@
+name: Prepare licensed homepage photos
+on:
+  push:
+    branches: [codex/homepage-photo-assets]
+permissions:
+  contents: read
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install Pillow
+      - run: python scripts/prepare-homepage-photos.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: licensed-photo-review
+          path: photo-results/
+          retention-days: 7
