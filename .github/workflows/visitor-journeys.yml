@@ -55,6 +55,7 @@ jobs:
           sudo node scripts/ws-pg-bridge.mjs > /tmp/pg-bridge.log 2>&1 &
           node scripts/visitor-redis.mjs > /tmp/redis-rest.log 2>&1 &
           npx prisma migrate deploy
+      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npx eslint components/Navbar.tsx components/LoginForm.tsx components/DateField.tsx components/SampleItineraryViews.tsx app/pricing/page.tsx app/sample-itinerary/page.tsx app/packing/page.tsx app/offline/page.tsx components/PackingListPanel.tsx components/SiteTracker.tsx components/TravelAssistantBox.tsx app/app/page.tsx app/app/preview/page.tsx components/companion/CompanionApp.tsx data/companion-demo.ts components/ContentImportCandidateEditor.tsx app/page.tsx app/sources/page.tsx data/homepage-photos.ts components/HomepagePhotoCredits.tsx tests/homepage-sections.test.ts app/pricing/page.tsx app/account/page.tsx app/app/page.tsx lib/plan-billing-store.ts app/api/account/billing/checkout/route.ts lib/launch-status.ts components/DevelopmentNotice.tsx
       - run: npm run build
