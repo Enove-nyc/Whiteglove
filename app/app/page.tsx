@@ -143,9 +143,11 @@ export default async function AppPage({
             </div>
           </div>
 
+          <p className="text-sm leading-6 text-stone-700">Not sure what it looks like? <Link href="/app/preview" className="font-semibold text-[var(--navy)] underline">Open a sample trip</Link> — a made-up family’s week, shown in full.</p>
+
           <div className="rounded-2xl border border-[var(--gold-light)] bg-white p-6">
             <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
-              Travel adviser or Gold member?
+              Travel adviser or member?
             </h2>
             <p className="mt-1 text-sm leading-6 text-stone-600">
               Log in to open your own trips in the app.

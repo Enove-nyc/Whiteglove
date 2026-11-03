@@ -185,7 +185,7 @@ export default async function PricingPage() {
                   </ul>
 
                   <div className="mt-6">
-                    <LinkButton href="/account">Choose {card.name}</LinkButton>
+                    <LinkButton href="/account">View {card.name} options</LinkButton>
                   </div>
                 </div>
               );
@@ -249,8 +249,7 @@ export default async function PricingPage() {
           <div>
             <dt className="text-sm font-bold text-[var(--navy)]">I am planning one trip, for myself.</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              One Trip is for exactly that — a single fee, no subscription, and the app on your own phone while you
-              travel.
+              Planning it is free. A Trip Pass adds the app on your phone for one trip, with no subscription.
             </dd>
           </div>
         </dl>

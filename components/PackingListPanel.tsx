@@ -29,7 +29,7 @@ function Rows({ items, gear, onToggle }: { items: PackingItem[]; gear: GearLink[
     <div className="flex flex-col gap-5">
       {byCategory(items).map((group) => (
         <div key={group.category}>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-stone-500">{group.category}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-stone-700">{group.category}</p>
           <ul className="mt-2 flex flex-col gap-1.5">
             {group.items.map((item) => (
               <li key={item.id}>
@@ -135,7 +135,7 @@ export default function PackingListPanel({ gear = [], signedIn = false }: { gear
     }).catch(() => undefined);
   }
 
-  if (loading) return <p className="text-sm text-stone-500">Loading…</p>;
+  if (loading) return <p className="text-sm text-stone-700">Loading…</p>;
 
   // No trip behind this screen: the starter list, and the way to a tailored one.
   if (!tripId) {

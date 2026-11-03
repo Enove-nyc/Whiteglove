@@ -52,8 +52,9 @@ jobs:
           sudo node scripts/ws-pg-bridge.mjs > /tmp/pg-bridge.log 2>&1 &
           node scripts/visitor-redis.mjs > /tmp/redis-rest.log 2>&1 &
           npx prisma migrate deploy
+      - run: npx tsx --test tests/account-plans.test.ts tests/account-limits.test.ts tests/plan-billing.test.ts
       - run: npx tsc --noEmit
-      - run: npx eslint components/Navbar.tsx components/LoginForm.tsx components/DateField.tsx components/SampleItineraryViews.tsx app/pricing/page.tsx app/sample-itinerary/page.tsx app/packing/page.tsx app/offline/page.tsx
+      - run: npx eslint components/Navbar.tsx components/LoginForm.tsx components/DateField.tsx components/SampleItineraryViews.tsx app/pricing/page.tsx app/sample-itinerary/page.tsx app/packing/page.tsx app/offline/page.tsx components/PackingListPanel.tsx components/SiteTracker.tsx components/TravelAssistantBox.tsx app/app/page.tsx app/app/preview/page.tsx
       - run: npm run build
         env:
           NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/scripts/ws.crt
@@ -77,3 +78,28 @@ jobs:
       - name: Local service diagnostics
         if: failure()
         run: cat /tmp/visitor-app.log /tmp/pg-bridge.log /tmp/redis-rest.log
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        brand: [travel]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --package-lock=false @axe-core/playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/visitor-journeys.mjs
+        env:
+          AUDIT_BRAND: ${{ matrix.brand }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-visitor-journeys-${{ matrix.brand }}
+          path: journey-results/
+          retention-days: 7
