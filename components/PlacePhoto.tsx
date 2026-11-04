@@ -14,10 +14,8 @@ export default function PlacePhoto({ photo }: { photo?: Photo }) {
       <img src={photo.src} alt={photo.alt} width={photo.width} height={photo.height}
         loading="lazy" decoding="async" onError={() => setFailedSrc(photo.src)}
         className="aspect-[3/2] w-full object-cover" />
-      <figcaption className="flex flex-wrap items-center justify-between gap-x-3 px-3 py-2 text-[11px] leading-5 text-slate-600">
-        {photo.context ? <span>{photo.context}</span> : <span className="sr-only">{photo.alt}</span>}
-        <a href={`/sources#photo-${photo.creditId}`} className="ml-auto inline-flex min-h-8 items-center underline underline-offset-2 hover:text-[var(--navy)]">Photo credits</a>
-      </figcaption>
+      {photo.context ? <figcaption className="px-3 py-2 text-[11px] leading-5 text-slate-600">{photo.context}</figcaption> : null}
+
     </figure>
   );
 }

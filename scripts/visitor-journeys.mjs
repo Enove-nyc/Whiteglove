@@ -40,7 +40,7 @@ for(const width of [1280,390]){
  const ctx=await context(width);page=await ctx.newPage();page.on('pageerror',e=>report.errors.push({width,url:page.url(),error:String(e)}));
  await scenario(`home audience and primary links ${width}`,async()=>{await go('/');if(brand==='itineraries'){await page.getByRole('radio',{name:'Planning my own trip'}).check({force:true});assert.match(await page.locator('main').first().innerText(),/trip/i);}assert(await page.locator('a[href="/sample-itinerary"]').count()>0||brand==='travel');assert.equal(await page.getByRole('complementary',{name:'Development status'}).count(),0);assert.doesNotMatch(await page.locator('body').innerText(),/Demo ·|in development|not open for business/i);await scan('/',width);});
 
- if(brand==='travel'&&isolated)await scenario(`six real homepage photos load and carry immutable caching ${width}`,async()=>{await go('/');const section=page.locator('section').filter({has:page.getByRole('heading',{name:'Featured',exact:true})});const photos=section.locator('img');assert.equal(await photos.count(),6);for(const img of await photos.all()){await img.scrollIntoViewIfNeeded();await img.evaluate(img=>img.decode());assert((await img.evaluate(img=>img.naturalWidth))>0);}const src=await photos.first().getAttribute('src');assert.match(src,/\/_next\/static\/media\//);const asset=await ctx.request.get(origin+src);assert.match(asset.headers()['cache-control']||'',/immutable/);await section.getByRole('link',{name:'Photo credits',exact:true}).click();await page.locator('#photography').waitFor();assert.equal(await page.locator('#photography a').count(),12);});
+ if(brand==='travel'&&isolated)await scenario(`six real homepage photos load and carry immutable caching ${width}`,async()=>{await go('/');const section=page.locator('section').filter({has:page.getByRole('heading',{name:'Featured',exact:true})});const photos=section.locator('img');assert.equal(await photos.count(),6);for(const img of await photos.all()){await img.scrollIntoViewIfNeeded();await img.evaluate(img=>img.decode());assert((await img.evaluate(img=>img.naturalWidth))>0);}const src=await photos.first().getAttribute('src');assert.match(src,/\/_next\/static\/media\//);const asset=await ctx.request.get(origin+src);assert.match(asset.headers()['cache-control']||'',/immutable/);assert.equal(await section.getByRole('link',{name:'Photo credits',exact:true}).count(),0);await page.getByRole('navigation',{name:'Footer',exact:true}).getByRole('link',{name:'Sources',exact:true}).click();await page.locator('#photography').waitFor();assert.equal(await page.locator('#photography a').count(),12);});
  if(width===390)await scenario('mobile menu opens and closes',async()=>{await go('/');const open=page.getByRole('button',{name:'Open menu',exact:true});await open.click();await page.locator('#mobile-menu').waitFor({state:'visible'});await scan('/?menu=open',width);await page.getByRole('button',{name:'Close menu',exact:true}).click();await page.locator('#mobile-menu').waitFor({state:'hidden'});});
  if(brand==='travel'&&!isolated)await scenario(`destination search ${width}`,async()=>{await go('/');const input=page.getByPlaceholder('Search destinations',{exact:true});await input.fill('Rome');await page.waitForTimeout(700);await input.press('Enter');await page.waitForURL(url=>url.pathname!=='/',{timeout:15000});assert.match(await page.locator('body').innerText(),/Rome/i);});
  await scenario(`sample itinerary switches all views ${width}`,async()=>{await go('/sample-itinerary');for(const [label,text] of [['In the app','Companion app.'],['Printed','Print layout.'],['On the site','Day-by-day itinerary.']]){await page.locator('label').filter({hasText:new RegExp('^'+label+'$')}).click();assert(await page.getByRole('radio',{name:label,exact:true}).isChecked());assert((await page.locator('main').first().innerText()).includes(text));}await scan('/sample-itinerary',width);});
@@ -84,7 +84,7 @@ if(brand==='travel'){
  await scenario('place photographs load locally with permanent caching and central credits',async()=>{
   await go('/things-to-do?country=Italy&city=Rome');const img=page.locator('article figure img').first();await img.scrollIntoViewIfNeeded();await img.evaluate(img=>img.decode());assert(await img.evaluate(img=>img.naturalWidth>0));
   const src=await img.getAttribute('src');assert.match(src,/^\/photos\/discovery\/[a-f0-9]{64}\.webp$/);const response=await ctx.request.get(origin+src);assert.equal(response.status(),200);assert.match(response.headers()['cache-control']||'',/immutable/);
-  const credit=page.locator('article figure a').first();const href=await credit.getAttribute('href');assert.match(href,/^\/sources#photo-/);await credit.click();await page.locator(href.slice('/sources'.length)).waitFor();assert(await page.locator(href.slice('/sources'.length)+' a').count()>=2);
+  assert.equal(await page.locator('article figure a').count(),0);await page.getByRole('navigation',{name:'Footer',exact:true}).getByRole('link',{name:'Sources',exact:true}).click();await page.locator('#discovery-photography').waitFor();assert(await page.locator('#discovery-photography li[id^="photo-"]').count()>=731);
  });
  await scenario('country aliases and accented city searches return usable entries',async()=>{
   for(const [query,title] of [['USA','United States'],['UK','United Kingdom'],['Czech Republic','Czechia']]){
@@ -109,20 +109,27 @@ if(brand==='travel'){
 
 if(brand==='travel'){
  const ctx=await context(390);page=await ctx.newPage();
- await scenario('search photo background cycles can pause and stay still while typing',async()=>{
+ await scenario('search photos cycle automatically without controls and stay still while typing',async()=>{
   await page.clock.install();await go('/');
-  const hero=page.locator('[data-search-photo]');const next=page.getByRole('button',{name:'Next background photo',exact:true});
-  await next.waitFor();await page.waitForFunction(()=>!document.querySelector('button[aria-label="Next background photo"]').disabled);
+  const hero=page.locator('[data-search-photo]');
+  assert.equal(await hero.getByRole('button').filter({hasText:/Next|Pause|Play/}).count(),0);
+  assert.equal(await hero.getByRole('link',{name:/credit/i}).count(),0);
+  assert.equal(await page.locator('main a[href^="/sources#"]').count(),0);
   await page.waitForFunction(()=>document.querySelector('[data-search-photo]').getAttribute('data-photo-playing')==='true');
+  await page.waitForFunction(()=>document.querySelectorAll('[data-search-photo] img').length>=2);
   const first=await hero.getAttribute('data-search-photo');await page.clock.fastForward(10000);assert.notEqual(await hero.getAttribute('data-search-photo'),first);
-  await page.getByRole('button',{name:'Pause background photos',exact:true}).click();const held=await hero.getAttribute('data-search-photo');await page.clock.fastForward(30000);assert.equal(await hero.getAttribute('data-search-photo'),held);
-  await page.getByRole('button',{name:'Play background photos',exact:true}).click();const input=page.locator('#home-hero-search');await input.fill('Venice');const before=await input.boundingBox();const typing=await hero.getAttribute('data-search-photo');await page.clock.fastForward(20000);assert.equal(await hero.getAttribute('data-search-photo'),typing);assert.equal(await input.inputValue(),'Venice');const after=await input.boundingBox();assert(before&&after&&Math.abs(before.y-after.y)<1);
+  const input=page.locator('#home-hero-search');await input.fill('Venice');const before=await input.boundingBox();const typing=await hero.getAttribute('data-search-photo');await page.clock.fastForward(20000);assert.equal(await hero.getAttribute('data-search-photo'),typing);assert.equal(await input.inputValue(),'Venice');const after=await input.boundingBox();assert(before&&after&&Math.abs(before.y-after.y)<1);
+  await input.blur();await page.waitForFunction(()=>document.querySelector('[data-search-photo]').getAttribute('data-photo-playing')==='true');
+  await page.waitForFunction(()=>document.querySelectorAll('[data-search-photo] img').length>=3);
+  await page.clock.fastForward(10000);assert.notEqual(await hero.getAttribute('data-search-photo'),typing);
+  assert(await page.locator('main.wg-travel-home').evaluate(el=>getComputedStyle(el).backgroundImage.includes('radial-gradient')));
  });
  await ctx.close();
  const reduced=await context(390);page=await reduced.newPage();await page.emulateMedia({reducedMotion:'reduce'});
- await scenario('reduced motion keeps a static background with manual photo choice',async()=>{
+ await scenario('reduced motion keeps a static decorative background without controls',async()=>{
   await page.clock.install();await go('/');const hero=page.locator('[data-search-photo]');const first=await hero.getAttribute('data-search-photo');await page.clock.fastForward(30000);assert.equal(await hero.getAttribute('data-search-photo'),first);assert.equal(await hero.getAttribute('data-photo-playing'),'false');
-  const next=page.getByRole('button',{name:'Next background photo',exact:true});await page.waitForFunction(()=>!document.querySelector('button[aria-label="Next background photo"]').disabled);await next.click();assert.notEqual(await hero.getAttribute('data-search-photo'),first);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  assert.equal(await hero.getByRole('group',{name:'Background photo controls'}).count(),0);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  });
  await reduced.close();
 }
