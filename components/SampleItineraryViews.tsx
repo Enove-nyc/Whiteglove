@@ -93,7 +93,7 @@ export default function SampleItineraryViews({
              switches and the scripted demo tab do not exist here — what is
              drawn is what a traveller opens. */
           <div className="wg-sample-app overflow-hidden rounded-2xl border border-[var(--gold-light)]">
-            <CompanionApp trip={companion} />
+            <CompanionApp trip={companion} travelerPreview personalWalletKey="sample:rome" />
           </div>
         )}
         {view === "print" && <PrintableItinerary itin={itin} burials={{}} embedded siteBrand={siteBrand} />}

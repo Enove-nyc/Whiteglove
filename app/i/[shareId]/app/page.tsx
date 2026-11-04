@@ -8,7 +8,10 @@ import { buildCompanionFromItinerary } from "@/lib/companion-build";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
 
-export const metadata = pageMetadata({ title: "Your trip", description: "Your itinerary, personal wallet and trip group chat.", path: "/i", noIndex: true });
+export async function generateMetadata() {
+  const brand = await currentBrand();
+  return pageMetadata({ title: brand === "itineraries" ? "Your trip — White Glove Itineraries" : "Your trip — White Glove Kosher Travel", description: "Your itinerary, personal travel wallet and trip group chat.", path: "/i", noIndex: true });
+}
 export const dynamic = "force-dynamic";
 
 // A code is already a read credential for this exact shared itinerary.
@@ -51,7 +54,7 @@ async function sampleApp() {
           trip, for seeing how the app works. Nothing here is booked.
         </p>
       </div>
-      <CompanionApp trip={trip} />
+      <CompanionApp trip={trip} travelerPreview personalWalletKey="sample:rome" />
     </main>
   );
 }
