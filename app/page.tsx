@@ -180,7 +180,6 @@ export default async function Home() {
         <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
           Featured
         </h2>
-          <Link href="/sources#photography" className="inline-flex min-h-11 items-center text-xs text-stone-700 underline underline-offset-4">Photo credits</Link>
         </div>
         <ul className="wg-travel-categories mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {HOME_CATEGORIES.map((category) => (

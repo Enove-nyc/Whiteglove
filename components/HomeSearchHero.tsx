@@ -8,13 +8,12 @@ const INTERVAL_MS = 9000;
 export default function HomeSearchHero({ children }: { children: ReactNode }) {
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState<Set<number>>(() => new Set([0]));
-  const [paused, setPaused] = useState(false);
   const [motionAllowed, setMotionAllowed] = useState(false);
   const [visible, setVisible] = useState(true);
   const [searchFocused, setSearchFocused] = useState(false);
   const photos = HOME_SEARCH_PHOTOS;
   const next = (active + 1) % photos.length;
-  const running = motionAllowed && !paused && visible && !searchFocused;
+  const running = motionAllowed && visible && !searchFocused;
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -78,26 +77,6 @@ export default function HomeSearchHero({ children }: { children: ReactNode }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d263c]/85 via-transparent to-[#15384c]/10" />
       </div>
       <div data-hero-search className="relative z-20 w-full">{children}</div>
-      <div className="absolute inset-x-5 bottom-4 z-10 mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-3 sm:inset-x-8 sm:bottom-5">
-        <p className="text-xs font-medium leading-6 text-white drop-shadow-sm" aria-live="off">
-          {current.label}
-          <a href={"/sources#photo-" + current.creditId} className="ml-3 inline-flex min-h-11 items-center text-[11px] text-white underline decoration-white/60 underline-offset-4 hover:decoration-white" aria-label={"Photo credits for " + current.label}>Credits</a>
-        </p>
-        <div role="group" aria-label="Background photo controls" className="flex gap-2">
-          {motionAllowed ? (
-            <button type="button" onClick={() => setPaused(value => !value)}
-              aria-label={paused ? "Play background photos" : "Pause background photos"}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/40 bg-[#102d42]/80 px-4 text-xs font-semibold text-white backdrop-blur-sm hover:bg-[#102d42] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              {paused ? "Play" : "Pause"}
-            </button>
-          ) : null}
-          <button type="button" aria-label="Next background photo" disabled={!ready.has(next)}
-            onClick={() => { setActive(next); setPaused(true); }}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/40 bg-[#102d42]/80 px-4 text-xs font-semibold text-white backdrop-blur-sm hover:bg-[#102d42] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-            Next <span aria-hidden="true">→</span>
-          </button>
-        </div>
-      </div>
     </section>
   );
 }
