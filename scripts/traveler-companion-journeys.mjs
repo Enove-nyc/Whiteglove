@@ -131,6 +131,8 @@ try {
     const searchContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     await searchContext.addInitScript(() => { window.Capacitor = { isNativePlatform: () => true }; localStorage.setItem('whiteGloveBetaNotice', '6'); localStorage.setItem('whiteGloveBetaNoticeShown', '6'); });
     const searchPage = await searchContext.newPage();
+    const searchAffiliateRequests = [];
+    searchPage.on('request', (request) => { if (new URL(request.url()).hostname.endsWith('emrldco.com')) searchAffiliateRequests.push(request.url()); });
     searchPage.on('pageerror', (error) => errors.push(error.message));
     await searchPage.goto(base);
     await searchPage.waitForURL('**/travel');
@@ -148,6 +150,7 @@ try {
       await searchPage.getByRole('link', { name: 'AI companion', exact: true }).click();
       await searchPage.getByRole('heading', { name: 'AI travel companion', exact: true }).waitFor();
     }
+    assert.deepEqual(searchAffiliateRequests, [], 'Installed search must not load affiliate verification');
     await searchContext.close();
     console.log('PASS: installed Kosher Travel search home, app navigation and AI screen');
   }
@@ -175,6 +178,7 @@ try {
   assert.deepEqual(errors, [], 'Browser errors');
 } catch (error) {
   await mkdir('companion-results', { recursive: true });
-  for (const [index, page] of one.pages().entries()) await page.screenshot({ path: `companion-results/failure-${index}.png`, fullPage: true }).catch(() => {});
+  console.error('Browser errors:', errors);
+  for (const [contextIndex, context] of browser.contexts().entries()) for (const [index, page] of context.pages().entries()) await page.screenshot({ path: `companion-results/failure-${contextIndex}-${index}.png`, fullPage: true }).catch(() => {});
   throw error;
 } finally { await browser.close(); }
