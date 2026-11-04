@@ -1,0 +1,30 @@
+name: Inspect readiness browser artifacts
+on:
+  push:
+    branches: [codex/readiness-diagnostics]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-cost-validation
+          run-id: '41894686596'
+          github-token: ${{ github.token }}
+          path: /tmp/readiness-artifact
+      - run: |
+          python3 - <<'PY'
+          import pathlib,json,base64
+          root=pathlib.Path('/tmp/readiness-artifact')
+          for p in root.rglob('*'):
+            if p.is_file():
+              print('ARTIFACT_FILE',str(p.relative_to(root)),p.stat().st_size)
+              if p.suffix=='.json' and 'journey' in str(p):
+                print('BROWSER_REPORT',p.read_text()[:30000])
+              if p.suffix=='.jpg' and 'home-' not in p.name:
+                print('DIAGNOSTIC_IMAGE|'+p.name+'|'+base64.b64encode(p.read_bytes()).decode())
+          PY
