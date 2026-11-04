@@ -10,6 +10,7 @@ import { readBookingLink } from "@/lib/booking-access-store";
 import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import AppShellFlag from "@/components/AppShellFlag";
+import KosherSearchShell from "@/components/KosherSearchShell";
 import SiteTracker from "@/components/SiteTracker";
 import TravelpayoutsScript from "@/components/TravelpayoutsScript";
 import { getBetaNotice } from "@/lib/beta-notice-store";
@@ -111,6 +112,7 @@ export default async function RootLayout({
         {/* Flags <html data-app-shell> when running inside the installed app so
             website-only chrome (the marketing footer) is hidden there. */}
         <AppShellFlag />
+        <KosherSearchShell />
         <IdleLogout minutes={45} endpoint="/api/account/logout" requireAccount />
         {/* tabIndex -1 so the skip link can actually put the focus here.
             Without it the browser scrolls to the anchor and leaves the focus
@@ -140,3 +142,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

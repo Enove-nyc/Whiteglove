@@ -46,12 +46,14 @@ const VISIBLE_EXAMPLES = 3;
 
 export default function TravelAssistantBox({
   embedded = false,
+  examples = EXAMPLES,
   /** The page already shows the label above it, so the panel does not repeat it. */
   labelledOutside = false,
   /** A question handed over by the site assistant. See the note below. */
   initialAsk = "",
 }: {
   embedded?: boolean;
+  examples?: readonly string[];
   labelledOutside?: boolean;
   initialAsk?: string;
 }) {
@@ -128,7 +130,7 @@ export default function TravelAssistantBox({
     // is itself a warning.)
   }, [initialAsk]);
 
-  const visible = showMoreExamples ? EXAMPLES : EXAMPLES.slice(0, VISIBLE_EXAMPLES);
+  const visible = showMoreExamples ? examples : examples.slice(0, VISIBLE_EXAMPLES);
 
   return (
     <div data-ai-assistant="">
@@ -239,7 +241,7 @@ export default function TravelAssistantBox({
                 {ex}
               </button>
             ))}
-            {EXAMPLES.length > VISIBLE_EXAMPLES ? (
+            {examples.length > VISIBLE_EXAMPLES ? (
               <button
                 type="button"
                 onClick={() => setShowMoreExamples((v) => !v)}

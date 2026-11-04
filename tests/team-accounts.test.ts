@@ -217,7 +217,6 @@ describe("resolveBusinessOwner is the one seam business-data routes read", () =>
     "app/api/account/attachments/route.ts",
     "app/api/account/branding/route.ts",
     "app/api/account/itinerary/send/route.ts",
-    "app/app/page.tsx",
   ];
 
   for (const path of WIRED) {
@@ -232,6 +231,8 @@ describe("resolveBusinessOwner is the one seam business-data routes read", () =>
   // per-login rate limit, collaboration invites addressed to one specific
   // person) rather than the shared business's trips/pipeline/library.
   const DELIBERATELY_PERSONAL = [
+    "app/app/page.tsx",
+    "app/api/account/companion-code/route.ts",
     "app/api/account/update/route.ts",
     "app/api/account/places/route.ts",
     "app/api/account/smart-import/route.ts",

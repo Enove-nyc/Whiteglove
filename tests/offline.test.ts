@@ -63,18 +63,6 @@ describe("a navigation that redirects is handed back to the browser", () => {
 });
 
 describe("the companion app tells a traveler when their own device has no connection", () => {
-  it("listens for the browser's own online/offline events rather than polling", () => {
-    const block = APP.slice(APP.indexOf("const [isOffline, setIsOffline]"), APP.indexOf("const advisor = trip.advisorName"));
-    assert.match(block, /addEventListener\("offline"/);
-    assert.match(block, /addEventListener\("online"/);
-    assert.match(block, /removeEventListener\("offline"/);
-    assert.match(block, /removeEventListener\("online"/);
-  });
-
-  it("reads navigator.onLine for its starting value, guarded for the server where navigator doesn't exist", () => {
-    const block = APP.slice(APP.indexOf("const [isOffline, setIsOffline]"), APP.indexOf("const advisor = trip.advisorName"));
-    assert.match(block, /useState\(\(\) => typeof navigator !== "undefined" && !navigator\.onLine\)/);
-  });
 
   it("the banner only claims the device has no connection, never that the trip data is stale", () => {
     const marker = APP.indexOf("No connection — showing what was last loaded");

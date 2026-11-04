@@ -21,6 +21,12 @@
 
 /** On both deployments. Nothing owed. */
 export const ON_BOTH: readonly string[] = [
+  // Traveler-owned companion shared by the two deployments.
+  "app/api/trip-group/route.ts",
+  "components/companion/TripCompanionCode.tsx",
+  "components/companion/TripGroupChat.tsx",
+  "lib/trip-group-identity.ts",
+  "lib/trip-group-store.ts",
   "app/api/account/inbound/route.ts",
   "app/api/account/itinerary/collaborators/route.ts",
   "app/api/account/itinerary/comments/route.ts",
