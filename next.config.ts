@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import { contentSecurityPolicy, reportingEndpointsHeader } from "./lib/csp-policy";
 
 const nextConfig: NextConfig = {
+  // Keep the development badge off tablet touch targets in isolated UI runs.
+  // Next still displays compile/runtime errors when this indicator is off.
+  devIndicators: process.env.COMPANION_E2E === "1" ? false : undefined,
   // Reuse the filesystem cache instead of retaining another 50 MiB per process.
   // SQL cache lifetimes and authenticated cross-site invalidation remain active.
   cacheMaxMemorySize: 0,

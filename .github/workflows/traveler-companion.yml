@@ -36,6 +36,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Start disposable app and Redis transport
         env:
+          COMPANION_E2E: "1"
           UPSTASH_REDIS_REST_URL: http://127.0.0.1:6380
           UPSTASH_REDIS_REST_TOKEN: local-test
           NEXT_PUBLIC_SITE_BRAND: ${{ github.event.repository.name == 'Whiteglove' && 'kosher' || 'itineraries' }}
