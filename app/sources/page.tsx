@@ -1,3 +1,4 @@
+import DiscoveryPhotoCredits from "@/components/DiscoveryPhotoCredits";
 import HomepagePhotoCredits from "@/components/HomepagePhotoCredits";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -81,8 +82,10 @@ export default function SourcesPage() {
           })}
         </div>
         <HomepagePhotoCredits />
+        <DiscoveryPhotoCredits />
       </div>
       <Footer />
     </main>
   );
 }
+

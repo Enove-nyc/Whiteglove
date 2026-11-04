@@ -9,6 +9,8 @@
  * The browser never receives this index — only ranked hit rows go over the wire.
  */
 
+import { cityNames } from "@/lib/destination-geography";
+import { geographicSearchDocuments } from "@/lib/geographic-search";
 import { cemeteries } from "@/data/cemeteries";
 import { destinationHaystack, destinationHref as heritageDestinationHref, destinations, getDestination } from "@/data/destinations";
 import { HECHSHERIM } from "@/data/hechsherim";
@@ -110,7 +112,8 @@ export async function buildSearchIndex(): Promise<SearchDocument[]> {
   pushHeritageTowns(docs);
   pushCemeteries(docs);
   pushTzaddikim(docs);
-  await pushAttractionsStaysAreas(docs);
+  const geographicPlaces = await pushAttractionsStaysAreas(docs);
+  docs.push(...geographicSearchDocuments(geographicPlaces, destinations));
   await pushPublishedPracticalPlaces(docs);
   pushStaticPracticalPlaces(docs, destinations);
   pushEateries(docs);
@@ -160,7 +163,7 @@ function pushVacationDestinations(docs: DraftDoc[], destinations: readonly Vacat
       names: [
         d.name,
         d.slug.replace(/-/g, " "),
-        ...d.cities,
+        ...d.cities.flatMap(cityNames),
         d.region ?? "",
         d.country,
         extraSpellings([d.slug, d.name, ...d.cities]),
@@ -340,6 +343,7 @@ async function pushAttractionsStaysAreas(docs: DraftDoc[]) {
       vacation: false,
     });
   });
+  return attractions;
 }
 
 /**
@@ -925,3 +929,4 @@ function pushStaticPracticalPlaces(docs: DraftDoc[], destinations: readonly Vaca
     }
   }
 }
+

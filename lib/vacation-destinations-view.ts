@@ -25,6 +25,7 @@ import {
   type TripTheme,
   type VacationDestination,
 } from "@/data/vacation-destinations";
+import { photoForVacation } from "@/lib/discovery-photos";
 import { cachedRead } from "@/lib/cache-tags";
 
 const DB_ENABLED = Boolean(process.env.DATABASE_URL);
@@ -41,6 +42,7 @@ export type DestinationPhoto = {
   url: string;
   caption?: string;
   credit?: string;
+  creditHref?: string;
 };
 
 export type VacationDestinationItem = VacationDestination & {
@@ -245,7 +247,13 @@ async function listUncached(): Promise<VacationDestinationItem[]> {
 
 /** Every destination a visitor may see, built-in and owner-written. */
 export async function getVacationDestinations(): Promise<VacationDestinationItem[]> {
-  return cachedRead(listUncached, ["vacation-destinations"], [VACATION_DESTINATIONS_TAG]);
+  const destinations = await cachedRead(listUncached, ["vacation-destinations"], [VACATION_DESTINATIONS_TAG]);
+  return destinations.map((destination) => {
+    if (destination.photos.length) return destination;
+    const photo = photoForVacation(destination);
+    if (!photo) return destination;
+    return { ...destination, photos: [{ id: `commons-${photo.creditId}`, url: photo.src, caption: photo.context ?? photo.alt, creditHref: `/sources#photo-${photo.creditId}` }] };
+  });
 }
 
 export async function getVacationDestinationBySlug(slug: string): Promise<VacationDestinationItem | undefined> {
@@ -299,3 +307,4 @@ export async function listVacationDestinationsForAdmin(): Promise<
 
   return out.sort((a, b) => a.destination.name.localeCompare(b.destination.name));
 }
+

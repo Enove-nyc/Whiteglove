@@ -89,9 +89,15 @@ describe("the six licensed section photographs", () => {
     assert.equal(new Set(photos.map((photo) => photo.key)).size, 6);
     assert.equal(new Set(photos.map((photo) => photo.sha256)).size, 6);
     for (const photo of photos) {
-      assert.ok(["CC0", "CC BY 4.0", "CC BY-SA 4.0"].includes(photo.license), photo.key);
-      assert.equal(new URL(photo.sourcePage).hostname, "commons.wikimedia.org");
-      assert.equal(new URL(photo.licenseUrl).hostname, "creativecommons.org");
+      if (photo.key === "map") {
+        assert.equal(photo.license, "Open Database License (ODbL 1.0)");
+        assert.equal(new URL(photo.sourcePage).hostname, "www.openstreetmap.org");
+        assert.equal(new URL(photo.licenseUrl).hostname, "www.openstreetmap.org");
+      } else {
+        assert.ok(["CC0", "CC BY 4.0", "CC BY-SA 4.0"].includes(photo.license), photo.key);
+        assert.equal(new URL(photo.sourcePage).hostname, "commons.wikimedia.org");
+        assert.equal(new URL(photo.licenseUrl).hostname, "creativecommons.org");
+      }
       assert.ok(photo.author.trim());
       assert.match(photo.file, /^\/photos\/homepage\/[a-z-]+\.webp$/);
       const bytes = readFileSync("public" + photo.file);
@@ -101,3 +107,4 @@ describe("the six licensed section photographs", () => {
     }
   });
 });
+

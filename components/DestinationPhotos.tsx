@@ -34,9 +34,10 @@ export default function DestinationPhotos({ photos, name }: { photos: readonly D
               loading="lazy"
               className="h-52 w-full object-cover"
             />
-            {(photo.caption || photo.credit) && (
+            {(photo.caption || photo.credit || photo.creditHref) && (
               <div className="px-4 py-3">
                 {photo.caption && <p className="text-sm leading-6 text-stone-600">{photo.caption}</p>}
+                {photo.creditHref && <a href={photo.creditHref} className="mt-1 inline-flex min-h-8 items-center text-xs text-[var(--gold-ink)] underline underline-offset-2">Photo credits</a>}
                 {photo.credit && (
                   <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.12em] text-stone-400">
                     {photo.credit}
@@ -50,3 +51,4 @@ export default function DestinationPhotos({ photos, name }: { photos: readonly D
     </section>
   );
 }
+

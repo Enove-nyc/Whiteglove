@@ -1,3 +1,5 @@
+import { listMatches } from "@/lib/list-search";
+import { geographicTerms, sameCountry } from "@/lib/destination-geography";
 import type { HeritageCardModel } from "@/lib/destination-directory";
 /**
  * What the site can honestly say about a vacation destination.
@@ -415,19 +417,19 @@ export function cardSeasons(card: DirectoryCard): readonly Season[] {
 
 function haystack(card: DirectoryCard): string {
   if (card.kind === "heritage") {
-    return [card.name, card.yiddishName, card.country, card.summary].filter(Boolean).join(" ").toLowerCase();
+    return [card.name, card.yiddishName, ...geographicTerms(card.name, card.country), card.summary].filter(Boolean).join(" ").toLowerCase();
   }
   const d = card.destination;
-  return [d.name, d.country, d.region, ...d.cities, ...d.bestFor, d.whyGo].filter(Boolean).join(" ").toLowerCase();
+  return [d.name, ...geographicTerms(d.cities[0] ?? d.name, d.country), d.region, ...d.cities, ...d.bestFor, d.whyGo].filter(Boolean).join(" ").toLowerCase();
 }
 
 export function filterVacations(cards: readonly DirectoryCard[], filters: VacationFilters): DirectoryCard[] {
   const query = filters.query.trim().toLowerCase();
   return cards.filter((card) => {
-    if (query && !haystack(card).includes(query)) return false;
+    if (query && !listMatches(haystack(card), query)) return false;
     if (filters.theme && !cardThemes(card).includes(filters.theme)) return false;
     if (filters.season && !cardSeasons(card).includes(filters.season)) return false;
-    if (filters.country && cardCountry(card) !== filters.country) return false;
+    if (filters.country && !sameCountry(cardCountry(card), filters.country)) return false;
     // The two assessed signals exist only on a holiday destination. Filtering
     // by one narrows to the destinations that have been assessed for it,
     // rather than guessing on behalf of the towns that have not.
@@ -563,3 +565,4 @@ export function addToTripHref(destination: VacationDestination): string {
 export function destinationHref(destination: VacationDestination): string {
   return vacationDestinationHref(destination.slug);
 }
+

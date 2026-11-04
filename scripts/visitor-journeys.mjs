@@ -52,6 +52,48 @@ for(const width of [1280,390]){
  });
  await ctx.close();
 }
+
+if(brand==='travel'){
+ const ctx=await context(390);page=await ctx.newPage();
+ await scenario('country search opens an actual filtered list on a phone',async()=>{
+  await go('/');await page.locator('#home-hero-search').fill('Japan');
+  const option=page.getByRole('option').filter({hasText:'Japan'}).filter({hasText:'Explore cities, culture and things to do'});await option.first().click();
+  await page.waitForURL(url=>url.pathname==='/things-to-do'&&url.searchParams.get('country')==='Japan');
+  await page.locator('article h2').first().waitFor();assert((await page.locator('article').allInnerTexts()).every(text=>text.includes('Japan')));
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await scan('/things-to-do?country=Japan',390);
+ });
+ await scenario('new city search opens its own sights without a full guide',async()=>{
+  await go('/');await page.locator('#home-hero-search').fill('Seoul');
+  await page.getByRole('option').filter({hasText:'Seoul'}).filter({hasText:'Explore things to do'}).first().click();
+  await page.waitForURL(url=>url.pathname==='/things-to-do'&&url.searchParams.get('city')==='Seoul');
+  await page.locator('article h2').first().waitFor();assert((await page.locator('article').allInnerTexts()).every(text=>text.includes('Seoul')));
+  await page.reload();await page.locator('article h2').first().waitFor();assert((await page.locator('article').allInnerTexts()).every(text=>text.includes('Seoul')));
+ });
+ await scenario('place photographs load locally with permanent caching and central credits',async()=>{
+  await go('/things-to-do?country=Italy&city=Rome');const img=page.locator('article figure img').first();await img.scrollIntoViewIfNeeded();await img.evaluate(img=>img.decode());assert(await img.evaluate(img=>img.naturalWidth>0));
+  const src=await img.getAttribute('src');assert.match(src,/^\/photos\/discovery\/[a-f0-9]{64}\.webp$/);const response=await ctx.request.get(origin+src);assert.equal(response.status(),200);assert.match(response.headers()['cache-control']||'',/immutable/);
+  const credit=page.locator('article figure a').first();const href=await credit.getAttribute('href');assert.match(href,/^\/sources#photo-/);await credit.click();await page.locator(href.slice('/sources'.length)).waitFor();assert(await page.locator(href.slice('/sources'.length)+' a').count()>=2);
+ });
+ await scenario('country aliases and accented city searches return usable entries',async()=>{
+  for(const [query,title] of [['USA','United States'],['UK','United Kingdom'],['Czech Republic','Czechia']]){
+   const response=await ctx.request.get(origin+'/api/search?q='+encodeURIComponent(query));assert.equal(response.status(),200);const data=await response.json();assert(data.results.length>1);assert(data.results.some(r=>r.id.startsWith('country-')&&r.title===title));
+  }
+  const response=await ctx.request.get(origin+'/api/things-to-do/list?country=Poland&city=Krakow');assert.equal(response.status(),200);const data=await response.json();assert(data.rows.length);assert(data.rows.every(r=>/krak[oó]w/i.test(r.city)));
+ });
+ await scenario('the map section uses a basic street map rather than a compass',async()=>{
+  await go('/');const img=page.locator('a[href="/map"] img').first();await img.scrollIntoViewIfNeeded();await img.evaluate(img=>img.decode());assert(await img.evaluate(img=>img.naturalWidth>0));
+  await go('/sources');await page.getByText('Street map of central Europe',{exact:true}).waitFor();assert.equal(await page.getByText('Compass on map.jpg',{exact:true}).count(),0);
+ });
+ await scenario('destination guides carry real photographs and their own attraction images',async()=>{
+  await go('/destinations/rome');const gallery=page.getByRole('region',{name:'Pictures of Rome'});await gallery.locator('img').first().scrollIntoViewIfNeeded();await gallery.locator('img').first().evaluate(img=>img.decode());assert(await gallery.locator('img').first().evaluate(img=>img.naturalWidth>0));
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ });
+ await ctx.close();
+ const desktop=await context(1280);page=await desktop.newPage();
+ await scenario('expanded country directory remains readable on desktop',async()=>{await go('/things-to-do?country=Malta');await page.locator('article h2').first().waitFor();assert((await page.locator('article').allInnerTexts()).every(text=>text.includes('Malta')));await scan('/things-to-do?country=Malta',1280);});
+ await desktop.close();
+}
+
 if(isolated){
  const ctx=await context(1280);page=await ctx.newPage();
  const email='owner@audit.local',password='Audit-local-pass-1!';
@@ -141,6 +183,7 @@ if(isolated){
 await browser.close();report.finishedAt=new Date().toISOString();writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log('JOURNEY_REPORT_B64|'+brand+'|'+Buffer.from(JSON.stringify(report)).toString('base64'));console.log('JOURNEY_SUMMARY',JSON.stringify({brand,isolated,passed:report.scenarios.filter(s=>s.status==='passed').length,failed:report.scenarios.filter(s=>s.status==='failed').length,accessibility:report.accessibility.reduce((n,p)=>n+p.violations.length,0)}));
 
 if(isolated && (report.errors.length || report.scenarios.some(s=>s.status==='failed') || report.accessibility.some(p=>p.violations.some(v=>v.impact==='serious'||v.impact==='critical')))) process.exitCode=1;
+
 
 
 

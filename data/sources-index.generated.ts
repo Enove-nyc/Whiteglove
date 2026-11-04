@@ -41,10 +41,76 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 1
   },
   {
+    "host": "chabad-il.nl",
+    "url": "https://chabad-il.nl/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabad.gr",
+    "url": "https://chabad.gr/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabad.lv",
+    "url": "https://chabad.lv/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabad.odessa.ua",
+    "url": "https://chabad.odessa.ua/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
     "host": "chabad.org",
     "url": "https://chabad.org/",
     "category": "Chabad",
-    "count": 29
+    "count": 2755
+  },
+  {
+    "host": "chabad.rs",
+    "url": "https://chabad.rs/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadbarcelona.org",
+    "url": "https://chabadbarcelona.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadbasel.com",
+    "url": "https://chabadbasel.com/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadberlin.de",
+    "url": "https://chabadberlin.de/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadbulgaria.org",
+    "url": "https://chabadbulgaria.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadenmark.com",
+    "url": "https://chabadenmark.com/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadhouseofmilan.com",
+    "url": "https://chabadhouseofmilan.com/",
+    "category": "Chabad",
+    "count": 1
   },
   {
     "host": "chabadhungary.com",
@@ -53,10 +119,34 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 15
   },
   {
+    "host": "chabadireland.org",
+    "url": "https://chabadireland.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadisraelicentre.co.uk",
+    "url": "https://chabadisraelicentre.co.uk/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
     "host": "chabadkrakow.org",
     "url": "https://chabadkrakow.org/",
     "category": "Chabad",
-    "count": 8
+    "count": 9
+  },
+  {
+    "host": "chabadkyiv.org",
+    "url": "https://chabadkyiv.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadlondon.org",
+    "url": "https://chabadlondon.org/",
+    "category": "Chabad",
+    "count": 1
   },
   {
     "host": "chabadluzern.com",
@@ -65,10 +155,52 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 2
   },
   {
+    "host": "chabadmadrid.com",
+    "url": "https://chabadmadrid.com/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadnice.com",
+    "url": "https://chabadnice.com/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadofedinburgh.com",
+    "url": "https://chabadofedinburgh.com/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
     "host": "chabadpoland.org",
     "url": "https://chabadpoland.org/",
     "category": "Chabad",
-    "count": 8
+    "count": 9
+  },
+  {
+    "host": "chabadportugal.com",
+    "url": "https://chabadportugal.com/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadprague.cz",
+    "url": "https://chabadprague.cz/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadroma.org",
+    "url": "https://chabadroma.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "chabadromania.com",
+    "url": "https://chabadromania.com/",
+    "category": "Chabad",
+    "count": 1
   },
   {
     "host": "chabadsalzburg.com",
@@ -80,23 +212,89 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "chabadslovakia.com",
     "url": "https://chabadslovakia.com/",
     "category": "Chabad",
+    "count": 2
+  },
+  {
+    "host": "chabadstockholm.com",
+    "url": "https://chabadstockholm.com/",
+    "category": "Chabad",
     "count": 1
   },
   {
     "host": "chabadvienna.com",
     "url": "https://chabadvienna.com/",
     "category": "Chabad",
-    "count": 5
+    "count": 6
+  },
+  {
+    "host": "de.chabad.org",
+    "url": "https://de.chabad.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "es.chabad.org",
+    "url": "https://es.chabad.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "fr.chabad.org",
+    "url": "https://fr.chabad.org/",
+    "category": "Chabad",
+    "count": 29
+  },
+  {
+    "host": "he.chabad.org",
+    "url": "https://he.chabad.org/",
+    "category": "Chabad",
+    "count": 4
+  },
+  {
+    "host": "it.chabad.org",
+    "url": "https://it.chabad.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "leedsuchabad.org",
+    "url": "https://leedsuchabad.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "link.chabad.org",
+    "url": "https://link.chabad.org/",
+    "category": "Chabad",
+    "count": 1
   },
   {
     "host": "lubavitch.com",
     "url": "https://lubavitch.com/",
     "category": "Chabad",
-    "count": 8
+    "count": 9
+  },
+  {
+    "host": "lubavitch.fi",
+    "url": "https://lubavitch.fi/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "lubavitch.lu",
+    "url": "https://lubavitch.lu/",
+    "category": "Chabad",
+    "count": 1
   },
   {
     "host": "myascent.org",
     "url": "https://myascent.org/",
+    "category": "Chabad",
+    "count": 1
+  },
+  {
+    "host": "switzerlandchabad.com",
+    "url": "https://switzerlandchabad.com/",
     "category": "Chabad",
     "count": 1
   },
@@ -110,7 +308,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "en.wikipedia.org",
     "url": "https://en.wikipedia.org/",
     "category": "General reference",
-    "count": 934
+    "count": 1012
   },
   {
     "host": "fr.wikipedia.org",
@@ -959,6 +1157,12 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 9
   },
   {
+    "host": "jewishthessaloniki.com",
+    "url": "https://jewishthessaloniki.com/",
+    "category": "Jewish community & institutions",
+    "count": 1
+  },
+  {
     "host": "jewishtoledo.org",
     "url": "https://jewishtoledo.org/",
     "category": "Jewish community & institutions",
@@ -1700,7 +1904,7 @@ export const sourceIndex: SourceIndexEntry[] = [
     "host": "gokosher.com",
     "url": "https://gokosher.com/",
     "category": "Kosher travel & tours",
-    "count": 2
+    "count": 3
   },
   {
     "host": "gourmetkoshersafaris.com",
@@ -2165,6 +2369,12 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 1
   },
   {
+    "host": "budapest.org.il",
+    "url": "https://budapest.org.il/",
+    "category": "Other sites cited",
+    "count": 1
+  },
+  {
     "host": "budapestinfo.hu",
     "url": "https://budapestinfo.hu/",
     "category": "Other sites cited",
@@ -2447,6 +2657,12 @@ export const sourceIndex: SourceIndexEntry[] = [
     "count": 1
   },
   {
+    "host": "croatia.co.il",
+    "url": "https://croatia.co.il/",
+    "category": "Other sites cited",
+    "count": 1
+  },
+  {
     "host": "crowntravel.com",
     "url": "https://crowntravel.com/",
     "category": "Other sites cited",
@@ -2637,6 +2853,12 @@ export const sourceIndex: SourceIndexEntry[] = [
     "url": "https://eilat.city/",
     "category": "Other sites cited",
     "count": 2
+  },
+  {
+    "host": "ejc.ee",
+    "url": "https://ejc.ee/",
+    "category": "Other sites cited",
+    "count": 1
   },
   {
     "host": "elad.muni.il",
@@ -3045,6 +3267,24 @@ export const sourceIndex: SourceIndexEntry[] = [
     "url": "https://gwzkrakow.pl/",
     "category": "Other sites cited",
     "count": 2
+  },
+  {
+    "host": "habadcannes.com",
+    "url": "https://habadcannes.com/",
+    "category": "Other sites cited",
+    "count": 1
+  },
+  {
+    "host": "habadgeneve.ch",
+    "url": "https://habadgeneve.ch/",
+    "category": "Other sites cited",
+    "count": 1
+  },
+  {
+    "host": "habadlyon.com",
+    "url": "https://habadlyon.com/",
+    "category": "Other sites cited",
+    "count": 1
   },
   {
     "host": "hadera.muni.il",
