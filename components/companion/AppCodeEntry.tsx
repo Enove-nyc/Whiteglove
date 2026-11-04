@@ -27,14 +27,15 @@ export default function AppCodeEntry() {
   return (
     <form onSubmit={open} className="flex flex-wrap items-center gap-2">
       <label htmlFor="app-code" className="sr-only">
-        Code from your travel adviser
+        Your trip code
       </label>
       <input
         id="app-code"
         value={code}
         onChange={(e) => setCode(e.target.value)}
+        maxLength={128}
         autoComplete="off"
-        autoCapitalize="characters"
+        autoCapitalize="none"
         spellCheck={false}
         placeholder="Enter your code"
         className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm font-semibold tracking-[0.14em] text-[var(--navy)] outline-none focus:border-[var(--gold)]"
@@ -49,3 +50,4 @@ export default function AppCodeEntry() {
     </form>
   );
 }
+

@@ -39,6 +39,12 @@ export default function AppShellFlag() {
       document.referrer.startsWith("android-app://");
     if (!inApp) return;
     document.documentElement.setAttribute("data-app-shell", "1");
+    // Existing installed builds launch at the website root. Give them the
+    // focused search entry without changing ordinary browser visits.
+    if (window.location.pathname === "/" && !window.location.hostname.includes("whitegloveitineraries")) {
+      window.location.replace("/travel");
+      return;
+    }
 
     /**
      * AND THE SAFE AREAS BECOME REAL NUMBERS.
@@ -66,3 +72,4 @@ export default function AppShellFlag() {
   }, []);
   return null;
 }
+
