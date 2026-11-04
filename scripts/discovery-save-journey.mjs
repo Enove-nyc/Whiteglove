@@ -9,6 +9,7 @@ await redis('SET','white-glove:account-data:'+email,JSON.stringify({route:[],fav
 const browser=await chromium.launch(),ctx=await browser.newContext({viewport:{width:390,height:844}});
 await ctx.addCookies([{name:'white_glove_account',value:encodeURIComponent(email)+'.'+createHmac('sha256',secret).update(email).digest('base64url'),domain:'127.0.0.1',path:'/'}]);
 const page=await ctx.newPage();
+await page.addLocatorHandler(page.getByRole('dialog').filter({has:page.locator('a[href="/verification"]')}), async dialog=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();});
 try{
  page.on('response',r=>{if(r.url().includes('/api/account/'))console.log('ACCOUNT_RESPONSE',r.request().method(),new URL(r.url()).pathname,r.status());});
  await page.goto(base+'/things-to-do?country=Italy&city=Rome');await page.waitForTimeout(1000);
