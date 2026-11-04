@@ -1,0 +1,22 @@
+name: Destination photo and coverage preparation
+on:
+  push:
+    branches: [codex/destination-photo-research]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/research-destination-photos.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: destination-photo-research
+          path: destination-research
+          retention-days: 7
