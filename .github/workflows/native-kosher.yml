@@ -33,7 +33,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -42,14 +42,14 @@ jobs:
           java-version: "17"
 
       - name: Install Capacitor
-        run: npm install
+        run: npm ci --no-audit --no-fund
 
       - name: Sync web config + plugins into the committed Android project
         run: npx cap sync android
 
       - name: Build debug APK
         working-directory: native/kosher/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew testDebugUnitTest assembleDebug --no-daemon --stacktrace
 
       - name: Upload the debug APK
         uses: actions/upload-artifact@v4
@@ -68,7 +68,7 @@ jobs:
         working-directory: native/kosher/android
         env:
           WG_KEYSTORE_PATH: ${{ runner.temp }}/wg-upload.keystore
-        run: ./gradlew bundleRelease --no-daemon --stacktrace
+        run: ./gradlew bundleRelease assembleRelease --no-daemon --stacktrace
 
       - name: Upload the signed AAB (for the Play Store)
         if: env.WG_KEYSTORE_BASE64 != ''
@@ -76,4 +76,12 @@ jobs:
         with:
           name: kosher-release-aab
           path: native/kosher/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Upload signed release APK
+        if: env.WG_KEYSTORE_BASE64 != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: kosher-release-apk
+          path: native/kosher/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
