@@ -1,0 +1,37 @@
+name: Review final place photos and clear map
+on:
+  push:
+    branches: [codex/destination-photo-research]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: contains(github.event.head_commit.message, '[curated assets]') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python -m pip install Pillow
+      - run: python scripts/prepare-curated-photo-candidates.py
+      - run: npm install --prefix /tmp/map-capture --ignore-scripts --no-audit --no-fund playwright@1.62.0 leaflet@1.9.4
+      - run: node /tmp/map-capture/node_modules/playwright/cli.js install --with-deps chromium
+      - run: node scripts/prepare-map-thumbnail.mjs
+      - run: python scripts/finalize-map-thumbnail.py
+      - run: node scripts/build-sources-index.mjs
+      - name: Commit reviewable candidates and the clear map
+        run: |
+          git config user.name 'White Glove content preparation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add public/photos/discovery public/photos/homepage/map.webp data/homepage-photo-sources.json public/photos/homepage/LICENSES.json data/sources-index.generated.ts research/curated-photo-candidates.json
+          git commit -m 'Prepare final photographed places and clear map for review'
+          git push origin HEAD:codex/destination-photo-research
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: curated-photo-review
+          path: destination-research
+          retention-days: 7

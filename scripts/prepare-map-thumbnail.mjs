@@ -9,8 +9,9 @@ const browser=await chromium.launch();
 const page=await browser.newPage({viewport:{width:1000,height:750},deviceScaleFactor:1,userAgent:'WhiteGloveMapThumbnail/1.0 (https://github.com/Enove-nyc/Whiteglove)'});
 await page.setContent('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Map of central Europe</title><style>html,body,#map{width:100%;height:100%;margin:0}'+css+'</style></head><body><div id="map"></div></body></html>');
 await page.addScriptTag({content:js});
-await page.evaluate(()=>{window.previewMap=L.map('map',{zoomControl:false,scrollWheelZoom:false,dragging:false}).setView([48,12],5);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(window.previewMap);});
+await page.evaluate(()=>{window.previewMap=L.map('map',{zoomControl:false,fadeAnimation:false,scrollWheelZoom:false,dragging:false}).setView([48,12],5);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(window.previewMap);});
 await page.waitForFunction(()=>{const tiles=[...document.querySelectorAll('img.leaflet-tile')];return tiles.length>=9&&tiles.every(img=>img.complete&&img.naturalWidth>0);},{},{timeout:45000});
+await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 await page.screenshot({path:'destination-research/basic-map.png'});
 await browser.close();
 // Keep a retrievable policy reference with the prepared asset's review evidence.
