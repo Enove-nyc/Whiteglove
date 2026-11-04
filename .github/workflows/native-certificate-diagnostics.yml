@@ -1,0 +1,23 @@
+name: Inspect public native release verification
+on:
+  push:
+    branches: [codex/native-certificate-diagnostics]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          repository: Enove-nyc/Whiteglove
+          run-id: 41902822908
+          name: kosher-release-apk
+          path: release
+      - name: Verify the existing APK and print only public certificate output
+        run: |
+          signer=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          apk=$(find release -name '*.apk' -type f | head -1)
+          "$signer" verify --verbose --print-certs "$apk"
