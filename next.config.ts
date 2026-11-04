@@ -56,6 +56,11 @@ const nextConfig: NextConfig = {
     const CSP_REPORT_PATH = "/api/csp-report";
     return [
       {
+        // Source hashes change with each prepared photograph.
+        source: "/photos/discovery/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         // STABLE FILENAMES MUST NOT BE IMMUTABLE. This build emits
         // non-content-hashed names under /_next/static (the same chunk name
         // across releases, different contents each deploy). Next's default for
@@ -212,3 +217,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

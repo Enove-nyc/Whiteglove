@@ -20,10 +20,22 @@ async function adoptCookies(ctx,response){
  for(const m of (response.headers()['set-cookie']||'').matchAll(/(?:^|,\s*)([\w-]+)=([^;]*)/g))if(m[1].includes('white')||m[1].includes('wg'))await ctx.addCookies([{name:m[1],value:m[2],domain:'127.0.0.1',path:'/',httpOnly:true,secure:false,sameSite:'Lax',...(m[2]?{}:{expires:0})}]);
 }
 async function scenario(name,fn){try{await fn();report.scenarios.push({name,status:'passed'});}catch(e){const shot=name.replace(/[^a-z0-9]+/gi,'-')+'.jpg';const failureImage=await page?.screenshot({path:out+'/'+shot,fullPage:false,type:'jpeg',quality:65}).catch(()=>null);if(failureImage)console.log('SITE_PREVIEW_IMAGE|'+brand+'|'+shot+'|'+failureImage.toString('base64'));report.scenarios.push({name,status:'failed',error:String(e).slice(0,700),screenshot:shot});}console.log('JOURNEY',name,report.scenarios.at(-1).status);}
-async function context(width){const clientIp='192.0.2.'+(++fixtureClient);const ctx=await browser.newContext({viewport:{width,height:900},isMobile:width<500,hasTouch:width<500,extraHTTPHeaders:{'x-wg-brand':brand==='itineraries'?'itineraries':'kosher',...(isolated?{'cf-connecting-ip':clientIp,'x-forwarded-for':clientIp}:{})}});
+async function context(width,height=900){const clientIp='192.0.2.'+(++fixtureClient);const ctx=await browser.newContext({viewport:{width,height},isMobile:width<500,hasTouch:width<500,extraHTTPHeaders:{'x-wg-brand':brand==='itineraries'?'itineraries':'kosher',...(isolated?{'cf-connecting-ip':clientIp,'x-forwarded-for':clientIp}:{})}});
  await ctx.route('**/*',async route=>{const req=route.request(),u=new URL(req.url());if(req.url().startsWith(origin+'/api/analytics'))return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true}'});if(isolated&&!['127.0.0.1','localhost'].includes(u.hostname))return route.abort();if(!isolated&&!['GET','HEAD','OPTIONS'].includes(req.method()))return route.fulfill({status:409,contentType:'application/json',body:'{"error":"Audit blocked this write"}'});return route.continue();});ctx.on('page',p=>p.on('pageerror',e=>report.errors.push({width,url:p.url(),error:String(e)})));return ctx;}
 async function go(path){const response=await page.goto(origin+path,{waitUntil:'load',timeout:30000});assert(response.status()<400,path+' HTTP '+response.status());await page.waitForTimeout(800);await page.locator('html').evaluate(()=>scrollTo(0,680));await page.waitForTimeout(150);const close=page.getByRole('dialog').getByRole('button',{name:/close/i});if(await close.isVisible().catch(()=>false))await close.click();else await page.keyboard.press('Escape');await page.locator('html').evaluate(()=>scrollTo(0,0));}
 async function scan(path,width){await page.waitForTimeout(350);const r=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();report.accessibility.push({path,width,violations:r.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.slice(0,5).map(n=>n.html)}))});}
+
+async function assertDirectoryFirstPage(ctx,filters){
+ const params=new URLSearchParams(filters);
+ const response=await ctx.request.get(origin+'/api/things-to-do/list?'+params+'&limit=24');assert.equal(response.status(),200);const data=await response.json();assert(data.rows.length);
+ if(filters.country)assert(data.rows.every(row=>row.country===filters.country),JSON.stringify(data.rows.map(row=>({slug:row.slug,country:row.country}))));
+ if(filters.city)assert(data.rows.every(row=>row.city===filters.city));
+ const rendered=await page.getByRole('region',{name:'Things to do results'}).locator(':scope > article').evaluateAll(rows=>rows.map(row=>row.id));assert.deepEqual(rendered,data.rows.map(row=>row.slug));
+ const firstPage=await ctx.request.get(origin+'/things-to-do?'+params);assert.equal(firstPage.status(),200);
+ const html=await firstPage.text();const ids=await page.evaluate(markup=>{const doc=new DOMParser().parseFromString(markup,'text/html');const region=doc.querySelector('[aria-label="Things to do results"]');return region?[...region.children].filter(row=>row.tagName==='ARTICLE').map(row=>row.id):[];},html);
+ assert.deepEqual(ids,data.rows.map(row=>row.slug),'The server-rendered page must match its filters before JavaScript runs');
+}
+
 for(const width of [1280,390]){
  const ctx=await context(width);page=await ctx.newPage();page.on('pageerror',e=>report.errors.push({width,url:page.url(),error:String(e)}));
  await scenario(`home audience and primary links ${width}`,async()=>{await go('/');if(brand==='itineraries'){await page.getByRole('radio',{name:'Planning my own trip'}).check({force:true});assert.match(await page.locator('main').first().innerText(),/trip/i);}assert(await page.locator('a[href="/sample-itinerary"]').count()>0||brand==='travel');assert.equal(await page.getByRole('complementary',{name:'Development status'}).count(),0);assert.doesNotMatch(await page.locator('body').innerText(),/Demo ·|in development|not open for business/i);await scan('/',width);});
@@ -52,6 +64,79 @@ for(const width of [1280,390]){
  });
  await ctx.close();
 }
+
+if(brand==='travel'){
+ const ctx=await context(390);page=await ctx.newPage();
+ await scenario('country search opens an actual filtered list on a phone',async()=>{
+  await go('/');await page.locator('#home-hero-search').fill('Japan');
+  const option=page.getByRole('option').filter({hasText:'Japan'}).filter({hasText:'Explore cities, culture and things to do'});await option.first().click();
+  await page.waitForURL(url=>url.pathname==='/things-to-do'&&url.searchParams.get('country')==='Japan');
+  await page.getByRole('region',{name:'Things to do results'}).locator('article h2').first().waitFor();
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await assertDirectoryFirstPage(ctx,{country:'Japan'});await scan('/things-to-do?country=Japan',390);
+ });
+ await scenario('new city search opens its own sights without a full guide',async()=>{
+  await go('/');await page.locator('#home-hero-search').fill('Seoul');
+  await page.getByRole('option').filter({hasText:'Seoul'}).filter({hasText:'Explore things to do'}).first().click();
+  await page.waitForURL(url=>url.pathname==='/things-to-do'&&url.searchParams.get('city')==='Seoul');
+  await page.getByRole('region',{name:'Things to do results'}).locator('article h2').first().waitFor();
+  await assertDirectoryFirstPage(ctx,{country:'South Korea',city:'Seoul'});await page.reload();await page.getByRole('region',{name:'Things to do results'}).locator('article h2').first().waitFor();
+ });
+ await scenario('place photographs load locally with permanent caching and central credits',async()=>{
+  await go('/things-to-do?country=Italy&city=Rome');const img=page.locator('article figure img').first();await img.scrollIntoViewIfNeeded();await img.evaluate(img=>img.decode());assert(await img.evaluate(img=>img.naturalWidth>0));
+  const src=await img.getAttribute('src');assert.match(src,/^\/photos\/discovery\/[a-f0-9]{64}\.webp$/);const response=await ctx.request.get(origin+src);assert.equal(response.status(),200);assert.match(response.headers()['cache-control']||'',/immutable/);
+  const credit=page.locator('article figure a').first();const href=await credit.getAttribute('href');assert.match(href,/^\/sources#photo-/);await credit.click();await page.locator(href.slice('/sources'.length)).waitFor();assert(await page.locator(href.slice('/sources'.length)+' a').count()>=2);
+ });
+ await scenario('country aliases and accented city searches return usable entries',async()=>{
+  for(const [query,title] of [['USA','United States'],['UK','United Kingdom'],['Czech Republic','Czechia']]){
+   const response=await ctx.request.get(origin+'/api/search?q='+encodeURIComponent(query));assert.equal(response.status(),200);const data=await response.json();assert(data.results.length>1);assert(data.results.some(r=>r.id.startsWith('country-')&&r.title===title));
+  }
+  const response=await ctx.request.get(origin+'/api/things-to-do/list?country=Poland&city=Krakow');assert.equal(response.status(),200);const data=await response.json();assert(data.rows.length);assert(data.rows.every(r=>/krak[oó]w/i.test(r.city)));
+ });
+ await scenario('the map section uses a basic street map rather than a compass',async()=>{
+  await go('/');const img=page.locator('a[href="/map"] img').first();await img.scrollIntoViewIfNeeded();await img.evaluate(img=>img.decode());assert(await img.evaluate(img=>img.naturalWidth>0));
+  await go('/sources');await page.getByText('Street map of central Europe',{exact:true}).waitFor();assert.equal(await page.getByText('Compass on map.jpg',{exact:true}).count(),0);
+ });
+ await scenario('destination guides carry real photographs and their own attraction images',async()=>{
+  await go('/destinations/rome');const gallery=page.getByRole('region',{name:'Pictures of Rome'});await gallery.locator('img').first().scrollIntoViewIfNeeded();await gallery.locator('img').first().evaluate(img=>img.decode());assert(await gallery.locator('img').first().evaluate(img=>img.naturalWidth>0));
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ });
+ await ctx.close();
+ const desktop=await context(1280);page=await desktop.newPage();
+ await scenario('expanded country directory remains readable on desktop',async()=>{await go('/things-to-do?country=Malta');await page.getByRole('region',{name:'Things to do results'}).locator('article h2').first().waitFor();await assertDirectoryFirstPage(desktop,{country:'Malta'});await scan('/things-to-do?country=Malta',1280);});
+ await desktop.close();
+}
+
+
+if(brand==='travel'){
+ const ctx=await context(390);page=await ctx.newPage();
+ await scenario('search photo background cycles can pause and stay still while typing',async()=>{
+  await page.clock.install();await go('/');
+  const hero=page.locator('[data-search-photo]');const next=page.getByRole('button',{name:'Next background photo',exact:true});
+  await next.waitFor();await page.waitForFunction(()=>!document.querySelector('button[aria-label="Next background photo"]').disabled);
+  await page.waitForFunction(()=>document.querySelector('[data-search-photo]').getAttribute('data-photo-playing')==='true');
+  const first=await hero.getAttribute('data-search-photo');await page.clock.fastForward(10000);assert.notEqual(await hero.getAttribute('data-search-photo'),first);
+  await page.getByRole('button',{name:'Pause background photos',exact:true}).click();const held=await hero.getAttribute('data-search-photo');await page.clock.fastForward(30000);assert.equal(await hero.getAttribute('data-search-photo'),held);
+  await page.getByRole('button',{name:'Play background photos',exact:true}).click();const input=page.locator('#home-hero-search');await input.fill('Venice');const before=await input.boundingBox();const typing=await hero.getAttribute('data-search-photo');await page.clock.fastForward(20000);assert.equal(await hero.getAttribute('data-search-photo'),typing);assert.equal(await input.inputValue(),'Venice');const after=await input.boundingBox();assert(before&&after&&Math.abs(before.y-after.y)<1);
+ });
+ await ctx.close();
+ const reduced=await context(390);page=await reduced.newPage();await page.emulateMedia({reducedMotion:'reduce'});
+ await scenario('reduced motion keeps a static background with manual photo choice',async()=>{
+  await page.clock.install();await go('/');const hero=page.locator('[data-search-photo]');const first=await hero.getAttribute('data-search-photo');await page.clock.fastForward(30000);assert.equal(await hero.getAttribute('data-search-photo'),first);assert.equal(await hero.getAttribute('data-photo-playing'),'false');
+  const next=page.getByRole('button',{name:'Next background photo',exact:true});await page.waitForFunction(()=>!document.querySelector('button[aria-label="Next background photo"]').disabled);await next.click();assert.notEqual(await hero.getAttribute('data-search-photo'),first);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ });
+ await reduced.close();
+}
+
+
+if(brand==='travel'){
+ const ctx=await context(390,667);page=await ctx.newPage();
+ await scenario('country suggestions and the final result option fit on a short phone',async()=>{
+  await go('/');await page.locator('#home-hero-search').fill('Japan');const list=page.getByRole('listbox').filter({has:page.getByRole('option')});await list.waitFor();
+  await page.getByRole('option').filter({hasText:'Japan'}).first().waitFor();const box=await list.boundingBox();assert(box&&box.y>=0&&box.y+box.height<=667);await list.getByRole('option').last().scrollIntoViewIfNeeded();assert(await list.getByRole('option').last().isVisible());
+ });
+ await ctx.close();
+}
+
 if(isolated){
  const ctx=await context(1280);page=await ctx.newPage();
  const email='owner@audit.local',password='Audit-local-pass-1!';
@@ -141,6 +226,7 @@ if(isolated){
 await browser.close();report.finishedAt=new Date().toISOString();writeFileSync(out+'/report.json',JSON.stringify(report,null,2));console.log('JOURNEY_REPORT_B64|'+brand+'|'+Buffer.from(JSON.stringify(report)).toString('base64'));console.log('JOURNEY_SUMMARY',JSON.stringify({brand,isolated,passed:report.scenarios.filter(s=>s.status==='passed').length,failed:report.scenarios.filter(s=>s.status==='failed').length,accessibility:report.accessibility.reduce((n,p)=>n+p.violations.length,0)}));
 
 if(isolated && (report.errors.length || report.scenarios.some(s=>s.status==='failed') || report.accessibility.some(p=>p.violations.some(v=>v.impact==='serious'||v.impact==='critical')))) process.exitCode=1;
+
 
 
 

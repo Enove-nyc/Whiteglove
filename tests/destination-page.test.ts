@@ -229,7 +229,7 @@ describe("an attraction on a destination page can be acted on", () => {
     // own site, or put it on their trip — the three things this site exists
     // to do — and the only way on was a link at the foot of the section to
     // browse everything and find it again elsewhere.
-    const card = PAGE.slice(PAGE.indexOf("function ThingsToDo"), PAGE.indexOf("function ThingsToDo") + 4000);
+    const card = PAGE.slice(PAGE.indexOf("function ThingsToDo"), PAGE.indexOf("async function KosherFood"));
     assert.match(card, /\{attraction\.address\}/, "no address on the card");
     assert.match(card, /placeDirectionsUrl\(attraction\.address, attraction\.coordinates\)/, "no way to navigate");
     assert.match(card, /Hours &amp; tickets/, "no link to the place's own site");
@@ -240,7 +240,7 @@ describe("an attraction on a destination page can be acted on", () => {
     // Two cards for one attraction must not produce two different saved
     // places. A valley is a coordinate and nothing else, so the town is the
     // fallback rather than a blank line in somebody's route.
-    const card = PAGE.slice(PAGE.indexOf("function ThingsToDo"), PAGE.indexOf("function ThingsToDo") + 4000);
+    const card = PAGE.slice(PAGE.indexOf("function ThingsToDo"), PAGE.indexOf("async function KosherFood"));
     assert.match(card, /id: `attraction-\$\{attraction\.slug\}`/);
     assert.match(card, /address: attraction\.address \|\| `\$\{attraction\.city\}, \$\{attraction\.country\}`/);
     const directory = readFileSync("components/AttractionDirectory.tsx", "utf8");
@@ -250,7 +250,7 @@ describe("an attraction on a destination page can be acted on", () => {
 
   it("only shows an action it can actually perform", () => {
     // No Navigate without coordinates, no hours link without a site.
-    const card = PAGE.slice(PAGE.indexOf("function ThingsToDo"), PAGE.indexOf("function ThingsToDo") + 4000);
+    const card = PAGE.slice(PAGE.indexOf("function ThingsToDo"), PAGE.indexOf("async function KosherFood"));
     assert.match(card, /\{attraction\.coordinates \?/);
     assert.match(card, /\{attraction\.website \?/);
     assert.match(card, /\{attraction\.address \?/);

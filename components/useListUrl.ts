@@ -28,8 +28,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  */
 export function useListUrl<K extends string>(
   defaults: Record<K, string>,
+  initialValues?: Partial<Record<K, string>>,
 ): [Record<K, string>, (patch: Partial<Record<K, string>>) => void, () => void] {
-  const [state, setState] = useState<Record<K, string>>(defaults);
+  const [state, setState] = useState<Record<K, string>>(() => ({ ...defaults, ...initialValues }));
   // The defaults are a fresh object literal on every render at every call
   // site, so they are held in a ref rather than listed as an effect
   // dependency — otherwise the read-once effect runs on every render and
@@ -92,3 +93,4 @@ export function useListUrl<K extends string>(
 export function anyActive<K extends string>(state: Record<K, string>, defaults: Record<K, string>): boolean {
   return (Object.keys(defaults) as K[]).some((key) => state[key] !== defaults[key]);
 }
+

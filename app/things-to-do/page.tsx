@@ -1,3 +1,4 @@
+import { canonicalCountry } from "@/lib/destination-geography";
 import { pageMetadata } from "@/lib/seo";
 import AttractionDirectory from "@/components/AttractionDirectory";
 import Footer from "@/components/Footer";
@@ -15,11 +16,14 @@ import { resolvePage } from "@/lib/pages";
 // rather than this page running a real database read on every visit.
 export const metadata = pageMetadata({
   title: "Things to do — White Glove Kosher Travel",
-  description: "What to do on a kosher trip to Italy, France and Switzerland, with what is near the kosher food and what happens on Shabbos.",
+  description: "Explore cultural sights, museums, parks, nature and family activities by country or city.",
   path: "/things-to-do",
 });
 
-export default async function AttractionsPage() {
+export default async function AttractionsPage({ searchParams }: { searchParams: Promise<{ q?: string | string[]; country?: string | string[]; city?: string | string[]; kind?: string | string[] }> }) {
+  const params = await searchParams;
+  const value = (key: keyof typeof params) => { const raw = params[key]; return (typeof raw === "string" ? raw : raw?.[0] ?? "").slice(0, 80); };
+  const initialFilters = { q: value("q"), country: canonicalCountry(value("country")), city: value("city"), kind: value("kind") };
   // Read through the view, not the data file, so anything the owner adds in the
   // admin appears here and in every search without a redeploy.
   //
@@ -30,7 +34,7 @@ export default async function AttractionsPage() {
   // The first page, rendered by the server: the page arrives whole and
   // indexable, and a visitor who reads what is in front of them touches the
   // network not at all. Later searches ask /api/things-to-do/list.
-  const first = searchAttractionList(attractions, { limit: PAGE });
+  const first = searchAttractionList(attractions, { query: initialFilters.q, ...initialFilters, limit: PAGE });
   const facets = attractionFacets(attractions);
   const page = await resolvePage("things-to-do");
   return (
@@ -51,7 +55,7 @@ export default async function AttractionsPage() {
       )}
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
-        <AttractionDirectory initial={first.rows} initialMore={first.more} facets={facets} />
+        <AttractionDirectory initialFilters={initialFilters} initial={first.rows} initialMore={first.more} facets={facets} />
       </section>
 
 
@@ -77,3 +81,4 @@ export default async function AttractionsPage() {
     </main>
   );
 }
+

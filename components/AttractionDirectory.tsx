@@ -1,5 +1,7 @@
 "use client";
 
+import PlacePhoto from "@/components/PlacePhoto";
+import { canonicalCountry } from "@/lib/destination-geography";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SaveListingButton } from "@/components/SaveListingButton";
 import Link from "next/link";
@@ -44,15 +46,17 @@ const DEFAULTS = { q: "", country: "", kind: "", city: "" };
 export default function AttractionDirectory({
   initial,
   initialMore,
+  initialFilters,
   facets,
 }: {
   initial: AttractionCard[];
   initialMore: boolean;
+  initialFilters?: Partial<typeof DEFAULTS>;
   facets: AttractionFacets;
 }) {
   // In the address bar, so a filtered list is a link somebody can send and
   // survives a press of the back button from an entry. components/useListUrl.ts.
-  const [filters, setFilters, reset] = useListUrl(DEFAULTS);
+  const [filters, setFilters, reset] = useListUrl(DEFAULTS, initialFilters);
   const { q: query, country, kind, city } = filters;
   const [openNearby, setOpenNearby] = useState<string | null>(null);
 
@@ -81,7 +85,7 @@ export default function AttractionDirectory({
    * "the ones in Rome".
    */
   const cities = useMemo(
-    () => (country ? facets.citiesByCountry[country] ?? [] : facets.cities).map((value) => ({ value, label: value })),
+    () => (country ? facets.citiesByCountry[canonicalCountry(country)] ?? [] : facets.cities).map((value) => ({ value, label: value })),
     [facets, country],
   );
 
@@ -166,7 +170,7 @@ export default function AttractionDirectory({
         filters={[
           {
             label: "Country",
-            value: country,
+            value: canonicalCountry(country),
             // Changing the country empties the city, because the city that was
             // chosen is not in the new one.
             onChange: (value: string) => setFilters({ country: value, city: "" }),
@@ -184,11 +188,12 @@ export default function AttractionDirectory({
         </p>
       )}
 
-      <div className={`mt-8 grid gap-5 md:grid-cols-2 ${busy ? "opacity-60" : ""}`}>
+      <div role="region" aria-label="Things to do results" className={`mt-8 grid gap-5 md:grid-cols-2 ${busy ? "opacity-60" : ""}`}>
         {visible.map((a) => (
           // The id is what /stops and the planner link to — this page is one
           // page with an anchor per entry, not a page each.
           <article key={a.slug} id={a.slug} className="min-w-0 scroll-mt-24 border border-[var(--gold-light)] bg-[#FAF8F3] p-5 sm:p-7">
+            <PlacePhoto photo={a.photo} />
             <p className="break-words text-xs font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)] sm:tracking-[0.18em]">
               {a.city} · {a.country} · {a.kind}
             </p>
@@ -350,3 +355,4 @@ export default function AttractionDirectory({
     </>
   );
 }
+

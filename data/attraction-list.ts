@@ -19,6 +19,9 @@
  * (lib/list-search.ts), so a query finds what it always found.
  */
 
+import { photoForAttraction } from "@/lib/discovery-photos";
+import type { PlacePhoto } from "@/lib/discovery-photo-types";
+import { canonicalCountry, geographicKey, geographicTerms, sameCountry } from "@/lib/destination-geography";
 import { listMatches, listRank } from "@/lib/list-search";
 import { extraSpellings } from "@/lib/place-search";
 import type { Attraction } from "@/data/attractions";
@@ -30,7 +33,7 @@ import type { Attraction } from "@/data/attractions";
  * — summary and notes included. Only sourceUrl stays behind. The saving here
  * is not narrower records but FEWER of them: 24 instead of 781.
  */
-export type AttractionCard = Omit<Attraction, "sourceUrl">;
+export type AttractionCard = Omit<Attraction, "sourceUrl"> & { photo?: PlacePhoto };
 
 export function toAttractionCard(a: Attraction): AttractionCard {
   // Named rather than destructured-and-discarded: the lint rule is right that
@@ -43,6 +46,7 @@ export function toAttractionCard(a: Attraction): AttractionCard {
     country: a.country,
     kind: a.kind,
     summary: a.summary,
+    photo: photoForAttraction(a),
     ...(a.address ? { address: a.address } : {}),
     ...(a.coordinates ? { coordinates: a.coordinates } : {}),
     ...(a.website ? { website: a.website } : {}),
@@ -54,7 +58,7 @@ export function toAttractionCard(a: Attraction): AttractionCard {
 
 /** Everything a query is matched against — unchanged from the browser's version. */
 function haystack(a: Attraction): string {
-  return [a.name, a.city, a.country, a.kind, a.summary, (a.notes ?? []).join(" "), extraSpellings([a.slug, a.city])].join(" ");
+  return [a.name, a.city, a.country, a.kind, ...geographicTerms(a.city, a.country), a.summary, (a.notes ?? []).join(" "), extraSpellings([a.slug, a.city])].join(" ");
 }
 
 export type AttractionQuery = {
@@ -87,9 +91,9 @@ export function searchAttractionList(all: readonly Attraction[], q: AttractionQu
   const matched = all
     .filter(
       (a) =>
-        (!country || a.country === country) &&
+        (!country || sameCountry(a.country, country)) &&
         (!kind || a.kind === kind) &&
-        (!city || a.city === city) &&
+        (!city || geographicKey(a.city) === geographicKey(city)) &&
         listMatches(haystack(a), query),
     )
     .sort((a, b) => listRank(query, a.city, a.name) - listRank(query, b.city, b.name));
@@ -131,14 +135,15 @@ export type AttractionFacets = {
 export function attractionFacets(all: readonly Attraction[]): AttractionFacets {
   const citiesByCountry: Record<string, string[]> = {};
   for (const a of all) {
-    const list = (citiesByCountry[a.country] ??= []);
+    const list = (citiesByCountry[canonicalCountry(a.country)] ??= []);
     if (!list.includes(a.city)) list.push(a.city);
   }
   for (const list of Object.values(citiesByCountry)) list.sort();
   return {
-    countries: [...new Set(all.map((a) => a.country))].sort(),
+    countries: [...new Set(all.map((a) => canonicalCountry(a.country)))].sort(),
     kinds: [...new Set(all.map((a) => a.kind))].sort(),
     citiesByCountry,
     cities: [...new Set(all.map((a) => a.city))].sort(),
   };
 }
+

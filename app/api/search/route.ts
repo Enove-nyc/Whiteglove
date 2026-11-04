@@ -15,8 +15,10 @@ export const dynamic = "force-dynamic";
 // state). Heritage towns and cemeteries are not included in that list.
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q") || "";
-  const raw = Number(request.nextUrl.searchParams.get("limit"));
+  const requested = request.nextUrl.searchParams.get("limit");
+  const raw = requested?.trim() ? Number(requested) : Number.NaN;
   const limit = Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 1), 100) : q.trim() ? 10 : 50;
   const response = await searchSite(q, limit);
   return NextResponse.json(response);
 }
+

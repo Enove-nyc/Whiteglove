@@ -110,7 +110,7 @@ export default function VacationCard({ card, compact = false }: { card: Director
     card.kind === "vacation" && card.destination.region
       ? `${card.destination.region} · ${country}`
       : country;
-  const photoSrc = card.kind === "vacation" ? destinationPhotoSrc(card.destination.photos) : DEFAULT_PHOTO;
+  const photoSrc = card.kind === "vacation" ? destinationPhotoSrc(card.destination.photos) : card.photo?.src ?? DEFAULT_PHOTO;
 
   return (
     <Link
@@ -168,3 +168,4 @@ export default function VacationCard({ card, compact = false }: { card: Director
     </Link>
   );
 }
+
