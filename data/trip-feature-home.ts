@@ -27,6 +27,7 @@ export const ON_BOTH: readonly string[] = [
   "components/companion/TripGroupChat.tsx",
   "lib/trip-group-identity.ts",
   "lib/trip-group-store.ts",
+  "lib/trip-chat-channels.ts",
   "app/api/account/inbound/route.ts",
   "app/api/account/itinerary/collaborators/route.ts",
   "app/api/account/itinerary/comments/route.ts",
