@@ -26,19 +26,21 @@ requests.push(...cities.values());
 for(const d of existing.vacations)requests.push({key:d.slug,scope:'vacation',title:title(d.name),city:d.cities[0],country:d.country,expected:null});
 const pages=new Map();const titles=[...new Set(requests.map(r=>r.title))];
 for(let i=0;i<titles.length;i+=20){
- const batch=titles.slice(i,i+20);const data=await api('en.wikipedia.org',{action:'query',prop:'pageimages|coordinates|info',inprop:'url',piprop:'original',pilicense:'free',redirects:'1',coprimary:'primary',titles:batch.join('|')});
+ const batch=titles.slice(i,i+20);const data=await api('en.wikipedia.org',{action:'query',prop:'pageimages|coordinates|info|pageprops',ppprop:'wikibase_item',inprop:'url',piprop:'original',pilicense:'free',redirects:'1',coprimary:'primary',colimit:'max',titles:batch.join('|')});
  if(data?.query){const q=data.query;const rewrites=new Map([...(q.normalized??[]),...(q.redirects??[])].map(a=>[titleKey(a.from),a.to]));for(const t of batch){let key=t;const seen=new Set();while(rewrites.has(titleKey(key))&&!seen.has(titleKey(key))){seen.add(titleKey(key));key=rewrites.get(titleKey(key));}const p=q.pages.find(p=>titleKey(p.title)===titleKey(key));if(p&&!p.missing&&!p.invalid)pages.set(t,p);}}
  await pause(200);
 }
+const entities=new Map();const ids=[...new Set([...pages.values()].map(p=>p.pageprops?.wikibase_item).filter(Boolean))];
+for(let i=0;i<ids.length;i+=30){const data=await api('www.wikidata.org',{action:'wbgetentities',ids:ids.slice(i,i+30).join('|'),props:'claims'});for(const [id,e]of Object.entries(data?.entities??{}))entities.set(id,e);await pause(200);}
 const newPlaces=[],candidates=[],missing=[];
 for(const r of requests){
- const p=pages.get(r.title),point=p?.coordinates?.[0];
+ const p=pages.get(r.title),entity=entities.get(p?.pageprops?.wikibase_item),claimPoint=entity?.claims?.P625?.find(c=>c.mainsnak?.datavalue)?.mainsnak.datavalue.value,point=p?.coordinates?.[0]??(claimPoint?{lat:claimPoint.latitude,lon:claimPoint.longitude}:null);
  if(!p||!point){missing.push({key:r.key,scope:r.scope,reason:'No exact article with coordinates',title:r.title});continue;}
  // Exact titles and nearby coordinates protect against similarly named places.
  if(r.expected&&distance(r.expected,point)>(r.scope==='city'?100:25)){missing.push({key:r.key,scope:r.scope,reason:'Article coordinates do not match listing',title:r.title});continue;}
  if(r.scope==='new'){const a=r.seed;const slug=norm(a.city+' '+a.name).replaceAll(' ','-');newPlaces.push({slug,name:a.name,city:a.city,country:a.country,kind:a.kind,summary:a.summary,coordinates:`${point.lat}, ${point.lon}`,sourceUrl:p.fullurl});r.key=slug;}
- const source=p.original?.source;if(!source||!/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//.test(source)||!/\.(jpe?g|webp)(?:\?|$)/i.test(source)){missing.push({key:r.key,scope:r.scope,reason:'No free Commons photograph on article',title:r.title});continue;}
- const file=decodeURIComponent(new URL(source).pathname.split('/').at(-1)).replaceAll('_',' ');
+ const source=p.original?.source;const claimedFile=entity?.claims?.P18?.find(c=>c.mainsnak?.datavalue)?.mainsnak.datavalue.value;const freeOriginal=source&&/^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\//.test(source)&&/\.(jpe?g|webp)(?:\?|$)/i.test(source);if(!freeOriginal&&!(typeof claimedFile==='string'&&/\.(jpe?g|webp)$/i.test(claimedFile))){missing.push({key:r.key,scope:r.scope,reason:'No free Commons photograph on article',title:r.title});continue;}
+ const file=freeOriginal?decodeURIComponent(new URL(source).pathname.split('/').at(-1)).replaceAll('_',' '):claimedFile.replaceAll('_',' ');
  candidates.push({...r,file:'File:'+file,article:p.fullurl,articleTitle:p.title});
 }
 const infoByFile=new Map();const files=[...new Set(candidates.map(c=>c.file))];
@@ -53,7 +55,7 @@ for(const c of candidates){
  const licenseUrl=plain(m.LicenseUrl?.value).replace(/^http:\/\/creativecommons\.org\//,'https://creativecommons.org/')|| (license==='Public domain'?'https://creativecommons.org/publicdomain/mark/1.0/':'');
  if(!/^https:\/\//.test(licenseUrl)){missing.push({key:c.key,scope:c.scope,reason:'No reusable license URL'});continue;}
  const id=i.sha1;credits[id]={id,title:c.file.slice(5),author,license,licenseUrl,sourcePage:i.descriptionurl,originalUrl:i.url.split('?')[0],sha1:i.sha1,checkedAt:new Date().toISOString().slice(0,10),changes:'Displayed with a responsive crop; no generative alteration.'};
- const entry={src,alt:c.scope==='city'?`View of ${c.city}, ${c.country}`:c.scope==='vacation'?c.articleTitle:c.seed?.name??existing.attractions.find(a=>a.slug===c.key)?.name??c.articleTitle,creditId:id,article:c.article};
+ const entry={src,alt:c.scope==='city'?`View of ${c.city}, ${c.country}`:c.scope==='vacation'?c.articleTitle:c.articleTitle,creditId:id,article:c.article};
  accepted[c.scope==='new'?'attraction':c.scope][c.key]=entry;
 }
 mkdirSync('destination-research',{recursive:true});
