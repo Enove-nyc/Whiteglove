@@ -80,7 +80,7 @@ export default function ListToolbar({
        to scroll back to the top to reach. top-16 is the header's scrolled
        height (min-h-16 in Navbar); by the time this reaches the top of the
        viewport the header has already shrunk to it. */
-    <div className="sticky top-16 z-[var(--wg-z-list-toolbar)] rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5 shadow-[0_6px_16px_rgba(23,45,82,.06)]">
+    <div className="wg-list-toolbar lg:sticky lg:top-16 z-[var(--wg-z-list-toolbar)] rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5 shadow-[0_6px_16px_rgba(23,45,82,.06)]">
       <div className="flex flex-wrap items-end gap-3">
         <label className="block min-w-0 flex-1 basis-64">
           <span className={captionClass}>{searchLabel}</span>
@@ -97,7 +97,7 @@ export default function ListToolbar({
       </div>
 
       {filters.length > 0 && (
-        <details className="mt-3 rounded-xl border border-[var(--gold-light)] bg-white px-4 py-1" open={setFilters.length > 0}>
+        <details className="mt-3 rounded-xl border border-[var(--gold-light)] bg-white px-4 py-1">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 font-semibold text-[var(--navy)] [&::-webkit-details-marker]:hidden">
             <Icon name="chevron-down" className="h-4 w-4" />
             Filter
