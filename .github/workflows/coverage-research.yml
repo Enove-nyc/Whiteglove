@@ -5,12 +5,13 @@ on:
 permissions:
   contents: read
 jobs:
-  research:
+  sources:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: node scripts/research-thin-cities.mjs
+      - run: node scripts/build-sources-index.mjs
+      - run: node -e "console.log('GENERATED_SOURCES_B64|'+require('fs').readFileSync('data/sources-index.generated.ts').toString('base64'))"
