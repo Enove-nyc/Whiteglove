@@ -378,7 +378,7 @@ export default function DestinationSearch({
         <div
           id={listId}
           role="listbox"
-          className="absolute z-20 mt-2 max-h-[min(28rem,70vh)] w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-xl"
+          className="absolute z-20 mt-2 max-h-[min(24rem,45svh)] sm:max-h-[min(28rem,70vh)] w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-xl"
         >
           {response?.interpretedAs && trimmed && !searching ? (
             <p className="border-b border-[var(--gold-light)] px-5 py-2 text-xs text-stone-500">

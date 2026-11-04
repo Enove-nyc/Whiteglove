@@ -188,7 +188,7 @@ export default function AttractionDirectory({
         </p>
       )}
 
-      <div className={`mt-8 grid gap-5 md:grid-cols-2 ${busy ? "opacity-60" : ""}`}>
+      <div role="region" aria-label="Things to do results" className={`mt-8 grid gap-5 md:grid-cols-2 ${busy ? "opacity-60" : ""}`}>
         {visible.map((a) => (
           // The id is what /stops and the planner link to — this page is one
           // page with an anchor per entry, not a page each.

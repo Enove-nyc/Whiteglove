@@ -88,7 +88,7 @@ export default function HomeSearchHero({ children }: { children: ReactNode }) {
             <button type="button" onClick={() => setPaused(value => !value)}
               aria-label={paused ? "Play background photos" : "Pause background photos"}
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/40 bg-[#102d42]/80 px-4 text-xs font-semibold text-white backdrop-blur-sm hover:bg-[#102d42] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              <span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span>{paused ? "Play" : "Pause"}
+              {paused ? "Play" : "Pause"}
             </button>
           ) : null}
           <button type="button" aria-label="Next background photo" disabled={!ready.has(next)}
