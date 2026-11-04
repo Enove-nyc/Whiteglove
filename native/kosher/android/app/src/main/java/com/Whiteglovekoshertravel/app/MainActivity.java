@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.webkit.PermissionRequest;
+import android.webkit.WebView;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -15,11 +16,14 @@ import com.getcapacitor.BridgeWebChromeClient;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class MainActivity extends BridgeActivity {
+    AppStartupGuard startup;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startup = AppStartupGuard.attach(this, "https://www.whiteglovekoshertravel.com/travel", "White Glove Kosher Travel");
         // The web app's voice notes and camera need the OS mic and camera
         // permissions; ask for them up front so the WebView grant below always
         // has the real OS grant behind it.
@@ -65,5 +69,10 @@ public class MainActivity extends BridgeActivity {
                 });
             }
         });
+    }
+    @Override
+    public void onDestroy() {
+        if (startup != null) startup.destroy();
+        super.onDestroy();
     }
 }
