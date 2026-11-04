@@ -1,0 +1,755 @@
+{
+  "candidates": [
+    {
+      "key": "dachau-memorial",
+      "label": "Dachau Memorial",
+      "photo": {
+        "src": "/photos/discovery/8cc6863cc05373b703e378c0bc61c87e8f1f46ecf513bbb6da03062c05e22671.webp",
+        "alt": "Dachau Memorial",
+        "creditId": "394de38aeb4182292dcf17c27b301874cb5b5c9a",
+        "width": 638,
+        "height": 480,
+        "bytes": 92112,
+        "article": "https://commons.wikimedia.org/wiki/File:Dachau_KZ-Gedenkst%C3%A4tte_-_Haupttor.JPG"
+      },
+      "credit": {
+        "id": "394de38aeb4182292dcf17c27b301874cb5b5c9a",
+        "title": "Dachau KZ-Gedenkstätte - Haupttor.JPG",
+        "author": "Guido Radig",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Dachau_KZ-Gedenkst%C3%A4tte_-_Haupttor.JPG",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Dachau_KZ-Gedenkst%C3%A4tte_-_Haupttor.JPG",
+        "sha1": "394de38aeb4182292dcf17c27b301874cb5b5c9a",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "dachau-memorial",
+      "label": "Dachau Memorial",
+      "photo": {
+        "src": "/photos/discovery/6d2b00e908cbfea4fac48df0fa1e46d83a5e77b6ef9f0a239d5c0265c059ba13.webp",
+        "alt": "Dachau Memorial",
+        "creditId": "daba65d93a9b6feee5f699cdf61cf3d1b97a45fb",
+        "width": 640,
+        "height": 427,
+        "bytes": 21454,
+        "article": "https://commons.wikimedia.org/wiki/File:Beekeeping_near_Dachau_castle_05.jpg"
+      },
+      "credit": {
+        "id": "daba65d93a9b6feee5f699cdf61cf3d1b97a45fb",
+        "title": "Beekeeping near Dachau castle 05.jpg",
+        "author": "Kritzolina",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Beekeeping_near_Dachau_castle_05.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/df/Beekeeping_near_Dachau_castle_05.jpg",
+        "sha1": "daba65d93a9b6feee5f699cdf61cf3d1b97a45fb",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "dachau-memorial",
+      "label": "Dachau Memorial",
+      "photo": {
+        "src": "/photos/discovery/11bba3e590e169969f308b7a8c0b9631d39a694371513845bbd64dbfea34aeea.webp",
+        "alt": "Dachau Memorial",
+        "creditId": "4b0edc7b4782cc66e609453e567184696001551c",
+        "width": 640,
+        "height": 480,
+        "bytes": 28398,
+        "article": "https://commons.wikimedia.org/wiki/File:Dachau_ingresso_campo.jpg"
+      },
+      "credit": {
+        "id": "4b0edc7b4782cc66e609453e567184696001551c",
+        "title": "Dachau ingresso campo.jpg",
+        "author": "Utente:LupoCapra",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Dachau_ingresso_campo.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/65/Dachau_ingresso_campo.jpg",
+        "sha1": "4b0edc7b4782cc66e609453e567184696001551c",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "caesarea",
+      "label": "Caesarea Maritima",
+      "photo": {
+        "src": "/photos/discovery/a3044f617fb39fb8ef5eabf81466e4c07e73c419f837e9b36e9bb82864800495.webp",
+        "alt": "Caesarea Maritima",
+        "creditId": "bd8494a1a6bf802b0117effe58602b581bd85bb0",
+        "width": 640,
+        "height": 480,
+        "bytes": 40824,
+        "article": "https://commons.wikimedia.org/wiki/File:Caesarea_theatre-_Corinthian_capital.jpg"
+      },
+      "credit": {
+        "id": "bd8494a1a6bf802b0117effe58602b581bd85bb0",
+        "title": "Caesarea theatre- Corinthian capital.jpg",
+        "author": "Noga rotem",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Caesarea_theatre-_Corinthian_capital.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/09/Caesarea_theatre-_Corinthian_capital.jpg",
+        "sha1": "bd8494a1a6bf802b0117effe58602b581bd85bb0",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "caesarea",
+      "label": "Caesarea Maritima",
+      "photo": {
+        "src": "/photos/discovery/b80324137ce5659e28f545d973d18318e736044f21ab90f8db7e9cbeb5b3fb88.webp",
+        "alt": "Caesarea Maritima",
+        "creditId": "24da1e97b30e03a04b42105ce55dae3493ebf980",
+        "width": 640,
+        "height": 360,
+        "bytes": 34680,
+        "article": "https://commons.wikimedia.org/wiki/File:Caesarea_theatre.jpg"
+      },
+      "credit": {
+        "id": "24da1e97b30e03a04b42105ce55dae3493ebf980",
+        "title": "Caesarea theatre.jpg",
+        "author": "Noga rotem",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Caesarea_theatre.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Caesarea_theatre.jpg",
+        "sha1": "24da1e97b30e03a04b42105ce55dae3493ebf980",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "caesarea",
+      "label": "Caesarea Maritima",
+      "photo": {
+        "src": "/photos/discovery/92f7fa6e66bd837be80e6555cee1c44169c8ccbd7d9185419e7d7ac5a3789e09.webp",
+        "alt": "Caesarea Maritima",
+        "creditId": "0d0494f2c8adf2df3a97b24cd11add3dc0a55805",
+        "width": 360,
+        "height": 480,
+        "bytes": 30326,
+        "article": "https://commons.wikimedia.org/wiki/File:Theatre_exit.jpg"
+      },
+      "credit": {
+        "id": "0d0494f2c8adf2df3a97b24cd11add3dc0a55805",
+        "title": "Theatre exit.jpg",
+        "author": "Noga rotem",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Theatre_exit.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Theatre_exit.jpg",
+        "sha1": "0d0494f2c8adf2df3a97b24cd11add3dc0a55805",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "rhodes-grand-master-palace",
+      "label": "Palace of the Grand Master, Rhodes",
+      "photo": {
+        "src": "/photos/discovery/dab5c0c70868827fe1ea962d52bb7ca4d532dd1199195c783ff746f8a52bcf4c.webp",
+        "alt": "Palace of the Grand Master, Rhodes",
+        "creditId": "29a5c770a7180bedf8186fd94574a8b0e5c52225",
+        "width": 492,
+        "height": 480,
+        "bytes": 12506,
+        "article": "https://commons.wikimedia.org/wiki/File:Bust_of_a_boy_in_the_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes,_Greece.jpg"
+      },
+      "credit": {
+        "id": "29a5c770a7180bedf8186fd94574a8b0e5c52225",
+        "title": "Bust of a boy in the Palace of the Grand Master of the Knights of Rhodes, Greece.jpg",
+        "author": "Julian Lupyan",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Bust_of_a_boy_in_the_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes,_Greece.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/15/Bust_of_a_boy_in_the_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes%2C_Greece.jpg",
+        "sha1": "29a5c770a7180bedf8186fd94574a8b0e5c52225",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "rhodes-grand-master-palace",
+      "label": "Palace of the Grand Master, Rhodes",
+      "photo": {
+        "src": "/photos/discovery/6d86842d0883e15c2cfefdfa04b2ddc3c8f3cc6ed0efc53148bc0b4c4ef5645d.webp",
+        "alt": "Palace of the Grand Master, Rhodes",
+        "creditId": "2916623a9843d8105b54f0a6b6d296d08a17b0ae",
+        "width": 343,
+        "height": 480,
+        "bytes": 38184,
+        "article": "https://commons.wikimedia.org/wiki/File:Miniature_Replica_of_the_Altar_of_St._John%27s_Co-Cathedral,_Museum_of_the_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes,_Greece.jpg"
+      },
+      "credit": {
+        "id": "2916623a9843d8105b54f0a6b6d296d08a17b0ae",
+        "title": "Miniature Replica of the Altar of St. John's Co-Cathedral, Museum of the Palace of the Grand Master of the Knights of Rhodes, Greece.jpg",
+        "author": "Julian Lupyan",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Miniature_Replica_of_the_Altar_of_St._John%27s_Co-Cathedral,_Museum_of_the_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes,_Greece.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Miniature_Replica_of_the_Altar_of_St._John%27s_Co-Cathedral%2C_Museum_of_the_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes%2C_Greece.jpg",
+        "sha1": "2916623a9843d8105b54f0a6b6d296d08a17b0ae",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "rhodes-grand-master-palace",
+      "label": "Palace of the Grand Master, Rhodes",
+      "photo": {
+        "src": "/photos/discovery/1720a530aa2cecf6b22e1bef07d03a383bfe7246eb9e3af0d2bbfcd3b6e3d5b2.webp",
+        "alt": "Palace of the Grand Master, Rhodes",
+        "creditId": "e77ef2f59d8800b9a213b4c12adb7d2bb6c70566",
+        "width": 549,
+        "height": 480,
+        "bytes": 57278,
+        "article": "https://commons.wikimedia.org/wiki/File:Relief_of_the_Coat_of_Arms_of_Victor_Emmanuel_III,_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes,_Greece.jpg"
+      },
+      "credit": {
+        "id": "e77ef2f59d8800b9a213b4c12adb7d2bb6c70566",
+        "title": "Relief of the Coat of Arms of Victor Emmanuel III, Palace of the Grand Master of the Knights of Rhodes, Greece.jpg",
+        "author": "Julian Lupyan",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Relief_of_the_Coat_of_Arms_of_Victor_Emmanuel_III,_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes,_Greece.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/66/Relief_of_the_Coat_of_Arms_of_Victor_Emmanuel_III%2C_Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes%2C_Greece.jpg",
+        "sha1": "e77ef2f59d8800b9a213b4c12adb7d2bb6c70566",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "windsor-castle",
+      "label": "Windsor Castle",
+      "photo": {
+        "src": "/photos/discovery/b147177aa625ccb1054d66bdd75623a7511e42dca2854398c209081a48d39ea7.webp",
+        "alt": "Windsor Castle",
+        "creditId": "15b1685cf0579b2d96f4a95c5932335c02461799",
+        "width": 640,
+        "height": 399,
+        "bytes": 39760,
+        "article": "https://commons.wikimedia.org/wiki/File:Castillo_de_Windsor,_Inglaterra,_2014-08-12,_DD_14.JPG"
+      },
+      "credit": {
+        "id": "15b1685cf0579b2d96f4a95c5932335c02461799",
+        "title": "Castillo de Windsor, Inglaterra, 2014-08-12, DD 14.JPG",
+        "author": "Diego Delso",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Castillo_de_Windsor,_Inglaterra,_2014-08-12,_DD_14.JPG",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/af/Castillo_de_Windsor%2C_Inglaterra%2C_2014-08-12%2C_DD_14.JPG",
+        "sha1": "15b1685cf0579b2d96f4a95c5932335c02461799",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "windsor-castle",
+      "label": "Windsor Castle",
+      "photo": {
+        "src": "/photos/discovery/565eeb8a22913737dfac1c297345cae45ec4c5f91d7bc3a6a36b446569ce0bdf.webp",
+        "alt": "Windsor Castle",
+        "creditId": "eec1f6fecce99158382ac9b6587de38f67683e04",
+        "width": 635,
+        "height": 480,
+        "bytes": 64478,
+        "article": "https://commons.wikimedia.org/wiki/File:Castillo_de_Windsor,_Inglaterra,_2014-08-12,_DD_16.JPG"
+      },
+      "credit": {
+        "id": "eec1f6fecce99158382ac9b6587de38f67683e04",
+        "title": "Castillo de Windsor, Inglaterra, 2014-08-12, DD 16.JPG",
+        "author": "Diego Delso",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Castillo_de_Windsor,_Inglaterra,_2014-08-12,_DD_16.JPG",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/52/Castillo_de_Windsor%2C_Inglaterra%2C_2014-08-12%2C_DD_16.JPG",
+        "sha1": "eec1f6fecce99158382ac9b6587de38f67683e04",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "windsor-castle",
+      "label": "Windsor Castle",
+      "photo": {
+        "src": "/photos/discovery/ad566731d569bd0ff6500552d74bafff86bfb68b3c897b6a7858477c7c1262d9.webp",
+        "alt": "Windsor Castle",
+        "creditId": "cda5bceee944e4a7b10e23d39b0264c09527782b",
+        "width": 640,
+        "height": 441,
+        "bytes": 54112,
+        "article": "https://commons.wikimedia.org/wiki/File:Castillo_de_Windsor,_Inglaterra,_2014-08-12,_DD_18.JPG"
+      },
+      "credit": {
+        "id": "cda5bceee944e4a7b10e23d39b0264c09527782b",
+        "title": "Castillo de Windsor, Inglaterra, 2014-08-12, DD 18.JPG",
+        "author": "Diego Delso",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Castillo_de_Windsor,_Inglaterra,_2014-08-12,_DD_18.JPG",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Castillo_de_Windsor%2C_Inglaterra%2C_2014-08-12%2C_DD_18.JPG",
+        "sha1": "cda5bceee944e4a7b10e23d39b0264c09527782b",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "iceland-thingvellir",
+      "label": "Þingvellir",
+      "photo": {
+        "src": "/photos/discovery/8a7428e9c5626ffc07f7bbd91ed8f0083b075a6a4eab9c3c5bbae013c71fcb8b.webp",
+        "alt": "Þingvellir",
+        "creditId": "fc5bbf70985c50c01e877a0344a1344ac402b99b",
+        "width": 640,
+        "height": 329,
+        "bytes": 40516,
+        "article": "https://commons.wikimedia.org/wiki/File:Arnarfell,_Parque_Nacional_de_%C3%9Eingvellir,_Su%C3%B0urland,_Islandia,_2014-08-16,_DD_058.JPG"
+      },
+      "credit": {
+        "id": "fc5bbf70985c50c01e877a0344a1344ac402b99b",
+        "title": "Arnarfell, Parque Nacional de Þingvellir, Suðurland, Islandia, 2014-08-16, DD 058.JPG",
+        "author": "Diego Delso",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Arnarfell,_Parque_Nacional_de_%C3%9Eingvellir,_Su%C3%B0urland,_Islandia,_2014-08-16,_DD_058.JPG",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Arnarfell%2C_Parque_Nacional_de_%C3%9Eingvellir%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_058.JPG",
+        "sha1": "fc5bbf70985c50c01e877a0344a1344ac402b99b",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "iceland-thingvellir",
+      "label": "Þingvellir",
+      "photo": {
+        "src": "/photos/discovery/5a57130a3ef7ae43d3681fbe9dcbab08166b4571e99971f233c8acbf067a0bf7.webp",
+        "alt": "Þingvellir",
+        "creditId": "ba41ec52e65a6df47a1f883777ce5748ce1dfff7",
+        "width": 640,
+        "height": 439,
+        "bytes": 14400,
+        "article": "https://commons.wikimedia.org/wiki/File:Thorarinn_thingvellir.jpg"
+      },
+      "credit": {
+        "id": "ba41ec52e65a6df47a1f883777ce5748ce1dfff7",
+        "title": "Thorarinn thingvellir.jpg",
+        "author": "Þórarinn B. Þorláksson",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Thorarinn_thingvellir.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Thorarinn_thingvellir.jpg",
+        "sha1": "ba41ec52e65a6df47a1f883777ce5748ce1dfff7",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "iceland-thingvellir",
+      "label": "Þingvellir",
+      "photo": {
+        "src": "/photos/discovery/651506d1cb6f411fb710e23bd33e9345ba3103e41bd3a0fc27bb3a27d1a6df4a.webp",
+        "alt": "Þingvellir",
+        "creditId": "5d99a427e213a94fd8d2cdedde18ef0872c9b316",
+        "width": 640,
+        "height": 424,
+        "bytes": 41954,
+        "article": "https://commons.wikimedia.org/wiki/File:%C3%9Eingvellir_Landscape_(34257945383).jpg"
+      },
+      "credit": {
+        "id": "5d99a427e213a94fd8d2cdedde18ef0872c9b316",
+        "title": "Þingvellir Landscape (34257945383).jpg",
+        "author": "Theo Crazzolara",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:%C3%9Eingvellir_Landscape_(34257945383).jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/65/%C3%9Eingvellir_Landscape_%2834257945383%29.jpg",
+        "sha1": "5d99a427e213a94fd8d2cdedde18ef0872c9b316",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cluj-st-michael",
+      "label": "St Michael’s Church, Cluj-Napoca",
+      "photo": {
+        "src": "/photos/discovery/f817170087df254f89c554fdc7ef4e75e1314a2ca7ae5b17faadd1767d03a1dd.webp",
+        "alt": "St Michael’s Church, Cluj-Napoca",
+        "creditId": "ceedd22216c250048a40eae7cb2b4e05c46e7f40",
+        "width": 302,
+        "height": 480,
+        "bytes": 13944,
+        "article": "https://commons.wikimedia.org/wiki/File:Carol_Popp_de_Szathm%C3%A1ry_-_Mihail_Kog%C4%83lniceanu.jpg"
+      },
+      "credit": {
+        "id": "ceedd22216c250048a40eae7cb2b4e05c46e7f40",
+        "title": "Carol Popp de Szathmáry - Mihail Kogălniceanu.jpg",
+        "author": "Carol Szathmari",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Carol_Popp_de_Szathm%C3%A1ry_-_Mihail_Kog%C4%83lniceanu.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/57/Carol_Popp_de_Szathm%C3%A1ry_-_Mihail_Kog%C4%83lniceanu.jpg",
+        "sha1": "ceedd22216c250048a40eae7cb2b4e05c46e7f40",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cluj-st-michael",
+      "label": "St Michael’s Church, Cluj-Napoca",
+      "photo": {
+        "src": "/photos/discovery/d52e5a3e661bc881553ea8ce60587b9dc32d665c70548f677857ab4d67b9393a.webp",
+        "alt": "St Michael’s Church, Cluj-Napoca",
+        "creditId": "3ccd4f8784993c6390a1bd423784d5c0d5cbce38",
+        "width": 640,
+        "height": 480,
+        "bytes": 23152,
+        "article": "https://commons.wikimedia.org/wiki/File:Piata_Unirii_Cluj-Napoca.jpg"
+      },
+      "credit": {
+        "id": "3ccd4f8784993c6390a1bd423784d5c0d5cbce38",
+        "title": "Piata Unirii Cluj-Napoca.jpg",
+        "author": "Original uploader was Roamata at ro.wikipedia",
+        "license": "Public domain",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Piata_Unirii_Cluj-Napoca.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/07/Piata_Unirii_Cluj-Napoca.jpg",
+        "sha1": "3ccd4f8784993c6390a1bd423784d5c0d5cbce38",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cluj-st-michael",
+      "label": "St Michael’s Church, Cluj-Napoca",
+      "photo": {
+        "src": "/photos/discovery/ca3c46499ad00314540b522bc30ee6653a134a60da2178b519ccfdb5b4e2ce0f.webp",
+        "alt": "St Michael’s Church, Cluj-Napoca",
+        "creditId": "ffe26eb1b6030447c7fb81ac3a77c5d5f1aa4ae2",
+        "width": 640,
+        "height": 480,
+        "bytes": 46492,
+        "article": "https://commons.wikimedia.org/wiki/File:Biserica_de_lemn_din_Calna_2009_(14).jpg"
+      },
+      "credit": {
+        "id": "ffe26eb1b6030447c7fb81ac3a77c5d5f1aa4ae2",
+        "title": "Biserica de lemn din Calna 2009 (14).jpg",
+        "author": "Țetcu Mircea Rareș",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Biserica_de_lemn_din_Calna_2009_(14).jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Biserica_de_lemn_din_Calna_2009_%2814%29.jpg",
+        "sha1": "ffe26eb1b6030447c7fb81ac3a77c5d5f1aa4ae2",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cluj-botanical-garden",
+      "label": "Cluj-Napoca Botanical Garden",
+      "photo": {
+        "src": "/photos/discovery/925fa4995b620d30ca51112de54b8b54b938b1db90e4d1bbb31103de47a6b4b7.webp",
+        "alt": "Cluj-Napoca Botanical Garden",
+        "creditId": "6725751ac91b6579a78a33d25f5ed17250f29ca1",
+        "width": 640,
+        "height": 480,
+        "bytes": 77968,
+        "article": "https://commons.wikimedia.org/wiki/File:Cluj-Napoca-Gr%C4%83dina_Botanic%C4%83_-Alexandru_Borza-IMG_1494.jpg"
+      },
+      "credit": {
+        "id": "6725751ac91b6579a78a33d25f5ed17250f29ca1",
+        "title": "Cluj-Napoca-Grădina Botanică -Alexandru Borza-IMG 1494.jpg",
+        "author": "Ana Maria Catalina",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Cluj-Napoca-Gr%C4%83dina_Botanic%C4%83_-Alexandru_Borza-IMG_1494.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/Cluj-Napoca-Gr%C4%83dina_Botanic%C4%83_-Alexandru_Borza-IMG_1494.jpg",
+        "sha1": "6725751ac91b6579a78a33d25f5ed17250f29ca1",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cluj-botanical-garden",
+      "label": "Cluj-Napoca Botanical Garden",
+      "photo": {
+        "src": "/photos/discovery/4bd8ae09fb74208db7a9f6fc84fd972bb18835c6774d48aae294c9a9f91f54ab.webp",
+        "alt": "Cluj-Napoca Botanical Garden",
+        "creditId": "9e5eb6596adeafe732b136762d491107500a76a8",
+        "width": 640,
+        "height": 427,
+        "bytes": 29596,
+        "article": "https://commons.wikimedia.org/wiki/File:Hepatica_nobilis_kz02.jpg"
+      },
+      "credit": {
+        "id": "9e5eb6596adeafe732b136762d491107500a76a8",
+        "title": "Hepatica nobilis kz02.jpg",
+        "author": "Krzysztof Ziarnek, Kenraiz",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Hepatica_nobilis_kz02.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Hepatica_nobilis_kz02.jpg",
+        "sha1": "9e5eb6596adeafe732b136762d491107500a76a8",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cluj-botanical-garden",
+      "label": "Cluj-Napoca Botanical Garden",
+      "photo": {
+        "src": "/photos/discovery/c01fad3873bb690691d814021d9a4fbc9cf5bf5be59e18f90c06824a937946c6.webp",
+        "alt": "Cluj-Napoca Botanical Garden",
+        "creditId": "9b2842eb232854e7b2bc0ee35ca000bedc920349",
+        "width": 640,
+        "height": 427,
+        "bytes": 12588,
+        "article": "https://commons.wikimedia.org/wiki/File:Botanic_garden_-_Cluj-Napoca_(5677399214).jpg"
+      },
+      "credit": {
+        "id": "9b2842eb232854e7b2bc0ee35ca000bedc920349",
+        "title": "Botanic garden - Cluj-Napoca (5677399214).jpg",
+        "author": "Cristian Bortes www.eyeem.com/bortescristian from Cluj-Napoca, Romania",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Botanic_garden_-_Cluj-Napoca_(5677399214).jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/25/Botanic_garden_-_Cluj-Napoca_%285677399214%29.jpg",
+        "sha1": "9b2842eb232854e7b2bc0ee35ca000bedc920349",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cyprus-larnaca-seafront",
+      "label": "Larnaca promenade",
+      "photo": {
+        "src": "/photos/discovery/c1fe49ad95b2388101c514c62a01e571098702545fbc809f143e9f9861231f12.webp",
+        "alt": "Larnaca promenade",
+        "creditId": "736c4aae25a6621cd697469ac6fa26c549dd6f32",
+        "width": 640,
+        "height": 480,
+        "bytes": 41986,
+        "article": "https://commons.wikimedia.org/wiki/File:Larnaca_Promenade_2.jpg"
+      },
+      "credit": {
+        "id": "736c4aae25a6621cd697469ac6fa26c549dd6f32",
+        "title": "Larnaca Promenade 2.jpg",
+        "author": "Héctor Ochoa \"Robot8A\"",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Larnaca_Promenade_2.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/17/Larnaca_Promenade_2.jpg",
+        "sha1": "736c4aae25a6621cd697469ac6fa26c549dd6f32",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cyprus-larnaca-seafront",
+      "label": "Larnaca promenade",
+      "photo": {
+        "src": "/photos/discovery/e4d107d737a885e3a900c156166c790303487c2d11c8188e57a57473ad1440d5.webp",
+        "alt": "Larnaca promenade",
+        "creditId": "1cb06ba78cccbbdb655c99e6787a9a050ee8ceec",
+        "width": 640,
+        "height": 480,
+        "bytes": 26446,
+        "article": "https://commons.wikimedia.org/wiki/File:Promenade_Larnaca_Republic_of_Cyprus.jpg"
+      },
+      "credit": {
+        "id": "1cb06ba78cccbbdb655c99e6787a9a050ee8ceec",
+        "title": "Promenade Larnaca Republic of Cyprus.jpg",
+        "author": "NicosiaEurope",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Promenade_Larnaca_Republic_of_Cyprus.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/Promenade_Larnaca_Republic_of_Cyprus.jpg",
+        "sha1": "1cb06ba78cccbbdb655c99e6787a9a050ee8ceec",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "cyprus-larnaca-seafront",
+      "label": "Larnaca promenade",
+      "photo": {
+        "src": "/photos/discovery/9c9203675fa3f674204b2e6835256990d82a739bcc695bd186713b79fe192c3f.webp",
+        "alt": "Larnaca promenade",
+        "creditId": "df9e0e2d5086bafe65d0f329c78eeaabb3ee8346",
+        "width": 640,
+        "height": 480,
+        "bytes": 32200,
+        "article": "https://commons.wikimedia.org/wiki/File:Promenade_of_Larnaca_city_of_Cyprus_next_to_Phinikoudes_avenue.jpg"
+      },
+      "credit": {
+        "id": "df9e0e2d5086bafe65d0f329c78eeaabb3ee8346",
+        "title": "Promenade of Larnaca city of Cyprus next to Phinikoudes avenue.jpg",
+        "author": "NicosiaEurope",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Promenade_of_Larnaca_city_of_Cyprus_next_to_Phinikoudes_avenue.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/26/Promenade_of_Larnaca_city_of_Cyprus_next_to_Phinikoudes_avenue.jpg",
+        "sha1": "df9e0e2d5086bafe65d0f329c78eeaabb3ee8346",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "colonia-del-sacramento-colonia-historic-quarter",
+      "label": "Colonia del Sacramento historic quarter",
+      "photo": {
+        "src": "/photos/discovery/652aa15af70351b4f443c593a3e37a62d6bd616b92143e5fdc751293935f7c8f.webp",
+        "alt": "Colonia del Sacramento historic quarter",
+        "creditId": "7e0a256f8eb0d590bb6bc226994119261a592dd7",
+        "width": 640,
+        "height": 480,
+        "bytes": 43980,
+        "article": "https://commons.wikimedia.org/wiki/File:Colonia-PortugalStreet3.jpg"
+      },
+      "credit": {
+        "id": "7e0a256f8eb0d590bb6bc226994119261a592dd7",
+        "title": "Colonia-PortugalStreet3.jpg",
+        "author": "Fulviusbsas",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Colonia-PortugalStreet3.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/de/Colonia-PortugalStreet3.jpg",
+        "sha1": "7e0a256f8eb0d590bb6bc226994119261a592dd7",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "colonia-del-sacramento-colonia-historic-quarter",
+      "label": "Colonia del Sacramento historic quarter",
+      "photo": {
+        "src": "/photos/discovery/d6dd24395a7f63e093f3d082276117f3f6b0d8fb887b4d5ad5ef62b3f695b04c.webp",
+        "alt": "Colonia del Sacramento historic quarter",
+        "creditId": "c4b16f9b8d41d664b106ff672cef76ae975d9fd3",
+        "width": 640,
+        "height": 480,
+        "bytes": 55718,
+        "article": "https://commons.wikimedia.org/wiki/File:Colonia-CalleDeLosSuspiros.jpg"
+      },
+      "credit": {
+        "id": "c4b16f9b8d41d664b106ff672cef76ae975d9fd3",
+        "title": "Colonia-CalleDeLosSuspiros.jpg",
+        "author": "Heretiq",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Colonia-CalleDeLosSuspiros.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/96/Colonia-CalleDeLosSuspiros.jpg",
+        "sha1": "c4b16f9b8d41d664b106ff672cef76ae975d9fd3",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "colonia-del-sacramento-colonia-historic-quarter",
+      "label": "Colonia del Sacramento historic quarter",
+      "photo": {
+        "src": "/photos/discovery/bb34aaf231c2c8e38f40c4cc386a0e64c2a2ce7aaae3288fe8a132d128a97a63.webp",
+        "alt": "Colonia del Sacramento historic quarter",
+        "creditId": "f2f94fdcca732dd4ba59c08327c04055dc762a38",
+        "width": 500,
+        "height": 281,
+        "bytes": 27934,
+        "article": "https://commons.wikimedia.org/wiki/File:Calle_en_Colonia_del_Sacramento.jpg"
+      },
+      "credit": {
+        "id": "f2f94fdcca732dd4ba59c08327c04055dc762a38",
+        "title": "Calle en Colonia del Sacramento.jpg",
+        "author": "superturtle from (optional)",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Calle_en_Colonia_del_Sacramento.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Calle_en_Colonia_del_Sacramento.jpg",
+        "sha1": "f2f94fdcca732dd4ba59c08327c04055dc762a38",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "swarovski-kristallwelten",
+      "label": "Swarovski Kristallwelten",
+      "photo": {
+        "src": "/photos/discovery/8962f4d888a2bd7bc654964f759e7ce325de0cf7be566c68fdb808e262ab8bbd.webp",
+        "alt": "Swarovski Kristallwelten",
+        "creditId": "b17c5fbc3a0ec968940826e3d8fc7600e7935984",
+        "width": 640,
+        "height": 480,
+        "bytes": 65866,
+        "article": "https://commons.wikimedia.org/wiki/File:Lumea_de_cristal_a_lui_Swarovski_de_la_Wattens5.jpg"
+      },
+      "credit": {
+        "id": "b17c5fbc3a0ec968940826e3d8fc7600e7935984",
+        "title": "Lumea de cristal a lui Swarovski de la Wattens5.jpg",
+        "author": "Cezar Suceveanu",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Lumea_de_cristal_a_lui_Swarovski_de_la_Wattens5.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Lumea_de_cristal_a_lui_Swarovski_de_la_Wattens5.jpg",
+        "sha1": "b17c5fbc3a0ec968940826e3d8fc7600e7935984",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "swarovski-kristallwelten",
+      "label": "Swarovski Kristallwelten",
+      "photo": {
+        "src": "/photos/discovery/2325a7647fa142701899357f48a4949bae2bb4c23bb7b69749274eeaa522a5d2.webp",
+        "alt": "Swarovski Kristallwelten",
+        "creditId": "57f6a57c93da15811690a7cff0c0e280bb490d19",
+        "width": 640,
+        "height": 423,
+        "bytes": 37484,
+        "article": "https://commons.wikimedia.org/wiki/File:Swarovski_theme_park.jpg"
+      },
+      "credit": {
+        "id": "57f6a57c93da15811690a7cff0c0e280bb490d19",
+        "title": "Swarovski theme park.jpg",
+        "author": "Vitold Muratov",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Swarovski_theme_park.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/27/Swarovski_theme_park.jpg",
+        "sha1": "57f6a57c93da15811690a7cff0c0e280bb490d19",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    },
+    {
+      "key": "swarovski-kristallwelten",
+      "label": "Swarovski Kristallwelten",
+      "photo": {
+        "src": "/photos/discovery/1ae6a280f81b1cf8933ad6b411913f3cc0c19b2a69b19af0762529a054f4fc38.webp",
+        "alt": "Swarovski Kristallwelten",
+        "creditId": "a0ffd144e017daf166d79c772d3891c5d05e6127",
+        "width": 640,
+        "height": 480,
+        "bytes": 90766,
+        "article": "https://commons.wikimedia.org/wiki/File:Wattens,_Swarowski_garden.jpg"
+      },
+      "credit": {
+        "id": "a0ffd144e017daf166d79c772d3891c5d05e6127",
+        "title": "Wattens, Swarowski garden.jpg",
+        "author": "Weefemwe",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Wattens,_Swarowski_garden.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Wattens%2C_Swarowski_garden.jpg",
+        "sha1": "a0ffd144e017daf166d79c772d3891c5d05e6127",
+        "checkedAt": "2026-11-04",
+        "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+      }
+    }
+  ],
+  "missing": []
+}
