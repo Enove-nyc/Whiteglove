@@ -11,7 +11,7 @@ index['credits']={k:v for k,v in index['credits'].items() if k in used}
 original={p['creditId']:p for group in ['attraction','city','vacation'] for p in index[group].values()}
 folder=root/'public/photos/discovery';old_paths=set(folder.glob('*.webp'));prepared={};new_paths=set()
 for ident,photo in original.items():
- src=root/photo['src'].lstrip('/');assert src.parent==folder
+ src=root/'public'/photo['src'].lstrip('/');assert src.parent==folder
  image=Image.open(src).convert('RGB');image.thumbnail((640,480),Image.Resampling.LANCZOS);buf=io.BytesIO();image.save(buf,'WEBP',quality=68,method=6);raw=buf.getvalue();digest=hashlib.sha256(raw).hexdigest();dest=folder/(digest+'.webp');dest.write_bytes(raw);new_paths.add(dest)
  prepared[ident]={'src':'/photos/discovery/'+dest.name,'width':image.width,'height':image.height,'bytes':len(raw)}
 for old in old_paths-new_paths:old.unlink()

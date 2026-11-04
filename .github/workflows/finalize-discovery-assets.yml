@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: '24'
       - run: python -m pip install Pillow
+      - run: python scripts/complete-photo-gaps.py
       - run: python scripts/finalize-discovery-photo-assets.py
       - run: npm install --prefix /tmp/map-capture --ignore-scripts --no-audit --no-fund playwright@1.62.0 leaflet@1.9.4
       - run: node /tmp/map-capture/node_modules/playwright/cli.js install --with-deps chromium

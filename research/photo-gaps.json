@@ -1,0 +1,234 @@
+[
+  {
+    "slug": "glacier-express",
+    "name": "The Glacier Express",
+    "city": "Zermatt to St Moritz",
+    "country": "Switzerland",
+    "coordinates": "46.4908, 9.8355",
+    "article": "Glacier Express"
+  },
+  {
+    "slug": "toledo-transito-synagogue",
+    "name": "Toledo — the Transito and Santa Maria la Blanca",
+    "city": "Toledo",
+    "country": "Spain",
+    "coordinates": "39.8564, -4.0298",
+    "article": "Santa María la Blanca"
+  },
+  {
+    "slug": "cordoba-juderia",
+    "name": "Cordoba — the juderia and the old shul",
+    "city": "Cordoba",
+    "country": "Spain",
+    "coordinates": "37.8845, -4.7845",
+    "article": "Córdoba Synagogue"
+  },
+  {
+    "slug": "munich-dachau-memorial",
+    "name": "The Dachau Memorial",
+    "city": "Dachau",
+    "country": "Germany",
+    "coordinates": "48.2699, 11.4667",
+    "article": "Dachau concentration camp"
+  },
+  {
+    "slug": "cluj-st-michael",
+    "name": "St. Michael's Church and Union Square",
+    "city": "Cluj-Napoca",
+    "country": "Romania",
+    "coordinates": "46.7700, 23.5897",
+    "article": "St. Michael's Church, Cluj-Napoca"
+  },
+  {
+    "slug": "cluj-botanical-garden",
+    "name": "Alexandru Borza Botanical Garden",
+    "city": "Cluj-Napoca",
+    "country": "Romania",
+    "coordinates": "46.7625, 23.5883",
+    "article": "Cluj-Napoca Botanical Garden"
+  },
+  {
+    "slug": "cluj-cetatuia",
+    "name": "Cetățuia Hill",
+    "city": "Cluj-Napoca",
+    "country": "Romania",
+    "coordinates": "46.7736, 23.5836",
+    "article": "Cetățuia (Cluj-Napoca)"
+  },
+  {
+    "slug": "rhodes-grand-master-palace",
+    "name": "Palace of the Grand Master",
+    "city": "Rhodes",
+    "country": "Greece",
+    "coordinates": "36.4457, 28.2241",
+    "article": "Palace of the Grand Master of the Knights of Rhodes"
+  },
+  {
+    "slug": "rhodes-medieval-city",
+    "name": "The Medieval City and the Street of the Knights",
+    "city": "Rhodes",
+    "country": "Greece",
+    "coordinates": "36.4413, 28.2278",
+    "article": "Rhodes (city)"
+  },
+  {
+    "slug": "iceland-thingvellir",
+    "name": "Þingvellir National Park",
+    "city": "Þingvellir",
+    "country": "Iceland",
+    "coordinates": "64.2554, 21.0378",
+    "article": "Þingvellir National Park"
+  },
+  {
+    "slug": "iceland-geysir",
+    "name": "Geysir and Strokkur",
+    "city": "Haukadalur",
+    "country": "Iceland",
+    "coordinates": "64.3136, 20.2994",
+    "article": "Strokkur"
+  },
+  {
+    "slug": "iceland-gullfoss",
+    "name": "Gullfoss",
+    "city": "Gullfoss",
+    "country": "Iceland",
+    "coordinates": "64.3261, 20.1211",
+    "article": "Gullfoss"
+  },
+  {
+    "slug": "iceland-skogafoss",
+    "name": "Skógafoss",
+    "city": "Skógar",
+    "country": "Iceland",
+    "coordinates": "63.5321, 19.5111",
+    "article": "Skógafoss"
+  },
+  {
+    "slug": "iceland-jokulsarlon",
+    "name": "Jökulsárlón glacier lagoon",
+    "city": "Vatnajökull",
+    "country": "Iceland",
+    "coordinates": "64.0703, -16.2117",
+    "article": "Jökulsárlón"
+  },
+  {
+    "slug": "rhodes-jewish-quarter",
+    "name": "Rhodes — La Juderia and the Kahal Shalom",
+    "city": "Rhodes",
+    "country": "Greece",
+    "coordinates": "36.4432, 28.2273",
+    "article": "Kahal Shalom Synagogue"
+  },
+  {
+    "slug": "windsor-castle",
+    "name": "Windsor Castle",
+    "city": "Windsor",
+    "country": "United Kingdom",
+    "coordinates": "51.4839, -0.6044",
+    "article": "Windsor Castle"
+  },
+  {
+    "slug": "dachau-memorial",
+    "name": "Dachau Memorial Site",
+    "city": "Dachau",
+    "country": "Germany",
+    "coordinates": "48.2703, 11.4681",
+    "article": "Dachau concentration camp"
+  },
+  {
+    "slug": "caesarea",
+    "name": "Caesarea (Kisri)",
+    "city": "Caesarea",
+    "country": "Israel",
+    "coordinates": "32.49861, 34.89139",
+    "article": "Caesarea Maritima"
+  },
+  {
+    "slug": "beit-guvrin-maresha",
+    "name": "Beit Guvrin–Maresha and the bell caves",
+    "city": "Beit Guvrin",
+    "country": "Israel",
+    "coordinates": "31.59696, 34.90065",
+    "article": "Beit Guvrin National Park"
+  },
+  {
+    "slug": "swarovski-kristallwelten",
+    "name": "Swarovski Kristallwelten, Wattens",
+    "city": "Wattens",
+    "country": "Austria",
+    "article": "Swarovski Kristallwelten"
+  },
+  {
+    "slug": "split-diocletians-palace",
+    "name": "Diocletian's Palace, Split",
+    "city": "Split",
+    "country": "Croatia",
+    "coordinates": "43.5081, 16.4402",
+    "article": "Diocletian's Palace"
+  },
+  {
+    "slug": "cyprus-larnaca-seafront",
+    "name": "Larnaca seafront and the salt lake",
+    "city": "Larnaca",
+    "country": "Cyprus",
+    "coordinates": "34.9120, 33.6330",
+    "article": "Larnaca"
+  },
+  {
+    "slug": "kruger-national-park",
+    "name": "Kruger National Park",
+    "city": "Mpumalanga",
+    "country": "South Africa",
+    "coordinates": "-24.9948, 31.5969",
+    "article": "Kruger National Park"
+  },
+  {
+    "slug": "queenstown-nz",
+    "name": "Queenstown",
+    "city": "Queenstown",
+    "country": "New Zealand",
+    "coordinates": "-45.0312, 168.6626",
+    "article": "Queenstown, New Zealand"
+  },
+  {
+    "slug": "aoraki-mount-cook",
+    "name": "Aoraki / Mount Cook",
+    "city": "Mount Cook",
+    "country": "New Zealand",
+    "coordinates": "-43.7340, 170.0940",
+    "article": "Aoraki / Mount Cook"
+  },
+  {
+    "slug": "poas-poas-volcano-national-park",
+    "name": "Poás Volcano National Park",
+    "city": "Poás",
+    "country": "Costa Rica",
+    "kind": "Nature",
+    "summary": "A volcanic national park centred on the broad crater of Poás.",
+    "coordinates": "10.20141, -84.24179",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Po%C3%A1s_Volcano_National_Park",
+    "article": "Poás Volcano National Park"
+  },
+  {
+    "slug": "colonia-del-sacramento-colonia-historic-quarter",
+    "name": "Colonia historic quarter",
+    "city": "Colonia del Sacramento",
+    "country": "Uruguay",
+    "kind": "Landmark",
+    "summary": "A riverside historic quarter with Portuguese and Spanish colonial streets and buildings.",
+    "coordinates": "-34.47138889, -57.84416667",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Colonia_del_Sacramento",
+    "article": "Colonia del Sacramento"
+  },
+  {
+    "slug": "dambulla-dambulla-cave-temple",
+    "name": "Dambulla cave temple",
+    "city": "Dambulla",
+    "country": "Sri Lanka",
+    "kind": "Landmark",
+    "summary": "A complex of decorated Buddhist cave temples beneath a large rock outcrop.",
+    "coordinates": "7.85666667, 80.64916667",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Dambulla_cave_temple",
+    "article": "Dambulla cave temple"
+  }
+]
