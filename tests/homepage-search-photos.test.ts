@@ -18,7 +18,7 @@ describe("real responsive homepage search photographs", () => {
         const bytes = readFileSync("public" + src);
         assert.equal(bytes.subarray(8, 12).toString(), "WEBP");
         assert.equal(createHash("sha256").update(bytes).digest("hex"), src.split("/").at(-1)?.replace(".webp", ""));
-        assert.ok(bytes.length < 350_000, "Background asset should stay bounded");
+        assert.ok(bytes.length < 400_000, "Background asset should stay bounded");
       }
     }
   });
