@@ -66,7 +66,8 @@ describe("the browser is sent what it draws", () => {
   });
 
   it("the first page is rendered by the server, so arriving costs no request", () => {
-    assert.match(PAGE_SOURCE, /searchAttractionList\(attractions, \{ limit: PAGE \}\)/);
+    assert.match(PAGE_SOURCE, /searchAttractionList\(attractions, \{ query: initialFilters\.q, \.\.\.initialFilters, limit: PAGE \}\)/);
+    assert.match(PAGE_SOURCE, /initialFilters=\{initialFilters\}/);
     assert.match(PAGE_SOURCE, /initial=\{first\.rows\}/);
   });
 

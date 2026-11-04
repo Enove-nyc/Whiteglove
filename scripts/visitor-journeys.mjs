@@ -94,6 +94,27 @@ if(brand==='travel'){
  await desktop.close();
 }
 
+
+if(brand==='travel'){
+ const ctx=await context(390);page=await ctx.newPage();
+ await scenario('search photo background cycles can pause and stay still while typing',async()=>{
+  await page.clock.install();await go('/');
+  const hero=page.locator('[data-search-photo]');const next=page.getByRole('button',{name:'Next background photo',exact:true});
+  await next.waitFor();await page.waitForFunction(()=>!document.querySelector('button[aria-label="Next background photo"]').disabled);
+  await page.waitForFunction(()=>document.querySelector('[data-search-photo]').getAttribute('data-photo-playing')==='true');
+  const first=await hero.getAttribute('data-search-photo');await page.clock.fastForward(10000);assert.notEqual(await hero.getAttribute('data-search-photo'),first);
+  await page.getByRole('button',{name:'Pause background photos',exact:true}).click();const held=await hero.getAttribute('data-search-photo');await page.clock.fastForward(30000);assert.equal(await hero.getAttribute('data-search-photo'),held);
+  await page.getByRole('button',{name:'Play background photos',exact:true}).click();const input=page.locator('#home-hero-search');await input.fill('Venice');const before=await input.boundingBox();const typing=await hero.getAttribute('data-search-photo');await page.clock.fastForward(20000);assert.equal(await hero.getAttribute('data-search-photo'),typing);assert.equal(await input.inputValue(),'Venice');const after=await input.boundingBox();assert(before&&after&&Math.abs(before.y-after.y)<1);
+ });
+ await ctx.close();
+ const reduced=await context(390);page=await reduced.newPage();await page.emulateMedia({reducedMotion:'reduce'});
+ await scenario('reduced motion keeps a static background with manual photo choice',async()=>{
+  await page.clock.install();await go('/');const hero=page.locator('[data-search-photo]');const first=await hero.getAttribute('data-search-photo');await page.clock.fastForward(30000);assert.equal(await hero.getAttribute('data-search-photo'),first);assert.equal(await hero.getAttribute('data-photo-playing'),'false');
+  const next=page.getByRole('button',{name:'Next background photo',exact:true});await page.waitForFunction(()=>!document.querySelector('button[aria-label="Next background photo"]').disabled);await next.click();assert.notEqual(await hero.getAttribute('data-search-photo'),first);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ });
+ await reduced.close();
+}
+
 if(isolated){
  const ctx=await context(1280);page=await ctx.newPage();
  const email='owner@audit.local',password='Audit-local-pass-1!';

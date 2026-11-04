@@ -1,3 +1,4 @@
+import HomeSearchHero from "@/components/HomeSearchHero";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
 import DestinationSearch from "@/components/DestinationSearch";
 import Footer from "@/components/Footer";
@@ -129,11 +130,7 @@ export default async function Home() {
       {/* ---- 1. The hero: one place, one search ---------------------------
           NO overflow-hidden on this section — the search dropdown is
           absolutely positioned and reaches below the hero's edge. */}
-      <section className="wg-travel-hero relative bg-[var(--navy)] px-5 py-14 text-white sm:px-8 sm:py-20">
-        {/* The photograph slot: wash first, then the navy overlay that keeps
-            the words readable over whatever eventually sits underneath it. */}
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[#164b60] via-[#247f87] to-[#75b6b0]" />
-        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgba(13,42,52,.16),transparent_75%)]" />
+      <HomeSearchHero>
         <div className="relative mx-auto max-w-7xl">
           {/* The whole opening is the search, at the owner's word: no visible
               headline, no eyebrow, no pitch paragraph, no browse links — the
@@ -150,7 +147,7 @@ export default async function Home() {
             </div>
           )}
         </div>
-      </section>
+      </HomeSearchHero>
 
       {spotlight && (
         <section className="mx-auto max-w-7xl px-5 pt-8 sm:px-8">
