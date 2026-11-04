@@ -8,6 +8,7 @@ await redis('SET','white-glove:account:'+email,JSON.stringify({email,name:'Trave
 await redis('SET','white-glove:account-data:'+email,JSON.stringify({route:[],favorites:[],activeTripId:'saved',trips:[{id:'saved',name:'My Rome trip',createdAt:at,updatedAt:at,route:[],itinerary:{title:'My Rome trip',startDate:'2026-12-01',endDate:'2026-12-03',flights:[],lodging:[],activities:[],notes:''}}]}));
 const browser=await chromium.launch(),ctx=await browser.newContext({viewport:{width:390,height:844}});
 await ctx.addCookies([{name:'white_glove_account',value:encodeURIComponent(email)+'.'+createHmac('sha256',secret).update(email).digest('base64url'),domain:'127.0.0.1',path:'/'}]);
+await ctx.route('**/api/account/me',async route=>{await new Promise(resolve=>setTimeout(resolve,800));await route.continue();});
 const page=await ctx.newPage();
 await page.addLocatorHandler(page.getByRole('dialog').filter({has:page.locator('a[href="/verification"]')}), async dialog=>{await dialog.getByRole('button',{name:'Close',exact:true}).click();});
 try{
@@ -18,5 +19,5 @@ try{
  const name=(await card.getByRole('heading').first().innerText()).trim();
  await Promise.all([page.waitForResponse(r=>r.url().includes('/api/account/itinerary')&&r.request().method()==='POST'),card.getByRole('button',{name:'Add to itinerary',exact:true}).click()]);
  await page.getByText(/On .*not on a day yet/).waitFor();await page.goto(base+'/itinerary');await page.getByText(name,{exact:true}).first().waitFor();
- console.log('DISCOVERY_SAVE_PASS',name);
+ console.log('DISCOVERY_SAVE_PASS',name);assert.equal(await page.getByRole('dialog',{name:'Sign in to add this to your itinerary'}).count(),0);
 }catch(e){console.log('DISCOVERY_SAVE_ERROR',String(e));console.log('DISCOVERY_BODY',(await page.locator('body').innerText()).slice(-10000));console.log('DISCOVERY_IMAGE|'+(await page.screenshot({type:'jpeg',quality:65})).toString('base64'));process.exitCode=1;}finally{await browser.close();}
