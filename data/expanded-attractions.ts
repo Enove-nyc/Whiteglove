@@ -1,7 +1,6 @@
 import type { Attraction } from "@/data/attractions";
 
-// Original descriptions; location and identity checked against the linked public reference.
-// No opening-hours, ticket-price or kosher claims.
+// Original descriptions; identity and location checked against linked public references.
 export const expandedAttractions: Attraction[] = [
   {
     slug: "luxembourg-city-bock-casemates",
@@ -132,16 +131,6 @@ export const expandedAttractions: Attraction[] = [
     summary: "Mostar's reconstructed Ottoman stone bridge arching over the Neretva River.",
     coordinates: "43.33727777777778, 17.81502777777778",
     sourceUrl: "https://en.wikipedia.org/wiki/Stari_Most"
-  },
-  {
-    slug: "blagaj-buna-river-spring",
-    name: "Buna River spring",
-    city: "Blagaj",
-    country: "Bosnia and Herzegovina",
-    kind: "Nature",
-    summary: "A powerful karst spring emerging beneath a limestone cliff near Blagaj.",
-    coordinates: "41.84722222, 19.37166667",
-    sourceUrl: "https://en.wikipedia.org/wiki/Buna_(Adriatic_Sea)"
   },
   {
     slug: "tirana-skanderbeg-square",

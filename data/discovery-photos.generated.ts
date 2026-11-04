@@ -1,7031 +1,7094 @@
 import type { DiscoveryPhotoIndex } from "@/lib/discovery-photo-types";
 
-// Prepared from Wikimedia Commons; full author, license and source details appear on /sources.
+// Licensed photographs; required credits appear on /sources. Prepared files use their own content hashes.
 export const discoveryPhotos: DiscoveryPhotoIndex = {
   "attraction": {
     "rome-colosseum": {
-      "src": "/photos/discovery/2ab5c20d3c0bde3bc3aaf907125a97531d7d3903.webp",
+      "src": "/photos/discovery/af2c1f1a2b57c9e0e60e7d3f36168916f1691c528acd49727f1486c9ec6683fe.webp",
       "alt": "Colosseum",
       "creditId": "2ab5c20d3c0bde3bc3aaf907125a97531d7d3903",
       "article": "https://en.wikipedia.org/wiki/Colosseum",
-      "width": 800,
-      "height": 561,
-      "bytes": 70642
+      "width": 640,
+      "height": 449,
+      "bytes": 41090
     },
     "rome-roman-forum": {
-      "src": "/photos/discovery/f756403ba154563ae797ae61934fef89eb49c79f.webp",
+      "src": "/photos/discovery/6a82850cdf095bee2fe88f40d1832ebd8e857f8a62919e367c70c6f7ab4c26b6.webp",
       "alt": "Roman Forum",
       "creditId": "f756403ba154563ae797ae61934fef89eb49c79f",
       "article": "https://en.wikipedia.org/wiki/Roman_Forum",
-      "width": 800,
-      "height": 328,
-      "bytes": 63564
+      "width": 640,
+      "height": 262,
+      "bytes": 37936
     },
     "rome-piazza-navona": {
-      "src": "/photos/discovery/a95c64e5c343911849d5857bbae4489e39dff7c9.webp",
+      "src": "/photos/discovery/c06da070b5031c531647a9f27447fad8337c058f273126ebd2ac7585771fb2f5.webp",
       "alt": "Piazza Navona",
       "creditId": "a95c64e5c343911849d5857bbae4489e39dff7c9",
       "article": "https://en.wikipedia.org/wiki/Piazza_Navona",
-      "width": 800,
-      "height": 566,
-      "bytes": 59840
+      "width": 640,
+      "height": 453,
+      "bytes": 35550
     },
     "rome-castel-sant-angelo": {
-      "src": "/photos/discovery/d32a1f412af82df358391f0d79753b817ff3dc07.webp",
+      "src": "/photos/discovery/0216d1305c5e701848f1079cd77dc91ba3046e4070f87b05678b02fe2e314d94.webp",
       "alt": "Castel Sant'Angelo",
       "creditId": "d32a1f412af82df358391f0d79753b817ff3dc07",
       "article": "https://en.wikipedia.org/wiki/Castel_Sant%27Angelo",
-      "width": 670,
-      "height": 600,
-      "bytes": 43086
+      "width": 536,
+      "height": 480,
+      "bytes": 25244
     },
     "rome-villa-borghese": {
-      "src": "/photos/discovery/318792545ca122cc60f8f3ec0c0b1765d6067ce7.webp",
+      "src": "/photos/discovery/2215ce9366fc7288e8bccad182b85d2142e447ef8441af764e71c3cc62a7de6f.webp",
       "alt": "Villa Borghese gardens",
       "creditId": "318792545ca122cc60f8f3ec0c0b1765d6067ce7",
       "article": "https://en.wikipedia.org/wiki/Villa_Borghese_gardens",
-      "width": 800,
-      "height": 600,
-      "bytes": 83754
+      "width": 640,
+      "height": 480,
+      "bytes": 48222
     },
     "rome-bioparco": {
-      "src": "/photos/discovery/8e4360ecdb7553ac79badd172a03ef9fabc068cc.webp",
+      "src": "/photos/discovery/e1a8a3c34769be28db089a98b3b12d935a07fd0e498c6ad32f9fb9152ceeab1c.webp",
       "alt": "Bioparco di Roma",
       "creditId": "8e4360ecdb7553ac79badd172a03ef9fabc068cc",
       "article": "https://en.wikipedia.org/wiki/Bioparco_di_Roma",
-      "width": 800,
-      "height": 600,
-      "bytes": 64868
+      "width": 640,
+      "height": 480,
+      "bytes": 35704
     },
     "rome-appian-way-park": {
-      "src": "/photos/discovery/877fbf0d072446a696e957de6f7cc1b2b7c847de.webp",
+      "src": "/photos/discovery/ddbd42b03e2b2db3cfc27af1c0324786093234cce1617c9702f914e9918ec54f.webp",
       "alt": "Appian Way Regional Park",
       "creditId": "877fbf0d072446a696e957de6f7cc1b2b7c847de",
       "article": "https://en.wikipedia.org/wiki/Appian_Way_Regional_Park",
-      "width": 800,
-      "height": 600,
-      "bytes": 139168
+      "width": 640,
+      "height": 480,
+      "bytes": 81814
     },
     "ostia-antica": {
-      "src": "/photos/discovery/c5a875eb454cd3f32e1c845b61aa656bce1ad8a1.webp",
+      "src": "/photos/discovery/194590030e9b8714077da23ab3260f77d4cecfafb43d7f3cac4e28d3196cbec0.webp",
       "alt": "Ostia Antica",
       "creditId": "c5a875eb454cd3f32e1c845b61aa656bce1ad8a1",
       "article": "https://en.wikipedia.org/wiki/Ostia_Antica",
-      "width": 800,
-      "height": 318,
-      "bytes": 59350
+      "width": 640,
+      "height": 254,
+      "bytes": 35846
     },
     "rome-vatican-museums": {
-      "src": "/photos/discovery/6d3219d9337b43e41ac81eca8f93f846ba00bf95.webp",
+      "src": "/photos/discovery/c9fa140b3cf8e9d0199b59bcb79ff0b4e235c5e591b6a8075911ad1e844a8621.webp",
       "alt": "Vatican Museums",
       "creditId": "6d3219d9337b43e41ac81eca8f93f846ba00bf95",
       "article": "https://en.wikipedia.org/wiki/Vatican_Museums",
-      "width": 450,
-      "height": 600,
-      "bytes": 39598
+      "width": 360,
+      "height": 480,
+      "bytes": 22508
     },
     "venice-ghetto": {
-      "src": "/photos/discovery/f488a074134f8bac295b781545a7ed79428f592c.webp",
+      "src": "/photos/discovery/8feb752843a72e875b303e054646568120e9a4a12c03ce0b41d48ad36218e5fb.webp",
       "alt": "Venetian Ghetto",
       "creditId": "f488a074134f8bac295b781545a7ed79428f592c",
       "article": "https://en.wikipedia.org/wiki/Venetian_Ghetto",
-      "width": 800,
-      "height": 414,
-      "bytes": 67294
+      "width": 640,
+      "height": 331,
+      "bytes": 39972
     },
     "venice-st-marks-square": {
-      "src": "/photos/discovery/61e2f436ec14220d1e1e6e5d80bfb8548418bb86.webp",
+      "src": "/photos/discovery/a517874f58a350e79b63f33f2fc9d0d4f11b707cce8ece89c873e677066bb1bd.webp",
       "alt": "Piazza San Marco",
       "creditId": "61e2f436ec14220d1e1e6e5d80bfb8548418bb86",
       "article": "https://en.wikipedia.org/wiki/Piazza_San_Marco",
-      "width": 800,
-      "height": 575,
-      "bytes": 61040
+      "width": 640,
+      "height": 460,
+      "bytes": 36048
     },
     "venice-doges-palace": {
-      "src": "/photos/discovery/a3a2b68779b59d6dc0941b8fc570c28b4020f811.webp",
+      "src": "/photos/discovery/ae3503b64323c369a3d87f52a8d33f6ed14131945c60556f6ea4f03c67f71234.webp",
       "alt": "Doge's Palace",
       "creditId": "a3a2b68779b59d6dc0941b8fc570c28b4020f811",
       "article": "https://en.wikipedia.org/wiki/Doge%27s_Palace",
-      "width": 800,
-      "height": 553,
-      "bytes": 71702
+      "width": 640,
+      "height": 442,
+      "bytes": 42546
     },
     "venice-rialto-bridge": {
-      "src": "/photos/discovery/bbc3d6719aa9bdffd3de6544adbf04ddd8204cd6.webp",
+      "src": "/photos/discovery/382aed90d46b8288a0376efd6f342a6236fb59466032e7e6ce9c8aa56c301bb3.webp",
       "alt": "Rialto Bridge",
       "creditId": "bbc3d6719aa9bdffd3de6544adbf04ddd8204cd6",
       "article": "https://en.wikipedia.org/wiki/Rialto_Bridge",
-      "width": 800,
-      "height": 533,
-      "bytes": 80044
+      "width": 640,
+      "height": 426,
+      "bytes": 48316
     },
     "venice-murano": {
-      "src": "/photos/discovery/9e27bf6378dd4eb3978a134ea942df3638d0ffe3.webp",
+      "src": "/photos/discovery/64431bd5cb3dce19d04db31c141f3b16a698ddc4d8a82600b16b55574d45fcd2.webp",
       "alt": "Murano",
       "creditId": "9e27bf6378dd4eb3978a134ea942df3638d0ffe3",
       "article": "https://en.wikipedia.org/wiki/Murano",
-      "width": 800,
-      "height": 600,
-      "bytes": 36572
+      "width": 640,
+      "height": 480,
+      "bytes": 21574
     },
     "venice-burano": {
-      "src": "/photos/discovery/78bc277839be0043c5fa2ffe9225126e720878d8.webp",
+      "src": "/photos/discovery/2ce4f4acdecf2c61712c70ac2257f3735793a2605ba16dcfc3140d2ff85aa190.webp",
       "alt": "Burano",
       "creditId": "78bc277839be0043c5fa2ffe9225126e720878d8",
       "article": "https://en.wikipedia.org/wiki/Burano",
-      "width": 800,
-      "height": 533,
-      "bytes": 50056
+      "width": 640,
+      "height": 426,
+      "bytes": 31228
     },
     "venice-giardini-biennale": {
-      "src": "/photos/discovery/85c82147320774facb92c438feefd239e5044fd4.webp",
+      "src": "/photos/discovery/5e980e7759da201ee27c74f4ace51d9d9a13fd443c72090496b03586542bb0a1.webp",
       "alt": "Giardini della Biennale",
       "creditId": "85c82147320774facb92c438feefd239e5044fd4",
       "article": "https://en.wikipedia.org/wiki/Giardini_della_Biennale",
-      "width": 800,
-      "height": 600,
-      "bytes": 138420
+      "width": 640,
+      "height": 480,
+      "bytes": 79240
     },
     "venice-peggy-guggenheim": {
-      "src": "/photos/discovery/b90f5b2f8f2708e61b3528ef1d86bdc87322bb92.webp",
+      "src": "/photos/discovery/7fa78dba64fdfaa54b370aa719e6b9220f4bc3c6869d8413e81f5bb7cc662657.webp",
       "alt": "Peggy Guggenheim Collection",
       "creditId": "b90f5b2f8f2708e61b3528ef1d86bdc87322bb92",
       "article": "https://en.wikipedia.org/wiki/Peggy_Guggenheim_Collection",
-      "width": 800,
-      "height": 583,
-      "bytes": 91314
+      "width": 640,
+      "height": 466,
+      "bytes": 57814
     },
     "florence-great-synagogue": {
-      "src": "/photos/discovery/7d617606c1b6a10ebd7f6d8a61e7f1b70b739211.webp",
+      "src": "/photos/discovery/3c63c314cb5d06711c7808cfd3b24ac144a7e2052fdbeed1c0a387f3fdbd2e14.webp",
       "alt": "Great Synagogue of Florence",
       "creditId": "7d617606c1b6a10ebd7f6d8a61e7f1b70b739211",
       "article": "https://en.wikipedia.org/wiki/Great_Synagogue_of_Florence",
-      "width": 800,
-      "height": 600,
-      "bytes": 77530
+      "width": 640,
+      "height": 480,
+      "bytes": 45384
     },
     "florence-uffizi": {
-      "src": "/photos/discovery/1cf4ddf1de379baf4352e9dc788ffd67ce5cc256.webp",
+      "src": "/photos/discovery/1de2a70536360451454c902a0c0d9bc44f2daa5e37c0c1fa6707f5fbbccacac5.webp",
       "alt": "Uffizi",
       "creditId": "1cf4ddf1de379baf4352e9dc788ffd67ce5cc256",
       "article": "https://en.wikipedia.org/wiki/Uffizi",
-      "width": 800,
-      "height": 533,
-      "bytes": 74020
+      "width": 640,
+      "height": 426,
+      "bytes": 47734
     },
     "florence-ponte-vecchio": {
-      "src": "/photos/discovery/84231563ef28d74afcbd3b32ba4467673aba5d49.webp",
+      "src": "/photos/discovery/8b75b5842f053a97f9bb47c94201b548f69e4cc5ecaeffe29cdef0e99597f918.webp",
       "alt": "Ponte Vecchio",
       "creditId": "84231563ef28d74afcbd3b32ba4467673aba5d49",
       "article": "https://en.wikipedia.org/wiki/Ponte_Vecchio",
-      "width": 800,
-      "height": 445,
-      "bytes": 54222
-    },
-    "florence-piazzale-michelangelo": {
-      "src": "/photos/discovery/d9e6e9b2a26190a8330a05282d516b92e0c17d04.webp",
-      "alt": "Piazzale Michelangelo",
-      "creditId": "d9e6e9b2a26190a8330a05282d516b92e0c17d04",
-      "article": "https://en.wikipedia.org/wiki/Piazzale_Michelangelo",
-      "width": 800,
-      "height": 533,
-      "bytes": 89624
+      "width": 640,
+      "height": 356,
+      "bytes": 31088
     },
     "florence-boboli-gardens": {
-      "src": "/photos/discovery/f8aead257d9e637674532bd56334b244c17ac3dc.webp",
+      "src": "/photos/discovery/527a4b100b05717371110524805aa46505bed73751d4325a8af5cd5afba5e931.webp",
       "alt": "Boboli Gardens",
       "creditId": "f8aead257d9e637674532bd56334b244c17ac3dc",
       "article": "https://en.wikipedia.org/wiki/Boboli_Gardens",
-      "width": 800,
-      "height": 533,
-      "bytes": 97546
+      "width": 640,
+      "height": 426,
+      "bytes": 55644
     },
     "florence-pitti-palace": {
-      "src": "/photos/discovery/56a9cc19574b393d33fd28235442b4664ad3c942.webp",
+      "src": "/photos/discovery/f34ee516de821ccf4ada1d52eff9469ca3b66d48db5396d6d58344d3fb47ad15.webp",
       "alt": "Palazzo Pitti",
       "creditId": "56a9cc19574b393d33fd28235442b4664ad3c942",
       "article": "https://en.wikipedia.org/wiki/Palazzo_Pitti",
-      "width": 800,
-      "height": 533,
-      "bytes": 87816
+      "width": 640,
+      "height": 426,
+      "bytes": 53394
     },
     "milan-sforza-castle": {
-      "src": "/photos/discovery/d34eb424a52bcbbc80bd0ab6067970c5ab12ec12.webp",
+      "src": "/photos/discovery/ae87be0cc6e44a327544d0ebfeb90f4706488ac2bc7e49965ef92d96ec3a7728.webp",
       "alt": "Sforza Castle",
       "creditId": "d34eb424a52bcbbc80bd0ab6067970c5ab12ec12",
       "article": "https://en.wikipedia.org/wiki/Sforza_Castle",
-      "width": 399,
-      "height": 600,
-      "bytes": 38030
+      "width": 319,
+      "height": 480,
+      "bytes": 21704
     },
     "milan-parco-sempione": {
-      "src": "/photos/discovery/09e8f2c96393c126b7a121ab90886646ae2cb4b7.webp",
+      "src": "/photos/discovery/d8521fd5b44cde6e809df241564491652f1489c25dfd4f9ea29e1fcfeea6d30f.webp",
       "alt": "Parco Sempione",
       "creditId": "09e8f2c96393c126b7a121ab90886646ae2cb4b7",
       "article": "https://en.wikipedia.org/wiki/Parco_Sempione",
-      "width": 800,
-      "height": 533,
-      "bytes": 104450
+      "width": 640,
+      "height": 426,
+      "bytes": 60718
     },
     "milan-leonardo-science-museum": {
-      "src": "/photos/discovery/f84e70753ec3b17878ad2d48114e9e17d6c700fb.webp",
+      "src": "/photos/discovery/6d6d267d0720c453b742bce510b6b9ca0b439f353c547b35852784e1b396e13b.webp",
       "alt": "Museo Nazionale Scienza e Tecnologia Leonardo da Vinci",
       "creditId": "f84e70753ec3b17878ad2d48114e9e17d6c700fb",
       "article": "https://en.wikipedia.org/wiki/Museo_Nazionale_Scienza_e_Tecnologia_Leonardo_da_Vinci",
-      "width": 800,
-      "height": 533,
-      "bytes": 83080
+      "width": 640,
+      "height": 426,
+      "bytes": 49292
     },
     "milan-galleria-vittorio-emanuele": {
-      "src": "/photos/discovery/1d01d2ccd7a6c3a42fcacbe378227f17b5d43d93.webp",
+      "src": "/photos/discovery/5e2c2b296fc86534499835ed5ab553f7c88bf18c7c709b79ed2e82c8624409f1.webp",
       "alt": "Galleria Vittorio Emanuele II",
       "creditId": "1d01d2ccd7a6c3a42fcacbe378227f17b5d43d93",
       "article": "https://en.wikipedia.org/wiki/Galleria_Vittorio_Emanuele_II",
-      "width": 800,
-      "height": 443,
-      "bytes": 96432
+      "width": 640,
+      "height": 354,
+      "bytes": 62026
     },
     "milan-brera": {
-      "src": "/photos/discovery/79ab2d61925cb7f3294ca8c3fe243fd930ce06e8.webp",
+      "src": "/photos/discovery/b104373f8b8c71d8fa359977ff7168dde414d2e26146167ffaa9403d46dc8b2f.webp",
       "alt": "Pinacoteca di Brera",
       "creditId": "79ab2d61925cb7f3294ca8c3fe243fd930ce06e8",
       "article": "https://en.wikipedia.org/wiki/Pinacoteca_di_Brera",
-      "width": 800,
-      "height": 533,
-      "bytes": 95482
+      "width": 640,
+      "height": 426,
+      "bytes": 58100
     },
     "milan-shoah-memorial": {
-      "src": "/photos/discovery/30a855160674d8e766dd2e70a410bb95452fb648.webp",
+      "src": "/photos/discovery/3fe3063a857d945ebe077ea71bdf23740d0482add9da2dd6670f0bb844bb8948.webp",
       "alt": "Memoriale della Shoah",
       "creditId": "30a855160674d8e766dd2e70a410bb95452fb648",
       "article": "https://en.wikipedia.org/wiki/Memoriale_della_Shoah",
-      "width": 800,
-      "height": 600,
-      "bytes": 79104
+      "width": 640,
+      "height": 480,
+      "bytes": 46044
     },
     "bologna-piazza-maggiore": {
-      "src": "/photos/discovery/b61544327ac1fb91d152283834416fd8df85c05c.webp",
+      "src": "/photos/discovery/a80e3cc640a2ad27fb5f18dd63fdc3ccb7e62b5a0d6cebe4ad109f52ff6d99aa.webp",
       "alt": "Piazza Maggiore",
       "creditId": "b61544327ac1fb91d152283834416fd8df85c05c",
       "article": "https://en.wikipedia.org/wiki/Piazza_Maggiore",
-      "width": 450,
-      "height": 600,
-      "bytes": 31136
+      "width": 360,
+      "height": 480,
+      "bytes": 17284
     },
     "trieste-piazza-unita": {
-      "src": "/photos/discovery/0a4ac43be90ff639b384fff8350b46f195269f41.webp",
+      "src": "/photos/discovery/5d74c3e7f27feafb0788f532b8d1987656cfd2aee9afec5e1e2ede5c2499e11d.webp",
       "alt": "Piazza Unità d'Italia",
       "creditId": "0a4ac43be90ff639b384fff8350b46f195269f41",
       "article": "https://en.wikipedia.org/wiki/Piazza_Unit%C3%A0_d%27Italia",
-      "width": 800,
-      "height": 450,
-      "bytes": 56178
+      "width": 640,
+      "height": 360,
+      "bytes": 33348
     },
     "trieste-miramare": {
-      "src": "/photos/discovery/f8ffc9730e441a4f1cdb88da732f7647501f2a92.webp",
+      "src": "/photos/discovery/39cfb9916be8aadc63777ee138882e995ba4ddf097804c8b4df766d08b0594f3.webp",
       "alt": "Miramare Castle",
       "creditId": "f8ffc9730e441a4f1cdb88da732f7647501f2a92",
       "article": "https://en.wikipedia.org/wiki/Miramare_Castle",
-      "width": 800,
-      "height": 460,
-      "bytes": 71260
+      "width": 640,
+      "height": 368,
+      "bytes": 41766
     },
     "trieste-synagogue": {
-      "src": "/photos/discovery/c36159986f0cc893da02c6ef557b673de71791cf.webp",
+      "src": "/photos/discovery/8b96bf2522b179bceee903412cd028cc8c1d2bd606774386463d50c7e0cfb3e0.webp",
       "alt": "Synagogue of Trieste",
       "creditId": "c36159986f0cc893da02c6ef557b673de71791cf",
       "article": "https://en.wikipedia.org/wiki/Synagogue_of_Trieste",
-      "width": 800,
-      "height": 534,
-      "bytes": 68298
+      "width": 640,
+      "height": 427,
+      "bytes": 40008
     },
     "naples-piazza-plebiscito": {
-      "src": "/photos/discovery/ddc505cca7477dc9c24caff33c89861a8ee8c209.webp",
+      "src": "/photos/discovery/d912ee58f9089c27a953dcb0f5fd85d3d87484ea53fbc730e5cebb13356e8bab.webp",
       "alt": "Piazza del Plebiscito",
       "creditId": "ddc505cca7477dc9c24caff33c89861a8ee8c209",
       "article": "https://en.wikipedia.org/wiki/Piazza_del_Plebiscito",
-      "width": 800,
-      "height": 600,
-      "bytes": 59420
+      "width": 640,
+      "height": 480,
+      "bytes": 33290
     },
     "turin-egyptian-museum": {
-      "src": "/photos/discovery/b1b249067734f054bf9f53fef04715842e094c9d.webp",
+      "src": "/photos/discovery/652544ca8faded17bc77a56f43cd9db55a3198b09b1dc6600822ecb0ea44bde8.webp",
       "alt": "Museo Egizio",
       "creditId": "b1b249067734f054bf9f53fef04715842e094c9d",
       "article": "https://en.wikipedia.org/wiki/Museo_Egizio",
-      "width": 800,
-      "height": 557,
-      "bytes": 80298
+      "width": 640,
+      "height": 446,
+      "bytes": 46586
     },
     "turin-royal-palace": {
-      "src": "/photos/discovery/9f72a0b3218ce84975e295958a8dd9726aa687d3.webp",
+      "src": "/photos/discovery/24546c88cceb93e985d313d623a1c5510bcfa082e6d4d5e46a5ec4012c2a802a.webp",
       "alt": "Royal Palace of Turin",
       "creditId": "9f72a0b3218ce84975e295958a8dd9726aa687d3",
       "article": "https://en.wikipedia.org/wiki/Royal_Palace_of_Turin",
-      "width": 800,
-      "height": 450,
-      "bytes": 54720
+      "width": 640,
+      "height": 360,
+      "bytes": 32138
     },
     "genoa-aquarium": {
-      "src": "/photos/discovery/fa9eac793e957183a0091c4aef62cf5e5f197ca7.webp",
+      "src": "/photos/discovery/c3136ae723c19bd224b3079c1a872abf709ecef4adb2a1ac30bcd9be12fb1176.webp",
       "alt": "Aquarium of Genoa",
       "creditId": "fa9eac793e957183a0091c4aef62cf5e5f197ca7",
       "article": "https://en.wikipedia.org/wiki/Aquarium_of_Genoa",
       "width": 640,
       "height": 480,
-      "bytes": 19756
+      "bytes": 17180
     },
     "palermo-palazzo-normanni": {
-      "src": "/photos/discovery/efde92549ed24e81f8a78e69e883fecfd85fa14a.webp",
+      "src": "/photos/discovery/d0b8373717cbf5286f7448c999ab00918bd549cb7303e7c64ccdd66faf7f0a7e.webp",
       "alt": "Palazzo dei Normanni",
       "creditId": "efde92549ed24e81f8a78e69e883fecfd85fa14a",
       "article": "https://en.wikipedia.org/wiki/Palazzo_dei_Normanni",
-      "width": 800,
-      "height": 600,
-      "bytes": 58690
+      "width": 640,
+      "height": 480,
+      "bytes": 34526
     },
     "palermo-teatro-massimo": {
-      "src": "/photos/discovery/72659d42103558a83cd77b9d65cc857deb4150c9.webp",
+      "src": "/photos/discovery/43290ac0b6f0b7a9102bae083424d8826dce81fee61de679dbcbab476691c2c5.webp",
       "alt": "Teatro Massimo",
       "creditId": "72659d42103558a83cd77b9d65cc857deb4150c9",
       "article": "https://en.wikipedia.org/wiki/Teatro_Massimo",
-      "width": 800,
-      "height": 487,
-      "bytes": 74028
+      "width": 640,
+      "height": 390,
+      "bytes": 44182
     },
     "palermo-cathedral": {
-      "src": "/photos/discovery/b83d1f8d9deb00fc1e5474ca155471e9ebea613c.webp",
+      "src": "/photos/discovery/d1a5c88667ae5d7dcd718ee10c5e020665eeeaf2565a586341179613213a817b.webp",
       "alt": "Palermo Cathedral",
       "creditId": "b83d1f8d9deb00fc1e5474ca155471e9ebea613c",
       "article": "https://en.wikipedia.org/wiki/Palermo_Cathedral",
-      "width": 800,
-      "height": 462,
-      "bytes": 57286
+      "width": 640,
+      "height": 370,
+      "bytes": 34924
     },
     "padua-scrovegni-chapel": {
-      "src": "/photos/discovery/4f5cfc6a982f60e7b605bc618925e2f8462dec6b.webp",
+      "src": "/photos/discovery/33be042377c093f791b08406ed8c1bceef19939ecc181a2e003a034a33e5d65f.webp",
       "alt": "Scrovegni Chapel",
       "creditId": "4f5cfc6a982f60e7b605bc618925e2f8462dec6b",
       "article": "https://en.wikipedia.org/wiki/Scrovegni_Chapel",
-      "width": 776,
-      "height": 600,
-      "bytes": 97562
+      "width": 621,
+      "height": 480,
+      "bytes": 62254
     },
     "padua-prato-della-valle": {
-      "src": "/photos/discovery/ac910feb78d4a1c25d59605a6013eb50205c8453.webp",
+      "src": "/photos/discovery/a58840215f59941408c44a09e180a458fe2305b794e50de45022b3e890fd768d.webp",
       "alt": "Prato della Valle",
       "creditId": "ac910feb78d4a1c25d59605a6013eb50205c8453",
       "article": "https://en.wikipedia.org/wiki/Prato_della_Valle",
-      "width": 800,
-      "height": 533,
-      "bytes": 61918
+      "width": 640,
+      "height": 426,
+      "bytes": 36876
     },
     "pompeii": {
-      "src": "/photos/discovery/031895cc10038f0214e52e78ae5f44f7255eacd6.webp",
+      "src": "/photos/discovery/f993a1b75a318efa0374d7e374efb5cb614ac605437cae8fc39059ef2152928d.webp",
       "alt": "Pompeii",
       "creditId": "031895cc10038f0214e52e78ae5f44f7255eacd6",
       "article": "https://en.wikipedia.org/wiki/Pompeii",
-      "width": 800,
-      "height": 493,
-      "bytes": 110980
+      "width": 640,
+      "height": 394,
+      "bytes": 65918
     },
     "naples-castel-dellovo": {
-      "src": "/photos/discovery/d31367c2c1ce50664ac2a6ae94fc074798784990.webp",
+      "src": "/photos/discovery/29dcfa8167bc57caeb36e4f0f2edf648d3c23c642ea62e620710ad3c6fa26401.webp",
       "alt": "Castel dell'Ovo",
       "creditId": "d31367c2c1ce50664ac2a6ae94fc074798784990",
       "article": "https://en.wikipedia.org/wiki/Castel_dell%27Ovo",
-      "width": 800,
-      "height": 498,
-      "bytes": 38942
+      "width": 640,
+      "height": 398,
+      "bytes": 21960
     },
     "naples-vesuvius": {
-      "src": "/photos/discovery/e186dc6f902c1e6cdfb3f49881c2102f0bfb080c.webp",
+      "src": "/photos/discovery/25218c6ee6ca776a3ee935b307e7021d6e971801bfb1b80a4b602576fa6d348f.webp",
       "alt": "Mount Vesuvius",
       "creditId": "e186dc6f902c1e6cdfb3f49881c2102f0bfb080c",
       "article": "https://en.wikipedia.org/wiki/Mount_Vesuvius",
-      "width": 800,
-      "height": 449,
-      "bytes": 59180
+      "width": 640,
+      "height": 359,
+      "bytes": 33684
     },
     "naples-herculaneum": {
-      "src": "/photos/discovery/f7308dbf37cc067e4a993f7d1e9b11ef4498a27d.webp",
+      "src": "/photos/discovery/12195385d0597c21dddf795ee8ad2f9e4142d3290aa3464a47c7762002ef5ef8.webp",
       "alt": "Herculaneum",
       "creditId": "f7308dbf37cc067e4a993f7d1e9b11ef4498a27d",
       "article": "https://en.wikipedia.org/wiki/Herculaneum",
-      "width": 800,
-      "height": 374,
-      "bytes": 75636
+      "width": 640,
+      "height": 299,
+      "bytes": 44228
     },
     "naples-castel-santelmo": {
-      "src": "/photos/discovery/7f8e1fc5392171a707f25a82a4d4ab47dc3da8f9.webp",
+      "src": "/photos/discovery/edd9d043d77472d605a7b0a5e57f2967ef5ed22b4516eae1d07138015b00343e.webp",
       "alt": "Castel Sant'Elmo",
       "creditId": "7f8e1fc5392171a707f25a82a4d4ab47dc3da8f9",
       "article": "https://en.wikipedia.org/wiki/Castel_Sant%27Elmo",
-      "width": 800,
-      "height": 534,
-      "bytes": 39898
+      "width": 640,
+      "height": 427,
+      "bytes": 21108
     },
     "paris-eiffel-tower": {
-      "src": "/photos/discovery/13c83c3b722bcb3475ea3aab5e73cc5e93a6acba.webp",
+      "src": "/photos/discovery/1ce80c68433769ce6ea269a7ba24bf18e682eb97c68da05654c91dabaeac59f8.webp",
       "alt": "Eiffel Tower",
       "creditId": "13c83c3b722bcb3475ea3aab5e73cc5e93a6acba",
       "article": "https://en.wikipedia.org/wiki/Eiffel_Tower",
-      "width": 360,
-      "height": 600,
-      "bytes": 19420
+      "width": 288,
+      "height": 480,
+      "bytes": 11296
     },
     "paris-marais-pletzl": {
-      "src": "/photos/discovery/763fc672d5c25638d6ab102e333a4f530f8b8d11.webp",
+      "src": "/photos/discovery/c43f169b0e0b9f8f2b816c629f19c6327ea4224775ee963bd040bfadb4f5bc5e.webp",
       "alt": "Pletzl",
       "creditId": "763fc672d5c25638d6ab102e333a4f530f8b8d11",
       "article": "https://en.wikipedia.org/wiki/Pletzl",
-      "width": 800,
-      "height": 517,
-      "bytes": 81864
+      "width": 640,
+      "height": 414,
+      "bytes": 50048
     },
     "paris-louvre": {
-      "src": "/photos/discovery/2eb38e70a2aaec38aaa3fdff7845734d9973b8b7.webp",
+      "src": "/photos/discovery/d27c763056dc51996f1d544a1216f7be817a1e64493fa7aff819e132dc7cb31d.webp",
       "alt": "Louvre",
       "creditId": "2eb38e70a2aaec38aaa3fdff7845734d9973b8b7",
       "article": "https://en.wikipedia.org/wiki/Louvre",
-      "width": 800,
-      "height": 336,
-      "bytes": 34348
+      "width": 640,
+      "height": 269,
+      "bytes": 20012
     },
     "paris-musee-orsay": {
-      "src": "/photos/discovery/c09296ebd04679c83db0d8e8dc62ae08bc26349f.webp",
+      "src": "/photos/discovery/a7b95061b057e0803c09abc88861c0c301ec2e0e2c4973e02e035a6af97eca5e.webp",
       "alt": "Musée d'Orsay",
       "creditId": "c09296ebd04679c83db0d8e8dc62ae08bc26349f",
       "article": "https://en.wikipedia.org/wiki/Mus%C3%A9e_d%27Orsay",
-      "width": 800,
-      "height": 213,
-      "bytes": 33264
+      "width": 640,
+      "height": 170,
+      "bytes": 19808
     },
     "paris-jardin-luxembourg": {
-      "src": "/photos/discovery/8c16c9cdbeb3560478a62aeba61948b9f5059e32.webp",
+      "src": "/photos/discovery/2e1b45053fb8a558a134658547632f3a972fe960adeff671f631f3564e09ef80.webp",
       "alt": "Jardin du Luxembourg",
       "creditId": "8c16c9cdbeb3560478a62aeba61948b9f5059e32",
       "article": "https://en.wikipedia.org/wiki/Jardin_du_Luxembourg",
-      "width": 800,
-      "height": 536,
-      "bytes": 150230
+      "width": 640,
+      "height": 429,
+      "bytes": 89736
     },
     "paris-mahj": {
-      "src": "/photos/discovery/f50e4607852e78a6d76605d831b9cb5400d87c79.webp",
+      "src": "/photos/discovery/0f10a6be3a26c114d0c21704028bc64f020f2c55aafab65b45222aef47a05588.webp",
       "alt": "Musée d'Art et d'Histoire du Judaïsme",
       "creditId": "f50e4607852e78a6d76605d831b9cb5400d87c79",
       "article": "https://en.wikipedia.org/wiki/Mus%C3%A9e_d%27Art_et_d%27Histoire_du_Juda%C3%AFsme",
-      "width": 433,
-      "height": 600,
-      "bytes": 41550
+      "width": 346,
+      "height": 480,
+      "bytes": 23744
     },
     "paris-memorial-shoah": {
-      "src": "/photos/discovery/bb0fc919633745736c9d9c72c302fdfa003fb1f3.webp",
+      "src": "/photos/discovery/52b9cbce8792d7532e364dc84e6270e67e06a13d9e5c92f3e74ef7d2924e74b2.webp",
       "alt": "Mémorial de la Shoah",
       "creditId": "bb0fc919633745736c9d9c72c302fdfa003fb1f3",
       "article": "https://en.wikipedia.org/wiki/M%C3%A9morial_de_la_Shoah",
-      "width": 450,
-      "height": 600,
-      "bytes": 32760
+      "width": 360,
+      "height": 480,
+      "bytes": 19944
     },
     "nice-musee-chagall": {
-      "src": "/photos/discovery/4498099dacc6778ffc52175db6467ef52e2f24f0.webp",
+      "src": "/photos/discovery/a42ded51b212f9b7a02111e9a2d7f632d54aa2b310cde5d4874fa2c482dff145.webp",
       "alt": "Musée Marc Chagall",
       "creditId": "4498099dacc6778ffc52175db6467ef52e2f24f0",
       "article": "https://en.wikipedia.org/wiki/Mus%C3%A9e_Marc_Chagall",
       "width": 640,
       "height": 480,
-      "bytes": 30750
+      "bytes": 27464
     },
     "marseille-mucem": {
-      "src": "/photos/discovery/e9f2ad0418c2948d2cba990a45636704193c99a4.webp",
+      "src": "/photos/discovery/57a7d167cf08fee37156a0ad81f30c89eff37d9b695a6e07778437a374e5ab32.webp",
       "alt": "Museum of European and Mediterranean Civilisations",
       "creditId": "e9f2ad0418c2948d2cba990a45636704193c99a4",
       "article": "https://en.wikipedia.org/wiki/Museum_of_European_and_Mediterranean_Civilisations",
-      "width": 800,
-      "height": 385,
-      "bytes": 64066
+      "width": 640,
+      "height": 308,
+      "bytes": 37788
     },
     "marseille-notre-dame-garde": {
-      "src": "/photos/discovery/bf468d3638c55a48ca3d413d31db7f14d0c4fc1e.webp",
+      "src": "/photos/discovery/fb02e3fc8efc77443caa9ac1eb18f5e0e97ce984eea19af51f1639c9238a2b83.webp",
       "alt": "Notre-Dame de la Garde",
       "creditId": "bf468d3638c55a48ca3d413d31db7f14d0c4fc1e",
       "article": "https://en.wikipedia.org/wiki/Notre-Dame_de_la_Garde",
-      "width": 624,
-      "height": 600,
-      "bytes": 99046
+      "width": 499,
+      "height": 480,
+      "bytes": 57348
     },
     "strasbourg-cathedral": {
-      "src": "/photos/discovery/30ba67362115f0641f32686e0941a7130482cdcb.webp",
+      "src": "/photos/discovery/474ce6ce8571e9700cfc533e17faf40af20de22e5659e28acf71d4751dcd10f4.webp",
       "alt": "Strasbourg Cathedral",
       "creditId": "30ba67362115f0641f32686e0941a7130482cdcb",
       "article": "https://en.wikipedia.org/wiki/Strasbourg_Cathedral",
-      "width": 469,
-      "height": 600,
-      "bytes": 43136
+      "width": 375,
+      "height": 480,
+      "bytes": 24558
     },
     "bordeaux-place-bourse": {
-      "src": "/photos/discovery/cc8b28e8cf91381644b3045cd4018757a1171696.webp",
+      "src": "/photos/discovery/f40e97ed8656b9ce1e7d2d75f2833b608bea1eca49a65453f2c0f13d86d92a09.webp",
       "alt": "Place de la Bourse, Bordeaux",
       "creditId": "cc8b28e8cf91381644b3045cd4018757a1171696",
       "article": "https://en.wikipedia.org/wiki/Place_de_la_Bourse,_Bordeaux",
-      "width": 800,
-      "height": 535,
-      "bytes": 57172
+      "width": 640,
+      "height": 428,
+      "bytes": 34144
     },
     "toulouse-capitole": {
-      "src": "/photos/discovery/191522559e8f661f964b8d26a07660dbf3028df6.webp",
+      "src": "/photos/discovery/66533b600c44b5c0449f9f7a34e96b26a6192cbc5df570d8868212b18fb96aac.webp",
       "alt": "Capitole de Toulouse",
       "creditId": "191522559e8f661f964b8d26a07660dbf3028df6",
       "article": "https://en.wikipedia.org/wiki/Capitole_de_Toulouse",
-      "width": 800,
-      "height": 481,
-      "bytes": 57766
+      "width": 640,
+      "height": 385,
+      "bytes": 32260
     },
     "toulouse-cite-espace": {
-      "src": "/photos/discovery/560adf8ff939eda6b3307c58af272831196c09de.webp",
+      "src": "/photos/discovery/457356b16fc417192a0db0be5ba738552b892eff65c1bc5810b459277983f484.webp",
       "alt": "Cité de l'espace",
       "creditId": "560adf8ff939eda6b3307c58af272831196c09de",
       "article": "https://en.wikipedia.org/wiki/Cit%C3%A9_de_l%27espace",
       "width": 640,
       "height": 480,
-      "bytes": 16864
+      "bytes": 15022
     },
     "lyon-fourviere": {
-      "src": "/photos/discovery/76ec53f4c6924bb9c78075314948a2964653053b.webp",
+      "src": "/photos/discovery/ac4bee9ecfdd3dc38a8a31a8a553aa68ae95604825889b9ef2699eb3b282263e.webp",
       "alt": "Basilica of Notre-Dame de Fourvière",
       "creditId": "76ec53f4c6924bb9c78075314948a2964653053b",
       "article": "https://en.wikipedia.org/wiki/Basilica_of_Notre-Dame_de_Fourvi%C3%A8re",
-      "width": 800,
-      "height": 595,
-      "bytes": 55058
+      "width": 640,
+      "height": 476,
+      "bytes": 32688
     },
     "lyon-tete-dor": {
-      "src": "/photos/discovery/505082e30a042a2feeeac6740831950627063dbb.webp",
+      "src": "/photos/discovery/e8944a86f750aeb5a52ed9105abe1a8a180abc5dfd24697d6462347c6217cb8a.webp",
       "alt": "Parc de la Tête d'or",
       "creditId": "505082e30a042a2feeeac6740831950627063dbb",
       "article": "https://en.wikipedia.org/wiki/Parc_de_la_T%C3%AAte_d%27or",
-      "width": 800,
-      "height": 567,
-      "bytes": 143548
+      "width": 640,
+      "height": 454,
+      "bytes": 80518
     },
     "lyon-confluences": {
-      "src": "/photos/discovery/0b66ef49e2b57e5f13c7c7728037125cc3c3a3bb.webp",
+      "src": "/photos/discovery/14f9451c4620d3515b275496f1bfba1a996b8b9031db2f5d62a2e7dab8692600.webp",
       "alt": "Musée des Confluences",
       "creditId": "0b66ef49e2b57e5f13c7c7728037125cc3c3a3bb",
       "article": "https://en.wikipedia.org/wiki/Mus%C3%A9e_des_Confluences",
-      "width": 800,
-      "height": 533,
-      "bytes": 79258
+      "width": 640,
+      "height": 426,
+      "bytes": 45706
     },
     "versailles": {
-      "src": "/photos/discovery/2c10ed274c88d8e72aab6c2a574f04cdd954b064.webp",
+      "src": "/photos/discovery/bccea9c7b7b5076990d436627c631648b5d97372278fb182dc34dbf8331d6ffb.webp",
       "alt": "Palace of Versailles",
       "creditId": "2c10ed274c88d8e72aab6c2a574f04cdd954b064",
       "article": "https://en.wikipedia.org/wiki/Palace_of_Versailles",
-      "width": 800,
-      "height": 419,
-      "bytes": 85052
+      "width": 640,
+      "height": 335,
+      "bytes": 51324
     },
     "nice-place-massena": {
-      "src": "/photos/discovery/36bedad7793ca00df1195b700d264063f120458c.webp",
+      "src": "/photos/discovery/16b607d14190df5b5a7ae3a0d44da29d0c9fbeddc7c5bbcf2022e76051b1a2b6.webp",
       "alt": "Place Masséna",
       "creditId": "36bedad7793ca00df1195b700d264063f120458c",
       "article": "https://en.wikipedia.org/wiki/Place_Mass%C3%A9na",
-      "width": 800,
-      "height": 533,
-      "bytes": 83318
+      "width": 640,
+      "height": 426,
+      "bytes": 50556
     },
     "carcassonne": {
-      "src": "/photos/discovery/d84d4567a3888c6be986428ee7cf4ddc7a519426.webp",
+      "src": "/photos/discovery/2b44560ad3d29d37da52ea911ed6e2ae394f0cb94782874b2243bfbc294e9469.webp",
       "alt": "Cité de Carcassonne",
       "creditId": "d84d4567a3888c6be986428ee7cf4ddc7a519426",
       "article": "https://en.wikipedia.org/wiki/Cit%C3%A9_de_Carcassonne",
-      "width": 800,
-      "height": 472,
-      "bytes": 111896
+      "width": 640,
+      "height": 378,
+      "bytes": 65746
     },
     "jungfraujoch": {
-      "src": "/photos/discovery/ac346de826356b414b76a6b3f2b8ebeec4946e8d.webp",
+      "src": "/photos/discovery/1b2e544e574aef953cc526066a79002f44b43547c9931e8225def580f3cae8bf.webp",
       "alt": "Jungfraujoch",
       "creditId": "ac346de826356b414b76a6b3f2b8ebeec4946e8d",
       "article": "https://en.wikipedia.org/wiki/Jungfraujoch",
-      "width": 800,
-      "height": 533,
-      "bytes": 55172
+      "width": 640,
+      "height": 426,
+      "bytes": 34616
     },
     "rhine-falls": {
-      "src": "/photos/discovery/08b4e9776a76905ca5bca8d2dc414eadb39f3b1a.webp",
+      "src": "/photos/discovery/7e6a463b01861b839bbb2e7eeca880460cc39e4569977bddd799e5cfa58ab0b3.webp",
       "alt": "Rhine Falls",
       "creditId": "08b4e9776a76905ca5bca8d2dc414eadb39f3b1a",
       "article": "https://en.wikipedia.org/wiki/Rhine_Falls",
-      "width": 800,
-      "height": 533,
-      "bytes": 83242
+      "width": 640,
+      "height": 426,
+      "bytes": 49210
     },
     "mount-pilatus": {
-      "src": "/photos/discovery/ad7f99569b2c56a87e227f4e958adcb11d78b102.webp",
+      "src": "/photos/discovery/96983811cd013c26ac4a7d40e6e46adb4f2bce7b5d11c6781f2e29f9bc3d25c3.webp",
       "alt": "Pilatus (mountain)",
       "creditId": "ad7f99569b2c56a87e227f4e958adcb11d78b102",
       "article": "https://en.wikipedia.org/wiki/Pilatus_(mountain)",
-      "width": 800,
-      "height": 533,
-      "bytes": 52428
+      "width": 640,
+      "height": 426,
+      "bytes": 30202
     },
     "lake-como": {
-      "src": "/photos/discovery/bbeff0641da50717e645196cb478aabc27f8e83a.webp",
+      "src": "/photos/discovery/385cce4ca687ebeac4d90c6dfc32171014bb9d83bed7515183ec47d2e65e0a72.webp",
       "alt": "Lake Como",
       "creditId": "bbeff0641da50717e645196cb478aabc27f8e83a",
       "article": "https://en.wikipedia.org/wiki/Lake_Como",
-      "width": 800,
-      "height": 500,
-      "bytes": 71580
+      "width": 640,
+      "height": 400,
+      "bytes": 39636
     },
     "cinque-terre": {
-      "src": "/photos/discovery/beea19a9156f47dbdeaba8904ed3fadeed6471e2.webp",
+      "src": "/photos/discovery/1e1d22082a8fc36fffbc08e00172f67bf8ce15333dd848da876a24e64a9fbff5.webp",
       "alt": "Cinque Terre",
       "creditId": "beea19a9156f47dbdeaba8904ed3fadeed6471e2",
       "article": "https://en.wikipedia.org/wiki/Cinque_Terre",
-      "width": 800,
-      "height": 533,
-      "bytes": 88288
+      "width": 640,
+      "height": 426,
+      "bytes": 51704
     },
     "verona-arena": {
-      "src": "/photos/discovery/1f336dc3fe56520b39651035c44148e69e195b21.webp",
+      "src": "/photos/discovery/2fa034b04a2487ef655ed7dbb42b597ca421da52f8fad2c030e0327b3b05ab2b.webp",
       "alt": "Verona Arena",
       "creditId": "1f336dc3fe56520b39651035c44148e69e195b21",
       "article": "https://en.wikipedia.org/wiki/Verona_Arena",
-      "width": 800,
-      "height": 450,
-      "bytes": 72668
+      "width": 640,
+      "height": 360,
+      "bytes": 41284
     },
     "siena-piazza-del-campo": {
-      "src": "/photos/discovery/4e9cbbbd2e40d55dcbfa2c7510af90fa39c8e398.webp",
+      "src": "/photos/discovery/2bf9ce04e5a398a5cabe29de4a523bfdfad5eb2251497348b6da493f9988a208.webp",
       "alt": "Siena",
       "creditId": "4e9cbbbd2e40d55dcbfa2c7510af90fa39c8e398",
       "article": "https://en.wikipedia.org/wiki/Siena",
-      "width": 800,
-      "height": 536,
-      "bytes": 110642
+      "width": 640,
+      "height": 429,
+      "bytes": 65752
     },
     "mont-saint-michel": {
-      "src": "/photos/discovery/c75e27c78b1a92df3153a07be9a7caa5d4667cbf.webp",
+      "src": "/photos/discovery/07a0ea997cb797ef893d183d932d2a64a098abb298e6a0f72737a7374426cac7.webp",
       "alt": "Mont-Saint-Michel",
       "creditId": "c75e27c78b1a92df3153a07be9a7caa5d4667cbf",
       "article": "https://en.wikipedia.org/wiki/Mont-Saint-Michel",
-      "width": 800,
-      "height": 450,
-      "bytes": 31304
+      "width": 640,
+      "height": 360,
+      "bytes": 17676
     },
     "chateau-de-chambord": {
-      "src": "/photos/discovery/1809b7fca447be96207c748fae7c23b2099cc525.webp",
+      "src": "/photos/discovery/ade8506606dcebffc9da87fbfb5e5d37ca45ce7433af15f9fb65b08f968ebddf.webp",
       "alt": "Château de Chambord",
       "creditId": "1809b7fca447be96207c748fae7c23b2099cc525",
       "article": "https://en.wikipedia.org/wiki/Ch%C3%A2teau_de_Chambord",
-      "width": 800,
-      "height": 600,
-      "bytes": 106744
+      "width": 640,
+      "height": 480,
+      "bytes": 62578
     },
     "chamonix-aiguille-du-midi": {
-      "src": "/photos/discovery/1bae5e14c95d33e2752b93d068955371846a27c3.webp",
+      "src": "/photos/discovery/869b34097574ba85a90556d338448bae81d4d04545fa69ec13fc5a3e480d860e.webp",
       "alt": "Chamonix",
       "creditId": "1bae5e14c95d33e2752b93d068955371846a27c3",
       "article": "https://en.wikipedia.org/wiki/Chamonix",
-      "width": 800,
-      "height": 533,
-      "bytes": 76966
+      "width": 640,
+      "height": 426,
+      "bytes": 43878
     },
     "zermatt-gornergrat": {
-      "src": "/photos/discovery/a3f453c35b69bfe815a6c5e642884eb7ad176f28.webp",
+      "src": "/photos/discovery/c05836f1029b60cbd97892e11def756bbc6d4a6be4bcf85a89134ad7d5ddab62.webp",
       "alt": "Zermatt",
       "creditId": "a3f453c35b69bfe815a6c5e642884eb7ad176f28",
       "article": "https://en.wikipedia.org/wiki/Zermatt",
-      "width": 636,
-      "height": 600,
-      "bytes": 59404
+      "width": 509,
+      "height": 480,
+      "bytes": 33384
     },
     "chateau-de-chillon": {
-      "src": "/photos/discovery/a672a3d9942b4cedac8ebd15b79042bbd78b99bb.webp",
+      "src": "/photos/discovery/32b9989598665d1f50225ce1fce3ee143bbad6d5fd6e72b63636db62038ec1f0.webp",
       "alt": "Chillon Castle",
       "creditId": "a672a3d9942b4cedac8ebd15b79042bbd78b99bb",
       "article": "https://en.wikipedia.org/wiki/Chillon_Castle",
-      "width": 800,
-      "height": 533,
-      "bytes": 48346
+      "width": 640,
+      "height": 426,
+      "bytes": 26664
     },
     "schilthorn-piz-gloria": {
-      "src": "/photos/discovery/93b494ae8ea1ede84f566c8256943a615c786450.webp",
+      "src": "/photos/discovery/2e51580ff454178a8fc3b6b72477bd89ee1dcfbf0635b4a84255fba92c27509b.webp",
       "alt": "Schilthorn",
       "creditId": "93b494ae8ea1ede84f566c8256943a615c786450",
       "article": "https://en.wikipedia.org/wiki/Schilthorn",
-      "width": 800,
-      "height": 429,
-      "bytes": 63024
+      "width": 640,
+      "height": 343,
+      "bytes": 38276
     },
     "trummelbach-falls": {
-      "src": "/photos/discovery/6b0b830e52f20d5231d6622c52e57fe0233d9387.webp",
+      "src": "/photos/discovery/a30c89a249b3406bdd194ad4fd32a1336137379635cb6e4df66f1eb8ec385c22.webp",
       "alt": "Trümmelbach Falls",
       "creditId": "6b0b830e52f20d5231d6622c52e57fe0233d9387",
       "article": "https://en.wikipedia.org/wiki/Tr%C3%BCmmelbach_Falls",
-      "width": 266,
-      "height": 600,
-      "bytes": 14112
+      "width": 213,
+      "height": 480,
+      "bytes": 8206
     },
     "basel-jewish-museum": {
-      "src": "/photos/discovery/5ef563caa92536d761ccfd0138b5798675a97842.webp",
+      "src": "/photos/discovery/c84f1321c52d25d63c7ff0e6350d13e1976cd44fb190e467be273ec825267b7f.webp",
       "alt": "Jewish Museum of Switzerland",
       "creditId": "5ef563caa92536d761ccfd0138b5798675a97842",
       "article": "https://en.wikipedia.org/wiki/Jewish_Museum_of_Switzerland",
-      "width": 598,
-      "height": 600,
-      "bytes": 39326
+      "width": 478,
+      "height": 480,
+      "bytes": 23660
     },
     "bern-zytglogge": {
-      "src": "/photos/discovery/3e89430cd363dbc4b6e1005c34d95683c6810495.webp",
+      "src": "/photos/discovery/4353d394960ae5ce31b458cf13d71824be3091693ae0c9004e51126e71008a34.webp",
       "alt": "Zytglogge",
       "creditId": "3e89430cd363dbc4b6e1005c34d95683c6810495",
       "article": "https://en.wikipedia.org/wiki/Zytglogge",
-      "width": 400,
-      "height": 600,
-      "bytes": 27654
+      "width": 320,
+      "height": 480,
+      "bytes": 16566
     },
     "girona-call": {
-      "src": "/photos/discovery/74651024d0e640bfc4d92afb95ca6e8fb7c094e8.webp",
+      "src": "/photos/discovery/a433e8232939d6f1dfc30db6f66b4f9257e67c89fee5d47209c790783dc7d00e.webp",
       "alt": "Girona",
       "creditId": "74651024d0e640bfc4d92afb95ca6e8fb7c094e8",
       "article": "https://en.wikipedia.org/wiki/Girona",
-      "width": 800,
-      "height": 533,
-      "bytes": 121644
+      "width": 640,
+      "height": 426,
+      "bytes": 72400
     },
     "granada-alhambra": {
-      "src": "/photos/discovery/53c268ef750dbbfa9a90e35e1b09284127c95b18.webp",
+      "src": "/photos/discovery/0345ee39b31b39bccbccdb8f8aede78529aba4c6c5536b61273c3aeabf63ba43.webp",
       "alt": "Alhambra",
       "creditId": "53c268ef750dbbfa9a90e35e1b09284127c95b18",
       "article": "https://en.wikipedia.org/wiki/Alhambra",
-      "width": 800,
-      "height": 533,
-      "bytes": 73648
+      "width": 640,
+      "height": 426,
+      "bytes": 41734
     },
     "barcelona-park-guell": {
-      "src": "/photos/discovery/128132396b5d97ac27a162656555cad3d9e51dd2.webp",
+      "src": "/photos/discovery/2b057e55a13a16b9a0c151c805835b0762a44e336b7e445d3832eb4eaca613ef.webp",
       "alt": "Park Güell",
       "creditId": "128132396b5d97ac27a162656555cad3d9e51dd2",
       "article": "https://en.wikipedia.org/wiki/Park_G%C3%BCell",
-      "width": 800,
-      "height": 600,
-      "bytes": 96060
+      "width": 640,
+      "height": 480,
+      "bytes": 58294
     },
     "madrid-prado": {
-      "src": "/photos/discovery/6e060859ab2bab826fff413f7aaca9d2834822a2.webp",
+      "src": "/photos/discovery/0c2c50f5a65b48ad1fb8be1738aade30cf13a1e3895bb51323cab4b1479e71e2.webp",
       "alt": "Museo del Prado",
       "creditId": "6e060859ab2bab826fff413f7aaca9d2834822a2",
       "article": "https://en.wikipedia.org/wiki/Museo_del_Prado",
-      "width": 800,
-      "height": 598,
-      "bytes": 60636
+      "width": 640,
+      "height": 478,
+      "bytes": 37632
     },
     "madrid-royal-palace": {
-      "src": "/photos/discovery/fcb2d4e564f5fe6d4a85842d5d4cf3603801c01e.webp",
+      "src": "/photos/discovery/66235e7bdbe235cc333fece510ca206392dab1b36740e588d623df9e7ceb69a4.webp",
       "alt": "Royal Palace of Madrid",
       "creditId": "fcb2d4e564f5fe6d4a85842d5d4cf3603801c01e",
       "article": "https://en.wikipedia.org/wiki/Royal_Palace_of_Madrid",
-      "width": 793,
-      "height": 600,
-      "bytes": 164772
+      "width": 634,
+      "height": 480,
+      "bytes": 97136
     },
     "madrid-reina-sofia": {
-      "src": "/photos/discovery/80b9365ec6a61f6d5fdec683d6595dc8caf00976.webp",
+      "src": "/photos/discovery/ab62776ae2a1059de932ce00d4385d78021fdbcfa08462f99b1328ac1a7ad512.webp",
       "alt": "Museo Nacional Centro de Arte Reina Sofía",
       "creditId": "80b9365ec6a61f6d5fdec683d6595dc8caf00976",
       "article": "https://en.wikipedia.org/wiki/Museo_Nacional_Centro_de_Arte_Reina_Sof%C3%ADa",
-      "width": 800,
-      "height": 585,
-      "bytes": 57594
+      "width": 640,
+      "height": 468,
+      "bytes": 35010
     },
     "madrid-temple-debod": {
-      "src": "/photos/discovery/04fb8fae6455e63a284825c0b69cd1c81840a0c4.webp",
+      "src": "/photos/discovery/ffbcb02887bcdf9a2c4c1a3f20a17059a70da5e61294a13dfc63540e0c092826.webp",
       "alt": "Temple of Debod",
       "creditId": "04fb8fae6455e63a284825c0b69cd1c81840a0c4",
       "article": "https://en.wikipedia.org/wiki/Temple_of_Debod",
-      "width": 800,
-      "height": 600,
-      "bytes": 90570
+      "width": 640,
+      "height": 480,
+      "bytes": 52192
     },
     "barcelona-sagrada-familia": {
-      "src": "/photos/discovery/96c8b385436572e1bcaf769cbfc9407e0487ebb8.webp",
+      "src": "/photos/discovery/21ea0e7b9c561d5a6c4030ecd5b9f8014060d8af55b325e433adf182c0130893.webp",
       "alt": "Sagrada Família",
       "creditId": "96c8b385436572e1bcaf769cbfc9407e0487ebb8",
       "article": "https://en.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia",
-      "width": 412,
-      "height": 600,
-      "bytes": 43996
+      "width": 330,
+      "height": 480,
+      "bytes": 26188
     },
     "barcelona-casa-batllo": {
-      "src": "/photos/discovery/cf4308bc58ef9e7161993701ff78d79d79b131de.webp",
+      "src": "/photos/discovery/69565ace49b9e88a9f7fddae0aaf1db58e5bf3d0b5bdc9d1d458bcd1de354255.webp",
       "alt": "Casa Batlló",
       "creditId": "cf4308bc58ef9e7161993701ff78d79d79b131de",
       "article": "https://en.wikipedia.org/wiki/Casa_Batll%C3%B3",
-      "width": 487,
-      "height": 600,
-      "bytes": 76976
+      "width": 390,
+      "height": 480,
+      "bytes": 44454
     },
     "barcelona-montjuic": {
-      "src": "/photos/discovery/e9fb26fc04bf546b32843a05b95d27daa5a0817b.webp",
+      "src": "/photos/discovery/031ed2bf278caaf5b1dde45700ffa3260c4a6f51ecc7f8899b2fefcb7a34a6c2.webp",
       "alt": "Montjuïc",
       "creditId": "e9fb26fc04bf546b32843a05b95d27daa5a0817b",
       "article": "https://en.wikipedia.org/wiki/Montju%C3%AFc",
-      "width": 800,
-      "height": 600,
-      "bytes": 55540
+      "width": 640,
+      "height": 480,
+      "bytes": 32076
     },
     "seville-alcazar": {
-      "src": "/photos/discovery/8c90a83baf0b3a9bd6fbd81ecd79e73dd150239f.webp",
+      "src": "/photos/discovery/444709dc1df431b7a3ec5358fce19bff9473b584636e03cdfba1d7b5579be97d.webp",
       "alt": "Alcázar of Seville",
       "creditId": "8c90a83baf0b3a9bd6fbd81ecd79e73dd150239f",
       "article": "https://en.wikipedia.org/wiki/Alc%C3%A1zar_of_Seville",
-      "width": 800,
-      "height": 600,
-      "bytes": 83382
+      "width": 640,
+      "height": 480,
+      "bytes": 48630
     },
     "seville-cathedral-giralda": {
-      "src": "/photos/discovery/94d4bed61da1d126f1e847758e0edad0aa69e693.webp",
+      "src": "/photos/discovery/78031cb332f5d30d8a7d23798e860d545421a7d35a3f2eec04590c65b568ac73.webp",
       "alt": "Seville Cathedral",
       "creditId": "94d4bed61da1d126f1e847758e0edad0aa69e693",
       "article": "https://en.wikipedia.org/wiki/Seville_Cathedral",
-      "width": 800,
-      "height": 597,
-      "bytes": 73378
+      "width": 640,
+      "height": 478,
+      "bytes": 44624
     },
     "valencia-arts-sciences": {
-      "src": "/photos/discovery/ec3c8029a5c85b99124f77d738e6778dc4785c7e.webp",
+      "src": "/photos/discovery/2ea434f685189ccc70936fd7213624e64887ef2af3c026ed3ddb1e26a649428d.webp",
       "alt": "City of Arts and Sciences",
       "creditId": "ec3c8029a5c85b99124f77d738e6778dc4785c7e",
       "article": "https://en.wikipedia.org/wiki/City_of_Arts_and_Sciences",
-      "width": 800,
-      "height": 532,
-      "bytes": 76388
+      "width": 640,
+      "height": 426,
+      "bytes": 46244
     },
     "valencia-cathedral": {
-      "src": "/photos/discovery/b193eda7260e3ce0140bbbe8fe7d1f81c6e72d99.webp",
+      "src": "/photos/discovery/c434d3fcf378c667480d8b3f01d07502359377288288e9b95debb00a684a9a78.webp",
       "alt": "Valencia Cathedral",
       "creditId": "b193eda7260e3ce0140bbbe8fe7d1f81c6e72d99",
       "article": "https://en.wikipedia.org/wiki/Valencia_Cathedral",
-      "width": 800,
-      "height": 533,
-      "bytes": 73598
+      "width": 640,
+      "height": 426,
+      "bytes": 43088
     },
     "valencia-lonja-seda": {
-      "src": "/photos/discovery/be9c32068902a0b1e2dad7605843d4bc78d41bb8.webp",
+      "src": "/photos/discovery/b51f06114d63e38caba8529fc8826a87f1d48e7ac4d035916da230d8520fe8db.webp",
       "alt": "Lonja de la Seda",
       "creditId": "be9c32068902a0b1e2dad7605843d4bc78d41bb8",
       "article": "https://en.wikipedia.org/wiki/Lonja_de_la_Seda",
-      "width": 800,
-      "height": 559,
-      "bytes": 92972
+      "width": 640,
+      "height": 447,
+      "bytes": 54756
     },
     "valencia-torres-serranos": {
-      "src": "/photos/discovery/d88c551849d0eadd81893f4edff812cc677b1432.webp",
+      "src": "/photos/discovery/16b0ced70c2b4c545558a36681b39c338f414a796423db79701204d87f0eb27a.webp",
       "alt": "Torres de Serranos",
       "creditId": "d88c551849d0eadd81893f4edff812cc677b1432",
       "article": "https://en.wikipedia.org/wiki/Torres_de_Serranos",
-      "width": 800,
-      "height": 551,
-      "bytes": 54880
+      "width": 640,
+      "height": 441,
+      "bytes": 31880
     },
     "madrid-thyssen": {
-      "src": "/photos/discovery/bfdd41c0d842c1156c55b7662f5110d4e9e9802f.webp",
+      "src": "/photos/discovery/35a9420a11887ef7849e058a7bdba14d3eac2e59ee2136ba37246e652d500bbf.webp",
       "alt": "Thyssen-Bornemisza Museum",
       "creditId": "bfdd41c0d842c1156c55b7662f5110d4e9e9802f",
       "article": "https://en.wikipedia.org/wiki/Thyssen-Bornemisza_Museum",
-      "width": 800,
-      "height": 600,
-      "bytes": 56678
+      "width": 640,
+      "height": 480,
+      "bytes": 34162
     },
     "barcelona-casa-mila": {
-      "src": "/photos/discovery/e20a2a082bf8ad40a51fb5140cee2b030db1c944.webp",
+      "src": "/photos/discovery/7345aa9303e9ef2c7e52b8f49156fad31e071854795c85d75eacc6f62d3322f5.webp",
       "alt": "La Pedrera, Barcelona",
       "creditId": "e20a2a082bf8ad40a51fb5140cee2b030db1c944",
       "article": "https://en.wikipedia.org/wiki/La_Pedrera,_Barcelona",
-      "width": 770,
-      "height": 600,
-      "bytes": 96264
+      "width": 616,
+      "height": 480,
+      "bytes": 57990
     },
     "seville-casa-pilatos": {
-      "src": "/photos/discovery/b1b0d00e84cb9e37607da09773352c525bc1f3ed.webp",
+      "src": "/photos/discovery/3f8dcf6ea5aa0422d71880ec4771591ead85ebb0f5800565a9ac1051575e6a6c.webp",
       "alt": "Casa de Pilatos",
       "creditId": "b1b0d00e84cb9e37607da09773352c525bc1f3ed",
       "article": "https://en.wikipedia.org/wiki/Casa_de_Pilatos",
-      "width": 800,
-      "height": 500,
-      "bytes": 83924
+      "width": 640,
+      "height": 400,
+      "bytes": 49728
     },
     "seville-torre-del-oro": {
-      "src": "/photos/discovery/97ea38708d2812375fbe9d37a285e206866e9dcf.webp",
+      "src": "/photos/discovery/c289890ae093af06abc1a4ee41d0cbb8607a6b4ec7e5cbb982175e69e3ff53c2.webp",
       "alt": "Torre del Oro",
       "creditId": "97ea38708d2812375fbe9d37a285e206866e9dcf",
       "article": "https://en.wikipedia.org/wiki/Torre_del_Oro",
-      "width": 399,
-      "height": 600,
-      "bytes": 30240
+      "width": 319,
+      "height": 480,
+      "bytes": 17252
     },
     "lisbon-jeronimos": {
-      "src": "/photos/discovery/46d9b311ba3d94896fb8022d5355b247a1b96138.webp",
+      "src": "/photos/discovery/7d7d411c6521c111e45d65944fc0a1338c03e402693318a84fcfb25d9f95a26a.webp",
       "alt": "Jerónimos Monastery",
       "creditId": "46d9b311ba3d94896fb8022d5355b247a1b96138",
       "article": "https://en.wikipedia.org/wiki/Jer%C3%B3nimos_Monastery",
-      "width": 800,
-      "height": 481,
-      "bytes": 49784
+      "width": 640,
+      "height": 385,
+      "bytes": 29244
     },
     "lisbon-belem-tower": {
-      "src": "/photos/discovery/da95ae93445d714e311c17dad6bf82ac62ba051f.webp",
+      "src": "/photos/discovery/0cae2928268278bde8471717205e879fa5f3c465747d2fdc906fe9d180370d9c.webp",
       "alt": "Belém Tower",
       "creditId": "da95ae93445d714e311c17dad6bf82ac62ba051f",
       "article": "https://en.wikipedia.org/wiki/Bel%C3%A9m_Tower",
-      "width": 629,
-      "height": 600,
-      "bytes": 52220
+      "width": 503,
+      "height": 480,
+      "bytes": 29620
     },
     "porto-livraria-lello": {
-      "src": "/photos/discovery/ff377b3a777f7e8c8e4e84042d8f61fd8655cf0d.webp",
+      "src": "/photos/discovery/27df585c5b4bf9a869cd434376b44b18a6cb0afe4fc4817a6464bad72f70683b.webp",
       "alt": "Livraria Lello",
       "creditId": "ff377b3a777f7e8c8e4e84042d8f61fd8655cf0d",
       "article": "https://en.wikipedia.org/wiki/Livraria_Lello",
-      "width": 452,
-      "height": 600,
-      "bytes": 67128
+      "width": 362,
+      "height": 480,
+      "bytes": 40906
     },
     "porto-palacio-da-bolsa": {
-      "src": "/photos/discovery/92d23ceae7aa39995927a6e9b4e72bd702b6d09e.webp",
+      "src": "/photos/discovery/86c8d1666abbde9b6fe3dfe5c73a92eb8aacb8f161bd718fe50b9acb32126f26.webp",
       "alt": "Palácio da Bolsa",
       "creditId": "92d23ceae7aa39995927a6e9b4e72bd702b6d09e",
       "article": "https://en.wikipedia.org/wiki/Pal%C3%A1cio_da_Bolsa",
-      "width": 800,
-      "height": 576,
-      "bytes": 63148
+      "width": 640,
+      "height": 461,
+      "bytes": 37524
     },
     "porto-foz-do-douro": {
-      "src": "/photos/discovery/56393f23fc14540eb472860e070a8793e871dbbc.webp",
+      "src": "/photos/discovery/74a3782bcbe3642c516d2f57ba7877f21d3e64fe6859d68d4ffea16cbc35cacb.webp",
       "alt": "Foz do Douro",
       "creditId": "56393f23fc14540eb472860e070a8793e871dbbc",
       "article": "https://en.wikipedia.org/wiki/Foz_do_Douro",
-      "width": 800,
-      "height": 600,
-      "bytes": 83194
-    },
-    "porto-serralves": {
-      "src": "/photos/discovery/e7c328c1da7350acd95523947b71ffe031b5cb51.webp",
-      "alt": "Serralves",
-      "creditId": "e7c328c1da7350acd95523947b71ffe031b5cb51",
-      "article": "https://en.wikipedia.org/wiki/Serralves",
-      "width": 800,
-      "height": 599,
-      "bytes": 13210
+      "width": 640,
+      "height": 480,
+      "bytes": 47036
     },
     "sintra-moorish-castle": {
-      "src": "/photos/discovery/161faa0af93201940738b806c6518c63cd2a9091.webp",
+      "src": "/photos/discovery/cbfe0347debc54e38d5b16e9aedf6e751e3bbad3cb1512059b4ab224f36cf555.webp",
       "alt": "Castle of the Moors",
       "creditId": "161faa0af93201940738b806c6518c63cd2a9091",
       "article": "https://en.wikipedia.org/wiki/Castle_of_the_Moors",
-      "width": 800,
-      "height": 592,
-      "bytes": 111054
+      "width": 640,
+      "height": 474,
+      "bytes": 65708
     },
     "funchal-cabo-girao": {
-      "src": "/photos/discovery/83178b2d86ddcf5e4ef0f3bc2fec38e1b1696ac4.webp",
+      "src": "/photos/discovery/75e09d8ad8d355c3720c5a56181fc1448c01e8b79c3b3aea790827cad561890e.webp",
       "alt": "Cabo Girão",
       "creditId": "83178b2d86ddcf5e4ef0f3bc2fec38e1b1696ac4",
       "article": "https://en.wikipedia.org/wiki/Cabo_Gir%C3%A3o",
-      "width": 800,
-      "height": 563,
-      "bytes": 109612
+      "width": 640,
+      "height": 450,
+      "bytes": 61324
     },
     "funchal-mercado-lavradores": {
-      "src": "/photos/discovery/01962c43d859d0821a8da5dd8600c2936e57c40d.webp",
+      "src": "/photos/discovery/06449e415433098071cf13a7cd9ea2e48558fe9f838fb39be0897a6925ec8258.webp",
       "alt": "Mercado dos Lavradores",
       "creditId": "01962c43d859d0821a8da5dd8600c2936e57c40d",
       "article": "https://en.wikipedia.org/wiki/Mercado_dos_Lavradores",
-      "width": 800,
-      "height": 532,
-      "bytes": 130150
+      "width": 640,
+      "height": 426,
+      "bytes": 75838
     },
     "cascais-boca-do-inferno": {
-      "src": "/photos/discovery/bae1da9196bd46fd1175259635f008813c180f56.webp",
+      "src": "/photos/discovery/56cfe5536d1bb2ed67d3d761beb2795269a8456b7fd31b8a95965f49394e440f.webp",
       "alt": "Boca do Inferno",
       "creditId": "bae1da9196bd46fd1175259635f008813c180f56",
       "article": "https://en.wikipedia.org/wiki/Boca_do_Inferno",
       "width": 640,
       "height": 480,
-      "bytes": 43548
+      "bytes": 41150
     },
     "berlin-holocaust-memorial": {
-      "src": "/photos/discovery/b8f3087213f9c2ec6363bae23782d1be0647d262.webp",
+      "src": "/photos/discovery/da1b053d6c0a788a28e55da087574e298487d89709c1a85b2f8371d8604f5f07.webp",
       "alt": "Memorial to the Murdered Jews of Europe",
       "creditId": "b8f3087213f9c2ec6363bae23782d1be0647d262",
       "article": "https://en.wikipedia.org/wiki/Memorial_to_the_Murdered_Jews_of_Europe",
-      "width": 800,
-      "height": 450,
-      "bytes": 75178
-    },
-    "berlin-east-side-gallery": {
-      "src": "/photos/discovery/0c24beec5377653e2761f0a7e7090f4485346910.webp",
-      "alt": "East Side Gallery",
-      "creditId": "0c24beec5377653e2761f0a7e7090f4485346910",
-      "article": "https://en.wikipedia.org/wiki/East_Side_Gallery",
-      "width": 800,
-      "height": 489,
-      "bytes": 48434
-    },
-    "berlin-checkpoint-charlie": {
-      "src": "/photos/discovery/29759ca858884f72f7390104b0dffc356edb402c.webp",
-      "alt": "Checkpoint Charlie",
-      "creditId": "29759ca858884f72f7390104b0dffc356edb402c",
-      "article": "https://en.wikipedia.org/wiki/Checkpoint_Charlie",
-      "width": 800,
-      "height": 533,
-      "bytes": 55548
+      "width": 640,
+      "height": 360,
+      "bytes": 46264
     },
     "munich-marienplatz": {
-      "src": "/photos/discovery/c604258f1857e9b5c0a5e64e6485f60a2824a86b.webp",
+      "src": "/photos/discovery/56bd3e8d9fd8c159ea0a6accd0562f1582ff8a3b134ca376905ad36155cb02b4.webp",
       "alt": "Marienplatz",
       "creditId": "c604258f1857e9b5c0a5e64e6485f60a2824a86b",
       "article": "https://en.wikipedia.org/wiki/Marienplatz",
-      "width": 696,
-      "height": 600,
-      "bytes": 93284
+      "width": 557,
+      "height": 480,
+      "bytes": 55768
     },
     "munich-deutsches-museum": {
-      "src": "/photos/discovery/c5be4e24ebc935596975209ecc4b2bd05a49b0f5.webp",
+      "src": "/photos/discovery/f22fa4e638d26b1fa1dd1e98b16081d1dfb28969e1b9670e00815975a96fbc9b.webp",
       "alt": "Deutsches Museum",
       "creditId": "c5be4e24ebc935596975209ecc4b2bd05a49b0f5",
       "article": "https://en.wikipedia.org/wiki/Deutsches_Museum",
-      "width": 800,
-      "height": 412,
-      "bytes": 62222
+      "width": 640,
+      "height": 330,
+      "bytes": 36734
     },
     "munich-viktualienmarkt": {
-      "src": "/photos/discovery/11c432eac41aef450fcc52158fc6c2af42f7fee6.webp",
+      "src": "/photos/discovery/1a266591debf26d013156e281d68ed81a9d159b602335c3d242e93e47a6e4380.webp",
       "alt": "Viktualienmarkt",
       "creditId": "11c432eac41aef450fcc52158fc6c2af42f7fee6",
       "article": "https://en.wikipedia.org/wiki/Viktualienmarkt",
-      "width": 450,
-      "height": 600,
-      "bytes": 33672
+      "width": 360,
+      "height": 480,
+      "bytes": 19666
     },
     "frankfurt-stadel": {
-      "src": "/photos/discovery/63de043bad7145f92a95b3249a1b279d563d2957.webp",
+      "src": "/photos/discovery/ff9fc5ab5d3147fc858c41c8b342577460a02c6fbaf32dfc6ca45ad337376a0f.webp",
       "alt": "Städel",
       "creditId": "63de043bad7145f92a95b3249a1b279d563d2957",
       "article": "https://en.wikipedia.org/wiki/St%C3%A4del",
-      "width": 800,
-      "height": 379,
-      "bytes": 67026
+      "width": 640,
+      "height": 303,
+      "bytes": 39594
     },
     "frankfurt-westend-synagogue": {
-      "src": "/photos/discovery/8877f01df99b61d2c0f092e0e80b7990e240cb56.webp",
+      "src": "/photos/discovery/196f037610fbe830b5b20e9862572bec2069e8f013bc26f02b1b8c2f7ba04833.webp",
       "alt": "Westend Synagogue",
       "creditId": "8877f01df99b61d2c0f092e0e80b7990e240cb56",
       "article": "https://en.wikipedia.org/wiki/Westend_Synagogue",
-      "width": 800,
-      "height": 533,
-      "bytes": 117560
+      "width": 640,
+      "height": 426,
+      "bytes": 68994
     },
     "frankfurt-palmengarten": {
-      "src": "/photos/discovery/62d597395c764ae9f80a4530d7db93b4b8b2c27d.webp",
+      "src": "/photos/discovery/f3c306dba96099c1e42b6f8618373a2337ae61fba6ec25f6d497fa9622c83c1d.webp",
       "alt": "Palmengarten",
       "creditId": "62d597395c764ae9f80a4530d7db93b4b8b2c27d",
       "article": "https://en.wikipedia.org/wiki/Palmengarten",
-      "width": 800,
-      "height": 532,
-      "bytes": 87240
+      "width": 640,
+      "height": 426,
+      "bytes": 50634
     },
     "frankfurt-museumsufer": {
-      "src": "/photos/discovery/bab6e7b3cab74bf5b92e46b410e0ad133d01233f.webp",
+      "src": "/photos/discovery/6fd010a4ede9c9f6de578a26d313deaf42a733ea160b38d90475bdd19d0fc283.webp",
       "alt": "Museumsufer",
       "creditId": "bab6e7b3cab74bf5b92e46b410e0ad133d01233f",
       "article": "https://en.wikipedia.org/wiki/Museumsufer",
-      "width": 800,
-      "height": 400,
-      "bytes": 38818
+      "width": 640,
+      "height": 320,
+      "bytes": 21582
     },
     "frankfurt-goethe-house": {
-      "src": "/photos/discovery/bce808570a5e39fec808f573b3350b28d45b9d09.webp",
+      "src": "/photos/discovery/67e13170ca06665843776b4d428095c2a9a0ce6d94bafa8c7c207abcf617092a.webp",
       "alt": "Goethe House",
       "creditId": "bce808570a5e39fec808f573b3350b28d45b9d09",
       "article": "https://en.wikipedia.org/wiki/Goethe_House",
-      "width": 400,
-      "height": 600,
-      "bytes": 31166
+      "width": 320,
+      "height": 480,
+      "bytes": 18876
     },
     "cologne-cathedral": {
-      "src": "/photos/discovery/0319983a28979e02fd4763ce11d856095dba43a5.webp",
+      "src": "/photos/discovery/bdabfab44061af6a344599db23877e0dfe997b7d054b48a2865f153cb18cce48.webp",
       "alt": "Cologne Cathedral",
       "creditId": "0319983a28979e02fd4763ce11d856095dba43a5",
       "article": "https://en.wikipedia.org/wiki/Cologne_Cathedral",
-      "width": 370,
-      "height": 600,
-      "bytes": 40190
+      "width": 296,
+      "height": 480,
+      "bytes": 23018
     },
     "cologne-roonstrasse-synagogue": {
-      "src": "/photos/discovery/8e5be2fa35fc33bc8308f27800ff2c82c136d66c.webp",
+      "src": "/photos/discovery/5cf22d09804a03f8fea1cf6f14dfcf1b434e98fd5e1b6d75a4a88886587a8a11.webp",
       "alt": "Roonstrasse Synagogue",
       "creditId": "8e5be2fa35fc33bc8308f27800ff2c82c136d66c",
       "article": "https://en.wikipedia.org/wiki/Roonstrasse_Synagogue",
-      "width": 800,
-      "height": 513,
-      "bytes": 67110
+      "width": 640,
+      "height": 410,
+      "bytes": 39906
     },
     "vienna-kunsthistorisches": {
-      "src": "/photos/discovery/ffba2266f56faa7efc37e900f60eafa0d5234c35.webp",
+      "src": "/photos/discovery/97fc5aba39bc007a3b8f2d62c46364d801aab46f6e96b1d751c0a9e6b15a9476.webp",
       "alt": "Kunsthistorisches Museum",
       "creditId": "ffba2266f56faa7efc37e900f60eafa0d5234c35",
       "article": "https://en.wikipedia.org/wiki/Kunsthistorisches_Museum",
-      "width": 800,
-      "height": 600,
-      "bytes": 57786
-    },
-    "vienna-prater": {
-      "src": "/photos/discovery/0f6b0ef3e7c3910029f27b8f194b20bdae8b8d09.webp",
-      "alt": "Prater",
-      "creditId": "0f6b0ef3e7c3910029f27b8f194b20bdae8b8d09",
-      "article": "https://en.wikipedia.org/wiki/Prater",
-      "width": 800,
-      "height": 450,
-      "bytes": 68532
+      "width": 640,
+      "height": 480,
+      "bytes": 34922
     },
     "zurich-kunsthaus": {
-      "src": "/photos/discovery/2db810194d2c4719fd3dcddd3f1c489416f46363.webp",
+      "src": "/photos/discovery/766636ffa360bb1d88ea1ef510d2e948171ac4fde0772febfe0b174e165710a0.webp",
       "alt": "Kunsthaus Zürich",
       "creditId": "2db810194d2c4719fd3dcddd3f1c489416f46363",
       "article": "https://en.wikipedia.org/wiki/Kunsthaus_Z%C3%BCrich",
-      "width": 800,
-      "height": 533,
-      "bytes": 76870
+      "width": 640,
+      "height": 426,
+      "bytes": 44744
     },
     "zurich-national-museum": {
-      "src": "/photos/discovery/cb48d9e1a928966ceabad0dc1eaae05013b08255.webp",
+      "src": "/photos/discovery/7a2b74d26e0cadac89cabd4f86030ca77797a274f1e41e655b66673fadc0a216.webp",
       "alt": "Swiss National Museum",
       "creditId": "cb48d9e1a928966ceabad0dc1eaae05013b08255",
       "article": "https://en.wikipedia.org/wiki/Swiss_National_Museum",
-      "width": 800,
-      "height": 600,
-      "bytes": 98178
+      "width": 640,
+      "height": 480,
+      "bytes": 56884
     },
     "zurich-uetliberg": {
-      "src": "/photos/discovery/a89e03572ab6eae4f2b64c7c6a96cd4b73267d72.webp",
+      "src": "/photos/discovery/7b4288186178834587d36fbe98a4f9af1127b6568af7f1e6d247f77bacf79027.webp",
       "alt": "Uetliberg",
       "creditId": "a89e03572ab6eae4f2b64c7c6a96cd4b73267d72",
       "article": "https://en.wikipedia.org/wiki/Uetliberg",
-      "width": 800,
-      "height": 533,
-      "bytes": 44824
+      "width": 640,
+      "height": 426,
+      "bytes": 26510
     },
     "zurich-lowenstrasse-synagogue": {
-      "src": "/photos/discovery/d75010f711bd1149ea26c1a8fe1795e96db83035.webp",
+      "src": "/photos/discovery/edf615313d8c59a936f767573327ad603745c1ec218b6702bc033a2325a7fb60.webp",
       "alt": "Synagoge Zürich Löwenstrasse",
       "creditId": "d75010f711bd1149ea26c1a8fe1795e96db83035",
       "article": "https://en.wikipedia.org/wiki/Synagoge_Z%C3%BCrich_L%C3%B6wenstrasse",
-      "width": 450,
-      "height": 600,
-      "bytes": 58394
+      "width": 360,
+      "height": 480,
+      "bytes": 34536
     },
     "zurich-lake-promenade": {
-      "src": "/photos/discovery/d054a77e0fac2d0c3457949bc08b528eb2e753e2.webp",
+      "src": "/photos/discovery/6e3ba4dcd1a4ec947ab592818d416c72596d87b246eb7e43f2fc93c42c896be9.webp",
       "alt": "Lake Zurich",
       "creditId": "d054a77e0fac2d0c3457949bc08b528eb2e753e2",
       "article": "https://en.wikipedia.org/wiki/Lake_Zurich",
-      "width": 800,
-      "height": 280,
-      "bytes": 44092
+      "width": 640,
+      "height": 224,
+      "bytes": 25312
     },
     "zurich-bahnhofstrasse": {
-      "src": "/photos/discovery/c17698237d78bfc5ee65b3f8480646fdd09ebec8.webp",
+      "src": "/photos/discovery/e4fbe003dc05ea634eb36a6cd32c5ffc7250401c2837decb6a7c9fb5f3a0a213.webp",
       "alt": "Bahnhofstrasse",
       "creditId": "c17698237d78bfc5ee65b3f8480646fdd09ebec8",
       "article": "https://en.wikipedia.org/wiki/Bahnhofstrasse",
-      "width": 800,
-      "height": 450,
-      "bytes": 78238
+      "width": 640,
+      "height": 360,
+      "bytes": 48288
     },
     "zurich-grossmunster": {
-      "src": "/photos/discovery/0564700f19d5721486d37ed848969717e7c7d7a6.webp",
+      "src": "/photos/discovery/a45a93f7f2ff410d63848a778c273b195eaf4cb5edca98b75fd91b8d738d36ed.webp",
       "alt": "Grossmünster",
       "creditId": "0564700f19d5721486d37ed848969717e7c7d7a6",
       "article": "https://en.wikipedia.org/wiki/Grossm%C3%BCnster",
-      "width": 400,
-      "height": 600,
-      "bytes": 28568
+      "width": 320,
+      "height": 480,
+      "bytes": 16668
     },
     "geneva-jet-deau": {
-      "src": "/photos/discovery/258fd329e79bec0a7093b3c5e903a29be50da144.webp",
+      "src": "/photos/discovery/30892c53e840bebc2492a01cc49d0021b6abeae7bfc112277775e2a7fe84c4fa.webp",
       "alt": "Jet d'Eau",
       "creditId": "258fd329e79bec0a7093b3c5e903a29be50da144",
       "article": "https://en.wikipedia.org/wiki/Jet_d%27Eau",
-      "width": 400,
-      "height": 600,
-      "bytes": 15164
+      "width": 320,
+      "height": 480,
+      "bytes": 8526
     },
     "geneva-palais-nations": {
-      "src": "/photos/discovery/77f1127de90594426a33e324a1174c0152243fe2.webp",
+      "src": "/photos/discovery/35a8143811781049fe2827ddc80b9c8ab840015aa2fa50b09f996fa152d7810b.webp",
       "alt": "Palace of Nations",
       "creditId": "77f1127de90594426a33e324a1174c0152243fe2",
       "article": "https://en.wikipedia.org/wiki/Palace_of_Nations",
-      "width": 800,
-      "height": 600,
-      "bytes": 42656
+      "width": 640,
+      "height": 480,
+      "bytes": 24112
     },
     "amsterdam-vondelpark": {
-      "src": "/photos/discovery/e83b0762f566bdb945a047cd4749ab630ec301a0.webp",
+      "src": "/photos/discovery/e87f1a5a0603680e425aca000e9adcdbdba99d27ed92d29b92082bf5a278a2a9.webp",
       "alt": "Vondelpark",
       "creditId": "e83b0762f566bdb945a047cd4749ab630ec301a0",
       "article": "https://en.wikipedia.org/wiki/Vondelpark",
-      "width": 800,
-      "height": 533,
-      "bytes": 114350
+      "width": 640,
+      "height": 426,
+      "bytes": 69242
     },
     "amsterdam-dam-square": {
-      "src": "/photos/discovery/cd9fc07787a0496c5569c82c19edc3e640d38379.webp",
+      "src": "/photos/discovery/fccf7da57171c13ba571f22e9323af6251e97188f9f8a6d57c70462bb7d8cb20.webp",
       "alt": "Dam Square",
       "creditId": "cd9fc07787a0496c5569c82c19edc3e640d38379",
       "article": "https://en.wikipedia.org/wiki/Dam_Square",
-      "width": 800,
-      "height": 533,
-      "bytes": 75654
+      "width": 640,
+      "height": 426,
+      "bytes": 44888
     },
     "rotterdam-markthal": {
-      "src": "/photos/discovery/d8d68ede35ce1804de7844a1d0f7ce94a23f1f13.webp",
+      "src": "/photos/discovery/91f77c3327e528935bb38ab9986b28e600134017b7c0a16e1c4b84dc0cc0c7ca.webp",
       "alt": "Market Hall (Rotterdam)",
       "creditId": "d8d68ede35ce1804de7844a1d0f7ce94a23f1f13",
       "article": "https://en.wikipedia.org/wiki/Market_Hall_(Rotterdam)",
-      "width": 800,
-      "height": 600,
-      "bytes": 49794
+      "width": 640,
+      "height": 480,
+      "bytes": 28292
     },
     "rotterdam-erasmusbrug": {
-      "src": "/photos/discovery/0522f737f770e32914e12f8c215ef2f70e2a9eca.webp",
+      "src": "/photos/discovery/0c87eac50b5651e4c3eb487ca6211d49c5ff0c5b8fc4b3d7b9b4c768ffcb24fe.webp",
       "alt": "Erasmusbrug",
       "creditId": "0522f737f770e32914e12f8c215ef2f70e2a9eca",
       "article": "https://en.wikipedia.org/wiki/Erasmusbrug",
-      "width": 800,
-      "height": 463,
-      "bytes": 39256
+      "width": 640,
+      "height": 370,
+      "bytes": 21056
     },
     "rotterdam-euromast": {
-      "src": "/photos/discovery/7646817f65d2a2770456213c44932e983b6c7fd9.webp",
+      "src": "/photos/discovery/4020861a56a0800b2e36ced92e7701d013468737a88b900eaef90fa0e50f0ee1.webp",
       "alt": "Euromast",
       "creditId": "7646817f65d2a2770456213c44932e983b6c7fd9",
       "article": "https://en.wikipedia.org/wiki/Euromast",
-      "width": 365,
-      "height": 600,
-      "bytes": 15290
+      "width": 292,
+      "height": 480,
+      "bytes": 8642
     },
     "rotterdam-delfshaven": {
-      "src": "/photos/discovery/c4f908ebb9c686d7b1055bd383b87bfc1ae07449.webp",
+      "src": "/photos/discovery/7ab5293fed5fd1ce1ee8c42434e4726f3df4b65d973388d5eaae44b26eed039c.webp",
       "alt": "Delfshaven",
       "creditId": "c4f908ebb9c686d7b1055bd383b87bfc1ae07449",
       "article": "https://en.wikipedia.org/wiki/Delfshaven",
-      "width": 800,
-      "height": 533,
-      "bytes": 75022
-    },
-    "brussels-manneken-pis": {
-      "src": "/photos/discovery/23423652aade51598c30423b0094ffa982ac9a7a.webp",
-      "alt": "Manneken Pis",
-      "creditId": "23423652aade51598c30423b0094ffa982ac9a7a",
-      "article": "https://en.wikipedia.org/wiki/Manneken_Pis",
-      "width": 398,
-      "height": 600,
-      "bytes": 41358
+      "width": 640,
+      "height": 426,
+      "bytes": 45780
     },
     "brussels-cinquantenaire": {
-      "src": "/photos/discovery/3419a78b61aba09a5bd65361db4713d2833cd801.webp",
+      "src": "/photos/discovery/530186f83bc1b85d0a1d454647a68c3d70f92d285a798a7267073311a5fec9a8.webp",
       "alt": "Cinquantenaire",
       "creditId": "3419a78b61aba09a5bd65361db4713d2833cd801",
       "article": "https://en.wikipedia.org/wiki/Cinquantenaire",
-      "width": 800,
-      "height": 274,
-      "bytes": 36982
+      "width": 640,
+      "height": 219,
+      "bytes": 21456
     },
     "brussels-magritte-museum": {
-      "src": "/photos/discovery/b349f60bcbdbff54dd82815d5d5273ef318187cf.webp",
+      "src": "/photos/discovery/18fbf2c7fb03fd23c6b7f95c53774ccde26a72b32d9cd9b4f76313a586703480.webp",
       "alt": "Magritte Museum",
       "creditId": "b349f60bcbdbff54dd82815d5d5273ef318187cf",
       "article": "https://en.wikipedia.org/wiki/Magritte_Museum",
-      "width": 800,
-      "height": 570,
-      "bytes": 69182
+      "width": 640,
+      "height": 456,
+      "bytes": 44958
     },
     "brussels-great-synagogue": {
-      "src": "/photos/discovery/cf73526082a4a1c117fb82d9b1025520d9f2cfd2.webp",
+      "src": "/photos/discovery/01e0ff2c859611349dacd0fc85196b08e77e6a58b4d362dfad064c6c050001e3.webp",
       "alt": "Great Synagogue of Europe",
       "creditId": "cf73526082a4a1c117fb82d9b1025520d9f2cfd2",
       "article": "https://en.wikipedia.org/wiki/Great_Synagogue_of_Europe",
-      "width": 449,
-      "height": 600,
-      "bytes": 40688
+      "width": 359,
+      "height": 480,
+      "bytes": 24850
     },
     "brussels-jewish-museum": {
-      "src": "/photos/discovery/bd27c9afea565cb3eaaa1d0890e0fae24b8f4471.webp",
+      "src": "/photos/discovery/578421202676162abfdef8d253789745228e8f4a636324a7a175aff98268662f.webp",
       "alt": "Jewish Museum of Belgium",
       "creditId": "bd27c9afea565cb3eaaa1d0890e0fae24b8f4471",
       "article": "https://en.wikipedia.org/wiki/Jewish_Museum_of_Belgium",
-      "width": 400,
-      "height": 600,
-      "bytes": 44546
+      "width": 320,
+      "height": 480,
+      "bytes": 28382
     },
     "prague-petrin": {
-      "src": "/photos/discovery/7abc14d73cf2619c0993e778cbaae9e85f9f4ae6.webp",
+      "src": "/photos/discovery/8646d0c4b251c525336abd0e56d00cafd6deed0266d574e34a7dc5b560134432.webp",
       "alt": "Petřín",
       "creditId": "7abc14d73cf2619c0993e778cbaae9e85f9f4ae6",
       "article": "https://en.wikipedia.org/wiki/Pet%C5%99%C3%ADn",
-      "width": 800,
-      "height": 600,
-      "bytes": 78654
+      "width": 640,
+      "height": 480,
+      "bytes": 43810
     },
     "prague-wenceslas-square": {
-      "src": "/photos/discovery/ca86ea0478e085db69e9d1585b775eea79317223.webp",
+      "src": "/photos/discovery/6e69f63fdb849db21a8e1aef400fa55b7b52c5c3ff8174e8f1c8bb8ba6aa28e2.webp",
       "alt": "Wenceslas Square",
       "creditId": "ca86ea0478e085db69e9d1585b775eea79317223",
       "article": "https://en.wikipedia.org/wiki/Wenceslas_Square",
-      "width": 800,
-      "height": 533,
-      "bytes": 95344
+      "width": 640,
+      "height": 426,
+      "bytes": 56728
     },
     "prague-vysehrad": {
-      "src": "/photos/discovery/64fe40b2528694572d5ee72119f6f01069539074.webp",
+      "src": "/photos/discovery/de83bb7a617ca13f3ce573f896a1ccaa5c24a66d2aa9f51d875ff6f78b7b4952.webp",
       "alt": "Vyšehrad",
       "creditId": "64fe40b2528694572d5ee72119f6f01069539074",
       "article": "https://en.wikipedia.org/wiki/Vy%C5%A1ehrad",
-      "width": 800,
-      "height": 572,
-      "bytes": 77336
+      "width": 640,
+      "height": 458,
+      "bytes": 44236
     },
     "prague-strahov-monastery": {
-      "src": "/photos/discovery/44e8a01344d3c975ffa922a1898c7e19981120c1.webp",
+      "src": "/photos/discovery/6d36ce879ab8fc9a25a2b7ae78f790ccea5ff426f78c791fc98f04862c7d61fc.webp",
       "alt": "Strahov Monastery",
       "creditId": "44e8a01344d3c975ffa922a1898c7e19981120c1",
       "article": "https://en.wikipedia.org/wiki/Strahov_Monastery",
-      "width": 800,
-      "height": 533,
-      "bytes": 36014
+      "width": 640,
+      "height": 426,
+      "bytes": 21324
     },
     "prague-dancing-house": {
-      "src": "/photos/discovery/7c5040a084f53be014c25fb03562375f0514be61.webp",
+      "src": "/photos/discovery/474a3ddd282353ddb39f4b4ce315c9a86357b1d29dfbafa4a6789f56e1535b2f.webp",
       "alt": "Dancing House",
       "creditId": "7c5040a084f53be014c25fb03562375f0514be61",
       "article": "https://en.wikipedia.org/wiki/Dancing_House",
-      "width": 600,
-      "height": 600,
-      "bytes": 63396
+      "width": 480,
+      "height": 480,
+      "bytes": 39020
     },
     "brno-villa-tugendhat": {
-      "src": "/photos/discovery/7bc7ce424f076c283e3bc637cd1f36593d2e71a5.webp",
+      "src": "/photos/discovery/d39067d4d08e4d5df434905288b1f188c2ec33bfcc15e40a96d5e800065a532d.webp",
       "alt": "Villa Tugendhat",
       "creditId": "7bc7ce424f076c283e3bc637cd1f36593d2e71a5",
       "article": "https://en.wikipedia.org/wiki/Villa_Tugendhat",
-      "width": 800,
-      "height": 532,
-      "bytes": 63632
+      "width": 640,
+      "height": 426,
+      "bytes": 35352
     },
     "budapest-buda-castle": {
-      "src": "/photos/discovery/ee3773c57eeb0490530358d0263d6078d1418eb5.webp",
+      "src": "/photos/discovery/468e8c94c802e687beccae118133ec90526f2a4f17036d1631f97429ee0ebc7c.webp",
       "alt": "Buda Castle",
       "creditId": "ee3773c57eeb0490530358d0263d6078d1418eb5",
       "article": "https://en.wikipedia.org/wiki/Buda_Castle",
-      "width": 800,
-      "height": 540,
-      "bytes": 128612
+      "width": 640,
+      "height": 432,
+      "bytes": 76046
     },
     "budapest-matthias-church": {
-      "src": "/photos/discovery/6df0b395abbdb1d89e1e9186d7cfebb4414a9aff.webp",
+      "src": "/photos/discovery/e844c06c61f285444efac7396e5351566f896c0199e0b077c5bdbef868a93cb0.webp",
       "alt": "Matthias Church",
       "creditId": "6df0b395abbdb1d89e1e9186d7cfebb4414a9aff",
       "article": "https://en.wikipedia.org/wiki/Matthias_Church",
-      "width": 734,
-      "height": 600,
-      "bytes": 44868
+      "width": 587,
+      "height": 480,
+      "bytes": 26280
     },
     "budapest-great-market-hall": {
-      "src": "/photos/discovery/d542e9178e3973f9bc17c01b70bfbb25fbb6bb8c.webp",
+      "src": "/photos/discovery/120064515d812806ec4e0d4a3c23ec6836005b76d921b2a98f25a1e851d2245a.webp",
       "alt": "Great Market Hall",
       "creditId": "d542e9178e3973f9bc17c01b70bfbb25fbb6bb8c",
       "article": "https://en.wikipedia.org/wiki/Great_Market_Hall",
-      "width": 800,
-      "height": 450,
-      "bytes": 61550
+      "width": 640,
+      "height": 360,
+      "bytes": 36940
     },
     "budapest-house-of-terror": {
-      "src": "/photos/discovery/c203e25e2b133f64537a6957226014e75944a1c7.webp",
+      "src": "/photos/discovery/5e1335870d21b4c9e19b01649ecef08c01a191e9777ef02e505eb0827b016158.webp",
       "alt": "House of Terror",
       "creditId": "c203e25e2b133f64537a6957226014e75944a1c7",
       "article": "https://en.wikipedia.org/wiki/House_of_Terror",
-      "width": 800,
-      "height": 600,
-      "bytes": 78416
+      "width": 640,
+      "height": 480,
+      "bytes": 48806
     },
     "krakow-kosciuszko-mound": {
-      "src": "/photos/discovery/ddd649f1322199c145cf2427ee17f33d21b404e7.webp",
+      "src": "/photos/discovery/cc9723d402bbfd9d67db98f5516ff428b5a54d71f8c4dc8da2659e38eb8fdcdf.webp",
       "alt": "Kościuszko's Mound",
       "creditId": "ddd649f1322199c145cf2427ee17f33d21b404e7",
       "article": "https://en.wikipedia.org/wiki/Ko%C5%9Bciuszko%27s_Mound",
-      "width": 800,
-      "height": 600,
-      "bytes": 32518
+      "width": 640,
+      "height": 480,
+      "bytes": 18208
     },
     "warsaw-lazienki-park": {
-      "src": "/photos/discovery/a1cc890087a456ef713478917c62c1e4f6e1b140.webp",
+      "src": "/photos/discovery/cda12de102eb28556bee7f4e503be06093e90db7fe62b873ee74c41a7f8250b5.webp",
       "alt": "Łazienki Park",
       "creditId": "a1cc890087a456ef713478917c62c1e4f6e1b140",
       "article": "https://en.wikipedia.org/wiki/%C5%81azienki_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 84578
+      "width": 640,
+      "height": 426,
+      "bytes": 48196
     },
     "warsaw-copernicus-centre": {
-      "src": "/photos/discovery/e78ab96d76108826ed9827c29cb9badb02beaa57.webp",
+      "src": "/photos/discovery/8e6cec60a70c509d63dee687b50a62e72c9bb7ddb4b66610aed2526c5fecbacc.webp",
       "alt": "Copernicus Science Centre",
       "creditId": "e78ab96d76108826ed9827c29cb9badb02beaa57",
       "article": "https://en.wikipedia.org/wiki/Copernicus_Science_Centre",
-      "width": 800,
-      "height": 533,
-      "bytes": 107622
+      "width": 640,
+      "height": 426,
+      "bytes": 64494
     },
     "lviv-opera": {
-      "src": "/photos/discovery/ae59872b86b5f9fa6b19f1a416f303de15d5a749.webp",
+      "src": "/photos/discovery/a7f9da4d2369d02dfc54cad78697c6391ca717e6dce86ce3570629752e9e1664.webp",
       "alt": "Lviv Theatre of Opera and Ballet",
       "creditId": "ae59872b86b5f9fa6b19f1a416f303de15d5a749",
       "article": "https://en.wikipedia.org/wiki/Lviv_Theatre_of_Opera_and_Ballet",
-      "width": 800,
-      "height": 574,
-      "bytes": 89068
+      "width": 640,
+      "height": 459,
+      "bytes": 54006
     },
     "lviv-lychakiv-cemetery": {
-      "src": "/photos/discovery/fb51d65e429231ab0eec84233eed3bc54510a521.webp",
+      "src": "/photos/discovery/11899a90df1c00c665819f5926aab1c93d2b149f1620f6763f1adbdecddd89db.webp",
       "alt": "Lychakiv Cemetery",
       "creditId": "fb51d65e429231ab0eec84233eed3bc54510a521",
       "article": "https://en.wikipedia.org/wiki/Lychakiv_Cemetery",
-      "width": 800,
-      "height": 600,
-      "bytes": 128532
+      "width": 640,
+      "height": 480,
+      "bytes": 77004
     },
     "lviv-shevchenkivskyi-hai": {
-      "src": "/photos/discovery/072592cae2b621d9f8de93ec03bf7220a870e3e0.webp",
+      "src": "/photos/discovery/801b08a1b095a8884cfc7c25200548e589586e3d7dd98fc9ecfc8035f44446ed.webp",
       "alt": "Shevchenkivskyi Hai",
       "creditId": "072592cae2b621d9f8de93ec03bf7220a870e3e0",
       "article": "https://en.wikipedia.org/wiki/Shevchenkivskyi_Hai",
-      "width": 800,
-      "height": 533,
-      "bytes": 104494
+      "width": 640,
+      "height": 426,
+      "bytes": 62322
     },
     "bucharest-palace-parliament": {
-      "src": "/photos/discovery/296c3014078ccd2c249e4549e60abd2440cdf460.webp",
+      "src": "/photos/discovery/0a89050589f4c348e941d40cc7c49fc3377b02e09ff20b1cb96adb1e95f24e34.webp",
       "alt": "Palace of the Parliament",
       "creditId": "296c3014078ccd2c249e4549e60abd2440cdf460",
       "article": "https://en.wikipedia.org/wiki/Palace_of_the_Parliament",
-      "width": 800,
-      "height": 533,
-      "bytes": 100748
+      "width": 640,
+      "height": 426,
+      "bytes": 58788
     },
     "bucharest-athenaeum": {
-      "src": "/photos/discovery/4e09300a6111cd4ec559cd2eed1a59e91477a2eb.webp",
+      "src": "/photos/discovery/1d903d661d067a44170e12b9c51524e9d39000a6e240533bfda0f34efd84ad25.webp",
       "alt": "Romanian Athenaeum",
       "creditId": "4e09300a6111cd4ec559cd2eed1a59e91477a2eb",
       "article": "https://en.wikipedia.org/wiki/Romanian_Athenaeum",
-      "width": 797,
-      "height": 600,
-      "bytes": 94266
+      "width": 638,
+      "height": 480,
+      "bytes": 55742
     },
     "bucharest-village-museum": {
-      "src": "/photos/discovery/db50dec28a4778df84357a4bbc03d4bd56ddc4c3.webp",
+      "src": "/photos/discovery/99a8126a629fad9605c43ebe51d022d410587d24f8def2c2e216abc472ed5996.webp",
       "alt": "Dimitrie Gusti National Village Museum",
       "creditId": "db50dec28a4778df84357a4bbc03d4bd56ddc4c3",
       "article": "https://en.wikipedia.org/wiki/Dimitrie_Gusti_National_Village_Museum",
-      "width": 800,
-      "height": 600,
-      "bytes": 114966
+      "width": 640,
+      "height": 480,
+      "bytes": 65832
     },
     "bucharest-cismigiu": {
-      "src": "/photos/discovery/77e0f07272c43d1a673b504ab5bffa423d6a08c6.webp",
+      "src": "/photos/discovery/4083d44cd43654c220291748ab003f65f1f9e2b148bd6eed3263c23c78bfafb5.webp",
       "alt": "Cișmigiu Gardens",
       "creditId": "77e0f07272c43d1a673b504ab5bffa423d6a08c6",
       "article": "https://en.wikipedia.org/wiki/Ci%C8%99migiu_Gardens",
-      "width": 800,
-      "height": 600,
-      "bytes": 170814
+      "width": 640,
+      "height": 480,
+      "bytes": 96200
     },
     "thessaloniki-jewish-museum": {
-      "src": "/photos/discovery/6a29f0f1917290364935404afb12911b4ff3bab9.webp",
+      "src": "/photos/discovery/d55be6fe0067fe39d6622ac1490318a186f19e3dc2c362289aaf8239ff3b349b.webp",
       "alt": "Jewish Museum of Thessaloniki",
       "creditId": "6a29f0f1917290364935404afb12911b4ff3bab9",
       "article": "https://en.wikipedia.org/wiki/Jewish_Museum_of_Thessaloniki",
-      "width": 800,
-      "height": 600,
-      "bytes": 56654
+      "width": 640,
+      "height": 480,
+      "bytes": 34840
     },
     "thessaloniki-archaeological-museum": {
-      "src": "/photos/discovery/79b23f893d2694e6322f134653948e1cd9cef402.webp",
+      "src": "/photos/discovery/b8fe8582ef743e377a81c0c7c4d8d5108fb66c80ddac70b851b22589aa150285.webp",
       "alt": "Archaeological Museum of Thessaloniki",
       "creditId": "79b23f893d2694e6322f134653948e1cd9cef402",
       "article": "https://en.wikipedia.org/wiki/Archaeological_Museum_of_Thessaloniki",
-      "width": 800,
-      "height": 600,
-      "bytes": 25964
+      "width": 640,
+      "height": 480,
+      "bytes": 15846
     },
     "thessaloniki-ano-poli": {
-      "src": "/photos/discovery/e8014719c7e978685e99f09c421bf49e3b1f6858.webp",
+      "src": "/photos/discovery/c7ae5a2496bfd89ea6a540370ad0b40aac95e1ec7a6b11d0f62e8e0d47ecf622.webp",
       "alt": "Upper Town (Thessaloniki)",
       "creditId": "e8014719c7e978685e99f09c421bf49e3b1f6858",
       "article": "https://en.wikipedia.org/wiki/Upper_Town_(Thessaloniki)",
-      "width": 800,
-      "height": 600,
-      "bytes": 63134
+      "width": 640,
+      "height": 480,
+      "bytes": 35870
     },
     "athens-acropolis-museum": {
-      "src": "/photos/discovery/3fdbc9e8d3df82752190f6dcc01cfc635ba60282.webp",
+      "src": "/photos/discovery/99b2a6ee7d0259c20f346af96ad3ea7e47cfab3e95967e2b5e278df4a38c7f68.webp",
       "alt": "Acropolis Museum",
       "creditId": "3fdbc9e8d3df82752190f6dcc01cfc635ba60282",
       "article": "https://en.wikipedia.org/wiki/Acropolis_Museum",
-      "width": 800,
-      "height": 378,
-      "bytes": 101368
+      "width": 640,
+      "height": 302,
+      "bytes": 59472
     },
     "athens-ancient-agora": {
-      "src": "/photos/discovery/617a5ee85cfc80564dbdd14b95d8c50c63d2b377.webp",
+      "src": "/photos/discovery/085fee8e691ff0ae4d5b6e655606650aea6f32ca68a9310143b5817c8632415a.webp",
       "alt": "Ancient Agora of Athens",
       "creditId": "617a5ee85cfc80564dbdd14b95d8c50c63d2b377",
       "article": "https://en.wikipedia.org/wiki/Ancient_Agora_of_Athens",
-      "width": 800,
-      "height": 600,
-      "bytes": 193648
+      "width": 640,
+      "height": 480,
+      "bytes": 114974
     },
     "athens-plaka": {
-      "src": "/photos/discovery/b87e88bf7967af3cc7e685c61c41c399c175d055.webp",
+      "src": "/photos/discovery/6459577af7cfb68201a294d02e18b9eb7225f669f80463d3734ffb4715f65740.webp",
       "alt": "Plaka",
       "creditId": "b87e88bf7967af3cc7e685c61c41c399c175d055",
       "article": "https://en.wikipedia.org/wiki/Plaka",
-      "width": 800,
-      "height": 600,
-      "bytes": 54194
+      "width": 640,
+      "height": 480,
+      "bytes": 33996
     },
     "athens-jewish-museum": {
-      "src": "/photos/discovery/9d57d6269053e5fdac37f07e4a82a21762ba3360.webp",
+      "src": "/photos/discovery/0597b74a7febc97084ba1bfdb4a42b1efb94d65113100ad98fc2d6af6751dc72.webp",
       "alt": "Jewish Museum of Greece",
       "creditId": "9d57d6269053e5fdac37f07e4a82a21762ba3360",
       "article": "https://en.wikipedia.org/wiki/Jewish_Museum_of_Greece",
-      "width": 337,
-      "height": 600,
-      "bytes": 19040
+      "width": 270,
+      "height": 480,
+      "bytes": 12302
     },
     "iceland-hallgrimskirkja": {
-      "src": "/photos/discovery/b7743c712cd44098a8106cb357f83d6920190ef4.webp",
+      "src": "/photos/discovery/e969dec3e5a025ac8a4ce15b6affdff80280c39cb6150937ba37c5d13e4732f3.webp",
       "alt": "Hallgrímskirkja",
       "creditId": "b7743c712cd44098a8106cb357f83d6920190ef4",
       "article": "https://en.wikipedia.org/wiki/Hallgr%C3%ADmskirkja",
-      "width": 683,
-      "height": 600,
-      "bytes": 44652
+      "width": 546,
+      "height": 480,
+      "bytes": 28330
     },
     "athens-panathenaic-stadium": {
-      "src": "/photos/discovery/18dbdc95dcab22a7ad5c967eb5092342caad441e.webp",
+      "src": "/photos/discovery/d2c3a1cb5146645301bd49112e84f20e1e2387d8ad2b592e40f32a4117260e9b.webp",
       "alt": "Panathenaic Stadium",
       "creditId": "18dbdc95dcab22a7ad5c967eb5092342caad441e",
       "article": "https://en.wikipedia.org/wiki/Panathenaic_Stadium",
-      "width": 800,
-      "height": 449,
-      "bytes": 67070
+      "width": 640,
+      "height": 359,
+      "bytes": 40330
     },
     "athens-lycabettus-hill": {
-      "src": "/photos/discovery/d4b2b108cd8e6a91ed4dc76cc038cd4851e7cc37.webp",
+      "src": "/photos/discovery/3eb0616ece0ae9e9d1189b72cf4ed783c3622143a9e7f1c45f01cfb0219e410a.webp",
       "alt": "Mount Lycabettus",
       "creditId": "d4b2b108cd8e6a91ed4dc76cc038cd4851e7cc37",
       "article": "https://en.wikipedia.org/wiki/Mount_Lycabettus",
-      "width": 800,
-      "height": 600,
-      "bytes": 223506
+      "width": 640,
+      "height": 480,
+      "bytes": 131764
     },
     "meteora": {
-      "src": "/photos/discovery/8e3c1d5e6619f19b0f14c8764db9daf0b014bae6.webp",
+      "src": "/photos/discovery/b2b313e2a3093669ff848bd2d1b1d9c950599a4169eab289adb41dfb70a704de.webp",
       "alt": "Meteora",
       "creditId": "8e3c1d5e6619f19b0f14c8764db9daf0b014bae6",
       "article": "https://en.wikipedia.org/wiki/Meteora",
-      "width": 800,
-      "height": 534,
-      "bytes": 62642
+      "width": 640,
+      "height": 427,
+      "bytes": 35760
     },
     "york-cliffords-tower": {
-      "src": "/photos/discovery/6e88469737b8e0bed95c70ccd64ab185dd5cc093.webp",
+      "src": "/photos/discovery/cdaa06d10a95246c02fbb4dac3190066570da6eb6544c157abaa857401e27a01.webp",
       "alt": "York",
       "creditId": "6e88469737b8e0bed95c70ccd64ab185dd5cc093",
       "article": "https://en.wikipedia.org/wiki/York",
-      "width": 800,
-      "height": 600,
-      "bytes": 76160
+      "width": 640,
+      "height": 480,
+      "bytes": 46658
     },
     "tower-of-london": {
-      "src": "/photos/discovery/cd4cc82a2983549dccd031b88c9c21f678b2fb38.webp",
+      "src": "/photos/discovery/a0232157679797e2e1e7e5abca9c57d458a0951e82ce590451fb0662c2b6c599.webp",
       "alt": "Tower of London",
       "creditId": "cd4cc82a2983549dccd031b88c9c21f678b2fb38",
       "article": "https://en.wikipedia.org/wiki/Tower_of_London",
-      "width": 800,
-      "height": 519,
-      "bytes": 136628
+      "width": 640,
+      "height": 415,
+      "bytes": 81734
     },
     "lake-district": {
-      "src": "/photos/discovery/cfea494e1cadf1c1f5e44bf172cad62e32162110.webp",
+      "src": "/photos/discovery/968e558e0c8d5fa78cde9faf2658c6020aceb38571a199f3713790ba02f65baf.webp",
       "alt": "Lake District",
       "creditId": "cfea494e1cadf1c1f5e44bf172cad62e32162110",
       "article": "https://en.wikipedia.org/wiki/Lake_District",
-      "width": 800,
-      "height": 403,
-      "bytes": 61824
+      "width": 640,
+      "height": 322,
+      "bytes": 36120
     },
     "british-museum": {
-      "src": "/photos/discovery/2568a94ceb68ba24adabd55b7747170ed015de4e.webp",
+      "src": "/photos/discovery/7c5d0fe30ed401f25ff0f09022a3a25a75cf973601e4ba03ce3421278db14139.webp",
       "alt": "British Museum",
       "creditId": "2568a94ceb68ba24adabd55b7747170ed015de4e",
       "article": "https://en.wikipedia.org/wiki/British_Museum",
-      "width": 800,
-      "height": 573,
-      "bytes": 63558
+      "width": 640,
+      "height": 458,
+      "bytes": 37562
     },
     "buckingham-palace": {
-      "src": "/photos/discovery/f426de7c201b2e71d7c7788f91b1eaab40022120.webp",
+      "src": "/photos/discovery/66b67b947a08fc01b5c8396f231f28914896af2f2c01f6dbaf1960f4fd69dfc8.webp",
       "alt": "Buckingham Palace",
       "creditId": "f426de7c201b2e71d7c7788f91b1eaab40022120",
       "article": "https://en.wikipedia.org/wiki/Buckingham_Palace",
-      "width": 800,
-      "height": 479,
-      "bytes": 58868
+      "width": 640,
+      "height": 383,
+      "bytes": 34146
     },
     "london-eye": {
-      "src": "/photos/discovery/7d423473cd8b55de8764ebf4c99a547fa1842ca0.webp",
+      "src": "/photos/discovery/131363b77a486d588eefdedf346c1e7fdc7a3975b5385cad6879a94ea6e283bc.webp",
       "alt": "London Eye",
       "creditId": "7d423473cd8b55de8764ebf4c99a547fa1842ca0",
       "article": "https://en.wikipedia.org/wiki/London_Eye",
-      "width": 800,
-      "height": 533,
-      "bytes": 56068
+      "width": 640,
+      "height": 426,
+      "bytes": 33550
     },
     "kew-gardens": {
-      "src": "/photos/discovery/c347a7eb6634b6f9e6fd59f0f775a2c29ce4fc4c.webp",
+      "src": "/photos/discovery/df0fc47cc5169707f5698ccfd64bb0a044801097cda3c2acedf135db5ff8bc0f.webp",
       "alt": "Kew Gardens",
       "creditId": "c347a7eb6634b6f9e6fd59f0f775a2c29ce4fc4c",
       "article": "https://en.wikipedia.org/wiki/Kew_Gardens",
-      "width": 800,
-      "height": 453,
-      "bytes": 76382
+      "width": 640,
+      "height": 362,
+      "bytes": 43654
     },
     "greenwich-royal-observatory": {
-      "src": "/photos/discovery/bd6067558cf632684ccd9bb01105ac61e4486095.webp",
+      "src": "/photos/discovery/c5ae32c8f4642da9fb09e91a0ed0172eccd25eb99fb92ed18bd92ab5c67dc610.webp",
       "alt": "Greenwich",
       "creditId": "bd6067558cf632684ccd9bb01105ac61e4486095",
       "article": "https://en.wikipedia.org/wiki/Greenwich",
-      "width": 800,
-      "height": 532,
-      "bytes": 46930
+      "width": 640,
+      "height": 426,
+      "bytes": 27712
     },
     "manchester-jewish-museum": {
-      "src": "/photos/discovery/5dc80ba6b9688b9b301898c179e95a62b16b5c16.webp",
+      "src": "/photos/discovery/570260c4eade33c8848ae7fdce4ba9c7dab27c6363bcb3178f87120d64966977.webp",
       "alt": "Manchester Jewish Museum",
       "creditId": "5dc80ba6b9688b9b301898c179e95a62b16b5c16",
       "article": "https://en.wikipedia.org/wiki/Manchester_Jewish_Museum",
       "width": 640,
       "height": 480,
-      "bytes": 65058
+      "bytes": 62162
     },
     "manchester-science-industry": {
-      "src": "/photos/discovery/b3ce417ded587b0b74d0fcf6c29eeb4e4e810038.webp",
+      "src": "/photos/discovery/69cd215c6bd2d3714fd4687d2fd4aa0a0fdbf329633def89a044029513533d3c.webp",
       "alt": "Science and Industry Museum",
       "creditId": "b3ce417ded587b0b74d0fcf6c29eeb4e4e810038",
       "article": "https://en.wikipedia.org/wiki/Science_and_Industry_Museum",
-      "width": 800,
-      "height": 534,
-      "bytes": 23488
+      "width": 640,
+      "height": 427,
+      "bytes": 15876
     },
     "manchester-museum": {
-      "src": "/photos/discovery/b70dac6a21b8ee0e27c34a6a76c584f18d2ed19b.webp",
+      "src": "/photos/discovery/fb3fea2f280ae63beb809293855406ba39a6e92efe725ddf12468a152b7afe73.webp",
       "alt": "Manchester Museum",
       "creditId": "b70dac6a21b8ee0e27c34a6a76c584f18d2ed19b",
       "article": "https://en.wikipedia.org/wiki/Manchester_Museum",
-      "width": 800,
-      "height": 533,
-      "bytes": 64988
+      "width": 640,
+      "height": 426,
+      "bytes": 40482
     },
     "manchester-national-football-museum": {
-      "src": "/photos/discovery/b2727fa0b6492c4d3b0ad545dc19e42092559513.webp",
+      "src": "/photos/discovery/28bed65a012125db97fe8352f7c86ffdd9f0e061b9af8c839f2b56cc1c1f8ba1.webp",
       "alt": "National Football Museum",
       "creditId": "b2727fa0b6492c4d3b0ad545dc19e42092559513",
       "article": "https://en.wikipedia.org/wiki/National_Football_Museum",
-      "width": 450,
-      "height": 600,
-      "bytes": 30212
+      "width": 360,
+      "height": 480,
+      "bytes": 17822
     },
     "manchester-john-rylands-library": {
-      "src": "/photos/discovery/0fec92a0e7ddddea2fd9b560ad1458bef2732012.webp",
+      "src": "/photos/discovery/d97265b6e480d2a30d1048742130d50b64d2584790a536bcd7c3c46a45656fe1.webp",
       "alt": "John Rylands Research Institute and Library",
       "creditId": "0fec92a0e7ddddea2fd9b560ad1458bef2732012",
       "article": "https://en.wikipedia.org/wiki/John_Rylands_Research_Institute_and_Library",
-      "width": 687,
-      "height": 600,
-      "bytes": 85304
+      "width": 550,
+      "height": 480,
+      "bytes": 49240
     },
     "manchester-heaton-park": {
-      "src": "/photos/discovery/da110da61b8317e35d818f4d2cd8eabd50975e72.webp",
+      "src": "/photos/discovery/7eab6f0f80c6a7db3d06b8a0fb04e4bdbf296a35d2095388e94fdac0dfe46c38.webp",
       "alt": "Heaton Park",
       "creditId": "da110da61b8317e35d818f4d2cd8eabd50975e72",
       "article": "https://en.wikipedia.org/wiki/Heaton_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 48666
+      "width": 640,
+      "height": 426,
+      "bytes": 27336
     },
     "edinburgh-castle": {
-      "src": "/photos/discovery/9dda7244c927e5b6f443af24654f3451101325b9.webp",
+      "src": "/photos/discovery/6a39136975e8b96d1fdf28053d89adc0560792c705e9d1988d031d9c9af6e2b5.webp",
       "alt": "Edinburgh Castle",
       "creditId": "9dda7244c927e5b6f443af24654f3451101325b9",
       "article": "https://en.wikipedia.org/wiki/Edinburgh_Castle",
-      "width": 800,
-      "height": 574,
-      "bytes": 51966
+      "width": 640,
+      "height": 459,
+      "bytes": 29084
     },
     "edinburgh-holyrood": {
-      "src": "/photos/discovery/db52d65a18023300651509683b5613aabdae6e0c.webp",
+      "src": "/photos/discovery/42f96cb07dab3cdbe110aa35bb4bc075136352b515b1d1d2de241c9b736e4fea.webp",
       "alt": "Holyrood Palace",
       "creditId": "db52d65a18023300651509683b5613aabdae6e0c",
       "article": "https://en.wikipedia.org/wiki/Holyrood_Palace",
-      "width": 800,
-      "height": 501,
-      "bytes": 131852
+      "width": 640,
+      "height": 401,
+      "bytes": 75780
     },
     "arthurs-seat": {
-      "src": "/photos/discovery/b20002c421cdc6f35a9473368f712583cc2ae864.webp",
+      "src": "/photos/discovery/f444aee1debda414d3f4e97f193900d4c27f01aa2cbdbadd7acf67731af83cf7.webp",
       "alt": "Arthur's Seat",
       "creditId": "b20002c421cdc6f35a9473368f712583cc2ae864",
       "article": "https://en.wikipedia.org/wiki/Arthur%27s_Seat",
-      "width": 800,
-      "height": 291,
-      "bytes": 39248
+      "width": 640,
+      "height": 233,
+      "bytes": 22874
     },
     "edinburgh-calton-hill": {
-      "src": "/photos/discovery/b0e039987b24d6a5d409cc05e090452c901406f1.webp",
+      "src": "/photos/discovery/2733a69a3c7f04eacee813e83d959c56474bf5055a8a5541115f3f4a45f2f136.webp",
       "alt": "Calton Hill",
       "creditId": "b0e039987b24d6a5d409cc05e090452c901406f1",
       "article": "https://en.wikipedia.org/wiki/Calton_Hill",
-      "width": 800,
-      "height": 502,
-      "bytes": 60452
+      "width": 640,
+      "height": 402,
+      "bytes": 33750
     },
     "national-museum-scotland": {
-      "src": "/photos/discovery/5c1902aa22802c4ce59e3b10858399400b996645.webp",
+      "src": "/photos/discovery/d414e18cbf7dac15cfba0026a9ad6671bd255deda669a4b0ee073d503a6d61b0.webp",
       "alt": "National Museum of Scotland",
       "creditId": "5c1902aa22802c4ce59e3b10858399400b996645",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Scotland",
-      "width": 800,
-      "height": 598,
-      "bytes": 48100
+      "width": 640,
+      "height": 478,
+      "bytes": 28510
     },
     "edinburgh-scott-monument": {
-      "src": "/photos/discovery/b2997be09e081c97ec3af6ef83ac3ec6661d3a7e.webp",
+      "src": "/photos/discovery/3413fc99ef45bb5519dcbb81dea27d90242f277b4d1be0130425030132947c3c.webp",
       "alt": "Scott Monument",
       "creditId": "b2997be09e081c97ec3af6ef83ac3ec6661d3a7e",
       "article": "https://en.wikipedia.org/wiki/Scott_Monument",
-      "width": 450,
-      "height": 600,
-      "bytes": 30812
+      "width": 360,
+      "height": 480,
+      "bytes": 18090
     },
     "brighton-royal-pavilion": {
-      "src": "/photos/discovery/cda4da3da140386ca32454e322c1a8ae47ea77ed.webp",
+      "src": "/photos/discovery/27822b50888230feb383e1f5da9af908365fc2ebc9869cc9f04d80dc9291a1f2.webp",
       "alt": "Brighton",
       "creditId": "cda4da3da140386ca32454e322c1a8ae47ea77ed",
       "article": "https://en.wikipedia.org/wiki/Brighton",
-      "width": 800,
-      "height": 533,
-      "bytes": 57252
-    },
-    "vienna-judenplatz": {
-      "src": "/photos/discovery/57f213b9775d439dc90137d0cac4f65fd52339d1.webp",
-      "alt": "Vienna",
-      "creditId": "57f213b9775d439dc90137d0cac4f65fd52339d1",
-      "article": "https://en.wikipedia.org/wiki/Vienna",
-      "width": 800,
-      "height": 360,
-      "bytes": 71504
+      "width": 640,
+      "height": 426,
+      "bytes": 33398
     },
     "hallstatt": {
-      "src": "/photos/discovery/f3879ce30e5fe1f578af42bb6b3d65821590ee6a.webp",
+      "src": "/photos/discovery/4ec8cc0a1c6a49bf68f7fe3ad979db34f160c74d6ff91bbb430c22b7db000971.webp",
       "alt": "Hallstatt",
       "creditId": "f3879ce30e5fe1f578af42bb6b3d65821590ee6a",
       "article": "https://en.wikipedia.org/wiki/Hallstatt",
-      "width": 800,
-      "height": 553,
-      "bytes": 109978
+      "width": 640,
+      "height": 442,
+      "bytes": 64320
     },
     "jerusalem-mount-herzl": {
-      "src": "/photos/discovery/458c51dae0d2416d1e1d971a3f1175eb2c14d1e3.webp",
+      "src": "/photos/discovery/1d18b609d27ce5ed2319a3a337b9d2e5f388791c070d0de331590aa5bd5b06bb.webp",
       "alt": "Mount Herzl",
       "creditId": "458c51dae0d2416d1e1d971a3f1175eb2c14d1e3",
       "article": "https://en.wikipedia.org/wiki/Mount_Herzl",
-      "width": 800,
-      "height": 533,
-      "bytes": 161982
+      "width": 640,
+      "height": 426,
+      "bytes": 99536
     },
     "jerusalem-ein-kerem": {
-      "src": "/photos/discovery/6633add84cb2e4c4691ef31622afd8c19e5d8503.webp",
+      "src": "/photos/discovery/19ba474c7af2b4c42ccb14877bed6cd1d25b16b63407fc7e2bd555d9a66ab52a.webp",
       "alt": "Ein Karem",
       "creditId": "6633add84cb2e4c4691ef31622afd8c19e5d8503",
       "article": "https://en.wikipedia.org/wiki/Ein_Karem",
-      "width": 800,
-      "height": 533,
-      "bytes": 147710
+      "width": 640,
+      "height": 426,
+      "bytes": 90496
     },
     "masada": {
-      "src": "/photos/discovery/1bc7947ad7903c8bad86e04bf3672f6b2d7e41a8.webp",
+      "src": "/photos/discovery/e2af983a30e77e8d94c8264363da6052453832b037dc378ec4a5f6b65902b867.webp",
       "alt": "Masada",
       "creditId": "1bc7947ad7903c8bad86e04bf3672f6b2d7e41a8",
       "article": "https://en.wikipedia.org/wiki/Masada",
-      "width": 451,
-      "height": 600,
-      "bytes": 51420
+      "width": 361,
+      "height": 480,
+      "bytes": 28892
     },
     "worms-rashi-shul": {
-      "src": "/photos/discovery/7f9c2628c336ee7ce4bcff6a5062253128323d75.webp",
+      "src": "/photos/discovery/c0be41f2a8a9c4318218199bf16a8e7bf975e10b6f80535a71e8029411d997f6.webp",
       "alt": "Worms Synagogue",
       "creditId": "7f9c2628c336ee7ce4bcff6a5062253128323d75",
       "article": "https://en.wikipedia.org/wiki/Worms_Synagogue",
-      "width": 800,
-      "height": 516,
-      "bytes": 107412
+      "width": 640,
+      "height": 413,
+      "bytes": 62558
     },
     "jewish-museum-berlin": {
-      "src": "/photos/discovery/0894a288d67cb330e91b7be853f4ecf822be958f.webp",
+      "src": "/photos/discovery/5aa6a0e76c2b4cfe052bf9a0b5b0e22f2e1601fdcec444b38aeff0160f435456.webp",
       "alt": "Jewish Museum Berlin",
       "creditId": "0894a288d67cb330e91b7be853f4ecf822be958f",
       "article": "https://en.wikipedia.org/wiki/Jewish_Museum_Berlin",
-      "width": 800,
-      "height": 369,
-      "bytes": 42138
+      "width": 640,
+      "height": 295,
+      "bytes": 25188
     },
     "berlin-brandenburg-gate": {
-      "src": "/photos/discovery/8c9889680cf1e7ec729a92db38f301485736fd51.webp",
+      "src": "/photos/discovery/5fb4fe2ffb6cf78aecabab101c0595f3e27ff2c63146cb07443020d1113ad39e.webp",
       "alt": "Brandenburg Gate",
       "creditId": "8c9889680cf1e7ec729a92db38f301485736fd51",
       "article": "https://en.wikipedia.org/wiki/Brandenburg_Gate",
-      "width": 800,
-      "height": 533,
-      "bytes": 55610
+      "width": 640,
+      "height": 426,
+      "bytes": 32226
     },
     "berlin-museum-island": {
-      "src": "/photos/discovery/d164f01ffd257392c3028d27ad643ef0b5723b4d.webp",
+      "src": "/photos/discovery/66f4b8fcfc3a15574a74d0ab76e0b10115b514b65cd7c0aa3a5e8ffb815e7701.webp",
       "alt": "Museum Island",
       "creditId": "d164f01ffd257392c3028d27ad643ef0b5723b4d",
       "article": "https://en.wikipedia.org/wiki/Museum_Island",
-      "width": 800,
-      "height": 540,
-      "bytes": 63896
+      "width": 640,
+      "height": 432,
+      "bytes": 37168
     },
     "berlin-charlottenburg-palace": {
-      "src": "/photos/discovery/ac62fd9b1a6f98edec8f1f57e786c21c38a769e0.webp",
+      "src": "/photos/discovery/d64c088b518519c40fe2c1e1f7f62bd7760e44a9850bdbcd534a21b353828ee9.webp",
       "alt": "Schloss Charlottenburg",
       "creditId": "ac62fd9b1a6f98edec8f1f57e786c21c38a769e0",
       "article": "https://en.wikipedia.org/wiki/Schloss_Charlottenburg",
-      "width": 800,
-      "height": 413,
-      "bytes": 46822
+      "width": 640,
+      "height": 330,
+      "bytes": 27396
     },
     "berlin-gendarmenmarkt": {
-      "src": "/photos/discovery/ddf9b94db5c3532cfea667990e7594a1d6276fab.webp",
+      "src": "/photos/discovery/010d9cfe32ea8985962d84824415968f604d4f6ad986f040b7ba79ef5f7ad31b.webp",
       "alt": "Gendarmenmarkt",
       "creditId": "ddf9b94db5c3532cfea667990e7594a1d6276fab",
       "article": "https://en.wikipedia.org/wiki/Gendarmenmarkt",
-      "width": 800,
-      "height": 368,
-      "bytes": 50916
+      "width": 640,
+      "height": 294,
+      "bytes": 29078
     },
     "berlin-kaiser-wilhelm-church": {
-      "src": "/photos/discovery/4995575c358085c626551fabe39d60239e79a38d.webp",
+      "src": "/photos/discovery/ee6dac4f26fb7bb6e2df64e1df817ee321e7e219838feeb59b69ed631a57a68a.webp",
       "alt": "Kaiser Wilhelm Memorial Church",
       "creditId": "4995575c358085c626551fabe39d60239e79a38d",
       "article": "https://en.wikipedia.org/wiki/Kaiser_Wilhelm_Memorial_Church",
-      "width": 380,
-      "height": 600,
-      "bytes": 36806
+      "width": 304,
+      "height": 480,
+      "bytes": 21688
     },
     "berlin-potsdamer-platz": {
-      "src": "/photos/discovery/7e8e3faf37ac76146a1f76ca05cbc6b04868a941.webp",
+      "src": "/photos/discovery/edea68854b99f12c75c8b404bc7610da75ec8f3f2982641ec390fcfa84027fd3.webp",
       "alt": "Potsdamer Platz",
       "creditId": "7e8e3faf37ac76146a1f76ca05cbc6b04868a941",
       "article": "https://en.wikipedia.org/wiki/Potsdamer_Platz",
-      "width": 800,
-      "height": 533,
-      "bytes": 126194
+      "width": 640,
+      "height": 426,
+      "bytes": 76548
     },
     "zugspitze": {
-      "src": "/photos/discovery/520ec9628559534ca99cd084da8fa3c929104fa0.webp",
+      "src": "/photos/discovery/b4c5747366c9594afebdc49079b76fdc4d04a70f724ab142959ff491143b6045.webp",
       "alt": "Zugspitze",
       "creditId": "520ec9628559534ca99cd084da8fa3c929104fa0",
       "article": "https://en.wikipedia.org/wiki/Zugspitze",
-      "width": 800,
-      "height": 533,
-      "bytes": 65308
+      "width": 640,
+      "height": 426,
+      "bytes": 37624
     },
     "heidelberg-castle": {
-      "src": "/photos/discovery/1b824afd862b42cef1bbef9c90497519e542a93f.webp",
+      "src": "/photos/discovery/f66433c686f59ef3beb51aa7f4b96ed3ab769f3bfd3b81b424f10088bdbaa3f6.webp",
       "alt": "Heidelberg Castle",
       "creditId": "1b824afd862b42cef1bbef9c90497519e542a93f",
       "article": "https://en.wikipedia.org/wiki/Heidelberg_Castle",
-      "width": 800,
-      "height": 455,
-      "bytes": 111700
+      "width": 640,
+      "height": 364,
+      "bytes": 66026
     },
     "miniatur-wunderland": {
-      "src": "/photos/discovery/1de5643e84ab10195e7704714f214821ff29b5be.webp",
+      "src": "/photos/discovery/219c3e9f18e0b8a7913856c973658be486541b91e12acf6fd677a2e6434a6e76.webp",
       "alt": "Miniatur Wunderland",
       "creditId": "1de5643e84ab10195e7704714f214821ff29b5be",
       "article": "https://en.wikipedia.org/wiki/Miniatur_Wunderland",
-      "width": 800,
-      "height": 520,
-      "bytes": 98916
+      "width": 640,
+      "height": 416,
+      "bytes": 60346
     },
     "rothenburg-ob-der-tauber": {
-      "src": "/photos/discovery/f9847e5c0be287a0820039dfb5e9d2a44da6e9d3.webp",
+      "src": "/photos/discovery/7438c7a22bf24a9789d2a5d394aa0e2f049c2c997bf8c56bcc085dd9b262d53d.webp",
       "alt": "Rothenburg ob der Tauber",
       "creditId": "f9847e5c0be287a0820039dfb5e9d2a44da6e9d3",
       "article": "https://en.wikipedia.org/wiki/Rothenburg_ob_der_Tauber",
-      "width": 800,
-      "height": 536,
-      "bytes": 74090
+      "width": 640,
+      "height": 429,
+      "bytes": 43998
     },
     "anne-frank-house": {
-      "src": "/photos/discovery/798ba015aaf1189dfdd54b8b69cf24698e1deff9.webp",
+      "src": "/photos/discovery/276aee1b1e01ed04570eef5bd27f7e0577db52825e87148af85d8c601e361eb1.webp",
       "alt": "Anne Frank House",
       "creditId": "798ba015aaf1189dfdd54b8b69cf24698e1deff9",
       "article": "https://en.wikipedia.org/wiki/Anne_Frank_House",
-      "width": 769,
-      "height": 600,
-      "bytes": 75442
+      "width": 615,
+      "height": 480,
+      "bytes": 45566
     },
     "rijksmuseum": {
-      "src": "/photos/discovery/075077bd7ca01791a351b1dd99e575c13c85a32d.webp",
+      "src": "/photos/discovery/884ed90a3e954b93368355310c4f9259fbaa50f49d1382574d12cc20c094fcc0.webp",
       "alt": "Rijksmuseum",
       "creditId": "075077bd7ca01791a351b1dd99e575c13c85a32d",
       "article": "https://en.wikipedia.org/wiki/Rijksmuseum",
-      "width": 800,
-      "height": 583,
-      "bytes": 70736
+      "width": 640,
+      "height": 466,
+      "bytes": 41210
     },
     "keukenhof": {
-      "src": "/photos/discovery/b4d86419558b9c6f39c9f9206f15157a1aae7a7c.webp",
+      "src": "/photos/discovery/a552d6e0f6d18a2504fbaef0b8ff1dae3d82e8ee79b4cfeecff805124931325a.webp",
       "alt": "Keukenhof",
       "creditId": "b4d86419558b9c6f39c9f9206f15157a1aae7a7c",
       "article": "https://en.wikipedia.org/wiki/Keukenhof",
-      "width": 800,
-      "height": 533,
-      "bytes": 107882
+      "width": 640,
+      "height": 426,
+      "bytes": 62396
     },
     "zaanse-schans": {
-      "src": "/photos/discovery/3fe4fbb3ebd2327d2aea26dfe2bbc86674683a3a.webp",
+      "src": "/photos/discovery/5a9d0c93c9b7673dfdff68f1681113d4f1960f2b0ee45674e83038891e5fe08c.webp",
       "alt": "Zaanse Schans",
       "creditId": "3fe4fbb3ebd2327d2aea26dfe2bbc86674683a3a",
       "article": "https://en.wikipedia.org/wiki/Zaanse_Schans",
-      "width": 800,
-      "height": 401,
-      "bytes": 54156
+      "width": 640,
+      "height": 321,
+      "bytes": 31636
     },
     "kinderdijk": {
-      "src": "/photos/discovery/da1fb5943d582cf388827affd464d5c8c85e8acf.webp",
+      "src": "/photos/discovery/4bb7fe9a63a3b00bb44556e0a6304b6f48425d848f95d08b7453e618e7e6e2cc.webp",
       "alt": "Kinderdijk windmills",
       "creditId": "da1fb5943d582cf388827affd464d5c8c85e8acf",
       "article": "https://en.wikipedia.org/wiki/Kinderdijk_windmills",
-      "width": 602,
-      "height": 600,
-      "bytes": 41194
+      "width": 482,
+      "height": 480,
+      "bytes": 24970
     },
     "brussels-grand-place": {
-      "src": "/photos/discovery/200a5f49f85f0d01a33c3e7d8e2bcebe146f964e.webp",
+      "src": "/photos/discovery/abad9b74363db68ec23706c33ff83e1ac2dbd7dd673ad8a0f03dd169a4fdd6e7.webp",
       "alt": "Grand-Place",
       "creditId": "200a5f49f85f0d01a33c3e7d8e2bcebe146f964e",
       "article": "https://en.wikipedia.org/wiki/Grand-Place",
-      "width": 800,
-      "height": 455,
-      "bytes": 70366
+      "width": 640,
+      "height": 364,
+      "bytes": 41582
     },
     "brussels-atomium": {
-      "src": "/photos/discovery/42585c7331c120661288f3d8f6c9de8e9a4a5974.webp",
+      "src": "/photos/discovery/e518bbe0b02ae10f615153009b89866060973916aaae107fa444202cd26874f5.webp",
       "alt": "Atomium",
       "creditId": "42585c7331c120661288f3d8f6c9de8e9a4a5974",
       "article": "https://en.wikipedia.org/wiki/Atomium",
-      "width": 476,
-      "height": 600,
-      "bytes": 33538
+      "width": 381,
+      "height": 480,
+      "bytes": 19926
     },
     "bruges-markt": {
-      "src": "/photos/discovery/5aef036c58e8a2f9194bab514f4e1ea607396961.webp",
+      "src": "/photos/discovery/a2397ed2c14688617f733fe022f7f48cb9606b1b185debee9c7deba0d624adba.webp",
       "alt": "Bruges",
       "creditId": "5aef036c58e8a2f9194bab514f4e1ea607396961",
       "article": "https://en.wikipedia.org/wiki/Bruges",
-      "width": 800,
-      "height": 513,
-      "bytes": 77786
+      "width": 640,
+      "height": 410,
+      "bytes": 47538
     },
     "prague-old-new-synagogue": {
-      "src": "/photos/discovery/35f04686f71e2fa847cb1c5cb82dc8f8b3199708.webp",
+      "src": "/photos/discovery/9b3bffb26caa968e93307518d57900dded5f2c991ba14410469b8ac31880ce11.webp",
       "alt": "Old New Synagogue",
       "creditId": "35f04686f71e2fa847cb1c5cb82dc8f8b3199708",
       "article": "https://en.wikipedia.org/wiki/Old_New_Synagogue",
-      "width": 800,
-      "height": 555,
-      "bytes": 58294
+      "width": 640,
+      "height": 444,
+      "bytes": 34638
     },
     "terezin-memorial": {
-      "src": "/photos/discovery/887f11d0d87696657b6eeac32cc215ade9ee50a6.webp",
+      "src": "/photos/discovery/2a9a7ddf67e6130845807188f4714312ad75677edc52a9027fc79fe56ee0f4f9.webp",
       "alt": "Terezín",
       "creditId": "887f11d0d87696657b6eeac32cc215ade9ee50a6",
       "article": "https://en.wikipedia.org/wiki/Terez%C3%ADn",
-      "width": 800,
-      "height": 523,
-      "bytes": 51178
+      "width": 640,
+      "height": 418,
+      "bytes": 28530
     },
     "prague-castle": {
-      "src": "/photos/discovery/b3004676afb7d7547f009024202a5beaab6a20ce.webp",
+      "src": "/photos/discovery/f57d1d0a7c500ed1f707794dc14b6faeab35cad33d4f1432240572cb34a2d1cf.webp",
       "alt": "Prague Castle",
       "creditId": "b3004676afb7d7547f009024202a5beaab6a20ce",
       "article": "https://en.wikipedia.org/wiki/Prague_Castle",
-      "width": 800,
-      "height": 534,
-      "bytes": 78428
+      "width": 640,
+      "height": 427,
+      "bytes": 45718
     },
     "pravcicka-brana": {
-      "src": "/photos/discovery/81dc47106d2a929bb99d75161d740bb84addffb9.webp",
+      "src": "/photos/discovery/23a8da3daf483807b10b7c4dc3b4d97bec3b86ae335b1c7a3327de8ce35b6508.webp",
       "alt": "Pravčická brána",
       "creditId": "81dc47106d2a929bb99d75161d740bb84addffb9",
       "article": "https://en.wikipedia.org/wiki/Prav%C4%8Dick%C3%A1_br%C3%A1na",
-      "width": 800,
-      "height": 533,
-      "bytes": 113664
+      "width": 640,
+      "height": 426,
+      "bytes": 65838
     },
     "cesky-krumlov": {
-      "src": "/photos/discovery/9f6465bd426fed03b56f0e45f9572372808b8c27.webp",
+      "src": "/photos/discovery/8ca8c9d4e42b4f4fc8bba79c51922fbe16df26c5d22a9316a5685706902f2901.webp",
       "alt": "Český Krumlov",
       "creditId": "9f6465bd426fed03b56f0e45f9572372808b8c27",
       "article": "https://en.wikipedia.org/wiki/%C4%8Cesk%C3%BD_Krumlov",
-      "width": 797,
-      "height": 600,
-      "bytes": 89628
+      "width": 638,
+      "height": 480,
+      "bytes": 52198
     },
     "budapest-dohany-synagogue": {
-      "src": "/photos/discovery/823424eb3f09341ef2c46786c07604b0d2d4e1df.webp",
+      "src": "/photos/discovery/deaff78efccbd7769f406819822a5dcacc685d34df84320817160215e2dcb74f.webp",
       "alt": "Dohány Street Synagogue",
       "creditId": "823424eb3f09341ef2c46786c07604b0d2d4e1df",
       "article": "https://en.wikipedia.org/wiki/Doh%C3%A1ny_Street_Synagogue",
-      "width": 663,
-      "height": 600,
-      "bytes": 75568
+      "width": 530,
+      "height": 480,
+      "bytes": 47040
     },
     "budapest-shoes-danube": {
-      "src": "/photos/discovery/a6ec426ef68877d8f851842921ce73e7dc4195c9.webp",
+      "src": "/photos/discovery/919dbc6c33685cddeaa2300b7cfc6e491f75f0ae41deb0ed20e819d03253468b.webp",
       "alt": "Shoes on the Danube Bank",
       "creditId": "a6ec426ef68877d8f851842921ce73e7dc4195c9",
       "article": "https://en.wikipedia.org/wiki/Shoes_on_the_Danube_Bank",
-      "width": 415,
-      "height": 600,
-      "bytes": 25334
+      "width": 332,
+      "height": 480,
+      "bytes": 16650
     },
     "budapest-fishermans-bastion": {
-      "src": "/photos/discovery/fccf2523d9493234c833a7a0c351815e98c7ba0b.webp",
+      "src": "/photos/discovery/84db1a3b610b28b23a8a8db69e650df6338b708c9d14efe7ffbbd4dd6ce7aa75.webp",
       "alt": "Fisherman's Bastion",
       "creditId": "fccf2523d9493234c833a7a0c351815e98c7ba0b",
       "article": "https://en.wikipedia.org/wiki/Fisherman%27s_Bastion",
-      "width": 450,
-      "height": 600,
-      "bytes": 35600
+      "width": 360,
+      "height": 480,
+      "bytes": 20636
     },
     "budapest-parliament": {
-      "src": "/photos/discovery/83cc1b86e2fa7fed724c98ba9ad162f69d42a99b.webp",
+      "src": "/photos/discovery/9717e1eeeb6c7abb6c7734bbc804efcdee118e068ac3f5323598e1b44f03c22e.webp",
       "alt": "Hungarian Parliament Building",
       "creditId": "83cc1b86e2fa7fed724c98ba9ad162f69d42a99b",
       "article": "https://en.wikipedia.org/wiki/Hungarian_Parliament_Building",
-      "width": 800,
-      "height": 448,
-      "bytes": 38316
+      "width": 640,
+      "height": 358,
+      "bytes": 22542
     },
     "budapest-margaret-island": {
-      "src": "/photos/discovery/418ada2b3ca6a60b3207bbaf847c28749ca25c0c.webp",
+      "src": "/photos/discovery/6fc123511035dae767066500e0ad49c2d60e61156f51b03c1327df330032cc50.webp",
       "alt": "Margaret Island",
       "creditId": "418ada2b3ca6a60b3207bbaf847c28749ca25c0c",
       "article": "https://en.wikipedia.org/wiki/Margaret_Island",
-      "width": 421,
-      "height": 600,
-      "bytes": 50874
-    },
-    "budapest-hospital-in-the-rock": {
-      "src": "/photos/discovery/6fe5651933965561d212dacdd86caee43d7676b6.webp",
-      "alt": "Hospital in the Rock",
-      "creditId": "6fe5651933965561d212dacdd86caee43d7676b6",
-      "article": "https://en.wikipedia.org/wiki/Hospital_in_the_Rock",
-      "width": 518,
-      "height": 394,
-      "bytes": 20006
+      "width": 337,
+      "height": 480,
+      "bytes": 30876
     },
     "auschwitz-birkenau": {
-      "src": "/photos/discovery/5d092f53a42306b0f46f3e643557dbcc40e0144e.webp",
+      "src": "/photos/discovery/fc0f3b333bbc3afdaffe8ac272b19ec31ff60b9ec8eb3a8d73ea65aa35cb9605.webp",
       "alt": "Auschwitz concentration camp",
       "creditId": "5d092f53a42306b0f46f3e643557dbcc40e0144e",
       "article": "https://en.wikipedia.org/wiki/Auschwitz_concentration_camp",
-      "width": 800,
-      "height": 536,
-      "bytes": 87154
+      "width": 640,
+      "height": 429,
+      "bytes": 52610
     },
     "krakow-kazimierz": {
-      "src": "/photos/discovery/9defc461941678041dbbc634330e79a9f793a303.webp",
+      "src": "/photos/discovery/032b2d98217f8ca63e49b7dd39a3c9f669e46e49e93058a9c878c5aa37149e12.webp",
       "alt": "Kazimierz",
       "creditId": "9defc461941678041dbbc634330e79a9f793a303",
       "article": "https://en.wikipedia.org/wiki/Kazimierz",
-      "width": 800,
-      "height": 344,
-      "bytes": 35106
+      "width": 640,
+      "height": 275,
+      "bytes": 20124
     },
     "schindlers-factory": {
-      "src": "/photos/discovery/a85a8481e42940fed58cc9353470ff4480526069.webp",
+      "src": "/photos/discovery/4b6d518a5ea2389fc1b3abb1ab013c7e6234d05f4fea759128885474ce13a204.webp",
       "alt": "Oskar Schindler's Enamel Factory",
       "creditId": "a85a8481e42940fed58cc9353470ff4480526069",
       "article": "https://en.wikipedia.org/wiki/Oskar_Schindler%27s_Enamel_Factory",
-      "width": 800,
-      "height": 532,
-      "bytes": 33180
+      "width": 640,
+      "height": 426,
+      "bytes": 20594
     },
     "wieliczka-salt-mine": {
-      "src": "/photos/discovery/ebabd28ace6f0f8444d14a72d91d040be8e74251.webp",
+      "src": "/photos/discovery/0d96f1fb65f11fcd0298063beb0aa5576170551668add53e2afd5473be6bc75c.webp",
       "alt": "Wieliczka Salt Mine",
       "creditId": "ebabd28ace6f0f8444d14a72d91d040be8e74251",
       "article": "https://en.wikipedia.org/wiki/Wieliczka_Salt_Mine",
-      "width": 800,
-      "height": 533,
-      "bytes": 74308
+      "width": 640,
+      "height": 426,
+      "bytes": 42128
     },
     "wawel-castle": {
-      "src": "/photos/discovery/c3a85642bb3119c028457079c8f1d8132c72b2f1.webp",
+      "src": "/photos/discovery/5f39ff1c7a5bee5220a74e062c49f673d19bef861491c6a5a7c1ce6f8d2ee619.webp",
       "alt": "Wawel Castle",
       "creditId": "c3a85642bb3119c028457079c8f1d8132c72b2f1",
       "article": "https://en.wikipedia.org/wiki/Wawel_Castle",
-      "width": 800,
-      "height": 600,
-      "bytes": 91866
+      "width": 640,
+      "height": 480,
+      "bytes": 54812
     },
     "krakow-main-square": {
-      "src": "/photos/discovery/e37fa41b85fb38be22dfa2f807e713b0e481490d.webp",
+      "src": "/photos/discovery/3995469bd785c9703ecb1610923ef5b96e28d0ce7243845990840522d302e67d.webp",
       "alt": "Main Square, Kraków",
       "creditId": "e37fa41b85fb38be22dfa2f807e713b0e481490d",
       "article": "https://en.wikipedia.org/wiki/Main_Square,_Krak%C3%B3w",
-      "width": 800,
-      "height": 545,
-      "bytes": 94524
+      "width": 640,
+      "height": 436,
+      "bytes": 56736
     },
     "warsaw-old-town": {
-      "src": "/photos/discovery/40afe6576a50f3bca8375a5fe894e9fb24155530.webp",
+      "src": "/photos/discovery/865953ce86a678bd955e4d7b0f7f02b71b05714da5776e4200601199775d6272.webp",
       "alt": "Old Town, Warsaw",
       "creditId": "40afe6576a50f3bca8375a5fe894e9fb24155530",
       "article": "https://en.wikipedia.org/wiki/Old_Town,_Warsaw",
-      "width": 800,
-      "height": 264,
-      "bytes": 68158
+      "width": 640,
+      "height": 211,
+      "bytes": 40298
     },
     "morskie-oko": {
-      "src": "/photos/discovery/d3b41c2b01ac949982a61f3f82001e23b4fee482.webp",
+      "src": "/photos/discovery/eb3affb6ae00b8fa5a436e35744cd66e6df6c0502bcf3336bfbe9cd0df07a69c.webp",
       "alt": "Morskie Oko",
       "creditId": "d3b41c2b01ac949982a61f3f82001e23b4fee482",
       "article": "https://en.wikipedia.org/wiki/Morskie_Oko",
-      "width": 800,
-      "height": 600,
-      "bytes": 75568
+      "width": 640,
+      "height": 480,
+      "bytes": 47822
     },
     "treblinka-memorial": {
-      "src": "/photos/discovery/b5872f658fffe6e0bd6cb2e5312b37366cc13282.webp",
+      "src": "/photos/discovery/8c5b22a69d1e37cb5c626763093c025dcb331ec81c51dcbfcac4c7133d788c8d.webp",
       "alt": "Treblinka extermination camp",
       "creditId": "b5872f658fffe6e0bd6cb2e5312b37366cc13282",
       "article": "https://en.wikipedia.org/wiki/Treblinka_extermination_camp",
-      "width": 800,
-      "height": 598,
-      "bytes": 104728
+      "width": 640,
+      "height": 478,
+      "bytes": 62362
     },
     "yad-vashem": {
-      "src": "/photos/discovery/bae6d8226a3ae370b781ae838069c83acaf49062.webp",
+      "src": "/photos/discovery/ed3ea3ef680d6fc91e07a5492799c610591ef556573700f6a2ebbbd5fb45991b.webp",
       "alt": "Yad Vashem",
       "creditId": "bae6d8226a3ae370b781ae838069c83acaf49062",
       "article": "https://en.wikipedia.org/wiki/Yad_Vashem",
-      "width": 800,
-      "height": 533,
-      "bytes": 126670
+      "width": 640,
+      "height": 426,
+      "bytes": 77510
     },
     "rosh-hanikra": {
-      "src": "/photos/discovery/fe5cd0137edc5b94cbf0d74be720393df9c1ee37.webp",
+      "src": "/photos/discovery/85b732eff4ca3161265bdedcb4b8192c2fd8f3b9e0c84a54c04e89c91a5f74e5.webp",
       "alt": "Rosh HaNikra grottoes",
       "creditId": "fe5cd0137edc5b94cbf0d74be720393df9c1ee37",
       "article": "https://en.wikipedia.org/wiki/Rosh_HaNikra_grottoes",
-      "width": 800,
-      "height": 533,
-      "bytes": 52416
+      "width": 640,
+      "height": 426,
+      "bytes": 29864
     },
     "banias-waterfall": {
-      "src": "/photos/discovery/a5c8f8040e9bc204ab1909f424351b6e28bdbd15.webp",
+      "src": "/photos/discovery/f154dd6cbfc55ade05248a0666202deee6a61c5db79eba3ff919de9ea4c7b38a.webp",
       "alt": "Banias",
       "creditId": "a5c8f8040e9bc204ab1909f424351b6e28bdbd15",
       "article": "https://en.wikipedia.org/wiki/Banias",
-      "width": 800,
-      "height": 600,
-      "bytes": 166416
+      "width": 640,
+      "height": 480,
+      "bytes": 96554
     },
     "hula-valley": {
-      "src": "/photos/discovery/beec5a966a064df9cbf27b8da854b1976d92ce08.webp",
+      "src": "/photos/discovery/84deb13d6f59a637d78ec36543676efc7deeb8be567586aeeda8158e40a94379.webp",
       "alt": "Hula Valley",
       "creditId": "beec5a966a064df9cbf27b8da854b1976d92ce08",
       "article": "https://en.wikipedia.org/wiki/Hula_Valley",
-      "width": 800,
-      "height": 533,
-      "bytes": 37802
+      "width": 640,
+      "height": 426,
+      "bytes": 20192
     },
     "neve-tzedek": {
-      "src": "/photos/discovery/1d320fe33b7274f9e5bf7672e23484fad2e72d6d.webp",
+      "src": "/photos/discovery/caa72d337c35c60bc1460421c8824bc420eb76446b580971f8dc3e2470ef16db.webp",
       "alt": "Neve Tzedek",
       "creditId": "1d320fe33b7274f9e5bf7672e23484fad2e72d6d",
       "article": "https://en.wikipedia.org/wiki/Neve_Tzedek",
-      "width": 549,
-      "height": 600,
-      "bytes": 68968
+      "width": 439,
+      "height": 480,
+      "bytes": 41560
     },
     "rothschild-boulevard": {
-      "src": "/photos/discovery/a8fb3ecc0d4948c5bd4c0a3c8e88457e76d8dbec.webp",
+      "src": "/photos/discovery/ab57911e05edfb7dde7b12a0f8ab4ed1340664b8f6462058b2841e98116879f3.webp",
       "alt": "Rothschild Boulevard",
       "creditId": "a8fb3ecc0d4948c5bd4c0a3c8e88457e76d8dbec",
       "article": "https://en.wikipedia.org/wiki/Rothschild_Boulevard",
-      "width": 800,
-      "height": 532,
-      "bytes": 112076
+      "width": 640,
+      "height": 426,
+      "bytes": 65938
     },
     "tel-aviv-museum-art": {
-      "src": "/photos/discovery/41dd2f09b5213cc62781a223757a2169b6f94897.webp",
+      "src": "/photos/discovery/70b1a3f49275a7b5c5932d6bc542bba342410bdf5d85764e820a71ba92243237.webp",
       "alt": "Tel Aviv Museum of Art",
       "creditId": "41dd2f09b5213cc62781a223757a2169b6f94897",
       "article": "https://en.wikipedia.org/wiki/Tel_Aviv_Museum_of_Art",
-      "width": 800,
-      "height": 536,
-      "bytes": 65524
+      "width": 640,
+      "height": 429,
+      "bytes": 35350
     },
     "turin-mole-antonelliana": {
-      "src": "/photos/discovery/ffd696a9e9e0c188b686ac939e879b8a4c66e63e.webp",
+      "src": "/photos/discovery/fe97ef785e4da817def6c9a8c817d5b53e90be609462647acf70b9bf3501c99d.webp",
       "alt": "Mole Antonelliana",
       "creditId": "ffd696a9e9e0c188b686ac939e879b8a4c66e63e",
       "article": "https://en.wikipedia.org/wiki/Mole_Antonelliana",
-      "width": 390,
-      "height": 600,
-      "bytes": 33656
+      "width": 312,
+      "height": 480,
+      "bytes": 20186
     },
     "stonehenge": {
-      "src": "/photos/discovery/2bd5656a139404511264a0971d0348de95bf35ee.webp",
+      "src": "/photos/discovery/62fa7d8148c18464c051eb04d3dcf6e5a8a0e39cfc679de1bbc3ec453bd37923.webp",
       "alt": "Stonehenge",
       "creditId": "2bd5656a139404511264a0971d0348de95bf35ee",
       "article": "https://en.wikipedia.org/wiki/Stonehenge",
-      "width": 800,
-      "height": 600,
-      "bytes": 53296
+      "width": 640,
+      "height": 480,
+      "bytes": 29266
     },
     "tre-cime-di-lavaredo": {
-      "src": "/photos/discovery/22e23929806b7e02f349deebb326264a93783dc5.webp",
+      "src": "/photos/discovery/849d1abe137f333d63dd01fe6a1c6ebd79b47c9f1e2313b331a24f1514d7f664.webp",
       "alt": "Tre Cime di Lavaredo",
       "creditId": "22e23929806b7e02f349deebb326264a93783dc5",
       "article": "https://en.wikipedia.org/wiki/Tre_Cime_di_Lavaredo",
-      "width": 800,
-      "height": 458,
-      "bytes": 55284
+      "width": 640,
+      "height": 366,
+      "bytes": 32498
     },
     "grossglockner-alpine-road": {
-      "src": "/photos/discovery/aa3edc49f577ceb7b0f803b60faa59ff3b81fd5d.webp",
+      "src": "/photos/discovery/6437a0c9a593df6d0713f5e12f50114f8f9da822ed7c79c160d5a7f9ba599ede.webp",
       "alt": "Grossglockner High Alpine Road",
       "creditId": "aa3edc49f577ceb7b0f803b60faa59ff3b81fd5d",
       "article": "https://en.wikipedia.org/wiki/Grossglockner_High_Alpine_Road",
-      "width": 800,
-      "height": 600,
-      "bytes": 94676
+      "width": 640,
+      "height": 480,
+      "bytes": 54848
     },
     "mer-de-glace-montenvers": {
-      "src": "/photos/discovery/d3c31036a9175ab028954141127ca07d6a116750.webp",
+      "src": "/photos/discovery/99d511fccf044934e77a46114be9a0b005b6e18a8badfadf97d1b4974f8d3f20.webp",
       "alt": "Mer de Glace",
       "creditId": "d3c31036a9175ab028954141127ca07d6a116750",
       "article": "https://en.wikipedia.org/wiki/Mer_de_Glace",
-      "width": 800,
-      "height": 600,
-      "bytes": 56866
+      "width": 640,
+      "height": 480,
+      "bytes": 31722
     },
     "marmolada-punta-rocca": {
-      "src": "/photos/discovery/596104a1cf71e313bde90d6b7c704310ba8bd235.webp",
+      "src": "/photos/discovery/233030c1b1deb49822dfedfe27383c066911a742057b9c03f5c32955b54a9410.webp",
       "alt": "Marmolada",
       "creditId": "596104a1cf71e313bde90d6b7c704310ba8bd235",
       "article": "https://en.wikipedia.org/wiki/Marmolada",
-      "width": 800,
-      "height": 450,
-      "bytes": 90466
+      "width": 640,
+      "height": 360,
+      "bytes": 52886
     },
     "zell-am-see-kitzsteinhorn": {
-      "src": "/photos/discovery/d97c4fc9652375f580bcd0ec791c8f5598726feb.webp",
+      "src": "/photos/discovery/dccc474b301ad5cf761795ebac5e80ef0e3dc247aff166bef86849c7eae4986a.webp",
       "alt": "Zell am See",
       "creditId": "d97c4fc9652375f580bcd0ec791c8f5598726feb",
       "article": "https://en.wikipedia.org/wiki/Zell_am_See",
-      "width": 800,
-      "height": 518,
-      "bytes": 66458
+      "width": 640,
+      "height": 414,
+      "bytes": 37652
     },
     "skyway-monte-bianco": {
-      "src": "/photos/discovery/39a942d750b6a410be3482ec414ef2d6b4d73e1c.webp",
+      "src": "/photos/discovery/47669510e8195f657869654dfa5c59ae0cabcf7f5bb49871acc5e0d5b177a6cf.webp",
       "alt": "Skyway Monte Bianco",
       "creditId": "39a942d750b6a410be3482ec414ef2d6b4d73e1c",
       "article": "https://en.wikipedia.org/wiki/Skyway_Monte_Bianco",
-      "width": 671,
-      "height": 600,
-      "bytes": 43514
+      "width": 537,
+      "height": 480,
+      "bytes": 26018
     },
     "gran-paradiso": {
-      "src": "/photos/discovery/b2b181e9c696f36fd4c1b4e7fda83fdd77d80515.webp",
+      "src": "/photos/discovery/84a035ec84364e6db61410acf665295b71bd528499759fb4664db56dfd34e688.webp",
       "alt": "Gran Paradiso National Park",
       "creditId": "b2b181e9c696f36fd4c1b4e7fda83fdd77d80515",
       "article": "https://en.wikipedia.org/wiki/Gran_Paradiso_National_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 98380
+      "width": 640,
+      "height": 426,
+      "bytes": 58852
     },
     "route-des-grandes-alpes": {
-      "src": "/photos/discovery/4c7d29597a2bfa5afe6459bce5ca1b13e33bba73.webp",
+      "src": "/photos/discovery/78612687b98db0d47a9f41f5d8510761023b901e8ea1af58bc7af00898685101.webp",
       "alt": "Route des Grandes Alpes",
       "creditId": "4c7d29597a2bfa5afe6459bce5ca1b13e33bba73",
       "article": "https://en.wikipedia.org/wiki/Route_des_Grandes_Alpes",
-      "width": 800,
-      "height": 600,
-      "bytes": 106222
+      "width": 640,
+      "height": 480,
+      "bytes": 57150
     },
     "salzburg-hohensalzburg": {
-      "src": "/photos/discovery/96412f772b52efcdef9129a49bb44d8d0e5c2730.webp",
+      "src": "/photos/discovery/1c76383b260a6895c0e78809212c138ab4d98829a9c2a62c567ee2bfd7de9037.webp",
       "alt": "Hohensalzburg Fortress",
       "creditId": "96412f772b52efcdef9129a49bb44d8d0e5c2730",
       "article": "https://en.wikipedia.org/wiki/Hohensalzburg_Fortress",
-      "width": 800,
-      "height": 533,
-      "bytes": 78430
+      "width": 640,
+      "height": 426,
+      "bytes": 44012
     },
     "miami-beach-botanical-garden": {
-      "src": "/photos/discovery/5e1ade55787503ded5c3753ac623c856577133a0.webp",
+      "src": "/photos/discovery/66cca1444ea8f008b734aaed2a3e112d0f92351df9ed807581d65d1099ddcae6.webp",
       "alt": "Miami Beach Botanical Garden",
       "creditId": "5e1ade55787503ded5c3753ac623c856577133a0",
       "article": "https://en.wikipedia.org/wiki/Miami_Beach_Botanical_Garden",
-      "width": 800,
-      "height": 600,
-      "bytes": 140608
+      "width": 640,
+      "height": 480,
+      "bytes": 82292
     },
     "miami-vizcaya": {
-      "src": "/photos/discovery/6882752d2a61fb480cad05b27dfb202429bc8d57.webp",
+      "src": "/photos/discovery/cc7c8453e9e3380c9c1aee19337bd123f8dc491377fb1a4011cbdaaa7b3ac227.webp",
       "alt": "Vizcaya Museum and Gardens",
       "creditId": "6882752d2a61fb480cad05b27dfb202429bc8d57",
       "article": "https://en.wikipedia.org/wiki/Vizcaya_Museum_and_Gardens",
-      "width": 800,
-      "height": 444,
-      "bytes": 102070
+      "width": 640,
+      "height": 355,
+      "bytes": 59772
     },
     "miami-zoo": {
-      "src": "/photos/discovery/70b08797e4d4ac5ecad8a3fe90e0fcd68a30bc14.webp",
+      "src": "/photos/discovery/db92b79311df1c02f3289b8b31489ff6e5de8746111030d9c0eacafc9b316a3b.webp",
       "alt": "Zoo Miami",
       "creditId": "70b08797e4d4ac5ecad8a3fe90e0fcd68a30bc14",
       "article": "https://en.wikipedia.org/wiki/Zoo_Miami",
-      "width": 800,
-      "height": 571,
-      "bytes": 99290
+      "width": 640,
+      "height": 457,
+      "bytes": 56910
     },
     "walt-disney-world-resort": {
-      "src": "/photos/discovery/77362e0d30de06cd284ab01ed48cb97edf6b15ed.webp",
+      "src": "/photos/discovery/726536deddb1d71ced95b46b920307d9076e10f67938785c1d0490357027959f.webp",
       "alt": "Walt Disney World",
       "creditId": "77362e0d30de06cd284ab01ed48cb97edf6b15ed",
       "article": "https://en.wikipedia.org/wiki/Walt_Disney_World",
-      "width": 600,
-      "height": 600,
-      "bytes": 56438
+      "width": 480,
+      "height": 480,
+      "bytes": 34700
     },
     "universal-orlando-resort": {
-      "src": "/photos/discovery/a6fc6234d65f0f0988902c77ad3ea9150e171b3d.webp",
+      "src": "/photos/discovery/a5bd9e810c3c886bda11137630af9b04fd4f24ca23e3dd86296b685c005997af.webp",
       "alt": "Universal Orlando",
       "creditId": "a6fc6234d65f0f0988902c77ad3ea9150e171b3d",
       "article": "https://en.wikipedia.org/wiki/Universal_Orlando",
-      "width": 800,
-      "height": 567,
-      "bytes": 38696
+      "width": 640,
+      "height": 454,
+      "bytes": 22548
     },
     "seaworld-orlando": {
-      "src": "/photos/discovery/5f47ad4e569074df8119486d95ce67907766ddfd.webp",
+      "src": "/photos/discovery/9e561fc0349005a97eb00c44cbfd8cc49dcff0c56eaf7b57364bfb403e6b5354.webp",
       "alt": "SeaWorld Orlando",
       "creditId": "5f47ad4e569074df8119486d95ce67907766ddfd",
       "article": "https://en.wikipedia.org/wiki/SeaWorld_Orlando",
-      "width": 450,
-      "height": 600,
-      "bytes": 25926
+      "width": 360,
+      "height": 480,
+      "bytes": 15682
     },
     "orlando-science-center": {
-      "src": "/photos/discovery/85da19d7394b909751693222aa9022051969c3c1.webp",
+      "src": "/photos/discovery/51e9164b6a02df658f04e076c7f518168d34defb7bc0def5813016bed8d01afb.webp",
       "alt": "Orlando Science Center",
       "creditId": "85da19d7394b909751693222aa9022051969c3c1",
       "article": "https://en.wikipedia.org/wiki/Orlando_Science_Center",
-      "width": 800,
-      "height": 600,
-      "bytes": 64102
-    },
-    "central-park": {
-      "src": "/photos/discovery/375e18788c48fdde3d1a811e9685607382914360.webp",
-      "alt": "Central Park",
-      "creditId": "375e18788c48fdde3d1a811e9685607382914360",
-      "article": "https://en.wikipedia.org/wiki/Central_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 95674
+      "width": 640,
+      "height": 480,
+      "bytes": 34936
     },
     "nyc-9-11-memorial": {
-      "src": "/photos/discovery/96873724856705271f1df8c14b4493a01798824f.webp",
+      "src": "/photos/discovery/eef34f0c951a9e5f40f862355e5432a1c43c78d0eafdd4a805fe85a4dc7a13e9.webp",
       "alt": "National September 11 Memorial & Museum",
       "creditId": "96873724856705271f1df8c14b4493a01798824f",
       "article": "https://en.wikipedia.org/wiki/National_September_11_Memorial_%26_Museum",
-      "width": 800,
-      "height": 533,
-      "bytes": 120656
+      "width": 640,
+      "height": 426,
+      "bytes": 72608
     },
     "museum-of-jewish-heritage-nyc": {
-      "src": "/photos/discovery/2b1f7445cdb30c61a39522ec277304424b22a733.webp",
+      "src": "/photos/discovery/41589d9f41d911def8d558f8821b2acf128004da98567b424f450f7419683ed3.webp",
       "alt": "Museum of Jewish Heritage",
       "creditId": "2b1f7445cdb30c61a39522ec277304424b22a733",
       "article": "https://en.wikipedia.org/wiki/Museum_of_Jewish_Heritage",
-      "width": 800,
-      "height": 600,
-      "bytes": 35888
+      "width": 640,
+      "height": 480,
+      "bytes": 24554
     },
     "met-museum-nyc": {
-      "src": "/photos/discovery/21849d681b2ee51950702862ce5f2929d9be5bb8.webp",
+      "src": "/photos/discovery/e34da459b9049d55c739251b62f6ef215503ec7206315b8f66596725d7e99da2.webp",
       "alt": "Metropolitan Museum of Art",
       "creditId": "21849d681b2ee51950702862ce5f2929d9be5bb8",
       "article": "https://en.wikipedia.org/wiki/Metropolitan_Museum_of_Art",
-      "width": 800,
-      "height": 447,
-      "bytes": 62164
+      "width": 640,
+      "height": 358,
+      "bytes": 35396
     },
     "amnh-nyc": {
-      "src": "/photos/discovery/01ba2f3d40bfbb52686c4b07a27a126b4c5ff355.webp",
+      "src": "/photos/discovery/1b5028d146eaaf74765a936528934a838132926114d0cdf7af324ef0e4026cc7.webp",
       "alt": "American Museum of Natural History",
       "creditId": "01ba2f3d40bfbb52686c4b07a27a126b4c5ff355",
       "article": "https://en.wikipedia.org/wiki/American_Museum_of_Natural_History",
-      "width": 800,
-      "height": 456,
-      "bytes": 102348
+      "width": 640,
+      "height": 365,
+      "bytes": 61962
     },
     "empire-state-building": {
-      "src": "/photos/discovery/4fd1b12d9226f0e31e552927ab158641dc88dba2.webp",
+      "src": "/photos/discovery/c2f95b1090d0a38ed5fb33dc289700c097d7c45984f18644b8f19bedc8bd0401.webp",
       "alt": "Empire State Building",
       "creditId": "4fd1b12d9226f0e31e552927ab158641dc88dba2",
       "article": "https://en.wikipedia.org/wiki/Empire_State_Building",
-      "width": 400,
-      "height": 600,
-      "bytes": 61400
+      "width": 320,
+      "height": 480,
+      "bytes": 37296
     },
     "top-of-the-rock": {
-      "src": "/photos/discovery/a2c5c0d403dcf4ca3bd41a8f0a0211c05f3dc651.webp",
+      "src": "/photos/discovery/ad2c8ea44888c34772dd32f259aeb5126d13817fc1a4d77634c0c4b97da660c3.webp",
       "alt": "30 Rockefeller Plaza",
       "creditId": "a2c5c0d403dcf4ca3bd41a8f0a0211c05f3dc651",
       "article": "https://en.wikipedia.org/wiki/30_Rockefeller_Plaza",
-      "width": 446,
-      "height": 600,
-      "bytes": 39868
+      "width": 357,
+      "height": 480,
+      "bytes": 24130
     },
     "brooklyn-bridge": {
-      "src": "/photos/discovery/0e6aee00baff484237aa63b55cbf6978e4299f6b.webp",
+      "src": "/photos/discovery/37c3a58cc14d31882e4b5ec4fb92432cf2f7fc715d9cfd8fb2bae1139fa9dbb0.webp",
       "alt": "Brooklyn Bridge",
       "creditId": "0e6aee00baff484237aa63b55cbf6978e4299f6b",
       "article": "https://en.wikipedia.org/wiki/Brooklyn_Bridge",
-      "width": 800,
-      "height": 267,
-      "bytes": 39606
+      "width": 640,
+      "height": 214,
+      "bytes": 22614
     },
     "high-line-nyc": {
-      "src": "/photos/discovery/b3db61207b0f2b87e56d43754d30297680d231c6.webp",
+      "src": "/photos/discovery/410268b82b488094f5291dfae20e3b1fa941fb4aff6974632e68858ae5fe4d61.webp",
       "alt": "High Line",
       "creditId": "b3db61207b0f2b87e56d43754d30297680d231c6",
       "article": "https://en.wikipedia.org/wiki/High_Line",
-      "width": 800,
-      "height": 553,
-      "bytes": 98156
+      "width": 640,
+      "height": 442,
+      "bytes": 57252
     },
     "times-square": {
-      "src": "/photos/discovery/3bc8cc7a30b57c669997f0fe6cb1d54874a01f7f.webp",
+      "src": "/photos/discovery/815886045bdd49643adeb4cfb4d3fb62764511c7c3ccc077737a85d79a484049.webp",
       "alt": "Times Square",
       "creditId": "3bc8cc7a30b57c669997f0fe6cb1d54874a01f7f",
       "article": "https://en.wikipedia.org/wiki/Times_Square",
-      "width": 800,
-      "height": 533,
-      "bytes": 98876
+      "width": 640,
+      "height": 426,
+      "bytes": 61952
     },
     "grand-central-terminal": {
-      "src": "/photos/discovery/4c41b5c4a56ec2d2da5ae82aec221106d6d69902.webp",
+      "src": "/photos/discovery/53330969180bc7f23b0f8234fbae3ffee1672d9081e3f8381d5691a728292994.webp",
       "alt": "Grand Central Terminal",
       "creditId": "4c41b5c4a56ec2d2da5ae82aec221106d6d69902",
       "article": "https://en.wikipedia.org/wiki/Grand_Central_Terminal",
-      "width": 745,
-      "height": 600,
-      "bytes": 73948
+      "width": 596,
+      "height": 480,
+      "bytes": 44418
     },
     "washington-national-mall": {
-      "src": "/photos/discovery/ef5d056b7032c30cd1cb906b0fe2af3512c4a03e.webp",
+      "src": "/photos/discovery/308a65ca7b4db42e42ec27ec430e338cb351135162808ae20f6269495a926ecf.webp",
       "alt": "National Mall",
       "creditId": "ef5d056b7032c30cd1cb906b0fe2af3512c4a03e",
       "article": "https://en.wikipedia.org/wiki/National_Mall",
-      "width": 800,
-      "height": 536,
-      "bytes": 45882
+      "width": 640,
+      "height": 429,
+      "bytes": 26786
     },
     "washington-lincoln-memorial": {
-      "src": "/photos/discovery/4bdf3ebb3a86a85701d4cbb2bb1578b02fc4ea31.webp",
+      "src": "/photos/discovery/8f1ea65f326aff4d78833c575c4f80a8f4ed6678a439a000c01ad6781a36c25a.webp",
       "alt": "Lincoln Memorial",
       "creditId": "4bdf3ebb3a86a85701d4cbb2bb1578b02fc4ea31",
       "article": "https://en.wikipedia.org/wiki/Lincoln_Memorial",
-      "width": 800,
-      "height": 346,
-      "bytes": 30890
+      "width": 640,
+      "height": 277,
+      "bytes": 17332
     },
     "washington-air-and-space-museum": {
-      "src": "/photos/discovery/fb232c43087d3789b4f2066a4acd8f7305a1775f.webp",
+      "src": "/photos/discovery/774d9ed4a03a3e0550224e7487142180215de215770120051413b4947ae9dccf.webp",
       "alt": "National Air and Space Museum",
       "creditId": "fb232c43087d3789b4f2066a4acd8f7305a1775f",
       "article": "https://en.wikipedia.org/wiki/National_Air_and_Space_Museum",
-      "width": 800,
-      "height": 533,
-      "bytes": 29506
+      "width": 640,
+      "height": 426,
+      "bytes": 17940
     },
     "washington-natural-history-museum": {
-      "src": "/photos/discovery/b712d774216fcad271ac1c50116de3ce3263792f.webp",
+      "src": "/photos/discovery/03a1a37727cd4141cbd6987ecc079f41201042176e68d3d8a9f7c539bdbfee88.webp",
       "alt": "National Museum of Natural History",
       "creditId": "b712d774216fcad271ac1c50116de3ce3263792f",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Natural_History",
-      "width": 800,
-      "height": 533,
-      "bytes": 72198
+      "width": 640,
+      "height": 426,
+      "bytes": 42958
     },
     "washington-us-capitol": {
-      "src": "/photos/discovery/1870e0f68465ba17b2895ef46c6aa5f816a7a435.webp",
+      "src": "/photos/discovery/27e38f6f1ff37089c5cad43b59c3912c8a84e2cc87b81c2573b1a50149d5c109.webp",
       "alt": "United States Capitol",
       "creditId": "1870e0f68465ba17b2895ef46c6aa5f816a7a435",
       "article": "https://en.wikipedia.org/wiki/United_States_Capitol",
-      "width": 800,
-      "height": 425,
-      "bytes": 28782
+      "width": 640,
+      "height": 340,
+      "bytes": 17276
     },
     "washington-monument": {
-      "src": "/photos/discovery/594a48b98daa795bd51285cc35516b4b0653444c.webp",
+      "src": "/photos/discovery/408bb3482d26df4dfee28736ba7b6eb9743017de6e7d2bfc52b9f243736b9728.webp",
       "alt": "Washington Monument",
       "creditId": "594a48b98daa795bd51285cc35516b4b0653444c",
       "article": "https://en.wikipedia.org/wiki/Washington_Monument",
-      "width": 450,
-      "height": 600,
-      "bytes": 14558
+      "width": 360,
+      "height": 480,
+      "bytes": 7830
     },
     "washington-national-gallery-of-art": {
-      "src": "/photos/discovery/0b42b4af390fe05328f89683fb4044cb4848d5d8.webp",
+      "src": "/photos/discovery/607ca10658ac0adfc26f539f53496407c7d8c71138bb31c5ebe0f38cea0ab569.webp",
       "alt": "National Gallery of Art",
       "creditId": "0b42b4af390fe05328f89683fb4044cb4848d5d8",
       "article": "https://en.wikipedia.org/wiki/National_Gallery_of_Art",
-      "width": 800,
-      "height": 450,
-      "bytes": 54872
+      "width": 640,
+      "height": 360,
+      "bytes": 30862
     },
     "chicago-art-institute": {
-      "src": "/photos/discovery/90fcbaef30d1e35d5fd3a342ffc7821182ab9f39.webp",
+      "src": "/photos/discovery/bc80c51501302ab221936fe79ee05cd9a649dc739bf6f2a8b87f3fdeaf613b3f.webp",
       "alt": "Art Institute of Chicago",
       "creditId": "90fcbaef30d1e35d5fd3a342ffc7821182ab9f39",
       "article": "https://en.wikipedia.org/wiki/Art_Institute_of_Chicago",
-      "width": 800,
-      "height": 450,
-      "bytes": 53052
+      "width": 640,
+      "height": 360,
+      "bytes": 32292
     },
     "chicago-navy-pier": {
-      "src": "/photos/discovery/2fed48592d1ef4702ae34307d0d3a79646a4812d.webp",
+      "src": "/photos/discovery/dba255552ae2db57782febd2360cb7b2835a8dd2de2839b03abb3342de2850cb.webp",
       "alt": "Navy Pier",
       "creditId": "2fed48592d1ef4702ae34307d0d3a79646a4812d",
       "article": "https://en.wikipedia.org/wiki/Navy_Pier",
-      "width": 754,
-      "height": 600,
-      "bytes": 66458
+      "width": 603,
+      "height": 480,
+      "bytes": 41784
     },
     "chicago-field-museum": {
-      "src": "/photos/discovery/1fa00ad3f5352d7d935e3cc457aca555b2e0902d.webp",
+      "src": "/photos/discovery/66a0043b695fa0ba3a3234a37373879457f7e09bbcee359eec66a683627d0c9a.webp",
       "alt": "Field Museum of Natural History",
       "creditId": "1fa00ad3f5352d7d935e3cc457aca555b2e0902d",
       "article": "https://en.wikipedia.org/wiki/Field_Museum_of_Natural_History",
-      "width": 800,
-      "height": 450,
-      "bytes": 73220
+      "width": 640,
+      "height": 360,
+      "bytes": 44010
     },
     "getty-center": {
-      "src": "/photos/discovery/ecfbc6bec8c2dca2a519f4b16cd4e5f5c3fcc25b.webp",
+      "src": "/photos/discovery/eb2478532569380efa02d323ea2bf486f577907ee7fe30392dfa9a61f5837131.webp",
       "alt": "Getty Center",
       "creditId": "ecfbc6bec8c2dca2a519f4b16cd4e5f5c3fcc25b",
       "article": "https://en.wikipedia.org/wiki/Getty_Center",
-      "width": 800,
-      "height": 567,
-      "bytes": 127074
+      "width": 640,
+      "height": 454,
+      "bytes": 74974
     },
     "lacma": {
-      "src": "/photos/discovery/54aed7bd13d08dd792e7498bb4f3d099245bb286.webp",
+      "src": "/photos/discovery/c0cc0c09a1b8010bd0168b3c5d719b8a8d38773d4c3f7a41ce11d8d5cebcf409.webp",
       "alt": "Los Angeles County Museum of Art",
       "creditId": "54aed7bd13d08dd792e7498bb4f3d099245bb286",
       "article": "https://en.wikipedia.org/wiki/Los_Angeles_County_Museum_of_Art",
-      "width": 800,
-      "height": 580,
-      "bytes": 46270
+      "width": 640,
+      "height": 464,
+      "bytes": 26624
     },
     "santa-monica-pier": {
-      "src": "/photos/discovery/06b8b9fcdd48d53f024b4c8c5d74a97fbba446c8.webp",
+      "src": "/photos/discovery/7e59db5b9e421ae4a2beead71ffbb9f71897365e806ba88d78563064b920bc10.webp",
       "alt": "Santa Monica Pier",
       "creditId": "06b8b9fcdd48d53f024b4c8c5d74a97fbba446c8",
       "article": "https://en.wikipedia.org/wiki/Santa_Monica_Pier",
-      "width": 771,
-      "height": 600,
-      "bytes": 58896
+      "width": 617,
+      "height": 480,
+      "bytes": 37420
     },
     "universal-studios-hollywood": {
-      "src": "/photos/discovery/b28662d2a55e31ea0d64c99825870d977903d1bf.webp",
+      "src": "/photos/discovery/49f092be1ca3dae554e22996da541b66265f4c0ee5d4e2cfc3b61072c0d1daff.webp",
       "alt": "Universal Studios Hollywood",
       "creditId": "b28662d2a55e31ea0d64c99825870d977903d1bf",
       "article": "https://en.wikipedia.org/wiki/Universal_Studios_Hollywood",
-      "width": 800,
-      "height": 572,
-      "bytes": 45662
+      "width": 640,
+      "height": 458,
+      "bytes": 30634
     },
     "golden-gate-bridge": {
-      "src": "/photos/discovery/c6a6fa13c14a9078821dff570fdd432059383518.webp",
+      "src": "/photos/discovery/ce395d2b56af2c3637e5e1c089d3230ef6bd62edad96787e3024f93402a7a24d.webp",
       "alt": "Golden Gate Bridge",
       "creditId": "c6a6fa13c14a9078821dff570fdd432059383518",
       "article": "https://en.wikipedia.org/wiki/Golden_Gate_Bridge",
-      "width": 800,
-      "height": 500,
-      "bytes": 52870
+      "width": 640,
+      "height": 400,
+      "bytes": 30300
     },
     "alcatraz-island": {
-      "src": "/photos/discovery/72d1e21de33da6fcdaa6b0897a4177dd472d8a31.webp",
+      "src": "/photos/discovery/af1e247fed7a1f66cd159e5a0af25cbf9e7bc95affa2c23c5d1b4302ffbb7d11.webp",
       "alt": "Alcatraz Island",
       "creditId": "72d1e21de33da6fcdaa6b0897a4177dd472d8a31",
       "article": "https://en.wikipedia.org/wiki/Alcatraz_Island",
-      "width": 800,
-      "height": 509,
-      "bytes": 50118
+      "width": 640,
+      "height": 407,
+      "bytes": 29448
     },
     "golden-gate-park": {
-      "src": "/photos/discovery/8203af0d85c990fad8ddb6fe476c18ca7de52bb7.webp",
+      "src": "/photos/discovery/1ee935602655677a75a5d7e762ebb035ed3b06b476475ca885fbcd6c781e62e8.webp",
       "alt": "Golden Gate Park",
       "creditId": "8203af0d85c990fad8ddb6fe476c18ca7de52bb7",
       "article": "https://en.wikipedia.org/wiki/Golden_Gate_Park",
-      "width": 800,
-      "height": 450,
-      "bytes": 120540
+      "width": 640,
+      "height": 360,
+      "bytes": 72456
     },
     "california-academy-of-sciences": {
-      "src": "/photos/discovery/2de6a23c8e02654feb847327229b5154bc99f801.webp",
+      "src": "/photos/discovery/c087beb043c4049d74b2e6b0a5141f40a1c35096d0124350d6e3841223c96cfc.webp",
       "alt": "California Academy of Sciences",
       "creditId": "2de6a23c8e02654feb847327229b5154bc99f801",
       "article": "https://en.wikipedia.org/wiki/California_Academy_of_Sciences",
-      "width": 800,
-      "height": 450,
-      "bytes": 132012
+      "width": 640,
+      "height": 360,
+      "bytes": 77426
     },
     "seattle-space-needle": {
-      "src": "/photos/discovery/c9940cc662e630c2741af3bf1e2ade052fefe3eb.webp",
+      "src": "/photos/discovery/5c63da0dc2950a5409de918937870b40eef4bb71addbe086e3147026a7a5b697.webp",
       "alt": "Space Needle",
       "creditId": "c9940cc662e630c2741af3bf1e2ade052fefe3eb",
       "article": "https://en.wikipedia.org/wiki/Space_Needle",
-      "width": 304,
-      "height": 600,
-      "bytes": 21006
+      "width": 243,
+      "height": 480,
+      "bytes": 12880
     },
     "seattle-pike-place-market": {
-      "src": "/photos/discovery/e5bee4f52c75fde660193c7cd0f6dac96238eee0.webp",
+      "src": "/photos/discovery/7d43893a55e9b525188a83785b84f9c8f6c322551c4ef6c06eb4ade25b4276ef.webp",
       "alt": "Pike Place Market",
       "creditId": "e5bee4f52c75fde660193c7cd0f6dac96238eee0",
       "article": "https://en.wikipedia.org/wiki/Pike_Place_Market",
-      "width": 800,
-      "height": 551,
-      "bytes": 67590
+      "width": 640,
+      "height": 441,
+      "bytes": 41780
     },
     "seattle-chihuly-garden": {
-      "src": "/photos/discovery/4157b3a5c49462d5cdd1ccc8f89ab368de0f3fdd.webp",
+      "src": "/photos/discovery/89185366efd5f640a694b707e3e8080008f9f105536f8a30947bd099a6be83eb.webp",
       "alt": "Chihuly Garden and Glass",
       "creditId": "4157b3a5c49462d5cdd1ccc8f89ab368de0f3fdd",
       "article": "https://en.wikipedia.org/wiki/Chihuly_Garden_and_Glass",
-      "width": 800,
-      "height": 533,
-      "bytes": 56716
+      "width": 640,
+      "height": 426,
+      "bytes": 34814
     },
     "san-diego-zoo": {
-      "src": "/photos/discovery/86fc19b536aad09a2b510970615cdb26ff6de7fe.webp",
+      "src": "/photos/discovery/9ad2d59c6297a78c0beb5d6c7b78e6ee7e7b4ba90fc9ae4ae3b4b36fe6a07dbc.webp",
       "alt": "San Diego Zoo",
       "creditId": "86fc19b536aad09a2b510970615cdb26ff6de7fe",
       "article": "https://en.wikipedia.org/wiki/San_Diego_Zoo",
-      "width": 800,
-      "height": 533,
-      "bytes": 84254
+      "width": 640,
+      "height": 426,
+      "bytes": 49720
     },
     "san-diego-uss-midway": {
-      "src": "/photos/discovery/d4a1513071fccd5efe315fc81379c6dea600d936.webp",
+      "src": "/photos/discovery/df4d63d56a04e5132bcbb040dc41b48a91fe4c91e90420ca2f2cc46ecc7ce9c3.webp",
       "alt": "USS Midway Museum",
       "creditId": "d4a1513071fccd5efe315fc81379c6dea600d936",
       "article": "https://en.wikipedia.org/wiki/USS_Midway_Museum",
-      "width": 800,
-      "height": 600,
-      "bytes": 78764
-    },
-    "san-diego-la-jolla-cove": {
-      "src": "/photos/discovery/98548d5d590ba9319d61887a143735bcc5f2b2e7.webp",
-      "alt": "La Jolla Cove",
-      "creditId": "98548d5d590ba9319d61887a143735bcc5f2b2e7",
-      "article": "https://en.wikipedia.org/wiki/La_Jolla_Cove",
-      "width": 800,
-      "height": 600,
-      "bytes": 96554
+      "width": 640,
+      "height": 480,
+      "bytes": 46170
     },
     "boston-freedom-trail": {
-      "src": "/photos/discovery/de591432d42cef87d7aeb74b7ed2888e7bc66e33.webp",
+      "src": "/photos/discovery/c1519e59f0dbe864ee9aeace0d78c5d5da1204c4d61e85481ba115589c4ba8b9.webp",
       "alt": "Freedom Trail",
       "creditId": "de591432d42cef87d7aeb74b7ed2888e7bc66e33",
       "article": "https://en.wikipedia.org/wiki/Freedom_Trail",
-      "width": 800,
-      "height": 532,
-      "bytes": 160916
+      "width": 640,
+      "height": 426,
+      "bytes": 95506
     },
     "boston-common-public-garden": {
-      "src": "/photos/discovery/e7ba2f845859d0f3c42bdb065d3847e92646ff74.webp",
+      "src": "/photos/discovery/f58da3301512c9f268422affd3266b44f0d3f52e2e3cec54acd1230f066f3549.webp",
       "alt": "Boston Common",
       "creditId": "e7ba2f845859d0f3c42bdb065d3847e92646ff74",
       "article": "https://en.wikipedia.org/wiki/Boston_Common",
-      "width": 800,
-      "height": 600,
-      "bytes": 144070
+      "width": 640,
+      "height": 480,
+      "bytes": 83542
     },
     "boston-mfa": {
-      "src": "/photos/discovery/ccd4351c71c10c398f52dbf6aaf5493384ee5d88.webp",
+      "src": "/photos/discovery/ac52aeba69993e841b4e19a24f321af81ae22befbf8749283d92e4b82f17d501.webp",
       "alt": "Museum of Fine Arts, Boston",
       "creditId": "ccd4351c71c10c398f52dbf6aaf5493384ee5d88",
       "article": "https://en.wikipedia.org/wiki/Museum_of_Fine_Arts,_Boston",
-      "width": 800,
-      "height": 450,
-      "bytes": 87138
+      "width": 640,
+      "height": 360,
+      "bytes": 50650
     },
     "boston-new-england-aquarium": {
-      "src": "/photos/discovery/d554dee19a82b5cc853516421a6466ff10b9a03c.webp",
+      "src": "/photos/discovery/3ad277be3181d2e99d0b6cc07383363f71b52a49322c704a874ac091774ab10c.webp",
       "alt": "New England Aquarium",
       "creditId": "d554dee19a82b5cc853516421a6466ff10b9a03c",
       "article": "https://en.wikipedia.org/wiki/New_England_Aquarium",
-      "width": 800,
-      "height": 450,
-      "bytes": 46866
+      "width": 640,
+      "height": 360,
+      "bytes": 27374
     },
     "boston-fenway-park": {
-      "src": "/photos/discovery/b1077e70fe52c59cd7a2a49ab34523d0e5e8557a.webp",
+      "src": "/photos/discovery/1a17f8cc996b6e14b5821fa87ead8db494c55fafbe4ca3d3143da80e6cbf515e.webp",
       "alt": "Fenway Park",
       "creditId": "b1077e70fe52c59cd7a2a49ab34523d0e5e8557a",
       "article": "https://en.wikipedia.org/wiki/Fenway_Park",
-      "width": 800,
-      "height": 532,
-      "bytes": 74568
+      "width": 640,
+      "height": 426,
+      "bytes": 44970
     },
     "toronto-cn-tower": {
-      "src": "/photos/discovery/6bac548616398671f4e3ca357bbfb17840e0ed56.webp",
+      "src": "/photos/discovery/4f206ca5f52fdf885cc6adc7861778ac2de468f8658f7b3cab9d052ff7dd890a.webp",
       "alt": "CN Tower",
       "creditId": "6bac548616398671f4e3ca357bbfb17840e0ed56",
       "article": "https://en.wikipedia.org/wiki/CN_Tower",
-      "width": 235,
-      "height": 600,
-      "bytes": 15142
+      "width": 188,
+      "height": 480,
+      "bytes": 9312
     },
     "royal-ontario-museum": {
-      "src": "/photos/discovery/dca93c956c7e54e36a6d965fedee41524351e0a2.webp",
+      "src": "/photos/discovery/5d40f7a54b9134a5fb92951a35382e4a23ceb394fa668dee59abe58f6e982415.webp",
       "alt": "Royal Ontario Museum",
       "creditId": "dca93c956c7e54e36a6d965fedee41524351e0a2",
       "article": "https://en.wikipedia.org/wiki/Royal_Ontario_Museum",
-      "width": 800,
-      "height": 490,
-      "bytes": 56100
+      "width": 640,
+      "height": 392,
+      "bytes": 33896
     },
     "toronto-ripleys-aquarium": {
-      "src": "/photos/discovery/fe7c14895b60c72fd36d52e4f431a5d765acb75d.webp",
+      "src": "/photos/discovery/e746d50b9f902ac01d27e015f6c981beb3ac55ca8008d0a956425992538ece14.webp",
       "alt": "Ripley's Aquarium of Canada",
       "creditId": "fe7c14895b60c72fd36d52e4f431a5d765acb75d",
       "article": "https://en.wikipedia.org/wiki/Ripley%27s_Aquarium_of_Canada",
-      "width": 800,
-      "height": 551,
-      "bytes": 59614
+      "width": 640,
+      "height": 441,
+      "bytes": 36424
     },
     "toronto-islands": {
-      "src": "/photos/discovery/d73827be203964d9d19dc635cc56571fd80052b2.webp",
+      "src": "/photos/discovery/6a7943169a29ce65e63eb946d61cd2f1d491ab91b7cc01d3bbf59309c309fc4d.webp",
       "alt": "Toronto Islands",
       "creditId": "d73827be203964d9d19dc635cc56571fd80052b2",
       "article": "https://en.wikipedia.org/wiki/Toronto_Islands",
-      "width": 600,
-      "height": 600,
-      "bytes": 31018
+      "width": 480,
+      "height": 480,
+      "bytes": 17626
     },
     "toronto-casa-loma": {
-      "src": "/photos/discovery/70a8e54cd4709ef4eb7d41a6f32e9b655711917e.webp",
+      "src": "/photos/discovery/a082a0bc5527c1e67d8e99799296abdc52902a019cc9d216317bcda3ad6dd618.webp",
       "alt": "Casa Loma",
       "creditId": "70a8e54cd4709ef4eb7d41a6f32e9b655711917e",
       "article": "https://en.wikipedia.org/wiki/Casa_Loma",
-      "width": 800,
-      "height": 600,
-      "bytes": 108500
+      "width": 640,
+      "height": 480,
+      "bytes": 64316
     },
     "toronto-high-park": {
-      "src": "/photos/discovery/a61894f7e643c1c8fa750b49f9720bfd4fb762e1.webp",
+      "src": "/photos/discovery/7f965e1a29a2480fe6df1a8d452139e401d73f1e766d9cac456ebb711364c59c.webp",
       "alt": "High Park",
       "creditId": "a61894f7e643c1c8fa750b49f9720bfd4fb762e1",
       "article": "https://en.wikipedia.org/wiki/High_Park",
-      "width": 800,
-      "height": 529,
-      "bytes": 89266
+      "width": 640,
+      "height": 423,
+      "bytes": 51528
     },
     "niagara-falls": {
-      "src": "/photos/discovery/73240337c38bfcd5dbc09896c7800de77fc54c40.webp",
+      "src": "/photos/discovery/c31577aaa15c51bf48b112b1e8648347c5e0bfacbd2e1ba9732ed67a4c0068e1.webp",
       "alt": "Niagara Falls",
       "creditId": "73240337c38bfcd5dbc09896c7800de77fc54c40",
       "article": "https://en.wikipedia.org/wiki/Niagara_Falls",
-      "width": 800,
-      "height": 532,
-      "bytes": 77782
+      "width": 640,
+      "height": 426,
+      "bytes": 43982
     },
     "mont-royal": {
-      "src": "/photos/discovery/8077841866ba18911e4af868f4fae79e1d5f8d4e.webp",
+      "src": "/photos/discovery/da96a1db51105e86dcb9114833b45c07ad902237523d92bbf45fb4f765bbbbad.webp",
       "alt": "Mount Royal",
       "creditId": "8077841866ba18911e4af868f4fae79e1d5f8d4e",
       "article": "https://en.wikipedia.org/wiki/Mount_Royal",
-      "width": 800,
-      "height": 551,
-      "bytes": 41036
+      "width": 640,
+      "height": 441,
+      "bytes": 24806
     },
     "montreal-botanical-garden": {
-      "src": "/photos/discovery/1469d5ff73d1847365c89ebe68893ea72ee1f4cd.webp",
+      "src": "/photos/discovery/3a64b5f5423877af72d35ce58a143c803b2fb42b4d15864c8c7e186be964a6d1.webp",
       "alt": "Montreal Botanical Garden",
       "creditId": "1469d5ff73d1847365c89ebe68893ea72ee1f4cd",
       "article": "https://en.wikipedia.org/wiki/Montreal_Botanical_Garden",
-      "width": 800,
-      "height": 600,
-      "bytes": 89064
+      "width": 640,
+      "height": 480,
+      "bytes": 51194
     },
     "montreal-jean-talon-market": {
-      "src": "/photos/discovery/738a9b694c1779b04b2b8c660ffdcd040c8986d3.webp",
+      "src": "/photos/discovery/657e46ae783514da6296f5070123b0bc5e48a18fd4ac4ed77cd3d1e18962b755.webp",
       "alt": "Jean-Talon Market",
       "creditId": "738a9b694c1779b04b2b8c660ffdcd040c8986d3",
       "article": "https://en.wikipedia.org/wiki/Jean-Talon_Market",
-      "width": 800,
-      "height": 533,
-      "bytes": 50520
+      "width": 640,
+      "height": 426,
+      "bytes": 31256
     },
     "montreal-old-port": {
-      "src": "/photos/discovery/8b6b480d6b2556a9c7011de0d93f762f9a3e7419.webp",
+      "src": "/photos/discovery/dad810462ade258559fb873cc7203880987e300407ea1385d0fc11602c57077d.webp",
       "alt": "Old Port of Montreal",
       "creditId": "8b6b480d6b2556a9c7011de0d93f762f9a3e7419",
       "article": "https://en.wikipedia.org/wiki/Old_Port_of_Montreal",
-      "width": 800,
-      "height": 600,
-      "bytes": 79750
+      "width": 640,
+      "height": 480,
+      "bytes": 48356
     },
     "vancouver-stanley-park": {
-      "src": "/photos/discovery/4624ef591c8e33be43847ecf50408f224bb03298.webp",
+      "src": "/photos/discovery/3c713033060fa861abe8e43e7a13455ed6ecbd53988c50e26a126ad6f022c92b.webp",
       "alt": "Stanley Park",
       "creditId": "4624ef591c8e33be43847ecf50408f224bb03298",
       "article": "https://en.wikipedia.org/wiki/Stanley_Park",
-      "width": 450,
-      "height": 600,
-      "bytes": 20838
+      "width": 360,
+      "height": 480,
+      "bytes": 10126
     },
     "vancouver-capilano-suspension-bridge": {
-      "src": "/photos/discovery/2c09551220fbdb3453cad41d57a48e80caa1d5f5.webp",
+      "src": "/photos/discovery/127659758b4d783ce6914f2aba639460ddae227621ba0097e4047b6372e1afbd.webp",
       "alt": "Capilano Suspension Bridge",
       "creditId": "2c09551220fbdb3453cad41d57a48e80caa1d5f5",
       "article": "https://en.wikipedia.org/wiki/Capilano_Suspension_Bridge",
-      "width": 800,
-      "height": 450,
-      "bytes": 132378
+      "width": 640,
+      "height": 360,
+      "bytes": 77642
     },
     "vancouver-granville-island": {
-      "src": "/photos/discovery/56571851de7314b0fd84132422dfaa65c32b87f1.webp",
+      "src": "/photos/discovery/18e6344871fe051513bd886766a723e5b24cf987230984b0983ffdd89170c497.webp",
       "alt": "Granville Island",
       "creditId": "56571851de7314b0fd84132422dfaa65c32b87f1",
       "article": "https://en.wikipedia.org/wiki/Granville_Island",
-      "width": 800,
-      "height": 533,
-      "bytes": 87516
+      "width": 640,
+      "height": 426,
+      "bytes": 50758
     },
     "vancouver-gastown": {
-      "src": "/photos/discovery/4d468ff7727fe3fe8f548906a43e60c3ea6083b1.webp",
+      "src": "/photos/discovery/a57a17bd8f4720dd47b88788ce098b16858fa127bf15d01717451a82b1bacc67.webp",
       "alt": "Gastown",
       "creditId": "4d468ff7727fe3fe8f548906a43e60c3ea6083b1",
       "article": "https://en.wikipedia.org/wiki/Gastown",
-      "width": 800,
-      "height": 435,
-      "bytes": 116772
+      "width": 640,
+      "height": 348,
+      "bytes": 68240
     },
     "vancouver-grouse-mountain": {
-      "src": "/photos/discovery/8a1d34023a77034cbbba9c3ec79ad51c7b12ebfd.webp",
+      "src": "/photos/discovery/a78bf2304d469b9fd62fb33df28439b674fa25a44c3f6a3bf3fd9176d35d007b.webp",
       "alt": "Grouse Mountain",
       "creditId": "8a1d34023a77034cbbba9c3ec79ad51c7b12ebfd",
       "article": "https://en.wikipedia.org/wiki/Grouse_Mountain",
-      "width": 800,
-      "height": 536,
-      "bytes": 71790
+      "width": 640,
+      "height": 429,
+      "bytes": 43660
     },
     "vilnius-old-town": {
-      "src": "/photos/discovery/9b5305793120036cca2780baa4ddef28e4513390.webp",
+      "src": "/photos/discovery/618db79147816eb51b1b27585c63fbd9021384a5a02a71a915290192b5258872.webp",
       "alt": "Vilnius Old Town",
       "creditId": "9b5305793120036cca2780baa4ddef28e4513390",
       "article": "https://en.wikipedia.org/wiki/Vilnius_Old_Town",
-      "width": 800,
-      "height": 533,
-      "bytes": 121202
+      "width": 640,
+      "height": 426,
+      "bytes": 67220
     },
     "istanbul-hagia-sophia": {
-      "src": "/photos/discovery/c69950cadb6ceb34f49eae2fd8398997db79a45b.webp",
+      "src": "/photos/discovery/0aab77ee38b451bd77a1d5b20866747606ac3cf74f93367762c16f5d94a03ed6.webp",
       "alt": "Hagia Sophia",
       "creditId": "c69950cadb6ceb34f49eae2fd8398997db79a45b",
       "article": "https://en.wikipedia.org/wiki/Hagia_Sophia",
-      "width": 800,
-      "height": 483,
-      "bytes": 47660
+      "width": 640,
+      "height": 386,
+      "bytes": 28180
     },
     "istanbul-neve-shalom": {
-      "src": "/photos/discovery/04f9c24d870f458403b1f2d66d908e9ff14b4d70.webp",
+      "src": "/photos/discovery/b91d80110e436d92d4565f950c56e93b17638ee9b2068ac02012ebca8d0d3682.webp",
       "alt": "Neve Shalom Synagogue",
       "creditId": "04f9c24d870f458403b1f2d66d908e9ff14b4d70",
       "article": "https://en.wikipedia.org/wiki/Neve_Shalom_Synagogue",
-      "width": 800,
-      "height": 537,
-      "bytes": 31652
+      "width": 640,
+      "height": 430,
+      "bytes": 19072
     },
     "istanbul-topkapi-palace": {
-      "src": "/photos/discovery/784e919136c6cf275035148df1878baca9c63a94.webp",
+      "src": "/photos/discovery/c73bb6a9d2654352afd75470a9692a1a9124bc7f430c1cc9537e06b955477667.webp",
       "alt": "Topkapı Palace",
       "creditId": "784e919136c6cf275035148df1878baca9c63a94",
       "article": "https://en.wikipedia.org/wiki/Topkap%C4%B1_Palace",
-      "width": 800,
-      "height": 400,
-      "bytes": 61676
+      "width": 640,
+      "height": 320,
+      "bytes": 36868
     },
     "istanbul-basilica-cistern": {
-      "src": "/photos/discovery/d5055850be4724324d47c33079c4485c9601b3df.webp",
+      "src": "/photos/discovery/0125e5f4b8df25e93c130cd55e29293f46ead02b3367fd39cdf741cf64f0ab25.webp",
       "alt": "Basilica Cistern",
       "creditId": "d5055850be4724324d47c33079c4485c9601b3df",
       "article": "https://en.wikipedia.org/wiki/Basilica_Cistern",
-      "width": 388,
-      "height": 600,
-      "bytes": 38104
+      "width": 310,
+      "height": 480,
+      "bytes": 20578
     },
     "istanbul-spice-bazaar": {
-      "src": "/photos/discovery/a834df12d972852dc680762cbaaa395acf7ee256.webp",
+      "src": "/photos/discovery/c06e65a5a3a77ec093112bb6bfb60acd3682f7d15763717fc6aacc36987b5d81.webp",
       "alt": "Spice Bazaar",
       "creditId": "a834df12d972852dc680762cbaaa395acf7ee256",
       "article": "https://en.wikipedia.org/wiki/Spice_Bazaar",
-      "width": 450,
-      "height": 600,
-      "bytes": 58638
-    },
-    "istanbul-bosphorus": {
-      "src": "/photos/discovery/f98aae201b0ba9c6e119c8b18d78399fc6d7c948.webp",
-      "alt": "Bosporus",
-      "creditId": "f98aae201b0ba9c6e119c8b18d78399fc6d7c948",
-      "article": "https://en.wikipedia.org/wiki/Bosporus",
-      "width": 516,
-      "height": 600,
-      "bytes": 50514
+      "width": 360,
+      "height": 480,
+      "bytes": 35580
     },
     "istanbul-dolmabahce-palace": {
-      "src": "/photos/discovery/05178c0b28916ef00f5f2a3d695c68130ce9a470.webp",
+      "src": "/photos/discovery/78d333e58fc5da2c29f481b267e4fa6a28657928e1157ecfe98f04d78cd47fb8.webp",
       "alt": "Dolmabahçe Palace",
       "creditId": "05178c0b28916ef00f5f2a3d695c68130ce9a470",
       "article": "https://en.wikipedia.org/wiki/Dolmabah%C3%A7e_Palace",
-      "width": 800,
-      "height": 438,
-      "bytes": 66154
+      "width": 640,
+      "height": 350,
+      "bytes": 38410
     },
     "dublin-castle": {
-      "src": "/photos/discovery/1f62ed0d0549fa5c9792150f34806e6d3950978c.webp",
+      "src": "/photos/discovery/9dbf4fa8bbfea92d377d79530a2c791ef4fa0f6e377debd23281724d28a34570.webp",
       "alt": "Dublin Castle",
       "creditId": "1f62ed0d0549fa5c9792150f34806e6d3950978c",
       "article": "https://en.wikipedia.org/wiki/Dublin_Castle",
-      "width": 800,
-      "height": 533,
-      "bytes": 73318
+      "width": 640,
+      "height": 426,
+      "bytes": 40888
     },
     "dublin-national-museum-archaeology": {
-      "src": "/photos/discovery/61e9d9d89d0ccc7de15120ba4cc6ec55bfba0471.webp",
+      "src": "/photos/discovery/29be9372d0304d114c6265685385fee73968b2dff42fca668af191a229918c6e.webp",
       "alt": "National Museum of Ireland",
       "creditId": "61e9d9d89d0ccc7de15120ba4cc6ec55bfba0471",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Ireland",
-      "width": 800,
-      "height": 600,
-      "bytes": 77938
+      "width": 640,
+      "height": 480,
+      "bytes": 46992
     },
     "howth": {
-      "src": "/photos/discovery/5970b074918ab89fd3b3c07bc7764325b00a4306.webp",
+      "src": "/photos/discovery/0000a3b63bbb3d74c7c0e021b9f60791bffbe299323eeceedd176b6506e18230.webp",
       "alt": "Howth",
       "creditId": "5970b074918ab89fd3b3c07bc7764325b00a4306",
       "article": "https://en.wikipedia.org/wiki/Howth",
-      "width": 800,
-      "height": 450,
-      "bytes": 72968
+      "width": 640,
+      "height": 360,
+      "bytes": 43500
     },
     "copenhagen-nyhavn": {
-      "src": "/photos/discovery/c086ef2f486668660673f76c6ada5183be1acf91.webp",
+      "src": "/photos/discovery/f35a8ab0e9a6e55081058c78231e85b4f750eb5824cbecead607300db56d33ee.webp",
       "alt": "Nyhavn",
       "creditId": "c086ef2f486668660673f76c6ada5183be1acf91",
       "article": "https://en.wikipedia.org/wiki/Nyhavn",
-      "width": 800,
-      "height": 533,
-      "bytes": 111758
+      "width": 640,
+      "height": 426,
+      "bytes": 67198
     },
     "copenhagen-christiansborg": {
-      "src": "/photos/discovery/db0dcb5f3f8a2e20518ffda2322d3a213a4b6bf1.webp",
+      "src": "/photos/discovery/21f0e6771fd6abd387fc979f99ca6784f696e494e7dc23e79d4cd0331b96ec94.webp",
       "alt": "Christiansborg Palace",
       "creditId": "db0dcb5f3f8a2e20518ffda2322d3a213a4b6bf1",
       "article": "https://en.wikipedia.org/wiki/Christiansborg_Palace",
-      "width": 800,
-      "height": 350,
-      "bytes": 33680
+      "width": 640,
+      "height": 280,
+      "bytes": 19896
     },
     "copenhagen-rosenborg": {
-      "src": "/photos/discovery/cf4dc8c6bf2df17bd262f91cf65c34cb44f8e251.webp",
+      "src": "/photos/discovery/902b313902444a2965abcc0b54d54abe96379f40eeff3fd58e8ef801c06b9a14.webp",
       "alt": "Rosenborg Castle",
       "creditId": "cf4dc8c6bf2df17bd262f91cf65c34cb44f8e251",
       "article": "https://en.wikipedia.org/wiki/Rosenborg_Castle",
-      "width": 800,
-      "height": 526,
-      "bytes": 57604
+      "width": 640,
+      "height": 421,
+      "bytes": 34986
     },
     "copenhagen-stroget": {
-      "src": "/photos/discovery/01fe2f44ba8cac5e84521070c4cb30ef8abad01f.webp",
+      "src": "/photos/discovery/4f7b0d8f84a88c5aa4c3721f4846f82cf8b7158e8e31944e4bef98154e88ba4b.webp",
       "alt": "Strøget",
       "creditId": "01fe2f44ba8cac5e84521070c4cb30ef8abad01f",
       "article": "https://en.wikipedia.org/wiki/Str%C3%B8get",
-      "width": 800,
-      "height": 532,
-      "bytes": 65838
+      "width": 640,
+      "height": 426,
+      "bytes": 39782
     },
     "copenhagen-national-museum": {
-      "src": "/photos/discovery/d56341195861290461aad3b985372bdab09b75e0.webp",
+      "src": "/photos/discovery/6cc4d08d6de299687ea523208c4a7c34ee4ada2d7e9eb0f55c2b133b6c01b76f.webp",
       "alt": "National Museum of Denmark",
       "creditId": "d56341195861290461aad3b985372bdab09b75e0",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Denmark",
-      "width": 800,
-      "height": 372,
-      "bytes": 64542
+      "width": 640,
+      "height": 298,
+      "bytes": 37008
     },
     "louisiana-museum": {
-      "src": "/photos/discovery/18bf6342889924db991f30e77bc70eb8dc7586a5.webp",
+      "src": "/photos/discovery/dc31f85d9e6bfb313306527e6735f2cbeb050f56aa30d08b0c0215496a2c4f19.webp",
       "alt": "Louisiana Museum of Modern Art",
       "creditId": "18bf6342889924db991f30e77bc70eb8dc7586a5",
       "article": "https://en.wikipedia.org/wiki/Louisiana_Museum_of_Modern_Art",
-      "width": 800,
-      "height": 524,
-      "bytes": 127322
+      "width": 640,
+      "height": 419,
+      "bytes": 73996
     },
     "copenhagen-tivoli": {
-      "src": "/photos/discovery/14bdee62057adc72496739774e668c59f20cfe2d.webp",
+      "src": "/photos/discovery/3d73a57952541f435bef02b7b495f42e547cbd8e27c3a84b0caa6860d7ab8012.webp",
       "alt": "Tivoli Gardens",
       "creditId": "14bdee62057adc72496739774e668c59f20cfe2d",
       "article": "https://en.wikipedia.org/wiki/Tivoli_Gardens",
-      "width": 800,
-      "height": 533,
-      "bytes": 121006
+      "width": 640,
+      "height": 426,
+      "bytes": 70470
     },
     "stockholm-gamla-stan": {
-      "src": "/photos/discovery/f23f16438ae254a33a66220ebf980d21b4a8efc4.webp",
+      "src": "/photos/discovery/bc212eb6381cf1deec58c1e90cd3268b098c53e50ad38ce0618c9bf9ae110715.webp",
       "alt": "Gamla Stan",
       "creditId": "f23f16438ae254a33a66220ebf980d21b4a8efc4",
       "article": "https://en.wikipedia.org/wiki/Gamla_Stan",
-      "width": 800,
-      "height": 534,
-      "bytes": 112506
+      "width": 640,
+      "height": 427,
+      "bytes": 66458
     },
     "stockholm-vasa-museum": {
-      "src": "/photos/discovery/5abcf01f9af3d2e20d1a18cb88869be77c540bb4.webp",
+      "src": "/photos/discovery/71b1db3529913b34ab04ea957a031271d166c22eedbecb72163ff6b6054a08de.webp",
       "alt": "Vasa Museum",
       "creditId": "5abcf01f9af3d2e20d1a18cb88869be77c540bb4",
       "article": "https://en.wikipedia.org/wiki/Vasa_Museum",
-      "width": 800,
-      "height": 463,
-      "bytes": 54812
+      "width": 640,
+      "height": 370,
+      "bytes": 31536
     },
     "stockholm-skansen": {
-      "src": "/photos/discovery/1c959a9131d6b859445c060f64d96fc8ec9c61f8.webp",
+      "src": "/photos/discovery/0951c58cda91316af1fda86884cd886101c1536bb4fbf70b05679cc20b69c802.webp",
       "alt": "Skansen",
       "creditId": "1c959a9131d6b859445c060f64d96fc8ec9c61f8",
       "article": "https://en.wikipedia.org/wiki/Skansen",
-      "width": 800,
-      "height": 569,
-      "bytes": 99728
+      "width": 640,
+      "height": 455,
+      "bytes": 62076
     },
     "stockholm-city-hall": {
-      "src": "/photos/discovery/4d6d04d67282cc5f96ecd747207ec732bc0225d4.webp",
+      "src": "/photos/discovery/5c9ba71a70eee95eb8951c03674fb61467c32cbe380342d6281691b7ba1aca05.webp",
       "alt": "Stockholm City Hall",
       "creditId": "4d6d04d67282cc5f96ecd747207ec732bc0225d4",
       "article": "https://en.wikipedia.org/wiki/Stockholm_City_Hall",
-      "width": 800,
-      "height": 500,
-      "bytes": 43512
+      "width": 640,
+      "height": 400,
+      "bytes": 25024
     },
     "stockholm-nationalmuseum": {
-      "src": "/photos/discovery/46f5f1e6a7dd5bd251f75e26c4999e51897b38eb.webp",
+      "src": "/photos/discovery/c063df2cf99ae0879d70f8212fec53822a6dcfb1a3140c578a1057f56b00f2a4.webp",
       "alt": "Nationalmuseum",
       "creditId": "46f5f1e6a7dd5bd251f75e26c4999e51897b38eb",
       "article": "https://en.wikipedia.org/wiki/Nationalmuseum",
-      "width": 800,
-      "height": 533,
-      "bytes": 68082
+      "width": 640,
+      "height": 426,
+      "bytes": 38534
     },
     "riga-old-town": {
-      "src": "/photos/discovery/3196aa56e9954478d9da77bf4e72de983bef3e7d.webp",
+      "src": "/photos/discovery/3301849cb8ce872a6044742529e58316a0fdbba5d0cd339a2501042c4d4805ab.webp",
       "alt": "Vecrīga",
       "creditId": "3196aa56e9954478d9da77bf4e72de983bef3e7d",
       "article": "https://en.wikipedia.org/wiki/Vecr%C4%ABga",
-      "width": 800,
-      "height": 533,
-      "bytes": 77172
-    },
-    "oslo-vigeland-park": {
-      "src": "/photos/discovery/c5f93e26e1b6a25c3861045426defeacdc17f168.webp",
-      "alt": "Frogner Park",
-      "creditId": "c5f93e26e1b6a25c3861045426defeacdc17f168",
-      "article": "https://en.wikipedia.org/wiki/Frogner_Park",
-      "width": 800,
-      "height": 450,
-      "bytes": 51158
+      "width": 640,
+      "height": 426,
+      "bytes": 46214
     },
     "bergen-bryggen": {
-      "src": "/photos/discovery/af3ce2c7e5ddfe0beb6cf8a4533a52acd422a81c.webp",
+      "src": "/photos/discovery/8e794ddbd57ec09179368f650877a82ab9f4700f2713c443e0f66cfbb23bdcb0.webp",
       "alt": "Bergen",
       "creditId": "af3ce2c7e5ddfe0beb6cf8a4533a52acd422a81c",
       "article": "https://en.wikipedia.org/wiki/Bergen",
-      "width": 800,
-      "height": 533,
-      "bytes": 83026
+      "width": 640,
+      "height": 426,
+      "bytes": 48770
     },
     "flam-railway": {
-      "src": "/photos/discovery/72f8e3c2a38baf26a9f091658594557df512e789.webp",
+      "src": "/photos/discovery/d20bd2e4acd166ea0a6e62dafdb59849b23ee9430bd06cb6e3dcfc7234bb6c46.webp",
       "alt": "Flåm Line",
       "creditId": "72f8e3c2a38baf26a9f091658594557df512e789",
       "article": "https://en.wikipedia.org/wiki/Fl%C3%A5m_Line",
-      "width": 800,
-      "height": 532,
-      "bytes": 103984
+      "width": 640,
+      "height": 426,
+      "bytes": 60132
     },
     "tromso-arctic": {
-      "src": "/photos/discovery/88934b5c6530aaed5148bf697d415e8e319adafe.webp",
+      "src": "/photos/discovery/45ad523d657466631fb612b9613c0f876a61d077ef132f997ceb59320fa560e8.webp",
       "alt": "Tromsø",
       "creditId": "88934b5c6530aaed5148bf697d415e8e319adafe",
       "article": "https://en.wikipedia.org/wiki/Troms%C3%B8",
-      "width": 800,
-      "height": 533,
-      "bytes": 112552
+      "width": 640,
+      "height": 426,
+      "bytes": 64442
     },
     "helsinki-suomenlinna": {
-      "src": "/photos/discovery/fa68e1ed1fca72bad671a24a54ce2e634382c238.webp",
+      "src": "/photos/discovery/35a9122ab64fd4ffa8167c804592984307f1637d61426c434a43314c3072478e.webp",
       "alt": "Suomenlinna",
       "creditId": "fa68e1ed1fca72bad671a24a54ce2e634382c238",
       "article": "https://en.wikipedia.org/wiki/Suomenlinna",
-      "width": 800,
-      "height": 528,
-      "bytes": 32752
+      "width": 640,
+      "height": 422,
+      "bytes": 20234
     },
     "helsinki-market-square-cathedral": {
-      "src": "/photos/discovery/1235b08467efef6bac58545013e7e633d95ec54c.webp",
+      "src": "/photos/discovery/d504a838922e978b942ca0698e8bc320975607b82c9fa19f88b126dcec69a0db.webp",
       "alt": "Market Square, Helsinki",
       "creditId": "1235b08467efef6bac58545013e7e633d95ec54c",
       "article": "https://en.wikipedia.org/wiki/Market_Square,_Helsinki",
-      "width": 800,
-      "height": 533,
-      "bytes": 38288
+      "width": 640,
+      "height": 426,
+      "bytes": 22872
     },
     "helsinki-esplanadi-design": {
-      "src": "/photos/discovery/09c579aef60a08464bf3369e088f326624a85eb2.webp",
+      "src": "/photos/discovery/0a5f6135a409327fcb3114b27ce17f4d6756de6fa5d430d387299eb3b6fbe3f8.webp",
       "alt": "Esplanadi",
       "creditId": "09c579aef60a08464bf3369e088f326624a85eb2",
       "article": "https://en.wikipedia.org/wiki/Esplanadi",
-      "width": 800,
-      "height": 600,
-      "bytes": 108052
+      "width": 640,
+      "height": 480,
+      "bytes": 63516
     },
     "plitvice-lakes": {
-      "src": "/photos/discovery/67f455bfcc492d0268af825e28fdce7fc39d308f.webp",
+      "src": "/photos/discovery/407e6c5b99337a5fe52788b7cf3ce6e66e6e4e4dd59e4a73d6a0dda91d77126c.webp",
       "alt": "Plitvice Lakes National Park",
       "creditId": "67f455bfcc492d0268af825e28fdce7fc39d308f",
       "article": "https://en.wikipedia.org/wiki/Plitvice_Lakes_National_Park",
-      "width": 423,
-      "height": 600,
-      "bytes": 89762
+      "width": 338,
+      "height": 480,
+      "bytes": 51892
     },
     "sofia-synagogue": {
-      "src": "/photos/discovery/f269ec7911c1eb11cb785766387801598646e10e.webp",
+      "src": "/photos/discovery/e25a5d85ef23b881846d659581aa9268fa6fc2fdaea6b1337cef05f6146fc2d1.webp",
       "alt": "Sofia Synagogue",
       "creditId": "f269ec7911c1eb11cb785766387801598646e10e",
       "article": "https://en.wikipedia.org/wiki/Sofia_Synagogue",
-      "width": 794,
-      "height": 600,
-      "bytes": 74934
+      "width": 635,
+      "height": 480,
+      "bytes": 45572
     },
     "buenos-aires-recoleta-cemetery": {
-      "src": "/photos/discovery/c1b7c2ff93900030e466a4361d911945f979d471.webp",
+      "src": "/photos/discovery/50b2082e8845d60e124b6f30006b34c4975dc00027d7256cb4ce14ee4e4e9543.webp",
       "alt": "La Recoleta Cemetery",
       "creditId": "c1b7c2ff93900030e466a4361d911945f979d471",
       "article": "https://en.wikipedia.org/wiki/La_Recoleta_Cemetery",
-      "width": 480,
-      "height": 600,
-      "bytes": 95896
+      "width": 384,
+      "height": 480,
+      "bytes": 56156
     },
     "buenos-aires-plaza-de-mayo": {
-      "src": "/photos/discovery/99a01ff504929bc203590496cfae216145579b65.webp",
+      "src": "/photos/discovery/b989333227763ed04caaf50fcae3cd16bfd03afa34f3de9ed6671c9d31ce320f.webp",
       "alt": "Plaza de Mayo",
       "creditId": "99a01ff504929bc203590496cfae216145579b65",
       "article": "https://en.wikipedia.org/wiki/Plaza_de_Mayo",
-      "width": 800,
-      "height": 450,
-      "bytes": 114672
+      "width": 640,
+      "height": 360,
+      "bytes": 69684
     },
     "buenos-aires-templo-libertad": {
-      "src": "/photos/discovery/934dd9870332001262d9e8b1f59036bd6b9ede15.webp",
+      "src": "/photos/discovery/1bd3ffe0d61e9eb3d0d377911d2bf540ed813a3b92ba5d3b3013224724bde17a.webp",
       "alt": "Synagogue of the Israelite Argentine Congregation",
       "creditId": "934dd9870332001262d9e8b1f59036bd6b9ede15",
       "article": "https://en.wikipedia.org/wiki/Synagogue_of_the_Israelite_Argentine_Congregation",
-      "width": 800,
-      "height": 600,
-      "bytes": 100660
+      "width": 640,
+      "height": 480,
+      "bytes": 60782
     },
     "buenos-aires-teatro-colon": {
-      "src": "/photos/discovery/468b7a2cbbc4ad987e7eb74a19a9e36eb19c6fb6.webp",
+      "src": "/photos/discovery/f85aa9d757d62a313906513812cebc9b288c63c760283d5e7ba5ccac6cfa6131.webp",
       "alt": "Teatro Colón",
       "creditId": "468b7a2cbbc4ad987e7eb74a19a9e36eb19c6fb6",
       "article": "https://en.wikipedia.org/wiki/Teatro_Col%C3%B3n",
-      "width": 800,
-      "height": 572,
-      "bytes": 116216
+      "width": 640,
+      "height": 458,
+      "bytes": 68812
     },
     "buenos-aires-puerto-madero": {
-      "src": "/photos/discovery/be561bfbd447e2c3dd25b90fcc3d7031d64a77bd.webp",
+      "src": "/photos/discovery/313068a625785afa545802bc0cda97db0cded06b4df01579b3b4691b45c723fe.webp",
       "alt": "Puerto Madero",
       "creditId": "be561bfbd447e2c3dd25b90fcc3d7031d64a77bd",
       "article": "https://en.wikipedia.org/wiki/Puerto_Madero",
-      "width": 450,
-      "height": 600,
-      "bytes": 33520
+      "width": 360,
+      "height": 480,
+      "bytes": 19080
     },
     "buenos-aires-el-ateneo": {
-      "src": "/photos/discovery/aa6ce7de2da7ec43645a9639c6bd26a4eb082f55.webp",
+      "src": "/photos/discovery/010da3984de43a69e38416a505697045e65bae32f0e17b5ac4324c97c3a09d4c.webp",
       "alt": "El Ateneo Grand Splendid",
       "creditId": "aa6ce7de2da7ec43645a9639c6bd26a4eb082f55",
       "article": "https://en.wikipedia.org/wiki/El_Ateneo_Grand_Splendid",
-      "width": 800,
-      "height": 598,
-      "bytes": 121170
-    },
-    "buenos-aires-san-telmo": {
-      "src": "/photos/discovery/bdab6cd4278b8d94acc579120dba0c238064dbad.webp",
-      "alt": "San Telmo, Buenos Aires",
-      "creditId": "bdab6cd4278b8d94acc579120dba0c238064dbad",
-      "article": "https://en.wikipedia.org/wiki/San_Telmo,_Buenos_Aires",
-      "width": 800,
-      "height": 568,
-      "bytes": 93262
+      "width": 640,
+      "height": 478,
+      "bytes": 75932
     },
     "iguazu-falls": {
-      "src": "/photos/discovery/af77db9225cda3049360bff5ae07e7f66607a53a.webp",
+      "src": "/photos/discovery/9a2d70f2d517a4ef4d34af7aa0b3246acafa6ca966d32b0bb310fcfe8bea549b.webp",
       "alt": "Iguazu Falls",
       "creditId": "af77db9225cda3049360bff5ae07e7f66607a53a",
       "article": "https://en.wikipedia.org/wiki/Iguazu_Falls",
-      "width": 800,
-      "height": 493,
-      "bytes": 105632
+      "width": 640,
+      "height": 394,
+      "bytes": 62704
     },
     "rio-tijuca-forest": {
-      "src": "/photos/discovery/a2d687353a8c071854b9b0a097f12d86ca1d5232.webp",
+      "src": "/photos/discovery/d34a4b6f84eebfe41f4896bcfb1a9edb1333f80751e2d8f5f3743c27b2581013.webp",
       "alt": "Tijuca National Park",
       "creditId": "a2d687353a8c071854b9b0a097f12d86ca1d5232",
       "article": "https://en.wikipedia.org/wiki/Tijuca_National_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 61760
+      "width": 640,
+      "height": 426,
+      "bytes": 35076
     },
     "machu-picchu": {
-      "src": "/photos/discovery/0126f901beedd040c4415f37c729cd80ed11dcee.webp",
+      "src": "/photos/discovery/2587a08d9eaae9f47ed9f81971a24ba05693102947f6dfb1ff504c5952c271aa.webp",
       "alt": "Machu Picchu",
       "creditId": "0126f901beedd040c4415f37c729cd80ed11dcee",
       "article": "https://en.wikipedia.org/wiki/Machu_Picchu",
-      "width": 800,
-      "height": 533,
-      "bytes": 91262
+      "width": 640,
+      "height": 426,
+      "bytes": 51928
     },
     "cusco": {
-      "src": "/photos/discovery/24f2d2b5cbc78a27fae1642c51b2d70aa2812390.webp",
+      "src": "/photos/discovery/f6692508c981eb5b9f8449283bdbed2a9786f40864cc08fd390f3d3cbea5f7bf.webp",
       "alt": "Cusco",
       "creditId": "24f2d2b5cbc78a27fae1642c51b2d70aa2812390",
       "article": "https://en.wikipedia.org/wiki/Cusco",
-      "width": 800,
-      "height": 533,
-      "bytes": 82502
+      "width": 640,
+      "height": 426,
+      "bytes": 49026
     },
     "sacred-valley-peru": {
-      "src": "/photos/discovery/8d7629871b00239db0f02a7607a3ff1b8ac929f5.webp",
+      "src": "/photos/discovery/0b0e658612a720edf5ce74203440b227038a9635ada25b03a72c8ea92f28e82a.webp",
       "alt": "Sacred Valley",
       "creditId": "8d7629871b00239db0f02a7607a3ff1b8ac929f5",
       "article": "https://en.wikipedia.org/wiki/Sacred_Valley",
-      "width": 800,
-      "height": 600,
-      "bytes": 91050
+      "width": 640,
+      "height": 480,
+      "bytes": 52954
     },
     "lima-historic-centre": {
-      "src": "/photos/discovery/5753315e1a32dc3eea63dc36aa62ae064c6d3f47.webp",
+      "src": "/photos/discovery/b5be31dec631d1ba3ca0d40d32a0938366caf15235b6ab3a5df4cd1da8c7cab7.webp",
       "alt": "Historic Centre of Lima",
       "creditId": "5753315e1a32dc3eea63dc36aa62ae064c6d3f47",
       "article": "https://en.wikipedia.org/wiki/Historic_Centre_of_Lima",
-      "width": 800,
-      "height": 533,
-      "bytes": 89760
+      "width": 640,
+      "height": 426,
+      "bytes": 52956
     },
     "teotihuacan": {
-      "src": "/photos/discovery/97057ae631b32f59d8a6ded5ecbddb53d500bf3a.webp",
+      "src": "/photos/discovery/fa2b54c873a90b24cc92287afa7014f5849c75849d9837c91a6512aa6ef2e6aa.webp",
       "alt": "Teotihuacan",
       "creditId": "97057ae631b32f59d8a6ded5ecbddb53d500bf3a",
       "article": "https://en.wikipedia.org/wiki/Teotihuacan",
-      "width": 800,
-      "height": 532,
-      "bytes": 68604
+      "width": 640,
+      "height": 426,
+      "bytes": 37826
     },
     "mexico-city-frida-kahlo-museum": {
-      "src": "/photos/discovery/6f976753b6fa57c7f7723c7ad8dcba86fec53953.webp",
+      "src": "/photos/discovery/7bea9f60bb550bdaedf1669001237cb20ad24ddfd5561acde6fe46552286186b.webp",
       "alt": "Frida Kahlo Museum",
       "creditId": "6f976753b6fa57c7f7723c7ad8dcba86fec53953",
       "article": "https://en.wikipedia.org/wiki/Frida_Kahlo_Museum",
-      "width": 431,
-      "height": 600,
-      "bytes": 65532
+      "width": 345,
+      "height": 480,
+      "bytes": 40298
     },
     "mexico-city-bellas-artes": {
-      "src": "/photos/discovery/509f85b6a049def64533530b46a1283f8175d4b2.webp",
+      "src": "/photos/discovery/d1a77e0426d082a23d4d01bce9add16cb6c2f595d8f1e4ad796a15ff9e811cf3.webp",
       "alt": "Palacio de Bellas Artes",
       "creditId": "509f85b6a049def64533530b46a1283f8175d4b2",
       "article": "https://en.wikipedia.org/wiki/Palacio_de_Bellas_Artes",
-      "width": 800,
-      "height": 533,
-      "bytes": 74928
+      "width": 640,
+      "height": 426,
+      "bytes": 46120
     },
     "mexico-city-coyoacan": {
-      "src": "/photos/discovery/a2f8fe59f7b08c2d86cbd673a2882f11f0922800.webp",
+      "src": "/photos/discovery/3005fac87efed37238bc1dc0566c066e757083c709dcda05b993f0428cd2e823.webp",
       "alt": "Coyoacán",
       "creditId": "a2f8fe59f7b08c2d86cbd673a2882f11f0922800",
       "article": "https://en.wikipedia.org/wiki/Coyoac%C3%A1n",
-      "width": 800,
-      "height": 450,
-      "bytes": 91590
+      "width": 640,
+      "height": 360,
+      "bytes": 59102
     },
     "chichen-itza": {
-      "src": "/photos/discovery/089323019df7169ee09aa9eadaba6888939fd564.webp",
+      "src": "/photos/discovery/0af2c16374bfc3da38fd5b7a6aa7285763572b405eed77b7af93c07d05fadbc1.webp",
       "alt": "Chichen Itza",
       "creditId": "089323019df7169ee09aa9eadaba6888939fd564",
       "article": "https://en.wikipedia.org/wiki/Chichen_Itza",
-      "width": 800,
-      "height": 426,
-      "bytes": 51230
+      "width": 640,
+      "height": 341,
+      "bytes": 29998
     },
     "marrakech-majorelle-garden": {
-      "src": "/photos/discovery/0ebcc9fcc5467975d2131cda069a17ff7cadd354.webp",
+      "src": "/photos/discovery/0a8130096e721393d3decad971047aa42be3ff0e6a49caf858fcf1db1b344421.webp",
       "alt": "Majorelle Garden",
       "creditId": "0ebcc9fcc5467975d2131cda069a17ff7cadd354",
       "article": "https://en.wikipedia.org/wiki/Majorelle_Garden",
-      "width": 800,
-      "height": 532,
-      "bytes": 127960
+      "width": 640,
+      "height": 426,
+      "bytes": 76620
     },
     "marrakech-koutoubia-mosque": {
-      "src": "/photos/discovery/e1ff504356a04a0df35fdc72d8ce41771d5e4024.webp",
+      "src": "/photos/discovery/7701776b6c0d58b47017678a6b7e0fe6242be83c5481c177f372978b83e438d7.webp",
       "alt": "Kutubiyya Mosque",
       "creditId": "e1ff504356a04a0df35fdc72d8ce41771d5e4024",
       "article": "https://en.wikipedia.org/wiki/Kutubiyya_Mosque",
-      "width": 450,
-      "height": 600,
-      "bytes": 37344
+      "width": 360,
+      "height": 480,
+      "bytes": 21192
     },
     "marrakech-bahia-palace": {
-      "src": "/photos/discovery/39c53a1a5d4e9049ca44e147db9fa2cfbddac9ba.webp",
+      "src": "/photos/discovery/58945f045f666a2446e5a07688744daa127e7204e52d69351f69ab47f33a9052.webp",
       "alt": "Bahia Palace",
       "creditId": "39c53a1a5d4e9049ca44e147db9fa2cfbddac9ba",
       "article": "https://en.wikipedia.org/wiki/Bahia_Palace",
-      "width": 800,
-      "height": 534,
-      "bytes": 98342
+      "width": 640,
+      "height": 427,
+      "bytes": 59754
     },
     "marrakech-saadian-tombs": {
-      "src": "/photos/discovery/799deb4bd70d980c4f8f561e830c25634e1c1af4.webp",
+      "src": "/photos/discovery/b62432f7d305d0c04afb5e63aa1f8d4fe1add42ba53be6602bee20179559469c.webp",
       "alt": "Saadian Tombs",
       "creditId": "799deb4bd70d980c4f8f561e830c25634e1c1af4",
       "article": "https://en.wikipedia.org/wiki/Saadian_Tombs",
-      "width": 450,
-      "height": 600,
-      "bytes": 68862
+      "width": 360,
+      "height": 480,
+      "bytes": 39488
     },
     "marrakech-ben-youssef-madrasa": {
-      "src": "/photos/discovery/47023a1fd8db986e0bd1575b95e15604565d8123.webp",
+      "src": "/photos/discovery/85165b0982d0bc67f7e3c316c3808df24c60ec0d1323e8e9694be39c921c5696.webp",
       "alt": "Ben Youssef Madrasa",
       "creditId": "47023a1fd8db986e0bd1575b95e15604565d8123",
       "article": "https://en.wikipedia.org/wiki/Ben_Youssef_Madrasa",
-      "width": 800,
-      "height": 533,
-      "bytes": 101608
+      "width": 640,
+      "height": 426,
+      "bytes": 57350
     },
     "fez-ibn-danan-synagogue": {
-      "src": "/photos/discovery/1a29595dab16344bbf617ddb6f6314ed4233ebc1.webp",
+      "src": "/photos/discovery/29a8196c9b5296dae699f2bcbe01e237508406b6a3c1fce929ab2b003cfe94ad.webp",
       "alt": "Ibn Danan Synagogue",
       "creditId": "1a29595dab16344bbf617ddb6f6314ed4233ebc1",
       "article": "https://en.wikipedia.org/wiki/Ibn_Danan_Synagogue",
-      "width": 800,
-      "height": 600,
-      "bytes": 81162
+      "width": 640,
+      "height": 480,
+      "bytes": 48732
     },
     "casablanca-moroccan-judaism-museum": {
-      "src": "/photos/discovery/7e383a8c5ebc5411e07bf34821cb3f55a0be5563.webp",
+      "src": "/photos/discovery/1b0200b62d1c4b21ecdb59d1c5529d8e4a29a3c6e885f611d52918c54820e3b1.webp",
       "alt": "Museum of Moroccan Judaism",
       "creditId": "7e383a8c5ebc5411e07bf34821cb3f55a0be5563",
       "article": "https://en.wikipedia.org/wiki/Museum_of_Moroccan_Judaism",
-      "width": 800,
-      "height": 532,
-      "bytes": 27216
+      "width": 640,
+      "height": 426,
+      "bytes": 16356
     },
     "giza-pyramids": {
-      "src": "/photos/discovery/4d6ad4fb8b811cc07c9b41412207a2da59c7e6cb.webp",
+      "src": "/photos/discovery/9c2ea7c520ff7fcc8dce7b21d345f48c00f816ef126f34ae1a997ccf43011639.webp",
       "alt": "Giza pyramid complex",
       "creditId": "4d6ad4fb8b811cc07c9b41412207a2da59c7e6cb",
       "article": "https://en.wikipedia.org/wiki/Giza_pyramid_complex",
-      "width": 800,
-      "height": 333,
-      "bytes": 36764
+      "width": 640,
+      "height": 266,
+      "bytes": 20898
     },
     "cairo-egyptian-museum": {
-      "src": "/photos/discovery/b0f08cbd74ab0fd31c88359624eb06f6c581fa78.webp",
+      "src": "/photos/discovery/37f94fe931b5f9b617cbe1ada7a72b16ca6a2715453294e692783d7c49e7229b.webp",
       "alt": "Egyptian Museum",
       "creditId": "b0f08cbd74ab0fd31c88359624eb06f6c581fa78",
       "article": "https://en.wikipedia.org/wiki/Egyptian_Museum",
-      "width": 800,
-      "height": 450,
-      "bytes": 56242
+      "width": 640,
+      "height": 360,
+      "bytes": 34464
     },
     "cairo-khan-el-khalili": {
-      "src": "/photos/discovery/c11dd5f081feb408c81646d12a50c2f3e83da4b9.webp",
+      "src": "/photos/discovery/907ccee3ddefdc9d2c84aff3098de6ac80d009862165928930bcd79dca14e08a.webp",
       "alt": "Khan el-Khalili",
       "creditId": "c11dd5f081feb408c81646d12a50c2f3e83da4b9",
       "article": "https://en.wikipedia.org/wiki/Khan_el-Khalili",
-      "width": 800,
-      "height": 482,
-      "bytes": 112336
+      "width": 640,
+      "height": 386,
+      "bytes": 66454
     },
     "cairo-citadel": {
-      "src": "/photos/discovery/31566fee4f6956ab219ea1fd04bdb7f20ae08f96.webp",
+      "src": "/photos/discovery/083f305d72a099e4fd64ae5dff501b9c1893e1800d02b3890929342b0de5c880.webp",
       "alt": "Cairo Citadel",
       "creditId": "31566fee4f6956ab219ea1fd04bdb7f20ae08f96",
       "article": "https://en.wikipedia.org/wiki/Cairo_Citadel",
-      "width": 800,
-      "height": 488,
-      "bytes": 38018
+      "width": 640,
+      "height": 390,
+      "bytes": 21714
     },
     "petra": {
-      "src": "/photos/discovery/a16df826335dd182dce4222b2c873e1da579dee3.webp",
+      "src": "/photos/discovery/0448e328bebe5170a800f48968aca56516c899e04a458f443738e0692dd5bb63.webp",
       "alt": "Petra",
       "creditId": "a16df826335dd182dce4222b2c873e1da579dee3",
       "article": "https://en.wikipedia.org/wiki/Petra",
-      "width": 800,
-      "height": 533,
-      "bytes": 73518
+      "width": 640,
+      "height": 426,
+      "bytes": 44712
     },
     "wadi-rum": {
-      "src": "/photos/discovery/0cd6ee0cebbfc4989e91c5bdde01becbd732065a.webp",
+      "src": "/photos/discovery/df9bb0f6108cdafaa86def5f972e778ed8e46f3e290d1e8cb14b7dd1e228fccc.webp",
       "alt": "Wadi Rum",
       "creditId": "0cd6ee0cebbfc4989e91c5bdde01becbd732065a",
       "article": "https://en.wikipedia.org/wiki/Wadi_Rum",
-      "width": 800,
-      "height": 532,
-      "bytes": 44160
+      "width": 640,
+      "height": 426,
+      "bytes": 22140
     },
     "jerash": {
-      "src": "/photos/discovery/231dba6f4c5ac48dba5b3eeba5176cd30b042e98.webp",
+      "src": "/photos/discovery/d7c724e558c1711c5bf114765e78c4b089ca419e1e5114d5e27273f93176e34c.webp",
       "alt": "Jerash",
       "creditId": "231dba6f4c5ac48dba5b3eeba5176cd30b042e98",
       "article": "https://en.wikipedia.org/wiki/Jerash",
-      "width": 800,
-      "height": 541,
-      "bytes": 102038
+      "width": 640,
+      "height": 433,
+      "bytes": 59978
     },
     "cyprus-paphos-archaeological-park": {
-      "src": "/photos/discovery/3ad4b1b49da247b86fe6404b94c7ef04bff78a38.webp",
+      "src": "/photos/discovery/153ac875c5d825c03f1422aa5375d32e1ca7a7cb851e29f6db4f1b47b228757e.webp",
       "alt": "Nea Paphos (ancient city)",
       "creditId": "3ad4b1b49da247b86fe6404b94c7ef04bff78a38",
       "article": "https://en.wikipedia.org/wiki/Nea_Paphos_(ancient_city)",
-      "width": 800,
-      "height": 293,
-      "bytes": 60182
+      "width": 640,
+      "height": 234,
+      "bytes": 36242
     },
     "cyprus-troodos": {
-      "src": "/photos/discovery/d70646860ac9847cf5dc6f6f1df268d77cf6e835.webp",
+      "src": "/photos/discovery/89dfcb0e29466be9bdf4a12cc0db4856a51634289cf20208abd6009e51008afd.webp",
       "alt": "Troodos Mountains",
       "creditId": "d70646860ac9847cf5dc6f6f1df268d77cf6e835",
       "article": "https://en.wikipedia.org/wiki/Troodos_Mountains",
-      "width": 800,
-      "height": 600,
-      "bytes": 100624
+      "width": 640,
+      "height": 480,
+      "bytes": 60700
     },
     "tallinn-old-town": {
-      "src": "/photos/discovery/d3fff2035bed27216b10b19772f740c7242f4157.webp",
+      "src": "/photos/discovery/17ff6d7f4b6259be72171fcaa7f4493458782afe6390f57cfcaeb7be8f39a044.webp",
       "alt": "Tallinn Old Town",
       "creditId": "d3fff2035bed27216b10b19772f740c7242f4157",
       "article": "https://en.wikipedia.org/wiki/Tallinn_Old_Town",
-      "width": 800,
-      "height": 538,
-      "bytes": 84292
+      "width": 640,
+      "height": 430,
+      "bytes": 49956
     },
     "lahemaa-national-park": {
-      "src": "/photos/discovery/799db59bc64286bdc6206672904b84de1ae1f703.webp",
+      "src": "/photos/discovery/6a1484dc3308543fcdc61d27fe28c140fb4db52a9007fe28649f33b5247eb102.webp",
       "alt": "Lahemaa National Park",
       "creditId": "799db59bc64286bdc6206672904b84de1ae1f703",
       "article": "https://en.wikipedia.org/wiki/Lahemaa_National_Park",
-      "width": 800,
-      "height": 534,
-      "bytes": 54704
+      "width": 640,
+      "height": 427,
+      "bytes": 31960
     },
     "mtskheta": {
-      "src": "/photos/discovery/91850fd4626277afcb39692f50e48b0eaff8f1ee.webp",
+      "src": "/photos/discovery/206d16378299f24686eb6a7c4ffa08c91c4e24b288f78c74061c051028fa353e.webp",
       "alt": "Mtskheta",
       "creditId": "91850fd4626277afcb39692f50e48b0eaff8f1ee",
       "article": "https://en.wikipedia.org/wiki/Mtskheta",
-      "width": 800,
-      "height": 536,
-      "bytes": 125360
+      "width": 640,
+      "height": 429,
+      "bytes": 76144
     },
     "kazbegi-gergeti": {
-      "src": "/photos/discovery/c27fa1dc04bf5b95a52213d0ffaa3c963cd2dc4e.webp",
+      "src": "/photos/discovery/a62258d4b3d15b3249fce35a9c5628ed5551a8415f5769c4816a0e6ac1c52387.webp",
       "alt": "Stepantsminda",
       "creditId": "c27fa1dc04bf5b95a52213d0ffaa3c963cd2dc4e",
       "article": "https://en.wikipedia.org/wiki/Stepantsminda",
-      "width": 800,
-      "height": 533,
-      "bytes": 118662
+      "width": 640,
+      "height": 426,
+      "bytes": 67488
     },
     "lake-bled": {
-      "src": "/photos/discovery/31101ed598c18e0189437daeac42f86289fb69c7.webp",
+      "src": "/photos/discovery/df97f7e5e7991df6a656741afbee06ed112310da45d1a1c3b45c8b4a563ebb57.webp",
       "alt": "Lake Bled",
       "creditId": "31101ed598c18e0189437daeac42f86289fb69c7",
       "article": "https://en.wikipedia.org/wiki/Lake_Bled",
-      "width": 800,
-      "height": 600,
-      "bytes": 56674
+      "width": 640,
+      "height": 480,
+      "bytes": 32390
     },
     "postojna-cave": {
-      "src": "/photos/discovery/92d41e52b549f705a535742d2004cf014f43b834.webp",
+      "src": "/photos/discovery/c87985f249e1fd34d457c1746636dda48589f8872a5a298ee6ac3091742e5b1a.webp",
       "alt": "Postojna Cave",
       "creditId": "92d41e52b549f705a535742d2004cf014f43b834",
       "article": "https://en.wikipedia.org/wiki/Postojna_Cave",
-      "width": 800,
-      "height": 450,
-      "bytes": 108012
+      "width": 640,
+      "height": 360,
+      "bytes": 65468
     },
     "cape-town-table-mountain": {
-      "src": "/photos/discovery/44129d016a786df51413b6c98c674f9538c8b7a0.webp",
+      "src": "/photos/discovery/c848b9eac9cd3b9ce2f22c8679071345f98c18ecc8234d42140283f488107f9d.webp",
       "alt": "Table Mountain",
       "creditId": "44129d016a786df51413b6c98c674f9538c8b7a0",
       "article": "https://en.wikipedia.org/wiki/Table_Mountain",
-      "width": 800,
-      "height": 523,
-      "bytes": 33402
+      "width": 640,
+      "height": 418,
+      "bytes": 18332
     },
     "cape-of-good-hope": {
-      "src": "/photos/discovery/2f94812cb66568b256ad5a3b7fe86fa2a2d954d8.webp",
+      "src": "/photos/discovery/798fd3699c98b6efa2560e310209f39f33f76a68e10c13019661b706e1e9c7b3.webp",
       "alt": "Cape of Good Hope",
       "creditId": "2f94812cb66568b256ad5a3b7fe86fa2a2d954d8",
       "article": "https://en.wikipedia.org/wiki/Cape_of_Good_Hope",
-      "width": 800,
-      "height": 533,
-      "bytes": 67988
+      "width": 640,
+      "height": 426,
+      "bytes": 37268
     },
     "cape-town-jewish-museum": {
-      "src": "/photos/discovery/ebd0472101e8012b517ce2028be4aa1aa2d6d67c.webp",
+      "src": "/photos/discovery/386f0005893c3c2110c65db851c2b298382871e7cee0348d0901f7c5e8b7a349.webp",
       "alt": "South African Jewish Museum",
       "creditId": "ebd0472101e8012b517ce2028be4aa1aa2d6d67c",
       "article": "https://en.wikipedia.org/wiki/South_African_Jewish_Museum",
-      "width": 450,
-      "height": 600,
-      "bytes": 25710
+      "width": 360,
+      "height": 480,
+      "bytes": 16764
     },
     "cape-town-va-waterfront": {
-      "src": "/photos/discovery/d3383956f226ddbe70aa3a6afed20aac0113e5b5.webp",
+      "src": "/photos/discovery/41cf763a673be9dd99c699091091154b85519479f79b1e5ea141b9ef1ff37ad2.webp",
       "alt": "V&A Waterfront",
       "creditId": "d3383956f226ddbe70aa3a6afed20aac0113e5b5",
       "article": "https://en.wikipedia.org/wiki/V%26A_Waterfront",
-      "width": 800,
-      "height": 480,
-      "bytes": 73526
+      "width": 640,
+      "height": 384,
+      "bytes": 43852
     },
     "cape-town-robben-island": {
-      "src": "/photos/discovery/a0e0a6c53a3e7f0f5079a0646a60edee023ac10e.webp",
+      "src": "/photos/discovery/8df09c52413fc580fba950dd505a5641044f8761f495bbd9f3db27953fd5fb8e.webp",
       "alt": "Robben Island",
       "creditId": "a0e0a6c53a3e7f0f5079a0646a60edee023ac10e",
       "article": "https://en.wikipedia.org/wiki/Robben_Island",
-      "width": 775,
-      "height": 600,
-      "bytes": 53712
+      "width": 620,
+      "height": 480,
+      "bytes": 29952
     },
     "dubai-burj-khalifa": {
-      "src": "/photos/discovery/dbb773a4bf2f995d327adf9e628d1f58ddfe47e0.webp",
+      "src": "/photos/discovery/16d1bf88373d33da6840988bcb64f8633679cbcfd0ab574d8f7c37f53b70900c.webp",
       "alt": "Burj Khalifa",
       "creditId": "dbb773a4bf2f995d327adf9e628d1f58ddfe47e0",
       "article": "https://en.wikipedia.org/wiki/Burj_Khalifa",
-      "width": 800,
-      "height": 534,
-      "bytes": 19892
+      "width": 640,
+      "height": 427,
+      "bytes": 11212
     },
     "dubai-mall-fountain": {
-      "src": "/photos/discovery/db572a76406fafc6e363e3d304706333a2c313a0.webp",
+      "src": "/photos/discovery/75b755d93e8c7e0783073ce7d0d90fc45a0e409d07f8fc907bc92019cf337d01.webp",
       "alt": "Dubai Mall",
       "creditId": "db572a76406fafc6e363e3d304706333a2c313a0",
       "article": "https://en.wikipedia.org/wiki/Dubai_Mall",
-      "width": 800,
-      "height": 533,
-      "bytes": 66898
+      "width": 640,
+      "height": 426,
+      "bytes": 41616
     },
     "palm-jumeirah": {
-      "src": "/photos/discovery/78c3b39b61a8a71b8480cce037bab32563869372.webp",
+      "src": "/photos/discovery/76ff93d5ac68871167a433919d24b1b66d3fa993ea1b715ba946fb07df9e326d.webp",
       "alt": "Palm Jumeirah",
       "creditId": "78c3b39b61a8a71b8480cce037bab32563869372",
       "article": "https://en.wikipedia.org/wiki/Palm_Jumeirah",
-      "width": 615,
-      "height": 600,
-      "bytes": 47732
+      "width": 492,
+      "height": 480,
+      "bytes": 30084
     },
     "dubai-frame": {
-      "src": "/photos/discovery/8d3531972d6e7e2706b7e419e677e33287fbcdf1.webp",
+      "src": "/photos/discovery/bff1f9ddc87ddd6e5602603718fb7dd940c4c26bf0e12dce9d84f8ceb9a68897.webp",
       "alt": "Dubai Frame",
       "creditId": "8d3531972d6e7e2706b7e419e677e33287fbcdf1",
       "article": "https://en.wikipedia.org/wiki/Dubai_Frame",
-      "width": 800,
-      "height": 600,
-      "bytes": 13484
+      "width": 640,
+      "height": 480,
+      "bytes": 8408
     },
     "museum-of-the-future": {
-      "src": "/photos/discovery/6edc6881b17490be7df9ca89d472d2614e728a43.webp",
+      "src": "/photos/discovery/c5ad0c792612c677ce8e851e67bca922debc78a358f254ee89709c10f5535dba.webp",
       "alt": "Museum of the Future",
       "creditId": "6edc6881b17490be7df9ca89d472d2614e728a43",
       "article": "https://en.wikipedia.org/wiki/Museum_of_the_Future",
-      "width": 450,
-      "height": 600,
-      "bytes": 48928
+      "width": 360,
+      "height": 480,
+      "bytes": 30900
     },
     "louvre-abu-dhabi": {
-      "src": "/photos/discovery/1901fd06a2fbbf4565aff866cf23a205a03303f2.webp",
+      "src": "/photos/discovery/166a81023c4cefc26eb7e1101c136109fcb35dafcd6d1f2162c96d2bae195965.webp",
       "alt": "Louvre Abu Dhabi",
       "creditId": "1901fd06a2fbbf4565aff866cf23a205a03303f2",
       "article": "https://en.wikipedia.org/wiki/Louvre_Abu_Dhabi",
-      "width": 608,
-      "height": 600,
-      "bytes": 53728
+      "width": 486,
+      "height": 480,
+      "bytes": 32212
     },
     "sydney-opera-house": {
-      "src": "/photos/discovery/7c7f4122f0fdae323c163140573cc47bafa3978a.webp",
+      "src": "/photos/discovery/fdab0bee20603bd00f0e2a4d9e43a84184c7bccc7677aed0cc9b44fb9470b4cf.webp",
       "alt": "Sydney Opera House",
       "creditId": "7c7f4122f0fdae323c163140573cc47bafa3978a",
       "article": "https://en.wikipedia.org/wiki/Sydney_Opera_House",
-      "width": 800,
-      "height": 600,
-      "bytes": 38690
+      "width": 640,
+      "height": 480,
+      "bytes": 23606
     },
     "bondi-beach": {
-      "src": "/photos/discovery/2a7b868f594d76cf41239153edd6b4c7a1c4c0d0.webp",
+      "src": "/photos/discovery/2a53522653fb51fd2b7194d7f0dbb7003606b21aadbce2e85ecac741633e19a5.webp",
       "alt": "Bondi Beach",
       "creditId": "2a7b868f594d76cf41239153edd6b4c7a1c4c0d0",
       "article": "https://en.wikipedia.org/wiki/Bondi_Beach",
-      "width": 800,
-      "height": 449,
-      "bytes": 93340
+      "width": 640,
+      "height": 359,
+      "bytes": 55382
     },
     "sydney-harbour-bridge": {
-      "src": "/photos/discovery/acf304c41122630a809f9ba1066c9169f8c103b0.webp",
+      "src": "/photos/discovery/c652b124001e0d31472826515097ebe3f68f0aaff5bfa9980d515248ca406ee7.webp",
       "alt": "Sydney Harbour Bridge",
       "creditId": "acf304c41122630a809f9ba1066c9169f8c103b0",
       "article": "https://en.wikipedia.org/wiki/Sydney_Harbour_Bridge",
-      "width": 800,
-      "height": 450,
-      "bytes": 49132
+      "width": 640,
+      "height": 360,
+      "bytes": 29472
     },
     "sydney-taronga-zoo": {
-      "src": "/photos/discovery/6c753318da18c1ced0005b8dfb8f0e36ce07c539.webp",
+      "src": "/photos/discovery/34a540eb7ba5378986de7a36c2baf3f0fe329b3337d4514fbe46b56db7148d73.webp",
       "alt": "Taronga Zoo",
       "creditId": "6c753318da18c1ced0005b8dfb8f0e36ce07c539",
       "article": "https://en.wikipedia.org/wiki/Taronga_Zoo",
-      "width": 800,
-      "height": 600,
-      "bytes": 50246
+      "width": 640,
+      "height": 480,
+      "bytes": 30926
     },
     "sydney-darling-harbour": {
-      "src": "/photos/discovery/9d1519e02ecca19d5e0f3a0dc7c5d9e9525b104b.webp",
+      "src": "/photos/discovery/ae4d61a5dda131783245b67105a0c5e0d35cc0ecfb1ccec2019334ea8a8dbec9.webp",
       "alt": "Darling Harbour",
       "creditId": "9d1519e02ecca19d5e0f3a0dc7c5d9e9525b104b",
       "article": "https://en.wikipedia.org/wiki/Darling_Harbour",
-      "width": 800,
-      "height": 440,
-      "bytes": 65926
+      "width": 640,
+      "height": 352,
+      "bytes": 38654
     },
     "melbourne-federation-square": {
-      "src": "/photos/discovery/908e036964970f2203297f89b4f3578c2e9a96ca.webp",
+      "src": "/photos/discovery/91d8b376f118fcd3602c9eedc01c30f48b5d61a3f0888c51d0a746d64ffa6542.webp",
       "alt": "Federation Square",
       "creditId": "908e036964970f2203297f89b4f3578c2e9a96ca",
       "article": "https://en.wikipedia.org/wiki/Federation_Square",
-      "width": 800,
-      "height": 533,
-      "bytes": 81730
+      "width": 640,
+      "height": 426,
+      "bytes": 48410
     },
     "melbourne-royal-botanic-gardens": {
-      "src": "/photos/discovery/b3103dcf97862322e79e0bb4b27d3c4332e37a98.webp",
+      "src": "/photos/discovery/614314ad396a0c473d3b4c70697c48a414a9213487b50e01c27996d076ad67ba.webp",
       "alt": "Royal Botanic Gardens Victoria",
       "creditId": "b3103dcf97862322e79e0bb4b27d3c4332e37a98",
       "article": "https://en.wikipedia.org/wiki/Royal_Botanic_Gardens_Victoria",
-      "width": 800,
-      "height": 461,
-      "bytes": 48512
+      "width": 640,
+      "height": 369,
+      "bytes": 29084
     },
     "melbourne-queen-victoria-market": {
-      "src": "/photos/discovery/e93e5771dff66da7d872e60da213a053aca3e1fa.webp",
+      "src": "/photos/discovery/17ef610bc10191cbc8830c033f546bdde3ca4aaee6f30234e6c5251880fc310e.webp",
       "alt": "Queen Victoria Market",
       "creditId": "e93e5771dff66da7d872e60da213a053aca3e1fa",
       "article": "https://en.wikipedia.org/wiki/Queen_Victoria_Market",
-      "width": 800,
-      "height": 381,
-      "bytes": 96384
+      "width": 640,
+      "height": 305,
+      "bytes": 58154
     },
     "melbourne-mcg": {
-      "src": "/photos/discovery/6946a33274e40e32adecfeef481fa2a9b2234c1b.webp",
+      "src": "/photos/discovery/d5c95b58d358e588780dc00917385db8008e3792e176ffea4ad26f39a041dc18.webp",
       "alt": "Melbourne Cricket Ground",
       "creditId": "6946a33274e40e32adecfeef481fa2a9b2234c1b",
       "article": "https://en.wikipedia.org/wiki/Melbourne_Cricket_Ground",
-      "width": 800,
-      "height": 424,
-      "bytes": 75916
+      "width": 640,
+      "height": 339,
+      "bytes": 44520
     },
     "auckland-harbour-sky-tower": {
-      "src": "/photos/discovery/a1ae8c6142ee44a8962e51c05e729baa7c52ec83.webp",
+      "src": "/photos/discovery/694423fedd4d586fb82d17c19361c01bd49f8643b8ad6f02eeb14a9fbdaf0b37.webp",
       "alt": "Auckland",
       "creditId": "a1ae8c6142ee44a8962e51c05e729baa7c52ec83",
       "article": "https://en.wikipedia.org/wiki/Auckland",
-      "width": 800,
-      "height": 435,
-      "bytes": 44238
+      "width": 640,
+      "height": 348,
+      "bytes": 26034
     },
     "milford-sound": {
-      "src": "/photos/discovery/fa239e7f8ef759c77adda7b7a17063fa88076ab5.webp",
+      "src": "/photos/discovery/1ea3ba7609fd00d62fd146e0db2b2fbf37ac3d330a01e90d54a5a4e025dbd38b.webp",
       "alt": "Milford Sound",
       "creditId": "fa239e7f8ef759c77adda7b7a17063fa88076ab5",
       "article": "https://en.wikipedia.org/wiki/Milford_Sound",
-      "width": 800,
-      "height": 290,
-      "bytes": 21376
+      "width": 640,
+      "height": 232,
+      "bytes": 11592
     },
     "kyoto-fushimi-inari": {
-      "src": "/photos/discovery/4d22d4ec063fd420a9d66833f6e7aef9d245a121.webp",
+      "src": "/photos/discovery/16a46f1fc5e846882a015f4748201ff737d0483c937f0c4f51ae1faede1c6e60.webp",
       "alt": "Fushimi Inari-taisha",
       "creditId": "4d22d4ec063fd420a9d66833f6e7aef9d245a121",
       "article": "https://en.wikipedia.org/wiki/Fushimi_Inari-taisha",
-      "width": 800,
-      "height": 533,
-      "bytes": 77646
+      "width": 640,
+      "height": 426,
+      "bytes": 45696
     },
     "kyoto-arashiyama-bamboo": {
-      "src": "/photos/discovery/f8d80616eb08ea567802624e6cab442946fb3831.webp",
+      "src": "/photos/discovery/1873e7f878a487a981554d6883e7523006af6cb97ae8d0ac6eaf5c42c4eddd16.webp",
       "alt": "Bamboo Forest (Kyoto)",
       "creditId": "f8d80616eb08ea567802624e6cab442946fb3831",
       "article": "https://en.wikipedia.org/wiki/Bamboo_Forest_(Kyoto)",
-      "width": 400,
-      "height": 600,
-      "bytes": 57024
+      "width": 320,
+      "height": 480,
+      "bytes": 31098
     },
     "kyoto-kiyomizu-dera": {
-      "src": "/photos/discovery/4bfd0fada27fec953553ffe9d06a267985ed66f5.webp",
+      "src": "/photos/discovery/2438ec57f4947bdb513e1bde5a88a6a467102d2842fe8a58a078a2760b1f9b7a.webp",
       "alt": "Kiyomizu-dera",
       "creditId": "4bfd0fada27fec953553ffe9d06a267985ed66f5",
       "article": "https://en.wikipedia.org/wiki/Kiyomizu-dera",
-      "width": 800,
-      "height": 534,
-      "bytes": 110600
+      "width": 640,
+      "height": 427,
+      "bytes": 64648
     },
     "kyoto-nishiki-market": {
-      "src": "/photos/discovery/521656281ccc84211f0bdcdc44c35547ebb78673.webp",
+      "src": "/photos/discovery/36d577567d1b3deee06b25420c7c95b9fb72e0bd6ebaeccc8ea4b908e8e1fda7.webp",
       "alt": "Nishiki Market",
       "creditId": "521656281ccc84211f0bdcdc44c35547ebb78673",
       "article": "https://en.wikipedia.org/wiki/Nishiki_Market",
-      "width": 450,
-      "height": 600,
-      "bytes": 51960
+      "width": 360,
+      "height": 480,
+      "bytes": 30272
     },
     "tokyo-meiji-shrine": {
-      "src": "/photos/discovery/c485c1dac63ae3a704d53f1ec7c54c94d9134f3b.webp",
+      "src": "/photos/discovery/af1243cea5321733b1dc002a2a436187ef6edad4b1bc36bc71b27230fc921736.webp",
       "alt": "Meiji Shrine",
       "creditId": "c485c1dac63ae3a704d53f1ec7c54c94d9134f3b",
       "article": "https://en.wikipedia.org/wiki/Meiji_Shrine",
-      "width": 800,
-      "height": 450,
-      "bytes": 96062
+      "width": 640,
+      "height": 360,
+      "bytes": 57900
     },
     "tokyo-shibuya-crossing": {
-      "src": "/photos/discovery/3abb12c212e38c662a406c48dd9a526c881404f3.webp",
+      "src": "/photos/discovery/5fcbe1a61a84b60b43dd4bb1193a0323300f60d405125f8abfc11146e38bcba7.webp",
       "alt": "Shibuya Crossing",
       "creditId": "3abb12c212e38c662a406c48dd9a526c881404f3",
       "article": "https://en.wikipedia.org/wiki/Shibuya_Crossing",
-      "width": 800,
-      "height": 450,
-      "bytes": 115576
+      "width": 640,
+      "height": 360,
+      "bytes": 68944
     },
     "tokyo-skytree": {
-      "src": "/photos/discovery/75bd5533d27563e4fb1d9239a872bbe085b73ebf.webp",
+      "src": "/photos/discovery/dcb7816dd4d824335f172d47c9e4d97e8d62e7154d6fe9699c7a050d5d09e4fe.webp",
       "alt": "Tokyo Skytree",
       "creditId": "75bd5533d27563e4fb1d9239a872bbe085b73ebf",
       "article": "https://en.wikipedia.org/wiki/Tokyo_Skytree",
-      "width": 392,
-      "height": 600,
-      "bytes": 17276
+      "width": 314,
+      "height": 480,
+      "bytes": 10314
     },
     "tokyo-tower": {
-      "src": "/photos/discovery/43a782109fa11f5ff593ef2a089215ee8d13b548.webp",
+      "src": "/photos/discovery/2d66b02a1818a36955b74bafdac2a5655afd9e7248cfa3441359b3e823251041.webp",
       "alt": "Tokyo Tower",
       "creditId": "43a782109fa11f5ff593ef2a089215ee8d13b548",
       "article": "https://en.wikipedia.org/wiki/Tokyo_Tower",
-      "width": 450,
-      "height": 600,
-      "bytes": 41882
+      "width": 360,
+      "height": 480,
+      "bytes": 24186
     },
     "tokyo-shinjuku-gyoen": {
-      "src": "/photos/discovery/a24648662d66a4bf614864d949bb00e84438e472.webp",
+      "src": "/photos/discovery/18754df8bb725a933fae372bd4eae9f615215a748c4ed5508ba4bf3d1eadf767.webp",
       "alt": "Shinjuku Gyo-en",
       "creditId": "a24648662d66a4bf614864d949bb00e84438e472",
       "article": "https://en.wikipedia.org/wiki/Shinjuku_Gyo-en",
-      "width": 800,
-      "height": 522,
-      "bytes": 81418
+      "width": 640,
+      "height": 418,
+      "bytes": 47432
     },
     "osaka-dotonbori": {
-      "src": "/photos/discovery/c0a980b2a2fc4d504cfc85fa8437f6daf97a4031.webp",
+      "src": "/photos/discovery/e81434501605472251eead858e6779e953f1ac3c17c330fe09faf6555aaf041a.webp",
       "alt": "Dōtonbori",
       "creditId": "c0a980b2a2fc4d504cfc85fa8437f6daf97a4031",
       "article": "https://en.wikipedia.org/wiki/D%C5%8Dtonbori",
-      "width": 800,
-      "height": 532,
-      "bytes": 113818
+      "width": 640,
+      "height": 426,
+      "bytes": 69390
     },
     "osaka-universal-studios-japan": {
-      "src": "/photos/discovery/54707c619dbb6024ce1b057983ec950cbc7593e6.webp",
+      "src": "/photos/discovery/e45f04ccb7e6b7f3bc0c4e8ee518299519f96e376fe6da915db4b494d93d5e3e.webp",
       "alt": "Universal Studios Japan",
       "creditId": "54707c619dbb6024ce1b057983ec950cbc7593e6",
       "article": "https://en.wikipedia.org/wiki/Universal_Studios_Japan",
-      "width": 800,
-      "height": 450,
-      "bytes": 65420
+      "width": 640,
+      "height": 360,
+      "bytes": 39468
     },
     "osaka-kaiyukan-aquarium": {
-      "src": "/photos/discovery/857870adc30345ff463ea1772ef042846a5e36e1.webp",
+      "src": "/photos/discovery/a628090a471e3f706cb811d4b29c7cf549d9b92be476cda85b638998a37fb30c.webp",
       "alt": "Osaka Aquarium Kaiyukan",
       "creditId": "857870adc30345ff463ea1772ef042846a5e36e1",
       "article": "https://en.wikipedia.org/wiki/Osaka_Aquarium_Kaiyukan",
-      "width": 800,
-      "height": 600,
-      "bytes": 126960
+      "width": 640,
+      "height": 480,
+      "bytes": 76434
     },
     "bangkok-chatuchak-market": {
-      "src": "/photos/discovery/0f0e079ba1f6592997e263fcb1bc98c4f415e3a2.webp",
+      "src": "/photos/discovery/f874f3dd0145ff33be7d34a51aa389ad8989ed3841557ade372539f858bb5ba0.webp",
       "alt": "Chatuchak Weekend Market",
       "creditId": "0f0e079ba1f6592997e263fcb1bc98c4f415e3a2",
       "article": "https://en.wikipedia.org/wiki/Chatuchak_Weekend_Market",
-      "width": 800,
-      "height": 534,
-      "bytes": 109328
+      "width": 640,
+      "height": 427,
+      "bytes": 64412
     },
     "bangkok-chao-phraya-river": {
-      "src": "/photos/discovery/4d7b45c4587c8be4a059d799a5be0cca03d4b3ae.webp",
+      "src": "/photos/discovery/67f326f745428ee8ace399e4da624c2b93303314fb7decd642213dab93d06f4b.webp",
       "alt": "Chao Phraya River",
       "creditId": "4d7b45c4587c8be4a059d799a5be0cca03d4b3ae",
       "article": "https://en.wikipedia.org/wiki/Chao_Phraya_River",
-      "width": 800,
-      "height": 450,
-      "bytes": 60578
+      "width": 640,
+      "height": 360,
+      "bytes": 35390
     },
     "bangkok-jim-thompson-house": {
-      "src": "/photos/discovery/cfbacacdae76fae22b3871fe91e4c0c532643923.webp",
+      "src": "/photos/discovery/6162fe9659b1efc6cc5ff705607cac97000b02108fe21298d482a50ba4927781.webp",
       "alt": "Jim Thompson House",
       "creditId": "cfbacacdae76fae22b3871fe91e4c0c532643923",
       "article": "https://en.wikipedia.org/wiki/Jim_Thompson_House",
-      "width": 800,
-      "height": 533,
-      "bytes": 125904
+      "width": 640,
+      "height": 426,
+      "bytes": 76880
     },
     "ha-long-bay": {
-      "src": "/photos/discovery/d53d5f5882766e3c188572dfb8a5cf1756447c9f.webp",
+      "src": "/photos/discovery/f5af0f9f42101ce29dc6e125666fa91f40f84de72cc99f9d27dc48a6ab2d746f.webp",
       "alt": "Hạ Long Bay",
       "creditId": "d53d5f5882766e3c188572dfb8a5cf1756447c9f",
       "article": "https://en.wikipedia.org/wiki/H%E1%BA%A1_Long_Bay",
-      "width": 800,
-      "height": 561,
-      "bytes": 51938
+      "width": 640,
+      "height": 449,
+      "bytes": 32034
     },
     "hoi-an-ancient-town": {
-      "src": "/photos/discovery/447c064fbb61ad0f76438e60f5678f4637a2dd68.webp",
+      "src": "/photos/discovery/e028ace332577ab76e8b32dc42a8f9f2f116929906589c115e4f2706bb5e423d.webp",
       "alt": "Hội An Old Town",
       "creditId": "447c064fbb61ad0f76438e60f5678f4637a2dd68",
       "article": "https://en.wikipedia.org/wiki/H%E1%BB%99i_An_Old_Town",
-      "width": 800,
-      "height": 530,
-      "bytes": 74902
+      "width": 640,
+      "height": 424,
+      "bytes": 44858
     },
     "taj-mahal": {
-      "src": "/photos/discovery/19518d5ddbb4a32da06701dd40a596307e694924.webp",
+      "src": "/photos/discovery/068e5048c6e7a9bf5c538d2a6bd15fb21d424b755d375e081e4676c87b90bdd0.webp",
       "alt": "Taj Mahal",
       "creditId": "19518d5ddbb4a32da06701dd40a596307e694924",
       "article": "https://en.wikipedia.org/wiki/Taj_Mahal",
-      "width": 800,
-      "height": 526,
-      "bytes": 46434
+      "width": 640,
+      "height": 421,
+      "bytes": 27196
     },
     "delhi-red-fort": {
-      "src": "/photos/discovery/50785c840957b8eab5ecbae2928072072750d7f4.webp",
+      "src": "/photos/discovery/7293a0c69a2f6292c77c6d370cbbe5f07c65fa2c4edfd40cc4154a5c21afa139.webp",
       "alt": "Red Fort",
       "creditId": "50785c840957b8eab5ecbae2928072072750d7f4",
       "article": "https://en.wikipedia.org/wiki/Red_Fort",
-      "width": 800,
-      "height": 368,
-      "bytes": 41490
+      "width": 640,
+      "height": 294,
+      "bytes": 24584
     },
     "delhi-qutub-minar": {
-      "src": "/photos/discovery/3c44a0c53ed9422ab6f2cb6b8ca9775e3e89055c.webp",
+      "src": "/photos/discovery/ee7e917d8a7f5cf0adca8a55d0c314982884f9730e16014387f1af2a9ab57d32.webp",
       "alt": "Qutb Minar",
       "creditId": "3c44a0c53ed9422ab6f2cb6b8ca9775e3e89055c",
       "article": "https://en.wikipedia.org/wiki/Qutb_Minar",
-      "width": 397,
-      "height": 600,
-      "bytes": 19524
+      "width": 318,
+      "height": 480,
+      "bytes": 11300
     },
     "delhi-india-gate": {
-      "src": "/photos/discovery/9d4cc6f05cc2c1ca4cf8e5f4581894f3a2a4a3f5.webp",
+      "src": "/photos/discovery/ed717bf1aa5adfbab50737fc65bc338d9a347fd04903c9097727c6fbd6dcb108.webp",
       "alt": "India Gate",
       "creditId": "9d4cc6f05cc2c1ca4cf8e5f4581894f3a2a4a3f5",
       "article": "https://en.wikipedia.org/wiki/India_Gate",
-      "width": 550,
-      "height": 600,
-      "bytes": 31208
+      "width": 440,
+      "height": 480,
+      "bytes": 18088
     },
     "delhi-chandni-chowk": {
-      "src": "/photos/discovery/87370198e3e4d12cf458efc1d6f5d738ae2e7dc9.webp",
+      "src": "/photos/discovery/b89032281676ba909bb04b8367f6cfc1510484e438d4565890613737869a7efc.webp",
       "alt": "Chandni Chowk",
       "creditId": "87370198e3e4d12cf458efc1d6f5d738ae2e7dc9",
       "article": "https://en.wikipedia.org/wiki/Chandni_Chowk",
-      "width": 800,
-      "height": 600,
-      "bytes": 54416
+      "width": 640,
+      "height": 480,
+      "bytes": 33562
     },
     "mumbai-knesset-eliyahoo": {
-      "src": "/photos/discovery/b7e7e9a7320d4c9a1a7314709c9f9c5a987ca3f9.webp",
+      "src": "/photos/discovery/2bb5c8c9a5a0a527bd05f3f7f192f994416155c9757c639d77a70f1813e7d5d9.webp",
       "alt": "Knesset Eliyahoo Synagogue",
       "creditId": "b7e7e9a7320d4c9a1a7314709c9f9c5a987ca3f9",
       "article": "https://en.wikipedia.org/wiki/Knesset_Eliyahoo_Synagogue",
-      "width": 398,
-      "height": 600,
-      "bytes": 27426
+      "width": 318,
+      "height": 480,
+      "bytes": 15792
     },
     "mumbai-cst-terminus": {
-      "src": "/photos/discovery/8344e31ab13af0a7a8dd62273a6d57271ef208a7.webp",
+      "src": "/photos/discovery/6d7a822ef739250213d248af275549f4005d91c546153c457b8eef7bcee45b72.webp",
       "alt": "Chhatrapati Shivaji Terminus",
       "creditId": "8344e31ab13af0a7a8dd62273a6d57271ef208a7",
       "article": "https://en.wikipedia.org/wiki/Chhatrapati_Shivaji_Terminus",
-      "width": 800,
-      "height": 524,
-      "bytes": 71524
+      "width": 640,
+      "height": 419,
+      "bytes": 42686
     },
     "mumbai-csmvs-museum": {
-      "src": "/photos/discovery/045a5db89fa5130dececf824740d35f3e256483e.webp",
+      "src": "/photos/discovery/2c522fc6c36842ffe81e737680303d355e3b3ce68ee63aa90ce73d9f98979453.webp",
       "alt": "Chhatrapati Shivaji Maharaj Vastu Sangrahalaya",
       "creditId": "045a5db89fa5130dececf824740d35f3e256483e",
       "article": "https://en.wikipedia.org/wiki/Chhatrapati_Shivaji_Maharaj_Vastu_Sangrahalaya",
-      "width": 800,
-      "height": 533,
-      "bytes": 103478
+      "width": 640,
+      "height": 426,
+      "bytes": 59108
     },
     "mumbai-elephanta-caves": {
-      "src": "/photos/discovery/20a1c6ce375506702901afb141f67a1396c7c3d0.webp",
+      "src": "/photos/discovery/d0e049e714174c4a692df7b9defbe1bb2842a85198818a272a2982c802f9a745.webp",
       "alt": "Elephanta Caves",
       "creditId": "20a1c6ce375506702901afb141f67a1396c7c3d0",
       "article": "https://en.wikipedia.org/wiki/Elephanta_Caves",
-      "width": 527,
-      "height": 600,
-      "bytes": 41210
+      "width": 422,
+      "height": 480,
+      "bytes": 23060
     },
     "singapore-gardens-by-the-bay": {
-      "src": "/photos/discovery/bc80f7573cfe71307f3bc68ca7ffb147d58235a3.webp",
+      "src": "/photos/discovery/84b02c18d7fdb80b412afa6db84cb32e3069c08dcc120209b0721edfcb6daa19.webp",
       "alt": "Gardens by the Bay",
       "creditId": "bc80f7573cfe71307f3bc68ca7ffb147d58235a3",
       "article": "https://en.wikipedia.org/wiki/Gardens_by_the_Bay",
-      "width": 800,
-      "height": 533,
-      "bytes": 105782
+      "width": 640,
+      "height": 426,
+      "bytes": 60306
     },
     "singapore-maghain-aboth": {
-      "src": "/photos/discovery/5a37484f912a1b54f823e1b2a2c84a6350c52508.webp",
+      "src": "/photos/discovery/1ee6bd7d79b37fd8d400df2608cc384d5c81a7f438cdeb114118d2bc31a0cbcb.webp",
       "alt": "Maghain Aboth Synagogue",
       "creditId": "5a37484f912a1b54f823e1b2a2c84a6350c52508",
       "article": "https://en.wikipedia.org/wiki/Maghain_Aboth_Synagogue",
-      "width": 800,
-      "height": 593,
-      "bytes": 88264
+      "width": 640,
+      "height": 474,
+      "bytes": 53730
     },
     "marina-bay-sands": {
-      "src": "/photos/discovery/6c322acacb85976ed674dcc0bee9fc5659ca358b.webp",
+      "src": "/photos/discovery/b35bdfca986c05812514862de4403f5032518a7636a8a67ee1d3e823e555c94f.webp",
       "alt": "Marina Bay Sands",
       "creditId": "6c322acacb85976ed674dcc0bee9fc5659ca358b",
       "article": "https://en.wikipedia.org/wiki/Marina_Bay_Sands",
-      "width": 800,
-      "height": 533,
-      "bytes": 54810
+      "width": 640,
+      "height": 426,
+      "bytes": 31912
     },
     "merlion-park": {
-      "src": "/photos/discovery/5649149b81282931e8b1e31b5902bdd69c8ded8c.webp",
+      "src": "/photos/discovery/7d21716a467de6112cb73ddc0cb01a20c8bbc9fbb36767874abc071cb4772569.webp",
       "alt": "Merlion Park",
       "creditId": "5649149b81282931e8b1e31b5902bdd69c8ded8c",
       "article": "https://en.wikipedia.org/wiki/Merlion_Park",
-      "width": 786,
-      "height": 600,
-      "bytes": 109418
+      "width": 629,
+      "height": 480,
+      "bytes": 65188
     },
     "sentosa": {
-      "src": "/photos/discovery/9dc21e5ff52c909cddfc490d2e73d315f428f933.webp",
+      "src": "/photos/discovery/8fe37eb631e0f69c4871225704cad4a74fdc60e03a7e10f40c0119c8d634b6ae.webp",
       "alt": "Sentosa",
       "creditId": "9dc21e5ff52c909cddfc490d2e73d315f428f933",
       "article": "https://en.wikipedia.org/wiki/Sentosa",
-      "width": 800,
-      "height": 353,
-      "bytes": 35864
+      "width": 640,
+      "height": 282,
+      "bytes": 20958
     },
     "universal-studios-singapore": {
-      "src": "/photos/discovery/bc63f5c8e40add4ed00f51b8459eab63436228d9.webp",
+      "src": "/photos/discovery/ca6486ded0e83961747f3be5cd928c9ece5603544c2415bda23f589ad87bb2ea.webp",
       "alt": "Universal Studios Singapore",
       "creditId": "bc63f5c8e40add4ed00f51b8459eab63436228d9",
       "article": "https://en.wikipedia.org/wiki/Universal_Studios_Singapore",
-      "width": 398,
-      "height": 600,
-      "bytes": 22284
+      "width": 318,
+      "height": 480,
+      "bytes": 14068
     },
     "hong-kong-victoria-peak": {
-      "src": "/photos/discovery/26ca2a0cb154bbe034f88649288772693b6f9655.webp",
+      "src": "/photos/discovery/f836962ec7ab8308a7b1537093b4bbd2bc0d8a9787c232853b7046f3b50a4ae9.webp",
       "alt": "Victoria Peak",
       "creditId": "26ca2a0cb154bbe034f88649288772693b6f9655",
       "article": "https://en.wikipedia.org/wiki/Victoria_Peak",
-      "width": 800,
-      "height": 600,
-      "bytes": 97840
+      "width": 640,
+      "height": 480,
+      "bytes": 55548
     },
     "great-wall-of-china": {
-      "src": "/photos/discovery/0e8003f4f5a9fe0e9719b627c2f660941ee641c4.webp",
+      "src": "/photos/discovery/d3752910eed0ba5e0a396b332f28f190ee96ee016f2fc050f13b5d6fe17b4394.webp",
       "alt": "Great Wall of China",
       "creditId": "0e8003f4f5a9fe0e9719b627c2f660941ee641c4",
       "article": "https://en.wikipedia.org/wiki/Great_Wall_of_China",
-      "width": 800,
-      "height": 532,
-      "bytes": 77780
+      "width": 640,
+      "height": 426,
+      "bytes": 43544
     },
     "beijing-forbidden-city": {
-      "src": "/photos/discovery/7de57265c85be839714817f5916616654ed6e50e.webp",
+      "src": "/photos/discovery/40c62b8eed63df72914fc22261f47072d9f4f8fa8f98d6a9cbbdf51be4a9f99b.webp",
       "alt": "Forbidden City",
       "creditId": "7de57265c85be839714817f5916616654ed6e50e",
       "article": "https://en.wikipedia.org/wiki/Forbidden_City",
-      "width": 800,
-      "height": 400,
-      "bytes": 16468
+      "width": 640,
+      "height": 320,
+      "bytes": 9366
     },
     "beijing-temple-of-heaven": {
-      "src": "/photos/discovery/e461b4867445b8f11a16cee586bcfe6342c9f275.webp",
+      "src": "/photos/discovery/063209eabec5f3afe183a72613c39b367306c35f588fc9aec83198e25d6846e1.webp",
       "alt": "Temple of Heaven",
       "creditId": "e461b4867445b8f11a16cee586bcfe6342c9f275",
       "article": "https://en.wikipedia.org/wiki/Temple_of_Heaven",
-      "width": 800,
-      "height": 533,
-      "bytes": 54724
+      "width": 640,
+      "height": 426,
+      "bytes": 33060
     },
     "shanghai-yu-garden": {
-      "src": "/photos/discovery/3e9cbb122664085de0bc03c4679122da9cb96bfa.webp",
+      "src": "/photos/discovery/6a8e38ed2fb88129f1f6b7ac94f82a04ab890e3a52e49e3d140ce35ada05b0d0.webp",
       "alt": "Yu Garden",
       "creditId": "3e9cbb122664085de0bc03c4679122da9cb96bfa",
       "article": "https://en.wikipedia.org/wiki/Yu_Garden",
-      "width": 800,
-      "height": 470,
-      "bytes": 105336
+      "width": 640,
+      "height": 376,
+      "bytes": 59802
     },
     "shanghai-jewish-refugees-museum": {
-      "src": "/photos/discovery/c77da171c7e290ac76a422920ddc4515ff0f310e.webp",
+      "src": "/photos/discovery/61adf454cb130580a1aa77c860926a6fd077159cf167e0cac7148cd8ec335820.webp",
       "alt": "Shanghai Jewish Refugees Museum",
       "creditId": "c77da171c7e290ac76a422920ddc4515ff0f310e",
       "article": "https://en.wikipedia.org/wiki/Shanghai_Jewish_Refugees_Museum",
-      "width": 800,
-      "height": 532,
-      "bytes": 60500
-    },
-    "luxembourg-city-bock-casemates": {
-      "src": "/photos/discovery/ac1dae1532bb8642876723dae5ad9612b2556305.webp",
-      "alt": "Bock (Luxembourg)",
-      "creditId": "ac1dae1532bb8642876723dae5ad9612b2556305",
-      "article": "https://en.wikipedia.org/wiki/Bock_(Luxembourg)",
-      "width": 800,
-      "height": 600,
-      "bytes": 81150
+      "width": 640,
+      "height": 426,
+      "bytes": 36154
     },
     "luxembourg-city-grand-ducal-palace": {
-      "src": "/photos/discovery/b0f42d02ba21be5b80fb5e5b002363e0991b2fda.webp",
+      "src": "/photos/discovery/999c0728445735373b12ac60fdfb67a14ff2655d0f45a8cc1d1abbb47d40b39d.webp",
       "alt": "Grand Ducal Palace, Luxembourg",
       "creditId": "b0f42d02ba21be5b80fb5e5b002363e0991b2fda",
       "article": "https://en.wikipedia.org/wiki/Grand_Ducal_Palace,_Luxembourg",
-      "width": 734,
-      "height": 600,
-      "bytes": 55118
+      "width": 587,
+      "height": 480,
+      "bytes": 33360
     },
     "luxembourg-city-adolphe-bridge": {
-      "src": "/photos/discovery/df5a7b6a7bb092d1460f60799c18d160f102a399.webp",
+      "src": "/photos/discovery/fdd29e329a3775f289d1cb28a23d74af5cc623e51d28afe0be6e473b6f8c592d.webp",
       "alt": "Adolphe Bridge",
       "creditId": "df5a7b6a7bb092d1460f60799c18d160f102a399",
       "article": "https://en.wikipedia.org/wiki/Adolphe_Bridge",
-      "width": 800,
-      "height": 399,
-      "bytes": 59644
+      "width": 640,
+      "height": 319,
+      "bytes": 34954
     },
     "valletta-upper-barrakka-gardens": {
-      "src": "/photos/discovery/f35ddae4f0c7bbb29ddcd682659352262264b8a5.webp",
+      "src": "/photos/discovery/397d246184ec7b08d8b4a3d96b8597395b2802890d4c35ecf89878e29205ca6a.webp",
       "alt": "Upper Barrakka Gardens",
       "creditId": "f35ddae4f0c7bbb29ddcd682659352262264b8a5",
       "article": "https://en.wikipedia.org/wiki/Upper_Barrakka_Gardens",
-      "width": 800,
-      "height": 533,
-      "bytes": 132138
+      "width": 640,
+      "height": 426,
+      "bytes": 77468
     },
     "valletta-fort-saint-elmo": {
-      "src": "/photos/discovery/a0ffedd7ebd8504381200f43c86b0a8b9f8f3bca.webp",
+      "src": "/photos/discovery/fa2de8407037f1b9451818884623040e7e557530622753bf1b02a8b957e34ff6.webp",
       "alt": "Fort Saint Elmo",
       "creditId": "a0ffedd7ebd8504381200f43c86b0a8b9f8f3bca",
       "article": "https://en.wikipedia.org/wiki/Fort_Saint_Elmo",
-      "width": 800,
-      "height": 450,
-      "bytes": 69576
+      "width": 640,
+      "height": 360,
+      "bytes": 39268
     },
     "valletta-national-museum-of-archaeology": {
-      "src": "/photos/discovery/db9d4f8cadc5b85eb3696375567f49881fb8915c.webp",
+      "src": "/photos/discovery/3d14c67f5682978fd4062fa1c2d594f0a24876e3d53b8e56c7598464f2f7541f.webp",
       "alt": "National Museum of Archaeology, Malta",
       "creditId": "db9d4f8cadc5b85eb3696375567f49881fb8915c",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Archaeology,_Malta",
-      "width": 400,
-      "height": 600,
-      "bytes": 40322
+      "width": 320,
+      "height": 480,
+      "bytes": 24564
     },
     "mdina-mdina-gate": {
-      "src": "/photos/discovery/433606f16a743ac2d4529796eb68434569417d17.webp",
+      "src": "/photos/discovery/85d8532ffaa051709dfe24a9b3f7ff132862b9cee49d78103734332f15181179.webp",
       "alt": "Mdina Gate",
       "creditId": "433606f16a743ac2d4529796eb68434569417d17",
       "article": "https://en.wikipedia.org/wiki/Mdina_Gate",
-      "width": 378,
-      "height": 600,
-      "bytes": 25946
+      "width": 302,
+      "height": 480,
+      "bytes": 15128
     },
     "gozo-ggantija-temples": {
-      "src": "/photos/discovery/b90d67293c13ebe78c23860953abb7e16fa6907f.webp",
+      "src": "/photos/discovery/533d368e79c624d9a9e4bfa2fee0099480085e37381c68bc8df232bed0fa8522.webp",
       "alt": "Ġgantija",
       "creditId": "b90d67293c13ebe78c23860953abb7e16fa6907f",
       "article": "https://en.wikipedia.org/wiki/%C4%A0gantija",
-      "width": 800,
-      "height": 533,
-      "bytes": 74652
+      "width": 640,
+      "height": 426,
+      "bytes": 43542
     },
     "sarajevo-sarajevo-tunnel-museum": {
-      "src": "/photos/discovery/560d6a01fcb5f8b20f5441fa52322006b4c0c106.webp",
+      "src": "/photos/discovery/0de448c37b936c6557233d7cda302430431ea355a29d93436f371cc4a421b250.webp",
       "alt": "Sarajevo Tunnel",
       "creditId": "560d6a01fcb5f8b20f5441fa52322006b4c0c106",
       "article": "https://en.wikipedia.org/wiki/Sarajevo_Tunnel",
-      "width": 338,
-      "height": 600,
-      "bytes": 18158
+      "width": 270,
+      "height": 480,
+      "bytes": 11490
     },
     "sarajevo-bascarsija": {
-      "src": "/photos/discovery/e18759fa951405543d815eac0ed9e5b9dc5deb42.webp",
+      "src": "/photos/discovery/1fa5334cdebf2ad37af9caa8a6969eb6724e7575776f0c98cef62e7fa54ddb41.webp",
       "alt": "Baščaršija",
       "creditId": "e18759fa951405543d815eac0ed9e5b9dc5deb42",
       "article": "https://en.wikipedia.org/wiki/Ba%C5%A1%C4%8Dar%C5%A1ija",
-      "width": 800,
-      "height": 533,
-      "bytes": 135718
+      "width": 640,
+      "height": 426,
+      "bytes": 85068
     },
     "sarajevo-national-museum-of-bosnia-and-herzegovina": {
-      "src": "/photos/discovery/11c66b267965ae58fbf47c85418a6265f21cd617.webp",
+      "src": "/photos/discovery/0436b5864131ca6c1978f65446fd45a8bf9189edd0c1fdd59c29064588fa3b26.webp",
       "alt": "National Museum of Bosnia and Herzegovina",
       "creditId": "11c66b267965ae58fbf47c85418a6265f21cd617",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Bosnia_and_Herzegovina",
-      "width": 800,
-      "height": 533,
-      "bytes": 91142
+      "width": 640,
+      "height": 426,
+      "bytes": 57310
     },
     "mostar-stari-most": {
-      "src": "/photos/discovery/b429f8e3c970e9e5b2a55dcda42db5aec705d15b.webp",
+      "src": "/photos/discovery/4b638f8463cf910000e60d1b215fbf18ebb6e698085f34871eb45f95abe193cb.webp",
       "alt": "Stari Most",
       "creditId": "b429f8e3c970e9e5b2a55dcda42db5aec705d15b",
       "article": "https://en.wikipedia.org/wiki/Stari_Most",
-      "width": 800,
-      "height": 536,
-      "bytes": 92716
-    },
-    "blagaj-buna-river-spring": {
-      "src": "/photos/discovery/c96bda4dd18f9e406aec40d393d7342b2ffd4334.webp",
-      "alt": "Buna (Adriatic Sea)",
-      "creditId": "c96bda4dd18f9e406aec40d393d7342b2ffd4334",
-      "article": "https://en.wikipedia.org/wiki/Buna_(Adriatic_Sea)",
-      "width": 800,
-      "height": 533,
-      "bytes": 66770
+      "width": 640,
+      "height": 429,
+      "bytes": 55184
     },
     "tirana-skanderbeg-square": {
-      "src": "/photos/discovery/897e55ed96ae5c26eda78d5586b54920ac66b358.webp",
+      "src": "/photos/discovery/e063960aea8d0f5250c05f0216c2afd229f1ff530e6d1488e3719b15cd16720b.webp",
       "alt": "Skanderbeg Square",
       "creditId": "897e55ed96ae5c26eda78d5586b54920ac66b358",
       "article": "https://en.wikipedia.org/wiki/Skanderbeg_Square",
-      "width": 800,
-      "height": 600,
-      "bytes": 67878
+      "width": 640,
+      "height": 480,
+      "bytes": 41234
     },
     "tirana-grand-park-of-tirana": {
-      "src": "/photos/discovery/1746cb5998a537940717fd19f4d4eb19364d0d1c.webp",
+      "src": "/photos/discovery/ecce04be3e804ef46c59f5da18271dd6fab67766cf03ccd84b247d6fe847dff4.webp",
       "alt": "Grand Park of Tirana",
       "creditId": "1746cb5998a537940717fd19f4d4eb19364d0d1c",
       "article": "https://en.wikipedia.org/wiki/Grand_Park_of_Tirana",
-      "width": 800,
-      "height": 516,
-      "bytes": 77920
+      "width": 640,
+      "height": 413,
+      "bytes": 44792
     },
     "berat-berat-castle": {
-      "src": "/photos/discovery/2e8ba28553205b3d4d42bf52813831562951ffc2.webp",
+      "src": "/photos/discovery/9daafcadd6de71bcd34bcd7dd8bca92e470fcc09f0fce8b1e6be79f3d589ee9f.webp",
       "alt": "Berat Castle",
       "creditId": "2e8ba28553205b3d4d42bf52813831562951ffc2",
       "article": "https://en.wikipedia.org/wiki/Berat_Castle",
-      "width": 800,
-      "height": 600,
-      "bytes": 134228
+      "width": 640,
+      "height": 480,
+      "bytes": 79600
     },
     "gjirokaster-gjirokaster-fortress": {
-      "src": "/photos/discovery/9985f62e98b9faecf7b8bc14f90718d0a24c4649.webp",
+      "src": "/photos/discovery/84ff8e91daee02cee181984f4c69d1e4a22da5c9d3212f618c9601b7cb43d17f.webp",
       "alt": "Gjirokastër Fortress",
       "creditId": "9985f62e98b9faecf7b8bc14f90718d0a24c4649",
       "article": "https://en.wikipedia.org/wiki/Gjirokast%C3%ABr_Fortress",
-      "width": 800,
-      "height": 534,
-      "bytes": 96024
+      "width": 640,
+      "height": 427,
+      "bytes": 57974
     },
     "butrint-butrint-archaeological-site": {
-      "src": "/photos/discovery/5950d34db8b6b7d40b3cd6d07a4b287b60e75793.webp",
+      "src": "/photos/discovery/2fe400e5ffc29aeb7e135d38413c78a159593e16ff41168c3b321701f5ea94a7.webp",
       "alt": "Butrint",
       "creditId": "5950d34db8b6b7d40b3cd6d07a4b287b60e75793",
       "article": "https://en.wikipedia.org/wiki/Butrint",
-      "width": 800,
-      "height": 536,
-      "bytes": 133224
+      "width": 640,
+      "height": 429,
+      "bytes": 81438
     },
     "kotor-kotor-city-walls": {
-      "src": "/photos/discovery/097c90618fd1b0aa0c67c39bca4d440a7bb74193.webp",
+      "src": "/photos/discovery/f5c392a8cc48c7216e77ea2968dbd1b3c12b554a04d13e6c47f8a8aff01bb475.webp",
       "alt": "Fortifications of Kotor",
       "creditId": "097c90618fd1b0aa0c67c39bca4d440a7bb74193",
       "article": "https://en.wikipedia.org/wiki/Fortifications_of_Kotor",
-      "width": 800,
-      "height": 533,
-      "bytes": 126666
+      "width": 640,
+      "height": 426,
+      "bytes": 73120
     },
     "zabljak-durmitor-national-park": {
-      "src": "/photos/discovery/736b2ff1446a5c8ce00653ce658a72bba958c073.webp",
+      "src": "/photos/discovery/16454207ab53003d1df0fbe86709ca988cbd39e8e3b62e10ab92a9001e620abb.webp",
       "alt": "Durmitor",
       "creditId": "736b2ff1446a5c8ce00653ce658a72bba958c073",
       "article": "https://en.wikipedia.org/wiki/Durmitor",
-      "width": 800,
-      "height": 536,
-      "bytes": 72358
+      "width": 640,
+      "height": 429,
+      "bytes": 38558
     },
     "zabljak-black-lake": {
-      "src": "/photos/discovery/65f1cc1415c41e4a762c4962f349a833fc7e1384.webp",
+      "src": "/photos/discovery/48bab6c0539befc466ad4f441d6a8dc26b205d0291c34ae9b061593d92a3211b.webp",
       "alt": "Black Lake (Montenegro)",
       "creditId": "65f1cc1415c41e4a762c4962f349a833fc7e1384",
       "article": "https://en.wikipedia.org/wiki/Black_Lake_(Montenegro)",
-      "width": 800,
-      "height": 533,
-      "bytes": 73328
+      "width": 640,
+      "height": 426,
+      "bytes": 41664
     },
     "skopje-stone-bridge": {
-      "src": "/photos/discovery/4941f6568e98bd591712eaae81d0c3402bf0e47d.webp",
+      "src": "/photos/discovery/56c780e24426d5a92119ee9daa2c1b6b23525fd289fe3f4ab512787ac30eb9fe.webp",
       "alt": "Stone Bridge (Skopje)",
       "creditId": "4941f6568e98bd591712eaae81d0c3402bf0e47d",
       "article": "https://en.wikipedia.org/wiki/Stone_Bridge_(Skopje)",
-      "width": 800,
-      "height": 600,
-      "bytes": 50022
+      "width": 640,
+      "height": 480,
+      "bytes": 28826
     },
     "skopje-skopje-old-bazaar": {
-      "src": "/photos/discovery/8bc0e735ea7ae371ecb76d4426a9cbcfef815a5f.webp",
+      "src": "/photos/discovery/a4b29061e638fb51fafa5f6159f381c38daecc36f4ea9f057f7e143a1cd78ad1.webp",
       "alt": "Old Bazaar, Skopje",
       "creditId": "8bc0e735ea7ae371ecb76d4426a9cbcfef815a5f",
       "article": "https://en.wikipedia.org/wiki/Old_Bazaar,_Skopje",
-      "width": 800,
-      "height": 533,
-      "bytes": 64626
+      "width": 640,
+      "height": 426,
+      "bytes": 36110
     },
     "skopje-matka-canyon": {
-      "src": "/photos/discovery/ace9c165f0d8dca161989b60efb1ac9f14c30b6c.webp",
+      "src": "/photos/discovery/24899afd21048b69c1bf89d3252e8d260740c4d8129bbfa0d598d7e58891a478.webp",
       "alt": "Matka Canyon",
       "creditId": "ace9c165f0d8dca161989b60efb1ac9f14c30b6c",
       "article": "https://en.wikipedia.org/wiki/Matka_Canyon",
-      "width": 800,
-      "height": 533,
-      "bytes": 87366
+      "width": 640,
+      "height": 426,
+      "bytes": 50104
     },
     "ohrid-ancient-theatre-of-ohrid": {
-      "src": "/photos/discovery/e8ade3f21fe89248eec5cd83ea997b71b2e7ab0f.webp",
+      "src": "/photos/discovery/cdfd331db18fe8c655a24af37c30eea56caeaddf36dc8a2122408ecf8d5914dc.webp",
       "alt": "Ancient Theatre of Ohrid",
       "creditId": "e8ade3f21fe89248eec5cd83ea997b71b2e7ab0f",
       "article": "https://en.wikipedia.org/wiki/Ancient_Theatre_of_Ohrid",
-      "width": 800,
-      "height": 559,
-      "bytes": 117704
+      "width": 640,
+      "height": 447,
+      "bytes": 69084
     },
     "seoul-national-museum-of-korea": {
-      "src": "/photos/discovery/76e77a725f1c19d81621c95c372e2aa1c11fbc62.webp",
+      "src": "/photos/discovery/ae7e30f43c218b3fdd1a5769ffec54f9a56641a9cc3cc5bd48b351816798f84a.webp",
       "alt": "National Museum of Korea",
       "creditId": "76e77a725f1c19d81621c95c372e2aa1c11fbc62",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Korea",
-      "width": 800,
-      "height": 533,
-      "bytes": 49278
+      "width": 640,
+      "height": 426,
+      "bytes": 28266
     },
     "seoul-cheonggyecheon": {
-      "src": "/photos/discovery/8b313347955431735857b0593462d1c4f9049719.webp",
+      "src": "/photos/discovery/b9f38cec7f30cb0c91c0b9faa29ab9bf667cfb2de67606b50b853fb11645570b.webp",
       "alt": "Cheonggyecheon",
       "creditId": "8b313347955431735857b0593462d1c4f9049719",
       "article": "https://en.wikipedia.org/wiki/Cheonggyecheon",
-      "width": 800,
-      "height": 533,
-      "bytes": 80834
+      "width": 640,
+      "height": 426,
+      "bytes": 47014
     },
     "taipei-taipei-101": {
-      "src": "/photos/discovery/fe81ba0b65832d81939b72751e53788c3c6599d8.webp",
+      "src": "/photos/discovery/c5f3698862b09d97b7f0f6c12d43af062050dd913aac1c349456cd99a01ebb3c.webp",
       "alt": "Taipei 101",
       "creditId": "fe81ba0b65832d81939b72751e53788c3c6599d8",
       "article": "https://en.wikipedia.org/wiki/Taipei_101",
-      "width": 338,
-      "height": 600,
-      "bytes": 20674
+      "width": 270,
+      "height": 480,
+      "bytes": 12216
     },
     "taipei-national-palace-museum": {
-      "src": "/photos/discovery/8ac75bddf1d7cf3e80a5210c3c60d36261f8494e.webp",
+      "src": "/photos/discovery/9137fd98332b275ffba0e4c7c41a8037c64d316fb944f7f84c06370f350d873e.webp",
       "alt": "National Palace Museum",
       "creditId": "8ac75bddf1d7cf3e80a5210c3c60d36261f8494e",
       "article": "https://en.wikipedia.org/wiki/National_Palace_Museum",
-      "width": 800,
-      "height": 532,
-      "bytes": 98508
+      "width": 640,
+      "height": 426,
+      "bytes": 55302
     },
     "taipei-chiang-kai-shek-memorial-hall": {
-      "src": "/photos/discovery/b4acb1baf563699ea92ff786e4448aa1630db8d4.webp",
+      "src": "/photos/discovery/c04171e8f00483a0acad1873c68293ae8c865549d5054e1c38ca229fa0e82b87.webp",
       "alt": "Chiang Kai-shek Memorial Hall",
       "creditId": "b4acb1baf563699ea92ff786e4448aa1630db8d4",
       "article": "https://en.wikipedia.org/wiki/Chiang_Kai-shek_Memorial_Hall",
-      "width": 800,
-      "height": 533,
-      "bytes": 57192
+      "width": 640,
+      "height": 426,
+      "bytes": 32612
     },
     "taichung-national-museum-of-natural-science": {
-      "src": "/photos/discovery/1fcf1a3eff73c94f5270c78074b2fb281f86ae73.webp",
+      "src": "/photos/discovery/2dcc9de5ddb1b4113a427890a6fa2823099fe989bd7ff33d804704c8631929a6.webp",
       "alt": "National Museum of Natural Science",
       "creditId": "1fcf1a3eff73c94f5270c78074b2fb281f86ae73",
       "article": "https://en.wikipedia.org/wiki/National_Museum_of_Natural_Science",
-      "width": 797,
-      "height": 600,
-      "bytes": 115928
+      "width": 638,
+      "height": 480,
+      "bytes": 68740
     },
     "kuala-lumpur-petronas-twin-towers": {
-      "src": "/photos/discovery/4504d0f87bfda95451223ca0c2378bcf6b83bd33.webp",
+      "src": "/photos/discovery/6347e9b3ef0f354249d318c8c44dfccd78d987081706f3d675df294c91f655f8.webp",
       "alt": "Petronas Towers",
       "creditId": "4504d0f87bfda95451223ca0c2378bcf6b83bd33",
       "article": "https://en.wikipedia.org/wiki/Petronas_Towers",
-      "width": 400,
-      "height": 600,
-      "bytes": 45960
+      "width": 320,
+      "height": 480,
+      "bytes": 27224
     },
     "kuala-lumpur-klcc-park": {
-      "src": "/photos/discovery/60acf2821a4628c6a570d72df978637e09eff2e9.webp",
+      "src": "/photos/discovery/c66ee170bfaf8b353f1ba138a10d462cda0d2ac899d9f6b0886e96a64616247d.webp",
       "alt": "KLCC Park",
       "creditId": "60acf2821a4628c6a570d72df978637e09eff2e9",
       "article": "https://en.wikipedia.org/wiki/KLCC_Park",
-      "width": 800,
-      "height": 600,
-      "bytes": 102808
+      "width": 640,
+      "height": 480,
+      "bytes": 59000
     },
     "kuala-lumpur-national-museum-of-malaysia": {
-      "src": "/photos/discovery/4ec86b13e8fb547831f58d4148f2988689323ebe.webp",
+      "src": "/photos/discovery/f264acaddc2673605a43bc3b47f145c92db9cbe1a24da951c77d3f159846c215.webp",
       "alt": "National Museum (Malaysia)",
       "creditId": "4ec86b13e8fb547831f58d4148f2988689323ebe",
       "article": "https://en.wikipedia.org/wiki/National_Museum_(Malaysia)",
-      "width": 800,
-      "height": 450,
-      "bytes": 58704
+      "width": 640,
+      "height": 360,
+      "bytes": 33788
     },
     "kuala-lumpur-perdana-botanical-gardens": {
-      "src": "/photos/discovery/1f333564b9d44547cb4f0f53d1bdec77e279b3fa.webp",
+      "src": "/photos/discovery/1196ed7a87940e0ecbf227881f0efc174c39025ff96f7f0f340bb8fedbf1e994.webp",
       "alt": "Perdana Botanical Gardens",
       "creditId": "1f333564b9d44547cb4f0f53d1bdec77e279b3fa",
       "article": "https://en.wikipedia.org/wiki/Perdana_Botanical_Gardens",
-      "width": 800,
-      "height": 450,
-      "bytes": 67970
+      "width": 640,
+      "height": 360,
+      "bytes": 37920
     },
     "san-jose-national-museum-of-costa-rica": {
-      "src": "/photos/discovery/44e5d1db19a05c3e3a826217b638fa0a882f4a82.webp",
+      "src": "/photos/discovery/e0d5855ad0f992d7c16829b03a4d0f74acd8d97ce7926bffe1adaa04930642d9.webp",
       "alt": "Museo Nacional de Costa Rica",
       "creditId": "44e5d1db19a05c3e3a826217b638fa0a882f4a82",
       "article": "https://en.wikipedia.org/wiki/Museo_Nacional_de_Costa_Rica",
-      "width": 800,
-      "height": 600,
-      "bytes": 71636
+      "width": 640,
+      "height": 480,
+      "bytes": 43494
     },
     "san-jose-pre-columbian-gold-museum": {
-      "src": "/photos/discovery/5c6fea9ccc8fecb6bc077d301c9dd2b87109080f.webp",
+      "src": "/photos/discovery/ea298d94ef8e338150a1c9941940e3720158c9e1b5aabc89726b6e6c4558de0a.webp",
       "alt": "Pre-Columbian Gold Museum",
       "creditId": "5c6fea9ccc8fecb6bc077d301c9dd2b87109080f",
       "article": "https://en.wikipedia.org/wiki/Pre-Columbian_Gold_Museum",
-      "width": 800,
-      "height": 600,
-      "bytes": 119812
+      "width": 640,
+      "height": 480,
+      "bytes": 70566
     },
     "la-fortuna-arenal-volcano": {
-      "src": "/photos/discovery/6e091785cd1fd3b8d921584f41e459f6345b27f6.webp",
+      "src": "/photos/discovery/19f2fdf197f0bb78980fa280277ca2ede487ab2a1e850bd17ff8cb33547d10e7.webp",
       "alt": "Arenal Volcano",
       "creditId": "6e091785cd1fd3b8d921584f41e459f6345b27f6",
       "article": "https://en.wikipedia.org/wiki/Arenal_Volcano",
-      "width": 800,
-      "height": 442,
-      "bytes": 61494
+      "width": 640,
+      "height": 354,
+      "bytes": 35586
     },
     "monteverde-monteverde-cloud-forest-reserve": {
-      "src": "/photos/discovery/0ca188d9298c4a0aefd0f29d31abf98a40cc2cd9.webp",
+      "src": "/photos/discovery/d654363c3ccb9d4e9be5c004ea4737b4dce3bd5723a0c29b53cfe1334741346b.webp",
       "alt": "Monteverde Cloud Forest Reserve",
       "creditId": "0ca188d9298c4a0aefd0f29d31abf98a40cc2cd9",
       "article": "https://en.wikipedia.org/wiki/Monteverde_Cloud_Forest_Reserve",
-      "width": 800,
-      "height": 600,
-      "bytes": 119554
+      "width": 640,
+      "height": 480,
+      "bytes": 70218
     },
     "panama-city-biomuseo": {
-      "src": "/photos/discovery/b07af12528b82768fe8d1be20016b431c95e4bae.webp",
+      "src": "/photos/discovery/fe1825b108560061ba45d7b66c7ae20e2e17e36eac43edf4d6b5b7fffe18288f.webp",
       "alt": "Biomuseo",
       "creditId": "b07af12528b82768fe8d1be20016b431c95e4bae",
       "article": "https://en.wikipedia.org/wiki/Biomuseo",
-      "width": 800,
-      "height": 521,
-      "bytes": 97176
+      "width": 640,
+      "height": 417,
+      "bytes": 56110
     },
     "panama-city-casco-viejo": {
-      "src": "/photos/discovery/b7537b648027be8122ff2d749c8ca7a537f2f3b9.webp",
+      "src": "/photos/discovery/17b93bc8d7282b1f740cbc0c24ff915c61bd406969bb16b75558475c8c9a2233.webp",
       "alt": "Casco Viejo, Panama",
       "creditId": "b7537b648027be8122ff2d749c8ca7a537f2f3b9",
       "article": "https://en.wikipedia.org/wiki/Casco_Viejo,_Panama",
-      "width": 800,
-      "height": 600,
-      "bytes": 118900
+      "width": 640,
+      "height": 480,
+      "bytes": 69726
     },
     "panama-city-miraflores-locks": {
-      "src": "/photos/discovery/5e4fbaf29a370fc1e9e2780db60de8dde4a5b7a3.webp",
+      "src": "/photos/discovery/d9d9aa4fda241c140f8d24e902c517379e998dacc2fd88fce37bbede5fdfeba0.webp",
       "alt": "Miraflores (Panama)",
       "creditId": "5e4fbaf29a370fc1e9e2780db60de8dde4a5b7a3",
       "article": "https://en.wikipedia.org/wiki/Miraflores_(Panama)",
-      "width": 800,
-      "height": 176,
-      "bytes": 23074
+      "width": 640,
+      "height": 141,
+      "bytes": 14206
     },
     "panama-city-ancon-hill": {
-      "src": "/photos/discovery/a1c47c993488e3f6ae3ee99e1cfd12d207492c65.webp",
+      "src": "/photos/discovery/821049a001e5ae3385c707ab61e4e11ea0f3a244f9e9601f347f8c49a8cb5d2f.webp",
       "alt": "Ancon Hill",
       "creditId": "a1c47c993488e3f6ae3ee99e1cfd12d207492c65",
       "article": "https://en.wikipedia.org/wiki/Ancon_Hill",
-      "width": 800,
-      "height": 600,
-      "bytes": 62886
+      "width": 640,
+      "height": 480,
+      "bytes": 34334
     },
     "quito-mitad-del-mundo": {
-      "src": "/photos/discovery/ae83c31d3e13a4be9c78e9f9f5e21d3db4205c32.webp",
+      "src": "/photos/discovery/8b7159eabc79d6bcaedf06c04f4d84a9f5dcaab8380d7811910ac59966f7a1cd.webp",
       "alt": "Ciudad Mitad del Mundo",
       "creditId": "ae83c31d3e13a4be9c78e9f9f5e21d3db4205c32",
       "article": "https://en.wikipedia.org/wiki/Ciudad_Mitad_del_Mundo",
-      "width": 797,
-      "height": 600,
-      "bytes": 28984
+      "width": 638,
+      "height": 480,
+      "bytes": 16530
     },
     "quito-el-panecillo": {
-      "src": "/photos/discovery/26c5f1f09c067a8e2da15d3fcb9b4ead4c2ac911.webp",
+      "src": "/photos/discovery/0d673177ed7fcb5fcf6771b610b4b0de6e3245ddcf97c276e5e32484d1ff0518.webp",
       "alt": "El Panecillo",
       "creditId": "26c5f1f09c067a8e2da15d3fcb9b4ead4c2ac911",
       "article": "https://en.wikipedia.org/wiki/El_Panecillo",
-      "width": 800,
-      "height": 533,
-      "bytes": 85330
+      "width": 640,
+      "height": 426,
+      "bytes": 51754
     },
     "cotopaxi-cotopaxi-national-park": {
-      "src": "/photos/discovery/37148b4b653418d6d66aeee287b268adfae6b94b.webp",
+      "src": "/photos/discovery/d0fb58fd70c13153391e890c52d34528078d0493814b2a9ce8f9259488eeb849.webp",
       "alt": "Cotopaxi National Park",
       "creditId": "37148b4b653418d6d66aeee287b268adfae6b94b",
       "article": "https://en.wikipedia.org/wiki/Cotopaxi_National_Park",
-      "width": 800,
-      "height": 411,
-      "bytes": 28356
+      "width": 640,
+      "height": 329,
+      "bytes": 16758
     },
     "santiago-san-cristobal-hill": {
-      "src": "/photos/discovery/ac31e425498b6ecc2e2052474e30464c6a4dfff4.webp",
+      "src": "/photos/discovery/670f04b8139e2e63c97ab67eeb1842eaac3e0537d75d2edfb21ed9cbd3efd66d.webp",
       "alt": "San Cristóbal Hill",
       "creditId": "ac31e425498b6ecc2e2052474e30464c6a4dfff4",
       "article": "https://en.wikipedia.org/wiki/San_Crist%C3%B3bal_Hill",
-      "width": 800,
-      "height": 599,
-      "bytes": 61086
+      "width": 640,
+      "height": 479,
+      "bytes": 35406
     },
     "santiago-chilean-museum-of-pre-columbian-art": {
-      "src": "/photos/discovery/5e8f80703a9408fea2474b914ae3b51ccd5a9ef6.webp",
+      "src": "/photos/discovery/612a6dce1aaab2ee78e4c7cfa7fea284952548510740916e5f0e236977ea1c7c.webp",
       "alt": "Museo Chileno de Arte Precolombino",
       "creditId": "5e8f80703a9408fea2474b914ae3b51ccd5a9ef6",
       "article": "https://en.wikipedia.org/wiki/Museo_Chileno_de_Arte_Precolombino",
-      "width": 800,
-      "height": 583,
-      "bytes": 71302
+      "width": 640,
+      "height": 466,
+      "bytes": 44250
     },
     "santiago-santa-lucia-hill": {
-      "src": "/photos/discovery/67847ae7eeb4fac44f8d161ece91744c6bb267c2.webp",
+      "src": "/photos/discovery/a2d4382b08c5e452a3e06340d5121d378f4c8a410c380b86481a6e1b82dbc635.webp",
       "alt": "Santa Lucía Hill",
       "creditId": "67847ae7eeb4fac44f8d161ece91744c6bb267c2",
       "article": "https://en.wikipedia.org/wiki/Santa_Luc%C3%ADa_Hill",
-      "width": 800,
-      "height": 600,
-      "bytes": 141720
+      "width": 640,
+      "height": 480,
+      "bytes": 88088
     },
     "puerto-natales-torres-del-paine-national-park": {
-      "src": "/photos/discovery/0609e65dca6db53425246f7d39a16e963e955f29.webp",
+      "src": "/photos/discovery/5e3c46a3df9a644f3ee0c0245c157b97dd5d4880998adb6a54261bf3b088e86e.webp",
       "alt": "Torres del Paine National Park",
       "creditId": "0609e65dca6db53425246f7d39a16e963e955f29",
       "article": "https://en.wikipedia.org/wiki/Torres_del_Paine_National_Park",
-      "width": 474,
-      "height": 600,
-      "bytes": 60278
+      "width": 379,
+      "height": 480,
+      "bytes": 33638
     },
     "montevideo-rambla-of-montevideo": {
-      "src": "/photos/discovery/c5e52c0b4859cb582a73371a7c3e1a5309e300f6.webp",
+      "src": "/photos/discovery/3327a5fc36cd4f0a9507b6a31cec4b5d97b2f7e41056e7249080ce28783746b0.webp",
       "alt": "Rambla of Montevideo",
       "creditId": "c5e52c0b4859cb582a73371a7c3e1a5309e300f6",
       "article": "https://en.wikipedia.org/wiki/Rambla_of_Montevideo",
-      "width": 800,
-      "height": 600,
-      "bytes": 55242
+      "width": 640,
+      "height": 480,
+      "bytes": 33006
     },
     "nairobi-nairobi-national-park": {
-      "src": "/photos/discovery/584cf3ffcaf322d6faf579207e4397dd8ae78566.webp",
+      "src": "/photos/discovery/0aa37e6b9eab075b1a931deeb7c921caa377aa305501049d6e3929fb3d5e315b.webp",
       "alt": "Nairobi National Park",
       "creditId": "584cf3ffcaf322d6faf579207e4397dd8ae78566",
       "article": "https://en.wikipedia.org/wiki/Nairobi_National_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 129764
+      "width": 640,
+      "height": 426,
+      "bytes": 82504
     },
     "nairobi-karura-forest": {
-      "src": "/photos/discovery/29feb5e6b212126ed1bf4a1f04f9b83306d12f9b.webp",
+      "src": "/photos/discovery/acea30826c897336b769a9a97020ac2ab1b0ba8388ad735dffde625079f02240.webp",
       "alt": "Karura Forest",
       "creditId": "29feb5e6b212126ed1bf4a1f04f9b83306d12f9b",
       "article": "https://en.wikipedia.org/wiki/Karura_Forest",
-      "width": 800,
-      "height": 488,
-      "bytes": 96850
+      "width": 640,
+      "height": 390,
+      "bytes": 56450
     },
     "nairobi-nairobi-national-museum": {
-      "src": "/photos/discovery/813ba78c89d372e3f8807bc81b2db3899b9f51eb.webp",
+      "src": "/photos/discovery/75d2ecd1d48f149bba7afc4c1640558b3ab7ac46976dac145d6a8de5efa69f3f.webp",
       "alt": "National Museums of Kenya",
       "creditId": "813ba78c89d372e3f8807bc81b2db3899b9f51eb",
       "article": "https://en.wikipedia.org/wiki/National_Museums_of_Kenya",
-      "width": 800,
-      "height": 450,
-      "bytes": 109336
+      "width": 640,
+      "height": 360,
+      "bytes": 65314
     },
     "nairobi-giraffe-centre": {
-      "src": "/photos/discovery/6cc4c88d1ceb527d474ba661189de029042a158d.webp",
+      "src": "/photos/discovery/f457c3ab10baeb2ac4e03ce79af5913227282b21679425b95876040d0779ffda.webp",
       "alt": "Giraffe Centre",
       "creditId": "6cc4c88d1ceb527d474ba661189de029042a158d",
       "article": "https://en.wikipedia.org/wiki/Giraffe_Centre",
-      "width": 800,
-      "height": 533,
-      "bytes": 70364
+      "width": 640,
+      "height": 426,
+      "bytes": 46574
     },
     "arusha-arusha-national-park": {
-      "src": "/photos/discovery/b8010f4fae5ba2ef86ecb24d8d3da72d50c65a39.webp",
+      "src": "/photos/discovery/0e871bf295e8ea6df366529cc4eb11111fe2d518c0bf4b40e6af4eef06c1c64b.webp",
       "alt": "Arusha National Park",
       "creditId": "b8010f4fae5ba2ef86ecb24d8d3da72d50c65a39",
       "article": "https://en.wikipedia.org/wiki/Arusha_National_Park",
-      "width": 800,
-      "height": 439,
-      "bytes": 48806
+      "width": 640,
+      "height": 351,
+      "bytes": 28556
     },
     "serengeti-serengeti-national-park": {
-      "src": "/photos/discovery/13420c59e8c11a4fb44a387e40269928ccf76836.webp",
+      "src": "/photos/discovery/0a067b79cdffcb4730bcf41ec304ddca6e0a49c821030cdf00e518842f5435f9.webp",
       "alt": "Serengeti National Park",
       "creditId": "13420c59e8c11a4fb44a387e40269928ccf76836",
       "article": "https://en.wikipedia.org/wiki/Serengeti_National_Park",
-      "width": 800,
-      "height": 461,
-      "bytes": 62858
+      "width": 640,
+      "height": 369,
+      "bytes": 34474
     },
     "zanzibar-city-stone-town": {
-      "src": "/photos/discovery/e303167b4defae0a8381205298923f96a2a8ff97.webp",
+      "src": "/photos/discovery/62dfb94f57ab7535fde3d2c071de644ffae12f2e5e41b16bf26788b1fee54673.webp",
       "alt": "Stone Town",
       "creditId": "e303167b4defae0a8381205298923f96a2a8ff97",
       "article": "https://en.wikipedia.org/wiki/Stone_Town",
-      "width": 800,
-      "height": 533,
-      "bytes": 40790
+      "width": 640,
+      "height": 426,
+      "bytes": 24642
     },
     "windhoek-independence-memorial-museum": {
-      "src": "/photos/discovery/bebc56487f417baff679fdd267d594e697038cdb.webp",
+      "src": "/photos/discovery/1e0a40a5cffa7cb3be85237d96540909c9d0212fcdfa5811942e796940875474.webp",
       "alt": "Independence Memorial Museum",
       "creditId": "bebc56487f417baff679fdd267d594e697038cdb",
       "article": "https://en.wikipedia.org/wiki/Independence_Memorial_Museum",
-      "width": 800,
-      "height": 533,
-      "bytes": 107322
+      "width": 640,
+      "height": 426,
+      "bytes": 59656
     },
     "namib-desert-sossusvlei": {
-      "src": "/photos/discovery/abb97235c6030d65551463d4474e4685c8fca795.webp",
+      "src": "/photos/discovery/caf8884981409d9b213ea80ee96b1973578addaea5b85d74c7fbd9464fb475bc.webp",
       "alt": "Sossusvlei",
       "creditId": "abb97235c6030d65551463d4474e4685c8fca795",
       "article": "https://en.wikipedia.org/wiki/Sossusvlei",
-      "width": 800,
-      "height": 533,
-      "bytes": 15412
+      "width": 640,
+      "height": 426,
+      "bytes": 7980
     },
     "etosha-etosha-national-park": {
-      "src": "/photos/discovery/d1134b53ea96f42e01afe92ec3560d55677fbe5e.webp",
+      "src": "/photos/discovery/f23a9f4c215c86a1d3477cea998311fd6753f126d278c50319649469c41719c8.webp",
       "alt": "Etosha National Park",
       "creditId": "d1134b53ea96f42e01afe92ec3560d55677fbe5e",
       "article": "https://en.wikipedia.org/wiki/Etosha_National_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 46430
+      "width": 640,
+      "height": 426,
+      "bytes": 26480
     },
     "livingstone-victoria-falls": {
-      "src": "/photos/discovery/40889381180bbbfec6e702d5e2fa977c7deb9e41.webp",
+      "src": "/photos/discovery/0728d4c6f3f55ac23698be1a792d9dcc030ba9243851322cd0e1bced6f9d24df.webp",
       "alt": "Victoria Falls",
       "creditId": "40889381180bbbfec6e702d5e2fa977c7deb9e41",
       "article": "https://en.wikipedia.org/wiki/Victoria_Falls",
-      "width": 386,
-      "height": 600,
-      "bytes": 48580
+      "width": 309,
+      "height": 480,
+      "bytes": 28098
     },
     "kathmandu-kathmandu-durbar-square": {
-      "src": "/photos/discovery/c01e2c74d3224b08e95e5279001bb8b1dfb5a886.webp",
+      "src": "/photos/discovery/8a432bbf504b199a9f789e3b270e3deaf6306175623aa6e4b7e2974c41f99f01.webp",
       "alt": "Kathmandu Durbar Square",
       "creditId": "c01e2c74d3224b08e95e5279001bb8b1dfb5a886",
       "article": "https://en.wikipedia.org/wiki/Kathmandu_Durbar_Square",
-      "width": 800,
-      "height": 600,
-      "bytes": 51632
+      "width": 640,
+      "height": 480,
+      "bytes": 29556
     },
     "kathmandu-garden-of-dreams": {
-      "src": "/photos/discovery/3fa17774a58896e7ac7521ae05ca78887fd77a00.webp",
+      "src": "/photos/discovery/b087d67f1c03f7c44e8c52e1b91d4270580b41b76ab8441f6541e21f9ffc441b.webp",
       "alt": "Garden of Dreams",
       "creditId": "3fa17774a58896e7ac7521ae05ca78887fd77a00",
       "article": "https://en.wikipedia.org/wiki/Garden_of_Dreams",
-      "width": 800,
-      "height": 480,
-      "bytes": 92184
+      "width": 640,
+      "height": 384,
+      "bytes": 57244
     },
     "pokhara-phewa-lake": {
-      "src": "/photos/discovery/e685a68cc551f5b581559f14462adfa2bd854452.webp",
+      "src": "/photos/discovery/165028cb0a103f1641c84327f9760e713ec84a18b4ea9d77b9fa4e2f9c361f91.webp",
       "alt": "Phewa Lake",
       "creditId": "e685a68cc551f5b581559f14462adfa2bd854452",
       "article": "https://en.wikipedia.org/wiki/Phewa_Lake",
-      "width": 800,
-      "height": 533,
-      "bytes": 61192
+      "width": 640,
+      "height": 426,
+      "bytes": 33428
     },
     "sigiriya-sigiriya": {
-      "src": "/photos/discovery/8f19608a09519883606a6c9617ac3e711da4cc7d.webp",
+      "src": "/photos/discovery/7034904a3855b8bcf39000b82dc5f08c48fe3c362e4bd9c4c55b02577887e4e1.webp",
       "alt": "Sigiriya",
       "creditId": "8f19608a09519883606a6c9617ac3e711da4cc7d",
       "article": "https://en.wikipedia.org/wiki/Sigiriya",
-      "width": 800,
-      "height": 533,
-      "bytes": 84012
+      "width": 640,
+      "height": 426,
+      "bytes": 47626
     },
     "kandy-peradeniya-royal-botanical-gardens": {
-      "src": "/photos/discovery/c7f5082168fd1b0b6f28806348a5372452c9a5f2.webp",
+      "src": "/photos/discovery/00126327d5f37026bae79d5aab0f78e281262ecedc9daf48cfb0773e73c621f5.webp",
       "alt": "Royal Botanic Gardens, Peradeniya",
       "creditId": "c7f5082168fd1b0b6f28806348a5372452c9a5f2",
       "article": "https://en.wikipedia.org/wiki/Royal_Botanic_Gardens,_Peradeniya",
-      "width": 800,
-      "height": 600,
-      "bytes": 150164
+      "width": 640,
+      "height": 480,
+      "bytes": 88466
     },
     "galle-galle-fort": {
-      "src": "/photos/discovery/eb61cc6d85989c50c05969f6b0b3a6fa8a2dead4.webp",
+      "src": "/photos/discovery/20c7722069df6bf8806cf1f8949c3ea11f95706ace2889dd28c01a139c247042.webp",
       "alt": "Galle Fort",
       "creditId": "eb61cc6d85989c50c05969f6b0b3a6fa8a2dead4",
       "article": "https://en.wikipedia.org/wiki/Galle_Fort",
-      "width": 800,
-      "height": 599,
-      "bytes": 97736
+      "width": 640,
+      "height": 479,
+      "bytes": 53930
+    },
+    "glacier-express": {
+      "src": "/photos/discovery/906fed9ccc46aa8ffac1fad0284168fad782d7d22d0916c825728cda4606d2e8.webp",
+      "alt": "Glacier Express",
+      "creditId": "8fbca1928e1ff6a636a22b9c8efdc3c419410985",
+      "width": 310,
+      "height": 480,
+      "bytes": 38052,
+      "article": "https://en.wikipedia.org/wiki/Glacier_Express"
+    },
+    "toledo-transito-synagogue": {
+      "src": "/photos/discovery/3f59cf5635f1ad1ebbad93c21ff9f3fdc3930b03aef0d91d1e9073063e43e4b4.webp",
+      "alt": "Synagogue of Santa María la Blanca",
+      "creditId": "c064895b90fe7286844c6ccfe19d83fa6abd77e6",
+      "width": 358,
+      "height": 480,
+      "bytes": 21260,
+      "article": "https://en.wikipedia.org/wiki/Synagogue_of_Santa_Mar%C3%ADa_la_Blanca"
+    },
+    "cordoba-juderia": {
+      "src": "/photos/discovery/11da8107f321b853a1630ee77eac4cbed04f058869837bd39ad4f8566807f10d.webp",
+      "alt": "Córdoba Synagogue",
+      "creditId": "68a0f98a29257c92cffc8acffae3175442954612",
+      "width": 640,
+      "height": 433,
+      "bytes": 67566,
+      "article": "https://en.wikipedia.org/wiki/C%C3%B3rdoba_Synagogue"
+    },
+    "munich-dachau-memorial": {
+      "src": "/photos/discovery/1fc13c8bfbe77ffcda2b63dd70675711e5bf0c20cfe4ea94fa1a2a55c31ef4c8.webp",
+      "alt": "Dachau concentration camp",
+      "creditId": "e5be703d5aeb1e66a1df7dae00b057d978b16371",
+      "width": 360,
+      "height": 480,
+      "bytes": 11616,
+      "article": "https://en.wikipedia.org/wiki/Dachau_concentration_camp"
+    },
+    "cluj-st-michael": {
+      "src": "/photos/discovery/5f8f70006f2d63eaba531cdfa1d2d98344af2f93c489cb9e491c63fbd6cc17dc.webp",
+      "alt": "St. Michael's Church, Cluj-Napoca",
+      "creditId": "a48e2af17b080812892b9996f019c918b78481ce",
+      "width": 640,
+      "height": 480,
+      "bytes": 16912,
+      "article": "https://en.wikipedia.org/wiki/St._Michael%27s_Church%2C_Cluj-Napoca"
+    },
+    "cluj-botanical-garden": {
+      "src": "/photos/discovery/68f3ea5d90b6d297c65fb103d4d423d6686dcd40d6318e8e5dd45b9e6f2f0bbe.webp",
+      "alt": "Cluj-Napoca Botanical Garden",
+      "creditId": "c1f7aab80119689fc74b725afc49e328f1f8362b",
+      "width": 639,
+      "height": 480,
+      "bytes": 85686,
+      "article": "https://en.wikipedia.org/wiki/Cluj-Napoca_Botanical_Garden"
+    },
+    "rhodes-grand-master-palace": {
+      "src": "/photos/discovery/a64744a289b1508f704d5d878be2b929169b8c7ac269abf7956752e09525be78.webp",
+      "alt": "Palace of the Grand Master of the Knights of Rhodes",
+      "creditId": "bb0840f66ba8884180a4127b66267a29297d0ebb",
+      "width": 640,
+      "height": 480,
+      "bytes": 34490,
+      "article": "https://en.wikipedia.org/wiki/Palace_of_the_Grand_Master_of_the_Knights_of_Rhodes"
+    },
+    "rhodes-medieval-city": {
+      "src": "/photos/discovery/40aa3640a61327c66335842383435215005ef58b5c9528265c2553163b80f9ac.webp",
+      "alt": "Rhodes (city)",
+      "creditId": "e5392189b88ab3650f563dcc9c94ebf51400d0a7",
+      "width": 351,
+      "height": 480,
+      "bytes": 18766,
+      "article": "https://en.wikipedia.org/wiki/Rhodes_%28city%29"
+    },
+    "iceland-thingvellir": {
+      "src": "/photos/discovery/a335490b49edd997e41ccf9c028ea7ecb9c67a3df3c55bbd0fa6d2a559e660ba.webp",
+      "alt": "Þingvellir",
+      "creditId": "aeda26ac278dab290608a50ce09a57ea8c430b3b",
+      "width": 640,
+      "height": 360,
+      "bytes": 47642,
+      "article": "https://en.wikipedia.org/wiki/%C3%9Eingvellir"
+    },
+    "iceland-geysir": {
+      "src": "/photos/discovery/773cc0e403d320f923ae188ebc1a8f87dbb8f0a9fccf3ea0474295b3a0656c1a.webp",
+      "alt": "Strokkur",
+      "creditId": "657832aa76018652a9e0b975dc33245f0cd8bb4c",
+      "width": 320,
+      "height": 480,
+      "bytes": 9408,
+      "article": "https://en.wikipedia.org/wiki/Strokkur"
+    },
+    "iceland-gullfoss": {
+      "src": "/photos/discovery/3d3ad4bd79309d537967e5114bc7764a15e4dd026ca449a93f402af53e5097ac.webp",
+      "alt": "Gullfoss",
+      "creditId": "8ab288b125b1af15a39192575c2ed073bb2367c5",
+      "width": 640,
+      "height": 382,
+      "bytes": 46544,
+      "article": "https://en.wikipedia.org/wiki/Gullfoss"
+    },
+    "iceland-skogafoss": {
+      "src": "/photos/discovery/e3eba74d3215bf209836351826f0fcd50198edf50690da758a22a9e7543e30b1.webp",
+      "alt": "Skógafoss",
+      "creditId": "b82cb2665967cdd2478afc7dba6730de7194dfe6",
+      "width": 272,
+      "height": 480,
+      "bytes": 12782,
+      "article": "https://en.wikipedia.org/wiki/Sk%C3%B3gafoss"
+    },
+    "iceland-jokulsarlon": {
+      "src": "/photos/discovery/ebccc0bd16c664f2c7d0cd75495cd8a05b165dd93743f7e7d5d12109c4ea239e.webp",
+      "alt": "Jökulsárlón",
+      "creditId": "ba2d1bd235768a54160a0474def3242556c3ca94",
+      "width": 360,
+      "height": 480,
+      "bytes": 24078,
+      "article": "https://en.wikipedia.org/wiki/J%C3%B6kuls%C3%A1rl%C3%B3n"
+    },
+    "rhodes-jewish-quarter": {
+      "src": "/photos/discovery/cbf4765d39a3a3e2a2a8b4453a2066aaa53af6544bbe517fbb140ceeb74216d7.webp",
+      "alt": "Kahal Shalom Synagogue",
+      "creditId": "f4affa091f6161f188a98c57cd474ac6a12c333c",
+      "width": 360,
+      "height": 480,
+      "bytes": 19696,
+      "article": "https://en.wikipedia.org/wiki/Kahal_Shalom_Synagogue"
+    },
+    "windsor-castle": {
+      "src": "/photos/discovery/b17124a647b59dc6a836af649c87b7ad4fb29145e257637c12bfe42b3811e203.webp",
+      "alt": "Windsor Castle",
+      "creditId": "a7e91bcb2531c642be87a3cc71c94d6e7e458067",
+      "width": 326,
+      "height": 480,
+      "bytes": 14660,
+      "article": "https://en.wikipedia.org/wiki/Windsor_Castle"
+    },
+    "dachau-memorial": {
+      "src": "/photos/discovery/1fc13c8bfbe77ffcda2b63dd70675711e5bf0c20cfe4ea94fa1a2a55c31ef4c8.webp",
+      "alt": "Dachau concentration camp",
+      "creditId": "e5be703d5aeb1e66a1df7dae00b057d978b16371",
+      "width": 360,
+      "height": 480,
+      "bytes": 11616,
+      "article": "https://en.wikipedia.org/wiki/Dachau_concentration_camp"
+    },
+    "caesarea": {
+      "src": "/photos/discovery/a64744a289b1508f704d5d878be2b929169b8c7ac269abf7956752e09525be78.webp",
+      "alt": "Caesarea Maritima",
+      "creditId": "bb0840f66ba8884180a4127b66267a29297d0ebb",
+      "width": 640,
+      "height": 480,
+      "bytes": 34490,
+      "article": "https://en.wikipedia.org/wiki/Caesarea_Maritima"
+    },
+    "beit-guvrin-maresha": {
+      "src": "/photos/discovery/1524e6c42987e05c26075f99acc49aa1ed669a1c66c7062b743b4ea2a4cae7f9.webp",
+      "alt": "Beit Guvrin-Maresha National Park",
+      "creditId": "8d66c770b010dc27784d27dc869b3b80f0839007",
+      "width": 640,
+      "height": 426,
+      "bytes": 27600,
+      "article": "https://en.wikipedia.org/wiki/Beit_Guvrin-Maresha_National_Park"
+    },
+    "swarovski-kristallwelten": {
+      "src": "/photos/discovery/32a48d66e87edfd89689e1558ee6ec264d692db0018c8c768907b50c8813a070.webp",
+      "alt": "Swarovski Kristallwelten",
+      "creditId": "f53bf251055bb063932c2676dce03cf8f8eca724",
+      "width": 640,
+      "height": 472,
+      "bytes": 91174,
+      "article": "https://en.wikipedia.org/wiki/Swarovski_Kristallwelten"
+    },
+    "split-diocletians-palace": {
+      "src": "/photos/discovery/0717b4a0e66564b3dc83541871aed05529f2831d47b1263efe714a0cd35e3dee.webp",
+      "alt": "Diocletian's Palace",
+      "creditId": "e24c550bb7a07102efe91cdef65864c5947547d4",
+      "width": 360,
+      "height": 480,
+      "bytes": 14464,
+      "article": "https://en.wikipedia.org/wiki/Diocletian%27s_Palace"
+    },
+    "cyprus-larnaca-seafront": {
+      "src": "/photos/discovery/e1291dba913567cd32bbeefcf1fe75755ebabfabea2b84dac884bb9309eff7b1.webp",
+      "alt": "Larnaca",
+      "creditId": "0ba780e6589f79783024592446e3c10f16f5c14d",
+      "width": 640,
+      "height": 325,
+      "bytes": 35200,
+      "article": "https://en.wikipedia.org/wiki/Larnaca"
+    },
+    "kruger-national-park": {
+      "src": "/photos/discovery/acd3a86f599ecc3fcc88303d15a6e49e9fdb475e92f34a678634b279581ddfb2.webp",
+      "alt": "Kruger National Park",
+      "creditId": "b959715f56ecde2d987c79903f69b852357339bc",
+      "width": 640,
+      "height": 480,
+      "bytes": 36318,
+      "article": "https://en.wikipedia.org/wiki/Kruger_National_Park"
+    },
+    "queenstown-nz": {
+      "src": "/photos/discovery/12efffe941e4a46f0ec3821bb48c9f0cf14a03f875b04b151de17838969abc09.webp",
+      "alt": "Queenstown, New Zealand",
+      "creditId": "15d73039ff9693d6c32c160421255d7bdf2c3818",
+      "width": 640,
+      "height": 209,
+      "bytes": 20906,
+      "article": "https://en.wikipedia.org/wiki/Queenstown%2C_New_Zealand"
+    },
+    "aoraki-mount-cook": {
+      "src": "/photos/discovery/f392fdfb05477f24f577a8299a8529e310471766a3c4677eb0acefa1fc6f1121.webp",
+      "alt": "Aoraki / Mount Cook",
+      "creditId": "8e80deeffb9a187bcd035ef996f537e3b5be8d3a",
+      "width": 640,
+      "height": 242,
+      "bytes": 26090,
+      "article": "https://en.wikipedia.org/wiki/Aoraki_/_Mount_Cook"
+    },
+    "poas-poas-volcano-national-park": {
+      "src": "/photos/discovery/920d5f69ee4343271f1d826c209cf34d8717fc7f032680e0bfd77cc61c2a7510.webp",
+      "alt": "Poás Volcano National Park",
+      "creditId": "74c44e11bd23081d450ac4c00f39750dff1d4a3d",
+      "width": 640,
+      "height": 224,
+      "bytes": 31480,
+      "article": "https://en.wikipedia.org/wiki/Po%C3%A1s_Volcano_National_Park"
+    },
+    "colonia-del-sacramento-colonia-historic-quarter": {
+      "src": "/photos/discovery/36bf0216a28b1609bd9ce910cbf0969a9930c5ffa21c6d09a71ef3eb7d49e1b0.webp",
+      "alt": "Colonia del Sacramento",
+      "creditId": "f61789364624292c2c2b8af57a8a6362eba0fc83",
+      "width": 640,
+      "height": 479,
+      "bytes": 18248,
+      "article": "https://en.wikipedia.org/wiki/Colonia_del_Sacramento"
+    },
+    "dambulla-dambulla-cave-temple": {
+      "src": "/photos/discovery/9e6010e62a8041a6807e777e072a525cc3ac74b03f46a1b24566b6527d217b25.webp",
+      "alt": "Dambulla cave temple",
+      "creditId": "c12f2f981d2fb5654b5d22e3bf7f0e01ccf9a394",
+      "width": 640,
+      "height": 480,
+      "bytes": 40850,
+      "article": "https://en.wikipedia.org/wiki/Dambulla_cave_temple"
     }
   },
   "city": {
     "rome|italy": {
-      "src": "/photos/discovery/6b3dfec168bce48fdf0a120d582c1f832123c262.webp",
+      "src": "/photos/discovery/d04f19976ed468a328bbcb8db8e0e369e1fd7fb77dede863a6cac57a999cfab7.webp",
       "alt": "View of Rome, Italy",
       "creditId": "6b3dfec168bce48fdf0a120d582c1f832123c262",
       "article": "https://en.wikipedia.org/wiki/Rome",
-      "width": 800,
-      "height": 532,
-      "bytes": 92320
+      "width": 640,
+      "height": 426,
+      "bytes": 55630
     },
     "venice|italy": {
-      "src": "/photos/discovery/09cb272e79ee5888fded26f1848fbb04ab0a46da.webp",
+      "src": "/photos/discovery/2e009fd78c0240a02b6d234b2b6af9c80dd0538e6ac58fc358fc6966485fbc2e.webp",
       "alt": "View of Venice, Italy",
       "creditId": "09cb272e79ee5888fded26f1848fbb04ab0a46da",
       "article": "https://en.wikipedia.org/wiki/Venice",
-      "width": 800,
-      "height": 448,
-      "bytes": 46240
+      "width": 640,
+      "height": 358,
+      "bytes": 26538
     },
     "florence|italy": {
-      "src": "/photos/discovery/42886f4699875165181269321752f478b0b5ee8b.webp",
+      "src": "/photos/discovery/eead5e58ac207a6b71b604984dada0261359b9b87364c222b3671a3f7548514b.webp",
       "alt": "View of Florence, Italy",
       "creditId": "42886f4699875165181269321752f478b0b5ee8b",
       "article": "https://en.wikipedia.org/wiki/Florence",
-      "width": 800,
-      "height": 534,
-      "bytes": 53738
+      "width": 640,
+      "height": 427,
+      "bytes": 31416
     },
     "milan|italy": {
-      "src": "/photos/discovery/a02289ffd6337fb54852cc0d5f0e8d2fc308cfa3.webp",
+      "src": "/photos/discovery/70af3a0e61f982aabb18f2372db535bc3db077e30d623e28eada3fb466b208d1.webp",
       "alt": "View of Milan, Italy",
       "creditId": "a02289ffd6337fb54852cc0d5f0e8d2fc308cfa3",
       "article": "https://en.wikipedia.org/wiki/Milan",
-      "width": 799,
-      "height": 600,
-      "bytes": 86146
+      "width": 639,
+      "height": 480,
+      "bytes": 51572
     },
     "bologna|italy": {
-      "src": "/photos/discovery/62071b67d416aa29dcb900c753cc3d4d2dc97292.webp",
+      "src": "/photos/discovery/09333f6260b82622f8ed08f8cbb5bbde42ce0b468159c4a5602f817d4c1ec976.webp",
       "alt": "View of Bologna, Italy",
       "creditId": "62071b67d416aa29dcb900c753cc3d4d2dc97292",
       "article": "https://en.wikipedia.org/wiki/Bologna",
-      "width": 800,
-      "height": 533,
-      "bytes": 73570
+      "width": 640,
+      "height": 426,
+      "bytes": 44032
     },
     "verona|italy": {
-      "src": "/photos/discovery/542ad8cff3220387308e1d630126cb22321ab16e.webp",
+      "src": "/photos/discovery/3e7752a993bc37ea679ed021f3d08eb3884036f92368d2f396755533dce4987c.webp",
       "alt": "View of Verona, Italy",
       "creditId": "542ad8cff3220387308e1d630126cb22321ab16e",
       "article": "https://en.wikipedia.org/wiki/Verona",
-      "width": 800,
-      "height": 600,
-      "bytes": 93160
+      "width": 640,
+      "height": 480,
+      "bytes": 54574
     },
     "trieste|italy": {
-      "src": "/photos/discovery/2b6fa70216f4020a60db8dd893c0637ff52dab7e.webp",
+      "src": "/photos/discovery/c44449969da51fc1bb9a0c8106a6a5021eedbc9b0120e909c2f62fb6cb9f719b.webp",
       "alt": "View of Trieste, Italy",
       "creditId": "2b6fa70216f4020a60db8dd893c0637ff52dab7e",
       "article": "https://en.wikipedia.org/wiki/Trieste",
-      "width": 800,
-      "height": 534,
-      "bytes": 89878
+      "width": 640,
+      "height": 427,
+      "bytes": 52060
     },
     "naples|italy": {
-      "src": "/photos/discovery/87ae9cef18bf46e2e847f10eb0734a336074d5d7.webp",
+      "src": "/photos/discovery/e0c96e3897869111a92bc2dccc3b5fa76a879f1dbd0c132ce09fe4a042c80bed.webp",
       "alt": "View of Naples, Italy",
       "creditId": "87ae9cef18bf46e2e847f10eb0734a336074d5d7",
       "article": "https://en.wikipedia.org/wiki/Naples",
-      "width": 800,
-      "height": 450,
-      "bytes": 88026
+      "width": 640,
+      "height": 360,
+      "bytes": 48396
     },
     "turin|italy": {
-      "src": "/photos/discovery/6ad16d1ad950fdd51032919c00ff17d955f15fb4.webp",
+      "src": "/photos/discovery/0e407aae7dadaf1bcddea9dffdd329b1f67a32e8ac7a92b150a6f263bad5b00d.webp",
       "alt": "View of Turin, Italy",
       "creditId": "6ad16d1ad950fdd51032919c00ff17d955f15fb4",
       "article": "https://en.wikipedia.org/wiki/Turin",
-      "width": 800,
-      "height": 403,
-      "bytes": 46408
+      "width": 640,
+      "height": 322,
+      "bytes": 28330
     },
     "genoa|italy": {
-      "src": "/photos/discovery/7d2740e2992db1e08515dfe1ffed2b867b2c5f40.webp",
+      "src": "/photos/discovery/dde3bbef63614b929bddd9a5de80389905c4859747cae8497d84b039fbbb2803.webp",
       "alt": "View of Genoa, Italy",
       "creditId": "7d2740e2992db1e08515dfe1ffed2b867b2c5f40",
       "article": "https://en.wikipedia.org/wiki/Genoa",
-      "width": 800,
-      "height": 480,
-      "bytes": 109506
-    },
-    "palermo|italy": {
-      "src": "/photos/discovery/a1ae0856bf960cf9b792b565b331c5d27f1871aa.webp",
-      "alt": "View of Palermo, Italy",
-      "creditId": "a1ae0856bf960cf9b792b565b331c5d27f1871aa",
-      "article": "https://en.wikipedia.org/wiki/Palermo",
-      "width": 550,
-      "height": 600,
-      "bytes": 106176
+      "width": 640,
+      "height": 384,
+      "bytes": 64276
     },
     "padua|italy": {
-      "src": "/photos/discovery/29e3a651d06bf44fef67a40e505bfe8064d861ee.webp",
+      "src": "/photos/discovery/cd774c8ec1800d9db3b4f73ada5cfc23292c25550b1e41912d4d22e97e911dad.webp",
       "alt": "View of Padua, Italy",
       "creditId": "29e3a651d06bf44fef67a40e505bfe8064d861ee",
       "article": "https://en.wikipedia.org/wiki/Padua",
-      "width": 800,
-      "height": 406,
-      "bytes": 53450
+      "width": 640,
+      "height": 325,
+      "bytes": 31524
     },
     "paris|france": {
-      "src": "/photos/discovery/9865b08776f7e905634dd3a65afcb0719a1bfba1.webp",
+      "src": "/photos/discovery/f841c43eea28881b418f0b3d7a5612e74cde4b4e7cc510512395859ced6f1471.webp",
       "alt": "View of Paris, France",
       "creditId": "9865b08776f7e905634dd3a65afcb0719a1bfba1",
       "article": "https://en.wikipedia.org/wiki/Paris",
-      "width": 800,
-      "height": 500,
-      "bytes": 77440
+      "width": 640,
+      "height": 400,
+      "bytes": 45502
     },
     "nice|france": {
-      "src": "/photos/discovery/7cd661aedd325078adb2849bfd5f182b5c94d185.webp",
+      "src": "/photos/discovery/22979ea2144167dc4ac8f1763dee303ebd5c3a07273dea434d1f814047d0dd91.webp",
       "alt": "View of Nice, France",
       "creditId": "7cd661aedd325078adb2849bfd5f182b5c94d185",
       "article": "https://en.wikipedia.org/wiki/Nice",
-      "width": 800,
-      "height": 533,
-      "bytes": 53378
+      "width": 640,
+      "height": 426,
+      "bytes": 31182
     },
     "marseille|france": {
-      "src": "/photos/discovery/de311971c7dd333f89993f07e5044815afd5fee4.webp",
+      "src": "/photos/discovery/ef2298e2ee32c8d426333581a68f63270631130ddaa116430ba3e275119eca94.webp",
       "alt": "View of Marseille, France",
       "creditId": "de311971c7dd333f89993f07e5044815afd5fee4",
       "article": "https://en.wikipedia.org/wiki/Marseille",
-      "width": 800,
-      "height": 533,
-      "bytes": 51300
+      "width": 640,
+      "height": 426,
+      "bytes": 29378
     },
     "strasbourg|france": {
-      "src": "/photos/discovery/b3e9400e7cee160f3cfd0db72ff801793189d919.webp",
+      "src": "/photos/discovery/bd07c4623adc075163a8b07a0fa0e5dc174187dad952bed866ffc334b2028e51.webp",
       "alt": "View of Strasbourg, France",
       "creditId": "b3e9400e7cee160f3cfd0db72ff801793189d919",
       "article": "https://en.wikipedia.org/wiki/Strasbourg",
-      "width": 793,
-      "height": 600,
-      "bytes": 46726
+      "width": 634,
+      "height": 480,
+      "bytes": 27210
     },
     "bordeaux|france": {
-      "src": "/photos/discovery/cc8b28e8cf91381644b3045cd4018757a1171696.webp",
+      "src": "/photos/discovery/f40e97ed8656b9ce1e7d2d75f2833b608bea1eca49a65453f2c0f13d86d92a09.webp",
       "alt": "View of Bordeaux, France",
       "creditId": "cc8b28e8cf91381644b3045cd4018757a1171696",
       "article": "https://en.wikipedia.org/wiki/Bordeaux",
-      "width": 800,
-      "height": 535,
-      "bytes": 57172
+      "width": 640,
+      "height": 428,
+      "bytes": 34144
     },
     "toulouse|france": {
-      "src": "/photos/discovery/73a5e605535c27dc99756e778010c1d0863e41f3.webp",
+      "src": "/photos/discovery/3e2be8b96a8ef68c5bfcb0dfc0c664db462a8ee7a47ea293b85ae0c937f40319.webp",
       "alt": "View of Toulouse, France",
       "creditId": "73a5e605535c27dc99756e778010c1d0863e41f3",
       "article": "https://en.wikipedia.org/wiki/Toulouse",
-      "width": 780,
-      "height": 600,
-      "bytes": 87854
+      "width": 624,
+      "height": 480,
+      "bytes": 51390
     },
     "lyon|france": {
-      "src": "/photos/discovery/98bdcbe083b4141f6ef34191579c960fd90ca9fb.webp",
+      "src": "/photos/discovery/65aa3f6de435d6981cf404c83450023041af8c8b75ceb2f1f9ee9154fbda3298.webp",
       "alt": "View of Lyon, France",
       "creditId": "98bdcbe083b4141f6ef34191579c960fd90ca9fb",
       "article": "https://en.wikipedia.org/wiki/Lyon",
-      "width": 800,
-      "height": 535,
-      "bytes": 88896
+      "width": 640,
+      "height": 428,
+      "bytes": 53574
     },
     "versailles|france": {
-      "src": "/photos/discovery/2c10ed274c88d8e72aab6c2a574f04cdd954b064.webp",
+      "src": "/photos/discovery/bccea9c7b7b5076990d436627c631648b5d97372278fb182dc34dbf8331d6ffb.webp",
       "alt": "View of Versailles, France",
       "creditId": "2c10ed274c88d8e72aab6c2a574f04cdd954b064",
       "article": "https://en.wikipedia.org/wiki/Palace_of_Versailles",
-      "width": 800,
-      "height": 419,
-      "bytes": 85052
+      "width": 640,
+      "height": 335,
+      "bytes": 51324
     },
     "carcassonne|france": {
-      "src": "/photos/discovery/d84d4567a3888c6be986428ee7cf4ddc7a519426.webp",
+      "src": "/photos/discovery/2b44560ad3d29d37da52ea911ed6e2ae394f0cb94782874b2243bfbc294e9469.webp",
       "alt": "View of Carcassonne, France",
       "creditId": "d84d4567a3888c6be986428ee7cf4ddc7a519426",
       "article": "https://en.wikipedia.org/wiki/Carcassonne",
-      "width": 800,
-      "height": 472,
-      "bytes": 111896
+      "width": 640,
+      "height": 378,
+      "bytes": 65746
     },
     "interlaken|switzerland": {
-      "src": "/photos/discovery/e01da9586c3fc18b9feb8aff76ed00aba6620450.webp",
+      "src": "/photos/discovery/08912e9e0ba6a9e948de6b69a723430d1ac93caaddfee3388b9040902f66bc26.webp",
       "alt": "View of Interlaken, Switzerland",
       "creditId": "e01da9586c3fc18b9feb8aff76ed00aba6620450",
       "article": "https://en.wikipedia.org/wiki/Interlaken",
-      "width": 800,
-      "height": 591,
-      "bytes": 138188
+      "width": 640,
+      "height": 473,
+      "bytes": 82396
     },
     "lucerne|switzerland": {
-      "src": "/photos/discovery/502e8fd516cf103682e55dc7a9a6fa9c1f73ae6c.webp",
+      "src": "/photos/discovery/3950093dd42142a43788d662ec01212766538a53d9274930105dfb6882cd83fb.webp",
       "alt": "View of Lucerne, Switzerland",
       "creditId": "502e8fd516cf103682e55dc7a9a6fa9c1f73ae6c",
       "article": "https://en.wikipedia.org/wiki/Lucerne",
-      "width": 800,
-      "height": 533,
-      "bytes": 98510
+      "width": 640,
+      "height": 426,
+      "bytes": 57396
     },
     "schaffhausen|switzerland": {
-      "src": "/photos/discovery/e24b172c3bf8c226e2273fbeb0a30a097d911c8c.webp",
+      "src": "/photos/discovery/38062d160b4afc8a9ab97d7a12915bcd92701852f950fb3c9ed7137643450d16.webp",
       "alt": "View of Schaffhausen, Switzerland",
       "creditId": "e24b172c3bf8c226e2273fbeb0a30a097d911c8c",
       "article": "https://en.wikipedia.org/wiki/Schaffhausen",
-      "width": 800,
-      "height": 534,
-      "bytes": 96668
+      "width": 640,
+      "height": 427,
+      "bytes": 56446
     },
     "lauterbrunnen|switzerland": {
-      "src": "/photos/discovery/07c614b8b9615502093cf9de4a8ec9c94f4efc28.webp",
+      "src": "/photos/discovery/538b31366263a794535e8d2f6000a6e26fa2c529a6f9a8ba1c03de872ffcfc8f.webp",
       "alt": "View of Lauterbrunnen, Switzerland",
       "creditId": "07c614b8b9615502093cf9de4a8ec9c94f4efc28",
       "article": "https://en.wikipedia.org/wiki/Lauterbrunnen",
-      "width": 800,
-      "height": 538,
-      "bytes": 85648
+      "width": 640,
+      "height": 430,
+      "bytes": 48482
     },
     "como|italy": {
-      "src": "/photos/discovery/ba534ae58242b21f3726b1fd2eb103a2b1c7c9a2.webp",
+      "src": "/photos/discovery/b30e48274d8c8c3a63872db8d5df94a3977e139964d30b8001396565ac519794.webp",
       "alt": "View of Como, Italy",
       "creditId": "ba534ae58242b21f3726b1fd2eb103a2b1c7c9a2",
       "article": "https://en.wikipedia.org/wiki/Como",
-      "width": 800,
-      "height": 450,
-      "bytes": 85524
+      "width": 640,
+      "height": 360,
+      "bytes": 49866
     },
     "la spezia|italy": {
-      "src": "/photos/discovery/17de4a9a0c3fc6aa11b6d4f542119f12a9997c00.webp",
+      "src": "/photos/discovery/859dee622278bffabc565d3d2a891175825443a0e78f21f4bca774f2ff800ae2.webp",
       "alt": "View of La Spezia, Italy",
       "creditId": "17de4a9a0c3fc6aa11b6d4f542119f12a9997c00",
       "article": "https://en.wikipedia.org/wiki/La_Spezia",
-      "width": 800,
-      "height": 450,
-      "bytes": 61506
+      "width": 640,
+      "height": 360,
+      "bytes": 34916
     },
     "siena|italy": {
-      "src": "/photos/discovery/4e9cbbbd2e40d55dcbfa2c7510af90fa39c8e398.webp",
+      "src": "/photos/discovery/2bf9ce04e5a398a5cabe29de4a523bfdfad5eb2251497348b6da493f9988a208.webp",
       "alt": "View of Siena, Italy",
       "creditId": "4e9cbbbd2e40d55dcbfa2c7510af90fa39c8e398",
       "article": "https://en.wikipedia.org/wiki/Siena",
-      "width": 800,
-      "height": 536,
-      "bytes": 110642
+      "width": 640,
+      "height": 429,
+      "bytes": 65752
     },
     "annecy|france": {
-      "src": "/photos/discovery/9e1aea9254d1ce2532a917d288e4da2f1f355279.webp",
+      "src": "/photos/discovery/75c5b1677006c36c377ee287a5c18962abcec5712841ff0e4079b84e36f6de6e.webp",
       "alt": "View of Annecy, France",
       "creditId": "9e1aea9254d1ce2532a917d288e4da2f1f355279",
       "article": "https://en.wikipedia.org/wiki/Annecy",
-      "width": 800,
-      "height": 541,
-      "bytes": 89662
+      "width": 640,
+      "height": 433,
+      "bytes": 53600
     },
     "chamonix|france": {
-      "src": "/photos/discovery/1bae5e14c95d33e2752b93d068955371846a27c3.webp",
+      "src": "/photos/discovery/869b34097574ba85a90556d338448bae81d4d04545fa69ec13fc5a3e480d860e.webp",
       "alt": "View of Chamonix, France",
       "creditId": "1bae5e14c95d33e2752b93d068955371846a27c3",
       "article": "https://en.wikipedia.org/wiki/Chamonix",
-      "width": 800,
-      "height": 533,
-      "bytes": 76966
+      "width": 640,
+      "height": 426,
+      "bytes": 43878
     },
     "giverny|france": {
-      "src": "/photos/discovery/d05c8d0da7aa3909a32c6e77784320c8da5f09f7.webp",
+      "src": "/photos/discovery/6da93b23936b1d77d3103f76a568bcfc87c23a1b5093ed150300b2d29cc06046.webp",
       "alt": "View of Giverny, France",
       "creditId": "d05c8d0da7aa3909a32c6e77784320c8da5f09f7",
       "article": "https://en.wikipedia.org/wiki/Giverny",
-      "width": 800,
-      "height": 600,
-      "bytes": 171306
+      "width": 640,
+      "height": 480,
+      "bytes": 100126
     },
     "zermatt|switzerland": {
-      "src": "/photos/discovery/a3f453c35b69bfe815a6c5e642884eb7ad176f28.webp",
+      "src": "/photos/discovery/c05836f1029b60cbd97892e11def756bbc6d4a6be4bcf85a89134ad7d5ddab62.webp",
       "alt": "View of Zermatt, Switzerland",
       "creditId": "a3f453c35b69bfe815a6c5e642884eb7ad176f28",
       "article": "https://en.wikipedia.org/wiki/Zermatt",
-      "width": 636,
-      "height": 600,
-      "bytes": 59404
+      "width": 509,
+      "height": 480,
+      "bytes": 33384
     },
     "montreux|switzerland": {
-      "src": "/photos/discovery/c67c0338611699cba4f3bfad332f1a89122eb412.webp",
+      "src": "/photos/discovery/7a47a5d697198ebb3f6eb8e2af51f08b78a6f9801ae180fc35134bb61b1b30ac.webp",
       "alt": "View of Montreux, Switzerland",
       "creditId": "c67c0338611699cba4f3bfad332f1a89122eb412",
       "article": "https://en.wikipedia.org/wiki/Montreux",
-      "width": 800,
-      "height": 378,
-      "bytes": 55522
+      "width": 640,
+      "height": 302,
+      "bytes": 31100
     },
     "murren|switzerland": {
-      "src": "/photos/discovery/8d930451b1fa0802f9e397ae4192c5649b29b5d1.webp",
+      "src": "/photos/discovery/2d6339b29f700d5f7407a5251a79394385750ced829a04fb5aa701158077192b.webp",
       "alt": "View of Mürren, Switzerland",
       "creditId": "8d930451b1fa0802f9e397ae4192c5649b29b5d1",
       "article": "https://en.wikipedia.org/wiki/M%C3%BCrren",
-      "width": 800,
-      "height": 515,
-      "bytes": 103224
+      "width": 640,
+      "height": 412,
+      "bytes": 61152
     },
     "grindelwald|switzerland": {
-      "src": "/photos/discovery/0e9340c955b946cfacd2d7a40be421da4d91ba96.webp",
+      "src": "/photos/discovery/f28465b56c9810c75ee7464dee8de95275bc4894297f92e22e2b7ae91a4efde5.webp",
       "alt": "View of Grindelwald, Switzerland",
       "creditId": "0e9340c955b946cfacd2d7a40be421da4d91ba96",
       "article": "https://en.wikipedia.org/wiki/Grindelwald",
-      "width": 800,
-      "height": 600,
-      "bytes": 93400
+      "width": 640,
+      "height": 480,
+      "bytes": 52614
     },
     "bern|switzerland": {
-      "src": "/photos/discovery/6de3acdf54726e7ee319f8f67686e9a8ab3d5492.webp",
+      "src": "/photos/discovery/ad5faba1946c75bad3f9dcd3d3845660f3840a2f43bed089698109132077b6d5.webp",
       "alt": "View of Bern, Switzerland",
       "creditId": "6de3acdf54726e7ee319f8f67686e9a8ab3d5492",
       "article": "https://en.wikipedia.org/wiki/Bern",
-      "width": 800,
-      "height": 527,
-      "bytes": 48252
+      "width": 640,
+      "height": 422,
+      "bytes": 30154
     },
     "girona|spain": {
-      "src": "/photos/discovery/74651024d0e640bfc4d92afb95ca6e8fb7c094e8.webp",
+      "src": "/photos/discovery/a433e8232939d6f1dfc30db6f66b4f9257e67c89fee5d47209c790783dc7d00e.webp",
       "alt": "View of Girona, Spain",
       "creditId": "74651024d0e640bfc4d92afb95ca6e8fb7c094e8",
       "article": "https://en.wikipedia.org/wiki/Girona",
-      "width": 800,
-      "height": 533,
-      "bytes": 121644
+      "width": 640,
+      "height": 426,
+      "bytes": 72400
     },
     "granada|spain": {
-      "src": "/photos/discovery/b0c4b996bd30d57a4ba26236d8653f463b0d70a7.webp",
+      "src": "/photos/discovery/6b1787bb94b484b0bda2ab573ec2aac85ea0fb39f41588785313f270c916247a.webp",
       "alt": "View of Granada, Spain",
       "creditId": "b0c4b996bd30d57a4ba26236d8653f463b0d70a7",
       "article": "https://en.wikipedia.org/wiki/Granada",
-      "width": 800,
-      "height": 600,
-      "bytes": 56210
+      "width": 640,
+      "height": 480,
+      "bytes": 32132
     },
     "barcelona|spain": {
-      "src": "/photos/discovery/575cc6b4dafb2fb872e1190b93e84c9d8367a148.webp",
+      "src": "/photos/discovery/ae2f755830ac3044fe7b9306fa6bddbb428c0ebe1462714980584b11e4cb1556.webp",
       "alt": "View of Barcelona, Spain",
       "creditId": "575cc6b4dafb2fb872e1190b93e84c9d8367a148",
       "article": "https://en.wikipedia.org/wiki/Barcelona",
-      "width": 800,
-      "height": 373,
-      "bytes": 60474
+      "width": 640,
+      "height": 298,
+      "bytes": 35192
     },
     "madrid|spain": {
-      "src": "/photos/discovery/ddfcbd99d75ed13c79c9e78c3dbb4ed60f407f2a.webp",
+      "src": "/photos/discovery/a323faf53aff35281f4fb4a3e07c837b5346742f5cdb8979a0866e5089e4f4c5.webp",
       "alt": "View of Madrid, Spain",
       "creditId": "ddfcbd99d75ed13c79c9e78c3dbb4ed60f407f2a",
       "article": "https://en.wikipedia.org/wiki/Madrid",
-      "width": 800,
-      "height": 421,
-      "bytes": 85386
+      "width": 640,
+      "height": 337,
+      "bytes": 51396
     },
     "seville|spain": {
-      "src": "/photos/discovery/94d4bed61da1d126f1e847758e0edad0aa69e693.webp",
+      "src": "/photos/discovery/78031cb332f5d30d8a7d23798e860d545421a7d35a3f2eec04590c65b568ac73.webp",
       "alt": "View of Seville, Spain",
       "creditId": "94d4bed61da1d126f1e847758e0edad0aa69e693",
       "article": "https://en.wikipedia.org/wiki/Seville",
-      "width": 800,
-      "height": 597,
-      "bytes": 73378
+      "width": 640,
+      "height": 478,
+      "bytes": 44624
     },
     "valencia|spain": {
-      "src": "/photos/discovery/faef645ceea6bfbf143feade5cb3e8681376183e.webp",
+      "src": "/photos/discovery/2b558e8c30c05d20a97148b1ae608790a619b54b9b91c719d7dc62b8c533f7f8.webp",
       "alt": "View of Valencia, Spain",
       "creditId": "faef645ceea6bfbf143feade5cb3e8681376183e",
       "article": "https://en.wikipedia.org/wiki/Valencia",
-      "width": 800,
-      "height": 450,
-      "bytes": 51236
+      "width": 640,
+      "height": 360,
+      "bytes": 30094
     },
     "lisbon|portugal": {
-      "src": "/photos/discovery/3f31f1c40aae9712dcf1499e643170cbeabf751b.webp",
+      "src": "/photos/discovery/ce9d439483b0c163c6cb63a84f8df8464c9e6d4e1c7350bc191cd9d477cbe5f6.webp",
       "alt": "View of Lisbon, Portugal",
       "creditId": "3f31f1c40aae9712dcf1499e643170cbeabf751b",
       "article": "https://en.wikipedia.org/wiki/Lisbon",
-      "width": 800,
-      "height": 513,
-      "bytes": 89026
+      "width": 640,
+      "height": 410,
+      "bytes": 55284
     },
     "porto|portugal": {
-      "src": "/photos/discovery/0fa30c30584ef450459c14d5c903385301c82194.webp",
+      "src": "/photos/discovery/9b12cb9329c95c039eee8cdd739fa62d2e78325fbe4d935e623577cefef9630e.webp",
       "alt": "View of Porto, Portugal",
       "creditId": "0fa30c30584ef450459c14d5c903385301c82194",
       "article": "https://en.wikipedia.org/wiki/Porto",
-      "width": 800,
-      "height": 493,
-      "bytes": 76796
+      "width": 640,
+      "height": 394,
+      "bytes": 44966
     },
     "sintra|portugal": {
-      "src": "/photos/discovery/019e5e71003b45df13216dff2e3f46f83e076ba1.webp",
+      "src": "/photos/discovery/22546ed0c314ff9e4ddff6d67fd824fc2f76c0955f2a7f1753a9d5e133c9aa5b.webp",
       "alt": "View of Sintra, Portugal",
       "creditId": "019e5e71003b45df13216dff2e3f46f83e076ba1",
       "article": "https://en.wikipedia.org/wiki/Sintra",
-      "width": 800,
-      "height": 383,
-      "bytes": 56060
+      "width": 640,
+      "height": 306,
+      "bytes": 34218
     },
     "funchal|portugal": {
-      "src": "/photos/discovery/60afe2edf25a419462296322a9e2a091883ffe59.webp",
+      "src": "/photos/discovery/8dbf7d142e868bb32d507ba4ba23daef195866c6cbf01bc81eb876d362f4bb9b.webp",
       "alt": "View of Funchal, Portugal",
       "creditId": "60afe2edf25a419462296322a9e2a091883ffe59",
       "article": "https://en.wikipedia.org/wiki/Funchal",
-      "width": 800,
-      "height": 450,
-      "bytes": 138796
+      "width": 640,
+      "height": 360,
+      "bytes": 81168
     },
     "cascais|portugal": {
-      "src": "/photos/discovery/1dd4d246df1c1c466d9d1baff4669838e193b1c2.webp",
+      "src": "/photos/discovery/577b6a1b5f475fad473030c66e6c8d6eb403c0e43149dd11576477c0f69880d8.webp",
       "alt": "View of Cascais, Portugal",
       "creditId": "1dd4d246df1c1c466d9d1baff4669838e193b1c2",
       "article": "https://en.wikipedia.org/wiki/Cascais",
-      "width": 800,
-      "height": 480,
-      "bytes": 69224
+      "width": 640,
+      "height": 384,
+      "bytes": 40802
     },
     "berlin|germany": {
-      "src": "/photos/discovery/77cafb2e5e40f1ef0236e83a7dc88e371310f105.webp",
+      "src": "/photos/discovery/d30e66f47186ee65f79c0706497cd854977e508fd11e98a0953695de6ad92f4f.webp",
       "alt": "View of Berlin, Germany",
       "creditId": "77cafb2e5e40f1ef0236e83a7dc88e371310f105",
       "article": "https://en.wikipedia.org/wiki/Berlin",
-      "width": 800,
-      "height": 467,
-      "bytes": 110026
+      "width": 640,
+      "height": 374,
+      "bytes": 66344
     },
     "munich|germany": {
-      "src": "/photos/discovery/512814a72e7e77830ac3207af1613805fa06bfad.webp",
+      "src": "/photos/discovery/6ddb157ac0c2987f6c0faba371f15a4328ab6ebcc9ded6dc9ce59b0de334a9d3.webp",
       "alt": "View of Munich, Germany",
       "creditId": "512814a72e7e77830ac3207af1613805fa06bfad",
       "article": "https://en.wikipedia.org/wiki/Munich",
-      "width": 800,
-      "height": 533,
-      "bytes": 81374
-    },
-    "dachau|germany": {
-      "src": "/photos/discovery/e61704c9c7c15d495513c30d61fd058b10b83a1d.webp",
-      "alt": "View of Dachau, Germany",
-      "creditId": "e61704c9c7c15d495513c30d61fd058b10b83a1d",
-      "article": "https://en.wikipedia.org/wiki/Dachau_concentration_camp",
-      "width": 700,
-      "height": 505,
-      "bytes": 46216
+      "width": 640,
+      "height": 426,
+      "bytes": 49476
     },
     "frankfurt|germany": {
-      "src": "/photos/discovery/22c7138f231cbfcd94bf60fdc6923d5d1ad5c680.webp",
+      "src": "/photos/discovery/231d8c036201b2581ba79f3eb0984f788592ba9afbe8d523f6e68e69e86e3393.webp",
       "alt": "View of Frankfurt, Germany",
       "creditId": "22c7138f231cbfcd94bf60fdc6923d5d1ad5c680",
       "article": "https://en.wikipedia.org/wiki/Frankfurt",
-      "width": 800,
-      "height": 450,
-      "bytes": 132018
+      "width": 640,
+      "height": 360,
+      "bytes": 79500
     },
     "cologne|germany": {
-      "src": "/photos/discovery/73802f1859fe6a68529f2b6abcee39f80d9f8d1f.webp",
+      "src": "/photos/discovery/85d4427fa043ea6813aee3f84be9463a8cfcb1ba98795e3175a06b7bfddafcbf.webp",
       "alt": "View of Cologne, Germany",
       "creditId": "73802f1859fe6a68529f2b6abcee39f80d9f8d1f",
       "article": "https://en.wikipedia.org/wiki/Cologne",
-      "width": 800,
-      "height": 442,
-      "bytes": 30302
-    },
-    "vienna|austria": {
-      "src": "/photos/discovery/57f213b9775d439dc90137d0cac4f65fd52339d1.webp",
-      "alt": "View of Vienna, Austria",
-      "creditId": "57f213b9775d439dc90137d0cac4f65fd52339d1",
-      "article": "https://en.wikipedia.org/wiki/Vienna",
-      "width": 800,
-      "height": 360,
-      "bytes": 71504
+      "width": 640,
+      "height": 354,
+      "bytes": 18336
     },
     "amsterdam|netherlands": {
-      "src": "/photos/discovery/9646aa7bccbff1d67b88266f21734abfcdbdeb48.webp",
+      "src": "/photos/discovery/7059658310c4d2100a0a6c367086276857cdfdb9a366d912c5a270d24a4fcd5e.webp",
       "alt": "View of Amsterdam, Netherlands",
       "creditId": "9646aa7bccbff1d67b88266f21734abfcdbdeb48",
       "article": "https://en.wikipedia.org/wiki/Amsterdam",
-      "width": 800,
-      "height": 533,
-      "bytes": 105266
+      "width": 640,
+      "height": 426,
+      "bytes": 61794
     },
     "rotterdam|netherlands": {
-      "src": "/photos/discovery/b64861ffce886b7985f1a5475374be41e52d8478.webp",
+      "src": "/photos/discovery/44d59409383b69ccd87ad1a53d7441816f85ff8910874828889a3c79dca54ff7.webp",
       "alt": "View of Rotterdam, Netherlands",
       "creditId": "b64861ffce886b7985f1a5475374be41e52d8478",
       "article": "https://en.wikipedia.org/wiki/Rotterdam",
-      "width": 800,
-      "height": 533,
-      "bytes": 60780
+      "width": 640,
+      "height": 426,
+      "bytes": 37422
     },
     "antwerp|belgium": {
-      "src": "/photos/discovery/17e4ca14ff5cad50713aea0a1b7cc303a8483592.webp",
+      "src": "/photos/discovery/95c5d9e4efa369c9c44fa3fbc4d1b49abe1390e0f839d8298dea6374fd8edd65.webp",
       "alt": "View of Antwerp, Belgium",
       "creditId": "17e4ca14ff5cad50713aea0a1b7cc303a8483592",
       "article": "https://en.wikipedia.org/wiki/Antwerp",
-      "width": 800,
-      "height": 547,
-      "bytes": 83332
+      "width": 640,
+      "height": 438,
+      "bytes": 49660
     },
     "brussels|belgium": {
-      "src": "/photos/discovery/7e6b682f9f935cdd02a390dee13e878ccd99d28b.webp",
+      "src": "/photos/discovery/e1bd46234c49910150e28d907e7e7252d8d72ef6327c03ea6f94ef9b59c9dc3a.webp",
       "alt": "View of Brussels, Belgium",
       "creditId": "7e6b682f9f935cdd02a390dee13e878ccd99d28b",
       "article": "https://en.wikipedia.org/wiki/Brussels",
-      "width": 800,
-      "height": 480,
-      "bytes": 63162
+      "width": 640,
+      "height": 384,
+      "bytes": 37018
     },
     "prague|czech republic": {
-      "src": "/photos/discovery/f11dd1b5c1aa4c9751283e85cdd0d9f7d69b85f4.webp",
+      "src": "/photos/discovery/50837c90f3466703e1f2f348c9e940bdd6a7eb2902b7b170fbcab56b6e8c2fa8.webp",
       "alt": "View of Prague, Czech Republic",
       "creditId": "f11dd1b5c1aa4c9751283e85cdd0d9f7d69b85f4",
       "article": "https://en.wikipedia.org/wiki/Prague",
-      "width": 800,
-      "height": 476,
-      "bytes": 91242
+      "width": 640,
+      "height": 381,
+      "bytes": 52910
     },
     "brno|czech republic": {
-      "src": "/photos/discovery/6f6f6d20bbd1b988ea51373267883d27bad5d573.webp",
+      "src": "/photos/discovery/22ccea2b62e98d090c5333df84b67ede34712cbd6b9b959e6cc35e7e8f98b7fc.webp",
       "alt": "View of Brno, Czech Republic",
       "creditId": "6f6f6d20bbd1b988ea51373267883d27bad5d573",
       "article": "https://en.wikipedia.org/wiki/Brno",
-      "width": 800,
-      "height": 533,
-      "bytes": 91884
+      "width": 640,
+      "height": 426,
+      "bytes": 54584
     },
     "budapest|hungary": {
-      "src": "/photos/discovery/3d817d708d2e4c6f6cd765084716fcf95d8c6d7e.webp",
+      "src": "/photos/discovery/28cc717ac243d6165ffb7576918151f09e549c19e87405cf4ed82f57125d22ca.webp",
       "alt": "View of Budapest, Hungary",
       "creditId": "3d817d708d2e4c6f6cd765084716fcf95d8c6d7e",
       "article": "https://en.wikipedia.org/wiki/Budapest",
-      "width": 800,
-      "height": 414,
-      "bytes": 73476
+      "width": 640,
+      "height": 331,
+      "bytes": 43428
     },
     "debrecen|hungary": {
-      "src": "/photos/discovery/eb101a4cc94bc648b6123fe6485e539635cf2573.webp",
+      "src": "/photos/discovery/0256755866a5e68142b7d3d10ddf1f4cb47fd98278830dd3d8d18d24cd897144.webp",
       "alt": "View of Debrecen, Hungary",
       "creditId": "eb101a4cc94bc648b6123fe6485e539635cf2573",
       "article": "https://en.wikipedia.org/wiki/Debrecen",
-      "width": 800,
-      "height": 600,
-      "bytes": 107314
+      "width": 640,
+      "height": 480,
+      "bytes": 60572
     },
     "krakow|poland": {
-      "src": "/photos/discovery/e4cf36b6afed6702bce932783098f71e0cf825db.webp",
+      "src": "/photos/discovery/7b90b679bb4a185cb5c4a9d97451dab17e79385908c18ab4107faf523021bc40.webp",
       "alt": "View of Kraków, Poland",
       "creditId": "e4cf36b6afed6702bce932783098f71e0cf825db",
       "article": "https://en.wikipedia.org/wiki/Krak%C3%B3w",
-      "width": 800,
-      "height": 393,
-      "bytes": 43566
+      "width": 640,
+      "height": 314,
+      "bytes": 26788
     },
     "warsaw|poland": {
-      "src": "/photos/discovery/5b450ad0d259052606879643ca17d24805626ff9.webp",
+      "src": "/photos/discovery/d769b1edb35eb81453450c5e2c34589f6be7a7490f3c8e68077d1115b7643060.webp",
       "alt": "View of Warsaw, Poland",
       "creditId": "5b450ad0d259052606879643ca17d24805626ff9",
       "article": "https://en.wikipedia.org/wiki/Warsaw",
-      "width": 800,
-      "height": 465,
-      "bytes": 55906
+      "width": 640,
+      "height": 372,
+      "bytes": 34248
     },
     "lviv|ukraine": {
-      "src": "/photos/discovery/823a2f9a6fac6c900a89cdfed3a87eb3932b4171.webp",
+      "src": "/photos/discovery/63642961f8abab1c68cb91e2c500a0bc65b2aa125abbda9b2438c0d6377bae8a.webp",
       "alt": "View of Lviv, Ukraine",
       "creditId": "823a2f9a6fac6c900a89cdfed3a87eb3932b4171",
       "article": "https://en.wikipedia.org/wiki/Lviv",
-      "width": 800,
-      "height": 534,
-      "bytes": 124002
+      "width": 640,
+      "height": 427,
+      "bytes": 74268
     },
     "bucharest|romania": {
-      "src": "/photos/discovery/d80141f15dfa0fd80227efd200f2eb7ad549cdf3.webp",
+      "src": "/photos/discovery/619110b602701ef7d9d3f6ee98e677739c803a73c99369df2a2521df849b756c.webp",
       "alt": "View of Bucharest, Romania",
       "creditId": "d80141f15dfa0fd80227efd200f2eb7ad549cdf3",
       "article": "https://en.wikipedia.org/wiki/Bucharest",
-      "width": 800,
-      "height": 483,
-      "bytes": 90318
+      "width": 640,
+      "height": 386,
+      "bytes": 53700
     },
     "thessaloniki|greece": {
-      "src": "/photos/discovery/2aa844d06ef276c02778a43d0ac2f4ad517eabcf.webp",
+      "src": "/photos/discovery/47f58bd3af941e36e43ba0919de8c14cc957a8fe3aacd069ec76a08e2b14116b.webp",
       "alt": "View of Thessaloniki, Greece",
       "creditId": "2aa844d06ef276c02778a43d0ac2f4ad517eabcf",
       "article": "https://en.wikipedia.org/wiki/Thessaloniki",
-      "width": 800,
-      "height": 495,
-      "bytes": 81934
+      "width": 640,
+      "height": 396,
+      "bytes": 46608
     },
     "athens|greece": {
-      "src": "/photos/discovery/9f7606fd39b55e05fd9c01f96f4042a5bec14ce6.webp",
+      "src": "/photos/discovery/2f5d0987301b3b4699cbc0b9d0c53a257cb01a4573445fff4abfb9131159e9a1.webp",
       "alt": "View of Athens, Greece",
       "creditId": "9f7606fd39b55e05fd9c01f96f4042a5bec14ce6",
       "article": "https://en.wikipedia.org/wiki/Athens",
-      "width": 800,
-      "height": 450,
-      "bytes": 65528
+      "width": 640,
+      "height": 360,
+      "bytes": 38820
     },
     "vik|iceland": {
-      "src": "/photos/discovery/dd39ab63b3ad44fd493dd49f516febe4439ee92e.webp",
+      "src": "/photos/discovery/3044db9d15eb8d39e6a51fd3f735df811b44a9e8b16bb77bd790a75bdab89602.webp",
       "alt": "View of Vík, Iceland",
       "creditId": "dd39ab63b3ad44fd493dd49f516febe4439ee92e",
       "article": "https://en.wikipedia.org/wiki/V%C3%ADk_%C3%AD_M%C3%BDrdal",
-      "width": 800,
-      "height": 480,
-      "bytes": 73876
+      "width": 640,
+      "height": 384,
+      "bytes": 42138
     },
     "reykjavik|iceland": {
-      "src": "/photos/discovery/6f64bd2626031fe16c88341ac6353f3ca8c944e1.webp",
+      "src": "/photos/discovery/28f7a2aa01381f865e94216257787a386ac0fdb7a99124baaf579e2c6590ca9d.webp",
       "alt": "View of Reykjavík, Iceland",
       "creditId": "6f64bd2626031fe16c88341ac6353f3ca8c944e1",
       "article": "https://en.wikipedia.org/wiki/Reykjav%C3%ADk",
-      "width": 800,
-      "height": 530,
-      "bytes": 100870
+      "width": 640,
+      "height": 424,
+      "bytes": 62014
     },
     "kalabaka|greece": {
-      "src": "/photos/discovery/b7a77424d8f933c84a65199583dca7697aed62b0.webp",
+      "src": "/photos/discovery/29a021fc551d124ef2ccfeed4274fb6f878f351865825c729c21417272f9f202.webp",
       "alt": "View of Kalabaka, Greece",
       "creditId": "b7a77424d8f933c84a65199583dca7697aed62b0",
       "article": "https://en.wikipedia.org/wiki/Kalabaka",
-      "width": 800,
-      "height": 598,
-      "bytes": 142802
+      "width": 640,
+      "height": 478,
+      "bytes": 82534
     },
     "york|united kingdom": {
-      "src": "/photos/discovery/6e88469737b8e0bed95c70ccd64ab185dd5cc093.webp",
+      "src": "/photos/discovery/cdaa06d10a95246c02fbb4dac3190066570da6eb6544c157abaa857401e27a01.webp",
       "alt": "View of York, United Kingdom",
       "creditId": "6e88469737b8e0bed95c70ccd64ab185dd5cc093",
       "article": "https://en.wikipedia.org/wiki/York",
-      "width": 800,
-      "height": 600,
-      "bytes": 76160
+      "width": 640,
+      "height": 480,
+      "bytes": 46658
     },
     "london|united kingdom": {
-      "src": "/photos/discovery/25a4edbec6ebd332d79f2d30c6977a1d4ea5f5cd.webp",
+      "src": "/photos/discovery/4285a4d91c67fbde2ba40ce828b90edc6f087d76eedd35276097500206f98e1e.webp",
       "alt": "View of London, United Kingdom",
       "creditId": "25a4edbec6ebd332d79f2d30c6977a1d4ea5f5cd",
       "article": "https://en.wikipedia.org/wiki/London",
-      "width": 800,
-      "height": 450,
-      "bytes": 67128
+      "width": 640,
+      "height": 360,
+      "bytes": 39350
     },
     "windermere|united kingdom": {
-      "src": "/photos/discovery/72859145ad90ff37b32b6ef8a492f96c7467b189.webp",
+      "src": "/photos/discovery/f881d2593f34fd80f2ff22b0d313594f59d0718c8d728e53ddf0316d466b9dc4.webp",
       "alt": "View of Windermere, United Kingdom",
       "creditId": "72859145ad90ff37b32b6ef8a492f96c7467b189",
       "article": "https://en.wikipedia.org/wiki/Windermere",
-      "width": 800,
-      "height": 600,
-      "bytes": 52300
+      "width": 640,
+      "height": 480,
+      "bytes": 29196
     },
     "manchester|united kingdom": {
-      "src": "/photos/discovery/f7d10b6fdd49bb5c61c0c676d84999c8819e8605.webp",
+      "src": "/photos/discovery/6907288af97047e931053e1f639f7e0a701eb7e12b122e6d548b97655eb78299.webp",
       "alt": "View of Manchester, United Kingdom",
       "creditId": "f7d10b6fdd49bb5c61c0c676d84999c8819e8605",
       "article": "https://en.wikipedia.org/wiki/Manchester",
-      "width": 779,
-      "height": 600,
-      "bytes": 82034
+      "width": 623,
+      "height": 480,
+      "bytes": 49564
     },
     "edinburgh|united kingdom": {
-      "src": "/photos/discovery/cfeb9be9bda82a188e3296a1077ed0122c0c4985.webp",
+      "src": "/photos/discovery/15847f53778ba8caf23ae1a55a55bbb06c6b4d97921b4aa4915a89dda92b609b.webp",
       "alt": "View of Edinburgh, United Kingdom",
       "creditId": "cfeb9be9bda82a188e3296a1077ed0122c0c4985",
       "article": "https://en.wikipedia.org/wiki/Edinburgh",
-      "width": 800,
-      "height": 450,
-      "bytes": 64556
+      "width": 640,
+      "height": 360,
+      "bytes": 37768
     },
     "brighton|united kingdom": {
-      "src": "/photos/discovery/cda4da3da140386ca32454e322c1a8ae47ea77ed.webp",
+      "src": "/photos/discovery/27822b50888230feb383e1f5da9af908365fc2ebc9869cc9f04d80dc9291a1f2.webp",
       "alt": "View of Brighton, United Kingdom",
       "creditId": "cda4da3da140386ca32454e322c1a8ae47ea77ed",
       "article": "https://en.wikipedia.org/wiki/Brighton",
-      "width": 800,
-      "height": 533,
-      "bytes": 57252
+      "width": 640,
+      "height": 426,
+      "bytes": 33398
     },
     "hallstatt|austria": {
-      "src": "/photos/discovery/f3879ce30e5fe1f578af42bb6b3d65821590ee6a.webp",
+      "src": "/photos/discovery/4ec8cc0a1c6a49bf68f7fe3ad979db34f160c74d6ff91bbb430c22b7db000971.webp",
       "alt": "View of Hallstatt, Austria",
       "creditId": "f3879ce30e5fe1f578af42bb6b3d65821590ee6a",
       "article": "https://en.wikipedia.org/wiki/Hallstatt",
-      "width": 800,
-      "height": 553,
-      "bytes": 109978
+      "width": 640,
+      "height": 442,
+      "bytes": 64320
     },
     "jerusalem|israel": {
-      "src": "/photos/discovery/dcfad854858bd512e69c3c0c82da2aaf8f28b861.webp",
+      "src": "/photos/discovery/c795c593cd3bcb2de9b9798ce063f2f83cb3fae80ef3050ae60e0572ce9cd2d5.webp",
       "alt": "View of Jerusalem, Israel",
       "creditId": "dcfad854858bd512e69c3c0c82da2aaf8f28b861",
       "article": "https://en.wikipedia.org/wiki/Jerusalem",
-      "width": 800,
-      "height": 405,
-      "bytes": 101530
+      "width": 640,
+      "height": 324,
+      "bytes": 61672
     },
     "dead sea|israel": {
-      "src": "/photos/discovery/f48743b1adee7e3db05f8a3c706a788dead09e3c.webp",
+      "src": "/photos/discovery/dc944c4eab100788d9df6f9d381098d436ca1a49b0fa3cfd89edd5b8eb893fd0.webp",
       "alt": "View of Dead Sea, Israel",
       "creditId": "f48743b1adee7e3db05f8a3c706a788dead09e3c",
       "article": "https://en.wikipedia.org/wiki/Dead_Sea",
-      "width": 800,
-      "height": 600,
-      "bytes": 59404
+      "width": 640,
+      "height": 480,
+      "bytes": 32344
     },
     "mitzpe ramon|israel": {
-      "src": "/photos/discovery/11ec2aa8b8eb807335500e0b7d5a52cbe22bccab.webp",
+      "src": "/photos/discovery/86de773cc5a51bfabf0e19934a4bb8f9ea4cfa5f6ab9ec17df0c4911bf2c0126.webp",
       "alt": "View of Mitzpe Ramon, Israel",
       "creditId": "11ec2aa8b8eb807335500e0b7d5a52cbe22bccab",
       "article": "https://en.wikipedia.org/wiki/Mitzpe_Ramon",
-      "width": 458,
-      "height": 600,
-      "bytes": 29612
+      "width": 366,
+      "height": 480,
+      "bytes": 17878
     },
     "speyer|germany": {
-      "src": "/photos/discovery/44c5001a4b46a9517c861e933cb272ffb8c82217.webp",
+      "src": "/photos/discovery/b29a155ee784b075dd42a66523f0d80a0ecfc67fbdf7c10aa3ce8abb990a1aa5.webp",
       "alt": "View of Speyer, Germany",
       "creditId": "44c5001a4b46a9517c861e933cb272ffb8c82217",
       "article": "https://en.wikipedia.org/wiki/Speyer",
-      "width": 800,
-      "height": 600,
-      "bytes": 98438
+      "width": 640,
+      "height": 480,
+      "bytes": 61536
     },
     "schwangau|germany": {
-      "src": "/photos/discovery/1cecd8e414db5a9855a61d0e3d0a96c529d60d8f.webp",
+      "src": "/photos/discovery/f1d4bc9b061613aa44d94c2365ccaf1a17d9188cf6c9090e35c868352bb88b67.webp",
       "alt": "View of Schwangau, Germany",
       "creditId": "1cecd8e414db5a9855a61d0e3d0a96c529d60d8f",
       "article": "https://en.wikipedia.org/wiki/Schwangau",
-      "width": 800,
-      "height": 533,
-      "bytes": 79910
+      "width": 640,
+      "height": 426,
+      "bytes": 44296
     },
     "garmisch partenkirchen|germany": {
-      "src": "/photos/discovery/88849d723c21bae8c1c9cb5d3e8de4be969b53e3.webp",
+      "src": "/photos/discovery/2b409c40ee5eeedc34a1feb0d663ef968e649621352ca412a541fddd1a007b7b.webp",
       "alt": "View of Garmisch-Partenkirchen, Germany",
       "creditId": "88849d723c21bae8c1c9cb5d3e8de4be969b53e3",
       "article": "https://en.wikipedia.org/wiki/Garmisch-Partenkirchen",
-      "width": 800,
-      "height": 533,
-      "bytes": 80922
+      "width": 640,
+      "height": 426,
+      "bytes": 47538
     },
     "heidelberg|germany": {
-      "src": "/photos/discovery/7737c6134bb525702f4be73b5be1b36102c2298a.webp",
+      "src": "/photos/discovery/367c99963439966e8b0313970c230bb09353e143049133360ec0907f9f16555e.webp",
       "alt": "View of Heidelberg, Germany",
       "creditId": "7737c6134bb525702f4be73b5be1b36102c2298a",
       "article": "https://en.wikipedia.org/wiki/Heidelberg",
-      "width": 800,
-      "height": 422,
-      "bytes": 87930
+      "width": 640,
+      "height": 338,
+      "bytes": 50458
     },
     "hamburg|germany": {
-      "src": "/photos/discovery/66307ac5bdc8f5a371d42adaacc7250a73f2addf.webp",
+      "src": "/photos/discovery/f6fe625bd37f7e1cd25e308e8c9b4843bb33106aa28dda6acc2c8436c8cc8b3e.webp",
       "alt": "View of Hamburg, Germany",
       "creditId": "66307ac5bdc8f5a371d42adaacc7250a73f2addf",
       "article": "https://en.wikipedia.org/wiki/Hamburg",
-      "width": 800,
-      "height": 533,
-      "bytes": 75708
+      "width": 640,
+      "height": 426,
+      "bytes": 45678
     },
     "rothenburg ob der tauber|germany": {
-      "src": "/photos/discovery/f9847e5c0be287a0820039dfb5e9d2a44da6e9d3.webp",
+      "src": "/photos/discovery/7438c7a22bf24a9789d2a5d394aa0e2f049c2c997bf8c56bcc085dd9b262d53d.webp",
       "alt": "View of Rothenburg ob der Tauber, Germany",
       "creditId": "f9847e5c0be287a0820039dfb5e9d2a44da6e9d3",
       "article": "https://en.wikipedia.org/wiki/Rothenburg_ob_der_Tauber",
-      "width": 800,
-      "height": 536,
-      "bytes": 74090
+      "width": 640,
+      "height": 429,
+      "bytes": 43998
     },
     "lisse|netherlands": {
-      "src": "/photos/discovery/511273b3d5e2540be7d084a32aa9b1ac65772f3e.webp",
+      "src": "/photos/discovery/20dbdb08929f28ef04204a49b58b3863514b6346ff683cfde7dc3cc7d66d46b6.webp",
       "alt": "View of Lisse, Netherlands",
       "creditId": "511273b3d5e2540be7d084a32aa9b1ac65772f3e",
       "article": "https://en.wikipedia.org/wiki/Lisse",
-      "width": 800,
-      "height": 600,
-      "bytes": 97098
+      "width": 640,
+      "height": 480,
+      "bytes": 59664
     },
     "zaandam|netherlands": {
-      "src": "/photos/discovery/2fc6738ec13d050617e678cb6224abd9fb244b5f.webp",
+      "src": "/photos/discovery/93a562f569993a6567f3cea38c05a06e2e3095509a8d065b34aa373fe83927bc.webp",
       "alt": "View of Zaandam, Netherlands",
       "creditId": "2fc6738ec13d050617e678cb6224abd9fb244b5f",
       "article": "https://en.wikipedia.org/wiki/Zaandam",
-      "width": 800,
-      "height": 600,
-      "bytes": 58602
+      "width": 640,
+      "height": 480,
+      "bytes": 33888
     },
     "kinderdijk|netherlands": {
-      "src": "/photos/discovery/8cb5b4d06b26e2fcdfe07d56770f5ec0e74fd95f.webp",
+      "src": "/photos/discovery/444cdcd0c3ca8b864eef9b35de26eed7d26825e5c815718c3a51faf69c67345c.webp",
       "alt": "View of Kinderdijk, Netherlands",
       "creditId": "8cb5b4d06b26e2fcdfe07d56770f5ec0e74fd95f",
       "article": "https://en.wikipedia.org/wiki/Kinderdijk",
-      "width": 800,
-      "height": 599,
-      "bytes": 51150
+      "width": 640,
+      "height": 479,
+      "bytes": 29886
     },
     "mechelen|belgium": {
-      "src": "/photos/discovery/9a52dec747ee7fdb7aa3088a8f8953943d68c0d2.webp",
+      "src": "/photos/discovery/f153f2ced528088035eaa59a11f242ce59763241e4ceed374f59b178fae6e14c.webp",
       "alt": "View of Mechelen, Belgium",
       "creditId": "9a52dec747ee7fdb7aa3088a8f8953943d68c0d2",
       "article": "https://en.wikipedia.org/wiki/Mechelen",
-      "width": 800,
-      "height": 600,
-      "bytes": 49364
+      "width": 640,
+      "height": 480,
+      "bytes": 30004
     },
     "bruges|belgium": {
-      "src": "/photos/discovery/5aef036c58e8a2f9194bab514f4e1ea607396961.webp",
+      "src": "/photos/discovery/a2397ed2c14688617f733fe022f7f48cb9606b1b185debee9c7deba0d624adba.webp",
       "alt": "View of Bruges, Belgium",
       "creditId": "5aef036c58e8a2f9194bab514f4e1ea607396961",
       "article": "https://en.wikipedia.org/wiki/Bruges",
-      "width": 800,
-      "height": 513,
-      "bytes": 77786
+      "width": 640,
+      "height": 410,
+      "bytes": 47538
     },
     "prague|czechia": {
-      "src": "/photos/discovery/f11dd1b5c1aa4c9751283e85cdd0d9f7d69b85f4.webp",
+      "src": "/photos/discovery/50837c90f3466703e1f2f348c9e940bdd6a7eb2902b7b170fbcab56b6e8c2fa8.webp",
       "alt": "View of Prague, Czechia",
       "creditId": "f11dd1b5c1aa4c9751283e85cdd0d9f7d69b85f4",
       "article": "https://en.wikipedia.org/wiki/Prague",
-      "width": 800,
-      "height": 476,
-      "bytes": 91242
+      "width": 640,
+      "height": 381,
+      "bytes": 52910
     },
     "terezin|czechia": {
-      "src": "/photos/discovery/887f11d0d87696657b6eeac32cc215ade9ee50a6.webp",
+      "src": "/photos/discovery/2a9a7ddf67e6130845807188f4714312ad75677edc52a9027fc79fe56ee0f4f9.webp",
       "alt": "View of Terezín, Czechia",
       "creditId": "887f11d0d87696657b6eeac32cc215ade9ee50a6",
       "article": "https://en.wikipedia.org/wiki/Terez%C3%ADn",
-      "width": 800,
-      "height": 523,
-      "bytes": 51178
+      "width": 640,
+      "height": 418,
+      "bytes": 28530
     },
     "hrensko|czechia": {
-      "src": "/photos/discovery/988342784c51a8b67488a56ed9e9aea230037bee.webp",
+      "src": "/photos/discovery/53a032478b091983ad24762988abac7137f957f13e89d4811905f6911246bf3b.webp",
       "alt": "View of Hřensko, Czechia",
       "creditId": "988342784c51a8b67488a56ed9e9aea230037bee",
       "article": "https://en.wikipedia.org/wiki/H%C5%99ensko",
-      "width": 800,
-      "height": 532,
-      "bytes": 70586
+      "width": 640,
+      "height": 426,
+      "bytes": 39216
     },
     "cesky krumlov|czechia": {
-      "src": "/photos/discovery/9f6465bd426fed03b56f0e45f9572372808b8c27.webp",
+      "src": "/photos/discovery/8ca8c9d4e42b4f4fc8bba79c51922fbe16df26c5d22a9316a5685706902f2901.webp",
       "alt": "View of Český Krumlov, Czechia",
       "creditId": "9f6465bd426fed03b56f0e45f9572372808b8c27",
       "article": "https://en.wikipedia.org/wiki/%C4%8Cesk%C3%BD_Krumlov",
-      "width": 797,
-      "height": 600,
-      "bytes": 89628
+      "width": 638,
+      "height": 480,
+      "bytes": 52198
     },
     "wieliczka|poland": {
-      "src": "/photos/discovery/d436cb58d1e77f79020b6a71460fe0d45853ee42.webp",
+      "src": "/photos/discovery/784fc14e622aa0788a0951856e79eaf21776bc70d05c75c2b918e0d9e840ecc8.webp",
       "alt": "View of Wieliczka, Poland",
       "creditId": "d436cb58d1e77f79020b6a71460fe0d45853ee42",
       "article": "https://en.wikipedia.org/wiki/Wieliczka",
-      "width": 800,
-      "height": 450,
-      "bytes": 103052
+      "width": 640,
+      "height": 360,
+      "bytes": 58930
     },
     "zakopane|poland": {
-      "src": "/photos/discovery/2435e1536dab362c941b2806352813a92a5ba71c.webp",
+      "src": "/photos/discovery/d76791ac594825cae7ecc80790e91dcf57cfd19491a7a3b9b00231c07824927a.webp",
       "alt": "View of Zakopane, Poland",
       "creditId": "2435e1536dab362c941b2806352813a92a5ba71c",
       "article": "https://en.wikipedia.org/wiki/Zakopane",
-      "width": 800,
-      "height": 600,
-      "bytes": 69082
+      "width": 640,
+      "height": 480,
+      "bytes": 38888
     },
     "treblinka|poland": {
-      "src": "/photos/discovery/b5872f658fffe6e0bd6cb2e5312b37366cc13282.webp",
+      "src": "/photos/discovery/8c5b22a69d1e37cb5c626763093c025dcb331ec81c51dcbfcac4c7133d788c8d.webp",
       "alt": "View of Treblinka, Poland",
       "creditId": "b5872f658fffe6e0bd6cb2e5312b37366cc13282",
       "article": "https://en.wikipedia.org/wiki/Treblinka_extermination_camp",
-      "width": 800,
-      "height": 598,
-      "bytes": 104728
+      "width": 640,
+      "height": 478,
+      "bytes": 62362
     },
     "lublin|poland": {
-      "src": "/photos/discovery/05645fd6ef56428ce1527e019b816e3974e44605.webp",
+      "src": "/photos/discovery/be0c3e820f87310e0ce72863943a744d895519875f0c5b0f02fd796a43f5afd4.webp",
       "alt": "View of Lublin, Poland",
       "creditId": "05645fd6ef56428ce1527e019b816e3974e44605",
       "article": "https://en.wikipedia.org/wiki/Lublin",
-      "width": 800,
-      "height": 600,
-      "bytes": 56094
+      "width": 640,
+      "height": 480,
+      "bytes": 33190
     },
     "golan heights|israel": {
-      "src": "/photos/discovery/5a208ce191ef2cd6f91cbeefbcee1009ac647d31.webp",
+      "src": "/photos/discovery/ac1804fa8691afc92ef9020a79305405635523643f90c67e6c844572edfbe9b5.webp",
       "alt": "View of Golan Heights, Israel",
       "creditId": "5a208ce191ef2cd6f91cbeefbcee1009ac647d31",
       "article": "https://en.wikipedia.org/wiki/Golan_Heights",
-      "width": 450,
-      "height": 600,
-      "bytes": 48130
+      "width": 360,
+      "height": 480,
+      "bytes": 27924
     },
     "kiryat shmona|israel": {
-      "src": "/photos/discovery/20d63dcef346cf18210cb92cd8396e781e335371.webp",
+      "src": "/photos/discovery/853201b817e5cbc5bde07603bb9429314f035b588f6968ae88d7de83963d5566.webp",
       "alt": "View of Kiryat Shmona, Israel",
       "creditId": "20d63dcef346cf18210cb92cd8396e781e335371",
       "article": "https://en.wikipedia.org/wiki/Kiryat_Shmona",
       "width": 640,
       "height": 480,
-      "bytes": 69454
+      "bytes": 66668
     },
     "judean desert|israel": {
-      "src": "/photos/discovery/76e51bd5917f34b490d138ed30f32fdc94a5140e.webp",
+      "src": "/photos/discovery/f957fab0ae470b4bfb4d61c367eeb777d08b2591cc11ec9890212ab96dd53596.webp",
       "alt": "View of Judean Desert, Israel",
       "creditId": "76e51bd5917f34b490d138ed30f32fdc94a5140e",
       "article": "https://en.wikipedia.org/wiki/Judaean_Desert",
-      "width": 800,
-      "height": 600,
-      "bytes": 75052
+      "width": 640,
+      "height": 480,
+      "bytes": 40888
     },
     "tel aviv|israel": {
-      "src": "/photos/discovery/a87186a9e0c6719e96bb52f83a51b22e50a68de0.webp",
+      "src": "/photos/discovery/02fcda4b0b4865399950a54918ed9b8db513dc022e23040f9293441c666025a4.webp",
       "alt": "View of Tel Aviv, Israel",
       "creditId": "a87186a9e0c6719e96bb52f83a51b22e50a68de0",
       "article": "https://en.wikipedia.org/wiki/Tel_Aviv",
-      "width": 800,
-      "height": 394,
-      "bytes": 98590
+      "width": 640,
+      "height": 315,
+      "bytes": 57634
     },
     "salisbury plain|united kingdom": {
-      "src": "/photos/discovery/d7a73d4e73ca3a8aa587e47a3d56a206d8cf626d.webp",
+      "src": "/photos/discovery/7a032227789950ccae337de1741d9c8010655beb0b9c814d68ae9190be8bd2ee.webp",
       "alt": "View of Salisbury Plain, United Kingdom",
       "creditId": "d7a73d4e73ca3a8aa587e47a3d56a206d8cf626d",
       "article": "https://en.wikipedia.org/wiki/Salisbury_Plain",
-      "width": 800,
-      "height": 600,
-      "bytes": 51524
+      "width": 640,
+      "height": 480,
+      "bytes": 27498
     },
     "dolomites|italy": {
-      "src": "/photos/discovery/25c16285b33c09c859aff4b7f2db8712976a5d60.webp",
+      "src": "/photos/discovery/994cc957da1851deecd6b42797fabf27731e3e49fef897572b6e49e846eb0136.webp",
       "alt": "View of Dolomites, Italy",
       "creditId": "25c16285b33c09c859aff4b7f2db8712976a5d60",
       "article": "https://en.wikipedia.org/wiki/Dolomites",
-      "width": 800,
-      "height": 553,
-      "bytes": 95568
+      "width": 640,
+      "height": 442,
+      "bytes": 55090
     },
     "krimml|austria": {
-      "src": "/photos/discovery/8f229ea97e8d5fec5884c6d60039745c7ab9ca40.webp",
+      "src": "/photos/discovery/746c0a6275942929a3bb8e4556c1dd81d7bef241668c8a2941a3c6083ed92a0a.webp",
       "alt": "View of Krimml, Austria",
       "creditId": "8f229ea97e8d5fec5884c6d60039745c7ab9ca40",
       "article": "https://en.wikipedia.org/wiki/Krimml",
-      "width": 800,
-      "height": 599,
-      "bytes": 141592
+      "width": 640,
+      "height": 479,
+      "bytes": 84154
     },
     "hohe tauern|austria": {
-      "src": "/photos/discovery/92e02a8f0eb0761f59b7ce2aa29c1cedff8b08c3.webp",
+      "src": "/photos/discovery/8920ae354f20a74a30806b602cf83fba689b096db6b37eb753901bb9791f666d.webp",
       "alt": "View of Hohe Tauern, Austria",
       "creditId": "92e02a8f0eb0761f59b7ce2aa29c1cedff8b08c3",
       "article": "https://en.wikipedia.org/wiki/High_Tauern",
-      "width": 800,
-      "height": 450,
-      "bytes": 75650
+      "width": 640,
+      "height": 360,
+      "bytes": 42498
     },
     "innsbruck|austria": {
-      "src": "/photos/discovery/7f084c39cd4314dc3fffb6bedc03b503bc8ac6db.webp",
+      "src": "/photos/discovery/e1c6a62eb6ec0f6d9b5b482919ac2c48d827ed546e11748fcead5eae1755f6a6.webp",
       "alt": "View of Innsbruck, Austria",
       "creditId": "7f084c39cd4314dc3fffb6bedc03b503bc8ac6db",
       "article": "https://en.wikipedia.org/wiki/Innsbruck",
-      "width": 800,
-      "height": 533,
-      "bytes": 72168
+      "width": 640,
+      "height": 426,
+      "bytes": 44592
     },
     "merano|italy": {
-      "src": "/photos/discovery/b76396dd5741839418e3bc985a69260a4d1016b7.webp",
+      "src": "/photos/discovery/f5230e9f9d4511d2b1d9dacdc703d4c26be338a54bc496cf868c49314c618e3c.webp",
       "alt": "View of Merano, Italy",
       "creditId": "b76396dd5741839418e3bc985a69260a4d1016b7",
       "article": "https://en.wikipedia.org/wiki/Merano",
-      "width": 800,
-      "height": 333,
-      "bytes": 76094
+      "width": 640,
+      "height": 266,
+      "bytes": 44386
     },
     "grenoble|france": {
-      "src": "/photos/discovery/fddcd0984174318a66d54d39085a102a6166dbdf.webp",
+      "src": "/photos/discovery/47640caf2aebf037634c0db4b80f91bed97f4a2ee4e6f3b57926e3bc524d3c5b.webp",
       "alt": "View of Grenoble, France",
       "creditId": "fddcd0984174318a66d54d39085a102a6166dbdf",
       "article": "https://en.wikipedia.org/wiki/Grenoble",
-      "width": 800,
-      "height": 450,
-      "bytes": 59514
+      "width": 640,
+      "height": 360,
+      "bytes": 35808
     },
     "werfen|austria": {
-      "src": "/photos/discovery/dcc83af7da144018452e126e3676430fb743fe3a.webp",
+      "src": "/photos/discovery/11d665c35d52e09ba9ee04829775c4930442d583401af95183b518971687ee2c.webp",
       "alt": "View of Werfen, Austria",
       "creditId": "dcc83af7da144018452e126e3676430fb743fe3a",
       "article": "https://en.wikipedia.org/wiki/Werfen",
-      "width": 800,
-      "height": 533,
-      "bytes": 111224
+      "width": 640,
+      "height": 426,
+      "bytes": 65846
     },
     "lovagny|france": {
-      "src": "/photos/discovery/fdf3686dbe6b2ee754fb1c84719a6e9a09ed96d4.webp",
+      "src": "/photos/discovery/61da691988ebe650d21037bcef24110f9f059e0b689aa55c5ebd8cd7c1000131.webp",
       "alt": "View of Lovagny, France",
       "creditId": "fdf3686dbe6b2ee754fb1c84719a6e9a09ed96d4",
       "article": "https://en.wikipedia.org/wiki/Lovagny",
-      "width": 798,
-      "height": 600,
-      "bytes": 60286
+      "width": 638,
+      "height": 480,
+      "bytes": 33636
     },
     "zell am see|austria": {
-      "src": "/photos/discovery/d97c4fc9652375f580bcd0ec791c8f5598726feb.webp",
+      "src": "/photos/discovery/dccc474b301ad5cf761795ebac5e80ef0e3dc247aff166bef86849c7eae4986a.webp",
       "alt": "View of Zell am See, Austria",
       "creditId": "d97c4fc9652375f580bcd0ec791c8f5598726feb",
       "article": "https://en.wikipedia.org/wiki/Zell_am_See",
-      "width": 800,
-      "height": 518,
-      "bytes": 66458
+      "width": 640,
+      "height": 414,
+      "bytes": 37652
     },
     "courmayeur|italy": {
-      "src": "/photos/discovery/ce5ce2f5e90e3793fa4100542433ef5b3129eb70.webp",
+      "src": "/photos/discovery/6bc20b336c08ec92937350e75f557207f1ded0bd75cbf9c337dd4d5ffc8d3c8d.webp",
       "alt": "View of Courmayeur, Italy",
       "creditId": "ce5ce2f5e90e3793fa4100542433ef5b3129eb70",
       "article": "https://en.wikipedia.org/wiki/Courmayeur",
-      "width": 800,
-      "height": 533,
-      "bytes": 127508
+      "width": 640,
+      "height": 426,
+      "bytes": 75316
     },
     "cogne|italy": {
-      "src": "/photos/discovery/86a29306790db46581aae1ec058ab770846e71ff.webp",
+      "src": "/photos/discovery/a4810c9ee2cf5b62162823dfd1d34fda9bd6f6d6146e1005298be6d823cdf56c.webp",
       "alt": "View of Cogne, Italy",
       "creditId": "86a29306790db46581aae1ec058ab770846e71ff",
       "article": "https://en.wikipedia.org/wiki/Cogne",
-      "width": 800,
-      "height": 533,
-      "bytes": 86596
+      "width": 640,
+      "height": 426,
+      "bytes": 51278
     },
     "salzburg|austria": {
-      "src": "/photos/discovery/25dce8f11359f4d99ae4ea76485b655697892bb5.webp",
+      "src": "/photos/discovery/50b2e6c4c8ca6135c0de74135761d6c873c0647757b89afc346836d942ec4d81.webp",
       "alt": "View of Salzburg, Austria",
       "creditId": "25dce8f11359f4d99ae4ea76485b655697892bb5",
       "article": "https://en.wikipedia.org/wiki/Salzburg",
-      "width": 800,
-      "height": 533,
-      "bytes": 95008
+      "width": 640,
+      "height": 426,
+      "bytes": 56866
     },
     "hintertux|austria": {
-      "src": "/photos/discovery/edb1a10fd0f0e4340d31133e77c0ac84f828b299.webp",
+      "src": "/photos/discovery/33665d7ca07d901c14a431c8f696c1cff2617604b2e4621fa9c52ed342dfc4ef.webp",
       "alt": "View of Hintertux, Austria",
       "creditId": "edb1a10fd0f0e4340d31133e77c0ac84f828b299",
       "article": "https://en.wikipedia.org/wiki/Tux,_Tyrol",
-      "width": 450,
-      "height": 600,
-      "bytes": 50950
+      "width": 360,
+      "height": 480,
+      "bytes": 29924
     },
     "saint gervais les bains|france": {
-      "src": "/photos/discovery/4ddbc4c3d854366ff0bc9bef19c332e1e1a078dc.webp",
+      "src": "/photos/discovery/bc22266f361b2033714dffaee8dcb76db4dec37daed3de18f2404fe4e44e04ec.webp",
       "alt": "View of Saint-Gervais-les-Bains, France",
       "creditId": "4ddbc4c3d854366ff0bc9bef19c332e1e1a078dc",
       "article": "https://en.wikipedia.org/wiki/Saint-Gervais-les-Bains",
-      "width": 800,
-      "height": 600,
-      "bytes": 79726
+      "width": 640,
+      "height": 480,
+      "bytes": 45226
     },
     "miami beach|united states": {
-      "src": "/photos/discovery/326ada3a0843e79d71e08a8d6b175f07b52bf1ca.webp",
+      "src": "/photos/discovery/5771a8e2dacfd45c60c4823dfd1124dddbd20004e04c4b1a97c1a1ab44602bbb.webp",
       "alt": "View of Miami Beach, United States",
       "creditId": "326ada3a0843e79d71e08a8d6b175f07b52bf1ca",
       "article": "https://en.wikipedia.org/wiki/Miami_Beach,_Florida",
-      "width": 800,
-      "height": 461,
-      "bytes": 71726
+      "width": 640,
+      "height": 369,
+      "bytes": 44334
     },
     "miami|united states": {
-      "src": "/photos/discovery/0c5864ee4c2724d09a3c104a628ad88270043414.webp",
+      "src": "/photos/discovery/e23683bc52d2d521f3ba9d814647274eb874763f79ea2d2a47c8cd9e849dd1c2.webp",
       "alt": "View of Miami, United States",
       "creditId": "0c5864ee4c2724d09a3c104a628ad88270043414",
       "article": "https://en.wikipedia.org/wiki/Miami",
-      "width": 800,
-      "height": 402,
-      "bytes": 56326
+      "width": 640,
+      "height": 322,
+      "bytes": 30970
     },
     "hollywood|united states": {
-      "src": "/photos/discovery/0a3483a8c9c6dd8f0cd3baf61b0567c30fc04205.webp",
+      "src": "/photos/discovery/4d7fb5a3e7ae8be60df50ba4aa86aa0132422b03cbe13fdb77ee2c63dc459a21.webp",
       "alt": "View of Hollywood, United States",
       "creditId": "0a3483a8c9c6dd8f0cd3baf61b0567c30fc04205",
       "article": "https://en.wikipedia.org/wiki/Hollywood,_Florida",
-      "width": 800,
-      "height": 600,
-      "bytes": 56090
+      "width": 640,
+      "height": 480,
+      "bytes": 34830
     },
     "lake buena vista|united states": {
-      "src": "/photos/discovery/3d041cdafd2b201ab244cc23b195cc670ad066f9.webp",
+      "src": "/photos/discovery/a9185abc324ae5f5f6961be91bfc7dfa6b4be1870862f9a4e6df4f0c76b989fb.webp",
       "alt": "View of Lake Buena Vista, United States",
       "creditId": "3d041cdafd2b201ab244cc23b195cc670ad066f9",
       "article": "https://en.wikipedia.org/wiki/Lake_Buena_Vista,_Florida",
-      "width": 800,
-      "height": 533,
-      "bytes": 90262
+      "width": 640,
+      "height": 426,
+      "bytes": 52290
     },
     "orlando|united states": {
-      "src": "/photos/discovery/521e32bdf53666cac00c7b7410e481a4450f4cd0.webp",
+      "src": "/photos/discovery/0315cf43ed8dc0ffdba58e1cee7c9588b0899d6a6c62c34a9935dec290dedbe6.webp",
       "alt": "View of Orlando, United States",
       "creditId": "521e32bdf53666cac00c7b7410e481a4450f4cd0",
       "article": "https://en.wikipedia.org/wiki/Orlando,_Florida",
-      "width": 800,
-      "height": 480,
-      "bytes": 79458
+      "width": 640,
+      "height": 384,
+      "bytes": 46730
     },
     "chicago|united states": {
-      "src": "/photos/discovery/622d520ca355c1f63cd306d42dbd9636523be570.webp",
+      "src": "/photos/discovery/b2312c2630bc853e247734583b70bc43395ab0a9e7844a4064530cf66755f049.webp",
       "alt": "View of Chicago, United States",
       "creditId": "622d520ca355c1f63cd306d42dbd9636523be570",
       "article": "https://en.wikipedia.org/wiki/Chicago",
-      "width": 800,
-      "height": 566,
-      "bytes": 124610
+      "width": 640,
+      "height": 453,
+      "bytes": 72798
     },
     "los angeles|united states": {
-      "src": "/photos/discovery/4c0329a2885b142a2a1bf1472d6735ecb550bfdd.webp",
+      "src": "/photos/discovery/1b9f6baba98265544172adf633ddae9556c12ca1edfbe10ff5c5c4035dd2615e.webp",
       "alt": "View of Los Angeles, United States",
       "creditId": "4c0329a2885b142a2a1bf1472d6735ecb550bfdd",
       "article": "https://en.wikipedia.org/wiki/Los_Angeles",
-      "width": 800,
-      "height": 533,
-      "bytes": 35290
+      "width": 640,
+      "height": 426,
+      "bytes": 20134
     },
     "san francisco|united states": {
-      "src": "/photos/discovery/c325dedba3c686e7b86618134e361883f60bce7c.webp",
+      "src": "/photos/discovery/ea0df1cc7a02ae5bf3c97e2dfbbf8ee9c03516bf6228ed199dba7e796bc105c7.webp",
       "alt": "View of San Francisco, United States",
       "creditId": "c325dedba3c686e7b86618134e361883f60bce7c",
       "article": "https://en.wikipedia.org/wiki/San_Francisco",
-      "width": 800,
-      "height": 600,
-      "bytes": 76800
+      "width": 640,
+      "height": 480,
+      "bytes": 43128
     },
     "seattle|united states": {
-      "src": "/photos/discovery/e7dbd8a334cec2f9e1317303dbba2e3db5ad9c09.webp",
+      "src": "/photos/discovery/62f5451084971d570e6f89ff0ffa3754c27f13cbbf1a1abb9a9923a922521fff.webp",
       "alt": "View of Seattle, United States",
       "creditId": "e7dbd8a334cec2f9e1317303dbba2e3db5ad9c09",
       "article": "https://en.wikipedia.org/wiki/Seattle",
-      "width": 800,
-      "height": 500,
-      "bytes": 42842
+      "width": 640,
+      "height": 400,
+      "bytes": 25626
     },
     "san diego|united states": {
-      "src": "/photos/discovery/9ce2dbd02ad18bd763be8396d675385fb17f6a6e.webp",
+      "src": "/photos/discovery/741807be6901d9ab144d8ff120828b5a2a451e696f5e5a2bfc3e5fcf1a85a297.webp",
       "alt": "View of San Diego, United States",
       "creditId": "9ce2dbd02ad18bd763be8396d675385fb17f6a6e",
       "article": "https://en.wikipedia.org/wiki/San_Diego",
-      "width": 800,
-      "height": 515,
-      "bytes": 113236
+      "width": 640,
+      "height": 412,
+      "bytes": 67834
     },
     "toronto|canada": {
-      "src": "/photos/discovery/29e0f5dfa56923cd6bd6788ec20c99a2c0a65b7f.webp",
+      "src": "/photos/discovery/4ffb3baa676b05870fb4e0f36849af9fe69b23c86fab75e273c74b3de9661564.webp",
       "alt": "View of Toronto, Canada",
       "creditId": "29e0f5dfa56923cd6bd6788ec20c99a2c0a65b7f",
       "article": "https://en.wikipedia.org/wiki/Toronto",
-      "width": 800,
-      "height": 480,
-      "bytes": 40626
+      "width": 640,
+      "height": 384,
+      "bytes": 22436
     },
     "niagara falls|canada": {
-      "src": "/photos/discovery/73240337c38bfcd5dbc09896c7800de77fc54c40.webp",
+      "src": "/photos/discovery/c31577aaa15c51bf48b112b1e8648347c5e0bfacbd2e1ba9732ed67a4c0068e1.webp",
       "alt": "View of Niagara Falls, Canada",
       "creditId": "73240337c38bfcd5dbc09896c7800de77fc54c40",
       "article": "https://en.wikipedia.org/wiki/Niagara_Falls",
-      "width": 800,
-      "height": 532,
-      "bytes": 77782
+      "width": 640,
+      "height": 426,
+      "bytes": 43982
     },
     "montreal|canada": {
-      "src": "/photos/discovery/6013bf223b3b099cb84dd57a7dcc4a22112bdc36.webp",
+      "src": "/photos/discovery/d826b74af259c615c5979dd10770148c2822b0804a77c3d7bc39822a2f39c2f0.webp",
       "alt": "View of Montreal, Canada",
       "creditId": "6013bf223b3b099cb84dd57a7dcc4a22112bdc36",
       "article": "https://en.wikipedia.org/wiki/Montreal",
-      "width": 800,
-      "height": 480,
-      "bytes": 85778
+      "width": 640,
+      "height": 384,
+      "bytes": 48536
     },
     "vancouver|canada": {
-      "src": "/photos/discovery/2fced3551f5fc5e79b4b7e38b23a5b9a69087945.webp",
+      "src": "/photos/discovery/5db8cf4024381fb6d77d1b8bf8e28b8fb39a3aa61c1f042fe34ddb0454e704eb.webp",
       "alt": "View of Vancouver, Canada",
       "creditId": "2fced3551f5fc5e79b4b7e38b23a5b9a69087945",
       "article": "https://en.wikipedia.org/wiki/Vancouver",
-      "width": 800,
-      "height": 480,
-      "bytes": 86188
+      "width": 640,
+      "height": 384,
+      "bytes": 51298
     },
     "vilnius|lithuania": {
-      "src": "/photos/discovery/9b5305793120036cca2780baa4ddef28e4513390.webp",
+      "src": "/photos/discovery/618db79147816eb51b1b27585c63fbd9021384a5a02a71a915290192b5258872.webp",
       "alt": "View of Vilnius, Lithuania",
       "creditId": "9b5305793120036cca2780baa4ddef28e4513390",
       "article": "https://en.wikipedia.org/wiki/Vilnius",
-      "width": 800,
-      "height": 533,
-      "bytes": 121202
+      "width": 640,
+      "height": 426,
+      "bytes": 67220
     },
     "istanbul|turkey": {
-      "src": "/photos/discovery/911325d28c06a17bf95ee3351da3fe9587ede88c.webp",
+      "src": "/photos/discovery/8db3369e8ac881eb41fb1b43999bee17afbe36f55ed0f9ddb916704c9eeb1444.webp",
       "alt": "View of Istanbul, Turkey",
       "creditId": "911325d28c06a17bf95ee3351da3fe9587ede88c",
       "article": "https://en.wikipedia.org/wiki/Istanbul",
-      "width": 800,
-      "height": 387,
-      "bytes": 66316
+      "width": 640,
+      "height": 310,
+      "bytes": 39494
     },
     "dublin|ireland": {
-      "src": "/photos/discovery/6ac38513397a2f5e7d74ed80c84d559e275e430c.webp",
+      "src": "/photos/discovery/3acbdd5a5eea7b7f8f6364edde85323103941aa51e910e504018113025d22c61.webp",
       "alt": "View of Dublin, Ireland",
       "creditId": "6ac38513397a2f5e7d74ed80c84d559e275e430c",
       "article": "https://en.wikipedia.org/wiki/Dublin",
-      "width": 800,
-      "height": 450,
-      "bytes": 76374
+      "width": 640,
+      "height": 360,
+      "bytes": 46394
     },
     "copenhagen|denmark": {
-      "src": "/photos/discovery/011a15883e13a7a459ea53f2c122e9b1b0eaa4b0.webp",
+      "src": "/photos/discovery/daf28056fd4e8e2bbb3fb04331f49653a88e69c9f753d2167ae36daacbe83a65.webp",
       "alt": "View of Copenhagen, Denmark",
       "creditId": "011a15883e13a7a459ea53f2c122e9b1b0eaa4b0",
       "article": "https://en.wikipedia.org/wiki/Copenhagen",
-      "width": 800,
-      "height": 528,
-      "bytes": 49884
+      "width": 640,
+      "height": 422,
+      "bytes": 29418
     },
     "stockholm|sweden": {
-      "src": "/photos/discovery/98d5c05161bc462f5fb8d407fc3ae9d637d5c39d.webp",
+      "src": "/photos/discovery/cf97ed9b38ee9ec6ef20777f6e84eb509cca6ac8ab6290ac050078dd72be819b.webp",
       "alt": "View of Stockholm, Sweden",
       "creditId": "98d5c05161bc462f5fb8d407fc3ae9d637d5c39d",
       "article": "https://en.wikipedia.org/wiki/Stockholm",
-      "width": 800,
-      "height": 533,
-      "bytes": 94334
+      "width": 640,
+      "height": 426,
+      "bytes": 55590
     },
     "riga|latvia": {
-      "src": "/photos/discovery/1e3128a36aabaa95021d4a0f0d0e466293981849.webp",
+      "src": "/photos/discovery/f0dd1769ef8266d1208a1ba1baebec1b916f52871bcf5f534b7b7d0c7280a046.webp",
       "alt": "View of Riga, Latvia",
       "creditId": "1e3128a36aabaa95021d4a0f0d0e466293981849",
       "article": "https://en.wikipedia.org/wiki/Riga",
-      "width": 800,
-      "height": 480,
-      "bytes": 99370
+      "width": 640,
+      "height": 384,
+      "bytes": 60070
     },
     "bratislava|slovakia": {
-      "src": "/photos/discovery/c66ebdafb152396c59db8ba6a08a12e8cb59314a.webp",
+      "src": "/photos/discovery/a8ac3db0888283ac2d7628038329cf64df2bbedcfa47d2443c593ea770800b5f.webp",
       "alt": "View of Bratislava, Slovakia",
       "creditId": "c66ebdafb152396c59db8ba6a08a12e8cb59314a",
       "article": "https://en.wikipedia.org/wiki/Bratislava",
-      "width": 800,
-      "height": 599,
-      "bytes": 96610
+      "width": 640,
+      "height": 479,
+      "bytes": 56846
     },
     "oslo|norway": {
-      "src": "/photos/discovery/eca13ec48debbcac2002784bdcfcac8e91f65006.webp",
+      "src": "/photos/discovery/355d4ab1ac53412b1ec8bda02dd5056154cd457eb9995555768ce14a5a5cb343.webp",
       "alt": "View of Oslo, Norway",
       "creditId": "eca13ec48debbcac2002784bdcfcac8e91f65006",
       "article": "https://en.wikipedia.org/wiki/Oslo",
-      "width": 800,
-      "height": 500,
-      "bytes": 89610
+      "width": 640,
+      "height": 400,
+      "bytes": 53778
     },
     "bergen|norway": {
-      "src": "/photos/discovery/af3ce2c7e5ddfe0beb6cf8a4533a52acd422a81c.webp",
+      "src": "/photos/discovery/8e794ddbd57ec09179368f650877a82ab9f4700f2713c443e0f66cfbb23bdcb0.webp",
       "alt": "View of Bergen, Norway",
       "creditId": "af3ce2c7e5ddfe0beb6cf8a4533a52acd422a81c",
       "article": "https://en.wikipedia.org/wiki/Bergen",
-      "width": 800,
-      "height": 533,
-      "bytes": 83026
+      "width": 640,
+      "height": 426,
+      "bytes": 48770
     },
     "geiranger|norway": {
-      "src": "/photos/discovery/0d1ae6096f67c1c9587dbff37b6665e5a4bc20bb.webp",
+      "src": "/photos/discovery/756e1a5061af99bcbd87cdd1201bdf896c306f4738fe80c6fe09c2e808aa9d29.webp",
       "alt": "View of Geiranger, Norway",
       "creditId": "0d1ae6096f67c1c9587dbff37b6665e5a4bc20bb",
       "article": "https://en.wikipedia.org/wiki/Geiranger",
-      "width": 800,
-      "height": 395,
-      "bytes": 81292
+      "width": 640,
+      "height": 316,
+      "bytes": 46270
     },
     "flam|norway": {
-      "src": "/photos/discovery/c50e9b88413696b9a1dcd690599fe32d28adb5b3.webp",
+      "src": "/photos/discovery/5181a3ce7e263612984eb0e5735a4f18ce5247649b7a3a990fd2d00f44897c6f.webp",
       "alt": "View of Flåm, Norway",
       "creditId": "c50e9b88413696b9a1dcd690599fe32d28adb5b3",
       "article": "https://en.wikipedia.org/wiki/Fl%C3%A5m",
-      "width": 800,
-      "height": 533,
-      "bytes": 92376
+      "width": 640,
+      "height": 426,
+      "bytes": 54542
     },
     "troms|norway": {
-      "src": "/photos/discovery/88934b5c6530aaed5148bf697d415e8e319adafe.webp",
+      "src": "/photos/discovery/45ad523d657466631fb612b9613c0f876a61d077ef132f997ceb59320fa560e8.webp",
       "alt": "View of Tromsø, Norway",
       "creditId": "88934b5c6530aaed5148bf697d415e8e319adafe",
       "article": "https://en.wikipedia.org/wiki/Troms%C3%B8",
-      "width": 800,
-      "height": 533,
-      "bytes": 112552
+      "width": 640,
+      "height": 426,
+      "bytes": 64442
     },
     "helsinki|finland": {
-      "src": "/photos/discovery/dbca6ec2c0c7d5056493861cee67f7365c3d4637.webp",
+      "src": "/photos/discovery/7eb12fac05fc5d4c5fcd7c2891e7ad8b92cd82face320eca20e116c6e75f8361.webp",
       "alt": "View of Helsinki, Finland",
       "creditId": "dbca6ec2c0c7d5056493861cee67f7365c3d4637",
       "article": "https://en.wikipedia.org/wiki/Helsinki",
-      "width": 800,
-      "height": 450,
-      "bytes": 76284
+      "width": 640,
+      "height": 360,
+      "bytes": 44952
     },
     "rovaniemi|finland": {
-      "src": "/photos/discovery/3292f3f596536f8a1c6259e058b49f1bfdb98856.webp",
+      "src": "/photos/discovery/d4f3929e4ca14090d4e26f637ed7a43653ea1668d1400cef98b47c90085d40aa.webp",
       "alt": "View of Rovaniemi, Finland",
       "creditId": "3292f3f596536f8a1c6259e058b49f1bfdb98856",
       "article": "https://en.wikipedia.org/wiki/Rovaniemi",
-      "width": 371,
-      "height": 600,
-      "bytes": 33156
+      "width": 297,
+      "height": 480,
+      "bytes": 20326
     },
     "zagreb|croatia": {
-      "src": "/photos/discovery/28d852cc3bfee3c8a941b67235572efe53b90cdd.webp",
+      "src": "/photos/discovery/9e9bd7a64e3c441547f3104e78e4ec2c052a90dc01a5c79c3a7fb69f03a01ad1.webp",
       "alt": "View of Zagreb, Croatia",
       "creditId": "28d852cc3bfee3c8a941b67235572efe53b90cdd",
       "article": "https://en.wikipedia.org/wiki/Zagreb",
-      "width": 800,
-      "height": 534,
-      "bytes": 112538
+      "width": 640,
+      "height": 427,
+      "bytes": 67888
     },
     "dubrovnik|croatia": {
-      "src": "/photos/discovery/d34cb0f6d94f41caa192bced092edd791d7515bb.webp",
+      "src": "/photos/discovery/6fd11623d9a48be449d1106bbced1dd4fe4b410af3e776ae621565a8ed4e0e24.webp",
       "alt": "View of Dubrovnik, Croatia",
       "creditId": "d34cb0f6d94f41caa192bced092edd791d7515bb",
       "article": "https://en.wikipedia.org/wiki/Dubrovnik",
-      "width": 800,
-      "height": 497,
-      "bytes": 86560
+      "width": 640,
+      "height": 398,
+      "bytes": 50648
     },
     "belgrade|serbia": {
-      "src": "/photos/discovery/ecb1a2f0bbc22e53c88e346fa863b30304c15c6b.webp",
+      "src": "/photos/discovery/2929bdd7d83bb33553d6ceaaa99d4b17a2660f85a2c81ca6a095e8eeec0237c0.webp",
       "alt": "View of Belgrade, Serbia",
       "creditId": "ecb1a2f0bbc22e53c88e346fa863b30304c15c6b",
       "article": "https://en.wikipedia.org/wiki/Belgrade",
-      "width": 800,
-      "height": 600,
-      "bytes": 87512
+      "width": 640,
+      "height": 480,
+      "bytes": 52300
     },
     "sofia|bulgaria": {
-      "src": "/photos/discovery/1b5b3fe79831d2d571970b66c9234fe00faf2766.webp",
+      "src": "/photos/discovery/7e16dec4256bdd620ab7f72a346366b23b4b901baf7241647613007af6d2033a.webp",
       "alt": "View of Sofia, Bulgaria",
       "creditId": "1b5b3fe79831d2d571970b66c9234fe00faf2766",
       "article": "https://en.wikipedia.org/wiki/Sofia",
-      "width": 752,
-      "height": 600,
-      "bytes": 119638
+      "width": 602,
+      "height": 480,
+      "bytes": 71108
     },
     "buenos aires|argentina": {
-      "src": "/photos/discovery/adf8e8f4f2ba6208d28ead2c0d2ecc1e63e9eda9.webp",
+      "src": "/photos/discovery/4f3e1e3e0c847062e639349f9374cb84b41c17ab6d92c6d7454b5ec3a32759dc.webp",
       "alt": "View of Buenos Aires, Argentina",
       "creditId": "adf8e8f4f2ba6208d28ead2c0d2ecc1e63e9eda9",
       "article": "https://en.wikipedia.org/wiki/Buenos_Aires",
-      "width": 800,
-      "height": 328,
-      "bytes": 54090
+      "width": 640,
+      "height": 262,
+      "bytes": 32190
     },
     "puerto iguazu|argentina": {
-      "src": "/photos/discovery/75bda147d969a30bc3b4274ddca3f0211c0b8a35.webp",
+      "src": "/photos/discovery/52234b3f75102787c7d0ca8c2cba37228e6f339beca44d1b4927e48ffe2167b8.webp",
       "alt": "View of Puerto Iguazú, Argentina",
       "creditId": "75bda147d969a30bc3b4274ddca3f0211c0b8a35",
       "article": "https://en.wikipedia.org/wiki/Puerto_Iguaz%C3%BA",
-      "width": 800,
-      "height": 532,
-      "bytes": 102070
+      "width": 640,
+      "height": 426,
+      "bytes": 62312
     },
     "rio de janeiro|brazil": {
-      "src": "/photos/discovery/908ced5747a0bf07439f913edd05c61ef409aeae.webp",
+      "src": "/photos/discovery/2f71948d1dc766e10f586fc0e2352a7a0c793ef3c93435df5339cef8bf7428ca.webp",
       "alt": "View of Rio de Janeiro, Brazil",
       "creditId": "908ced5747a0bf07439f913edd05c61ef409aeae",
       "article": "https://en.wikipedia.org/wiki/Rio_de_Janeiro",
-      "width": 800,
-      "height": 428,
-      "bytes": 81184
+      "width": 640,
+      "height": 342,
+      "bytes": 48336
     },
     "machu picchu|peru": {
-      "src": "/photos/discovery/0126f901beedd040c4415f37c729cd80ed11dcee.webp",
+      "src": "/photos/discovery/2587a08d9eaae9f47ed9f81971a24ba05693102947f6dfb1ff504c5952c271aa.webp",
       "alt": "View of Machu Picchu, Peru",
       "creditId": "0126f901beedd040c4415f37c729cd80ed11dcee",
       "article": "https://en.wikipedia.org/wiki/Machu_Picchu",
-      "width": 800,
-      "height": 533,
-      "bytes": 91262
+      "width": 640,
+      "height": 426,
+      "bytes": 51928
     },
     "cusco|peru": {
-      "src": "/photos/discovery/24f2d2b5cbc78a27fae1642c51b2d70aa2812390.webp",
+      "src": "/photos/discovery/f6692508c981eb5b9f8449283bdbed2a9786f40864cc08fd390f3d3cbea5f7bf.webp",
       "alt": "View of Cusco, Peru",
       "creditId": "24f2d2b5cbc78a27fae1642c51b2d70aa2812390",
       "article": "https://en.wikipedia.org/wiki/Cusco",
-      "width": 800,
-      "height": 533,
-      "bytes": 82502
+      "width": 640,
+      "height": 426,
+      "bytes": 49026
     },
     "lima|peru": {
-      "src": "/photos/discovery/1039ddb601e08c6d913f23e994b40909c0d99c74.webp",
+      "src": "/photos/discovery/5aa20bea1af36465dd81ddaad0909ac8d52a65c9de754901d814d1e9066fcdf2.webp",
       "alt": "View of Lima, Peru",
       "creditId": "1039ddb601e08c6d913f23e994b40909c0d99c74",
       "article": "https://en.wikipedia.org/wiki/Lima",
-      "width": 800,
-      "height": 540,
-      "bytes": 76046
+      "width": 640,
+      "height": 432,
+      "bytes": 45890
     },
     "puno|peru": {
-      "src": "/photos/discovery/d717697dc2bff5e28b9b34bbb0dc9f92be381733.webp",
+      "src": "/photos/discovery/9b7bfb189c611fd9751fe0a2df0ea497adba5cf2bd36fde16c54c5190f07bcef.webp",
       "alt": "View of Puno, Peru",
       "creditId": "d717697dc2bff5e28b9b34bbb0dc9f92be381733",
       "article": "https://en.wikipedia.org/wiki/Puno",
-      "width": 800,
-      "height": 533,
-      "bytes": 103370
+      "width": 640,
+      "height": 426,
+      "bytes": 62264
     },
     "mexico city|mexico": {
-      "src": "/photos/discovery/cf9b25630357b4cba3e8cd1be7f34ce73358cbc3.webp",
+      "src": "/photos/discovery/5f63299b61f008c37f879709f8864ae43579dcc4023bbc5427845dccb3974e83.webp",
       "alt": "View of Mexico City, Mexico",
       "creditId": "cf9b25630357b4cba3e8cd1be7f34ce73358cbc3",
       "article": "https://en.wikipedia.org/wiki/Mexico_City",
-      "width": 800,
-      "height": 419,
-      "bytes": 96652
+      "width": 640,
+      "height": 335,
+      "bytes": 57424
     },
     "marrakech|morocco": {
-      "src": "/photos/discovery/ab167ad69bd0575e7e5021e9f6ed93109bc26f0e.webp",
+      "src": "/photos/discovery/26e1aab46578bf50147de81d1590be93bd5bb7552313adf861135b75ea12881f.webp",
       "alt": "View of Marrakech, Morocco",
       "creditId": "ab167ad69bd0575e7e5021e9f6ed93109bc26f0e",
       "article": "https://en.wikipedia.org/wiki/Marrakesh",
-      "width": 800,
-      "height": 598,
-      "bytes": 45098
+      "width": 640,
+      "height": 478,
+      "bytes": 26050
     },
     "casablanca|morocco": {
-      "src": "/photos/discovery/ef01575c6ee107bf17a06bb7b452caf750930660.webp",
+      "src": "/photos/discovery/186c27a60dab8cc99d2a9e842a02e5507b53302121dfee33d971d057124767f5.webp",
       "alt": "View of Casablanca, Morocco",
       "creditId": "ef01575c6ee107bf17a06bb7b452caf750930660",
       "article": "https://en.wikipedia.org/wiki/Casablanca",
-      "width": 800,
-      "height": 372,
-      "bytes": 42878
+      "width": 640,
+      "height": 298,
+      "bytes": 25354
     },
     "chefchaouen|morocco": {
-      "src": "/photos/discovery/27923184590d35bd6c26bc2624aaba9a41ed7d6e.webp",
+      "src": "/photos/discovery/7304312f3d07297bdda21b1e7dda532c05def4f1119140c1048d7cd912c59302.webp",
       "alt": "View of Chefchaouen, Morocco",
       "creditId": "27923184590d35bd6c26bc2624aaba9a41ed7d6e",
       "article": "https://en.wikipedia.org/wiki/Chefchaouen",
-      "width": 800,
-      "height": 533,
-      "bytes": 126742
+      "width": 640,
+      "height": 426,
+      "bytes": 74778
     },
     "cairo|egypt": {
-      "src": "/photos/discovery/66bb8025c303ed6dfa00d20dafc5b035a9ff435b.webp",
+      "src": "/photos/discovery/2c3841fa9a9e484f7e55b8fbf73b18fd374cdfd684353bc1daae95396dba83f1.webp",
       "alt": "View of Cairo, Egypt",
       "creditId": "66bb8025c303ed6dfa00d20dafc5b035a9ff435b",
       "article": "https://en.wikipedia.org/wiki/Cairo",
-      "width": 800,
-      "height": 387,
-      "bytes": 84158
+      "width": 640,
+      "height": 310,
+      "bytes": 48070
     },
     "petra|jordan": {
-      "src": "/photos/discovery/a16df826335dd182dce4222b2c873e1da579dee3.webp",
+      "src": "/photos/discovery/0448e328bebe5170a800f48968aca56516c899e04a458f443738e0692dd5bb63.webp",
       "alt": "View of Petra, Jordan",
       "creditId": "a16df826335dd182dce4222b2c873e1da579dee3",
       "article": "https://en.wikipedia.org/wiki/Petra",
-      "width": 800,
-      "height": 533,
-      "bytes": 73518
+      "width": 640,
+      "height": 426,
+      "bytes": 44712
     },
     "wadi rum|jordan": {
-      "src": "/photos/discovery/0cd6ee0cebbfc4989e91c5bdde01becbd732065a.webp",
+      "src": "/photos/discovery/df9bb0f6108cdafaa86def5f972e778ed8e46f3e290d1e8cb14b7dd1e228fccc.webp",
       "alt": "View of Wadi Rum, Jordan",
       "creditId": "0cd6ee0cebbfc4989e91c5bdde01becbd732065a",
       "article": "https://en.wikipedia.org/wiki/Wadi_Rum",
-      "width": 800,
-      "height": 532,
-      "bytes": 44160
+      "width": 640,
+      "height": 426,
+      "bytes": 22140
     },
     "jerash|jordan": {
-      "src": "/photos/discovery/231dba6f4c5ac48dba5b3eeba5176cd30b042e98.webp",
+      "src": "/photos/discovery/d7c724e558c1711c5bf114765e78c4b089ca419e1e5114d5e27273f93176e34c.webp",
       "alt": "View of Jerash, Jordan",
       "creditId": "231dba6f4c5ac48dba5b3eeba5176cd30b042e98",
       "article": "https://en.wikipedia.org/wiki/Jerash",
-      "width": 800,
-      "height": 541,
-      "bytes": 102038
+      "width": 640,
+      "height": 433,
+      "bytes": 59978
     },
     "dead sea|jordan": {
-      "src": "/photos/discovery/f48743b1adee7e3db05f8a3c706a788dead09e3c.webp",
+      "src": "/photos/discovery/dc944c4eab100788d9df6f9d381098d436ca1a49b0fa3cfd89edd5b8eb893fd0.webp",
       "alt": "View of Dead Sea, Jordan",
       "creditId": "f48743b1adee7e3db05f8a3c706a788dead09e3c",
       "article": "https://en.wikipedia.org/wiki/Dead_Sea",
-      "width": 800,
-      "height": 600,
-      "bytes": 59404
+      "width": 640,
+      "height": 480,
+      "bytes": 32344
     },
     "amman|jordan": {
-      "src": "/photos/discovery/1c8812d5865dde622ac4120a9680d98c486a556c.webp",
+      "src": "/photos/discovery/faa3ac90ca641e6f53a733198960ef508967e9032d143c80603dc999f562196a.webp",
       "alt": "View of Amman, Jordan",
       "creditId": "1c8812d5865dde622ac4120a9680d98c486a556c",
       "article": "https://en.wikipedia.org/wiki/Amman",
-      "width": 800,
-      "height": 533,
-      "bytes": 104746
+      "width": 640,
+      "height": 426,
+      "bytes": 62656
     },
     "paphos|cyprus": {
-      "src": "/photos/discovery/939f8b84ffe61944ee0b1066d15e99a07da2a64a.webp",
+      "src": "/photos/discovery/8760c63ee799eaadc061fb875725bed69a693430950a6826d85fdd79b28860ba.webp",
       "alt": "View of Paphos, Cyprus",
       "creditId": "939f8b84ffe61944ee0b1066d15e99a07da2a64a",
       "article": "https://en.wikipedia.org/wiki/Paphos",
-      "width": 800,
-      "height": 533,
-      "bytes": 64634
+      "width": 640,
+      "height": 426,
+      "bytes": 37472
     },
     "nicosia|cyprus": {
-      "src": "/photos/discovery/9ec6538c427cf384ce1381ca81a91a25008d1c65.webp",
+      "src": "/photos/discovery/538bd87e025f3e885faddb7038a6b2d1e1580ebc9f42b7377cb2956e8493ad8d.webp",
       "alt": "View of Nicosia, Cyprus",
       "creditId": "9ec6538c427cf384ce1381ca81a91a25008d1c65",
       "article": "https://en.wikipedia.org/wiki/Nicosia",
-      "width": 800,
-      "height": 450,
-      "bytes": 66408
+      "width": 640,
+      "height": 360,
+      "bytes": 40824
     },
     "tallinn|estonia": {
-      "src": "/photos/discovery/03f462bae3a32cfaa0541a2577879b062ed43232.webp",
+      "src": "/photos/discovery/6c6350db8ad23394b8929024eba77a17dcfcf9267b79ff0f3fd2a3d3ee16931a.webp",
       "alt": "View of Tallinn, Estonia",
       "creditId": "03f462bae3a32cfaa0541a2577879b062ed43232",
       "article": "https://en.wikipedia.org/wiki/Tallinn",
-      "width": 800,
-      "height": 533,
-      "bytes": 51408
+      "width": 640,
+      "height": 426,
+      "bytes": 30216
     },
     "lahemaa|estonia": {
-      "src": "/photos/discovery/799db59bc64286bdc6206672904b84de1ae1f703.webp",
+      "src": "/photos/discovery/6a1484dc3308543fcdc61d27fe28c140fb4db52a9007fe28649f33b5247eb102.webp",
       "alt": "View of Lahemaa, Estonia",
       "creditId": "799db59bc64286bdc6206672904b84de1ae1f703",
       "article": "https://en.wikipedia.org/wiki/Lahemaa_National_Park",
-      "width": 800,
-      "height": 534,
-      "bytes": 54704
+      "width": 640,
+      "height": 427,
+      "bytes": 31960
     },
     "tbilisi|georgia": {
-      "src": "/photos/discovery/41ad5c752abb5215ae66f95e1cc3620f9e66c53d.webp",
+      "src": "/photos/discovery/fa331e1ccc257cd2f9c86e35d30bf9d0dc48f4fb9a918c9eb30e3299fa64c52b.webp",
       "alt": "View of Tbilisi, Georgia",
       "creditId": "41ad5c752abb5215ae66f95e1cc3620f9e66c53d",
       "article": "https://en.wikipedia.org/wiki/Tbilisi",
-      "width": 800,
-      "height": 533,
-      "bytes": 86898
+      "width": 640,
+      "height": 426,
+      "bytes": 51796
     },
     "mtskheta|georgia": {
-      "src": "/photos/discovery/91850fd4626277afcb39692f50e48b0eaff8f1ee.webp",
+      "src": "/photos/discovery/206d16378299f24686eb6a7c4ffa08c91c4e24b288f78c74061c051028fa353e.webp",
       "alt": "View of Mtskheta, Georgia",
       "creditId": "91850fd4626277afcb39692f50e48b0eaff8f1ee",
       "article": "https://en.wikipedia.org/wiki/Mtskheta",
-      "width": 800,
-      "height": 536,
-      "bytes": 125360
+      "width": 640,
+      "height": 429,
+      "bytes": 76144
     },
     "kazbegi|georgia": {
-      "src": "/photos/discovery/c27fa1dc04bf5b95a52213d0ffaa3c963cd2dc4e.webp",
+      "src": "/photos/discovery/a62258d4b3d15b3249fce35a9c5628ed5551a8415f5769c4816a0e6ac1c52387.webp",
       "alt": "View of Kazbegi, Georgia",
       "creditId": "c27fa1dc04bf5b95a52213d0ffaa3c963cd2dc4e",
       "article": "https://en.wikipedia.org/wiki/Stepantsminda",
-      "width": 800,
-      "height": 533,
-      "bytes": 118662
+      "width": 640,
+      "height": 426,
+      "bytes": 67488
     },
     "bled|slovenia": {
-      "src": "/photos/discovery/31101ed598c18e0189437daeac42f86289fb69c7.webp",
+      "src": "/photos/discovery/df97f7e5e7991df6a656741afbee06ed112310da45d1a1c3b45c8b4a563ebb57.webp",
       "alt": "View of Bled, Slovenia",
       "creditId": "31101ed598c18e0189437daeac42f86289fb69c7",
       "article": "https://en.wikipedia.org/wiki/Bled",
-      "width": 800,
-      "height": 600,
-      "bytes": 56674
+      "width": 640,
+      "height": 480,
+      "bytes": 32390
     },
     "ljubljana|slovenia": {
-      "src": "/photos/discovery/6d7c6d46b8a0d1f3cb74c0b5ed2ee028ab0d2bb9.webp",
+      "src": "/photos/discovery/a5e6033d1671604e6694c1a0084b42604d4fa0c8cde133e417d7d35c4f51c6eb.webp",
       "alt": "View of Ljubljana, Slovenia",
       "creditId": "6d7c6d46b8a0d1f3cb74c0b5ed2ee028ab0d2bb9",
       "article": "https://en.wikipedia.org/wiki/Ljubljana",
-      "width": 800,
-      "height": 600,
-      "bytes": 103906
+      "width": 640,
+      "height": 480,
+      "bytes": 60914
     },
     "postojna|slovenia": {
-      "src": "/photos/discovery/b0b954784c238c0a568559b180a5f1115a61f788.webp",
+      "src": "/photos/discovery/56ede31901a78a2c65dc5bc6bd2a44965e48f13eeb1d00e5040fc877b9a2d6d2.webp",
       "alt": "View of Postojna, Slovenia",
       "creditId": "b0b954784c238c0a568559b180a5f1115a61f788",
       "article": "https://en.wikipedia.org/wiki/Postojna",
-      "width": 800,
-      "height": 600,
-      "bytes": 85896
+      "width": 640,
+      "height": 480,
+      "bytes": 53056
     },
     "cape town|south africa": {
-      "src": "/photos/discovery/5cae8b1b1b97b0427d6b16aec17588b02e302e13.webp",
+      "src": "/photos/discovery/de6a6f57bcc8159d87b7842073bdbf3938148bdebe29d877e2e625efcf21069a.webp",
       "alt": "View of Cape Town, South Africa",
       "creditId": "5cae8b1b1b97b0427d6b16aec17588b02e302e13",
       "article": "https://en.wikipedia.org/wiki/Cape_Town",
-      "width": 800,
-      "height": 463,
-      "bytes": 77894
+      "width": 640,
+      "height": 370,
+      "bytes": 44848
     },
     "dubai|united arab emirates": {
-      "src": "/photos/discovery/ae5ead64f27b83da0ebee87782b8da225261916e.webp",
+      "src": "/photos/discovery/df6199625262b6fefb9e9bd2bdf1ddb9355aac8ee7ba218722122599cc085fa0.webp",
       "alt": "View of Dubai, United Arab Emirates",
       "creditId": "ae5ead64f27b83da0ebee87782b8da225261916e",
       "article": "https://en.wikipedia.org/wiki/Dubai",
-      "width": 800,
-      "height": 331,
-      "bytes": 58504
+      "width": 640,
+      "height": 265,
+      "bytes": 35294
     },
     "abu dhabi|united arab emirates": {
-      "src": "/photos/discovery/d3d9a3aaa002d0c067b239ffb8192258e834eb02.webp",
+      "src": "/photos/discovery/1826138518732a7239770f672d50ab70c355d34971fa6e486ff1337d43ba6e84.webp",
       "alt": "View of Abu Dhabi, United Arab Emirates",
       "creditId": "d3d9a3aaa002d0c067b239ffb8192258e834eb02",
       "article": "https://en.wikipedia.org/wiki/Abu_Dhabi",
-      "width": 800,
-      "height": 439,
-      "bytes": 28242
+      "width": 640,
+      "height": 351,
+      "bytes": 14270
     },
     "sydney|australia": {
-      "src": "/photos/discovery/9651ad4f0d5aa395f72fcd473e49f4f4270f5dd2.webp",
+      "src": "/photos/discovery/bd9cc2d5757a87711785cbbf460422e180bbaa07cde79746047efc39ef38153b.webp",
       "alt": "View of Sydney, Australia",
       "creditId": "9651ad4f0d5aa395f72fcd473e49f4f4270f5dd2",
       "article": "https://en.wikipedia.org/wiki/Sydney",
-      "width": 800,
-      "height": 400,
-      "bytes": 30940
+      "width": 640,
+      "height": 320,
+      "bytes": 18656
     },
     "uluru|australia": {
-      "src": "/photos/discovery/7e31aef0afe45242557d7c272b31362f394f365d.webp",
+      "src": "/photos/discovery/838380ce88a052f0d47ce3065510eb8a79d75935ac2e5b408076e046ac17c780.webp",
       "alt": "View of Uluru, Australia",
       "creditId": "7e31aef0afe45242557d7c272b31362f394f365d",
       "article": "https://en.wikipedia.org/wiki/Uluru",
-      "width": 800,
-      "height": 600,
-      "bytes": 83312
+      "width": 640,
+      "height": 480,
+      "bytes": 47740
     },
     "melbourne|australia": {
-      "src": "/photos/discovery/1881ce840a5b396833225622d91a82a907155025.webp",
+      "src": "/photos/discovery/7851a08a9e6b8dd2dd6640d876188f946f9603e693dc4d1c428969f00c261d49.webp",
       "alt": "View of Melbourne, Australia",
       "creditId": "1881ce840a5b396833225622d91a82a907155025",
       "article": "https://en.wikipedia.org/wiki/Melbourne",
-      "width": 800,
-      "height": 568,
-      "bytes": 105230
+      "width": 640,
+      "height": 454,
+      "bytes": 62228
     },
     "auckland|new zealand": {
-      "src": "/photos/discovery/a1ae8c6142ee44a8962e51c05e729baa7c52ec83.webp",
+      "src": "/photos/discovery/694423fedd4d586fb82d17c19361c01bd49f8643b8ad6f02eeb14a9fbdaf0b37.webp",
       "alt": "View of Auckland, New Zealand",
       "creditId": "a1ae8c6142ee44a8962e51c05e729baa7c52ec83",
       "article": "https://en.wikipedia.org/wiki/Auckland",
-      "width": 800,
-      "height": 435,
-      "bytes": 44238
+      "width": 640,
+      "height": 348,
+      "bytes": 26034
     },
     "rotorua|new zealand": {
-      "src": "/photos/discovery/d2e5b5bf959d906957b7745e96147394c6bf8507.webp",
+      "src": "/photos/discovery/5c94a144230414aa74d7173c6f02286fe174b752b5399de960e906c2a7a46bb5.webp",
       "alt": "View of Rotorua, New Zealand",
       "creditId": "d2e5b5bf959d906957b7745e96147394c6bf8507",
       "article": "https://en.wikipedia.org/wiki/Rotorua",
-      "width": 800,
-      "height": 417,
-      "bytes": 72180
+      "width": 640,
+      "height": 334,
+      "bytes": 43360
     },
     "milford sound|new zealand": {
-      "src": "/photos/discovery/fa239e7f8ef759c77adda7b7a17063fa88076ab5.webp",
+      "src": "/photos/discovery/1ea3ba7609fd00d62fd146e0db2b2fbf37ac3d330a01e90d54a5a4e025dbd38b.webp",
       "alt": "View of Milford Sound, New Zealand",
       "creditId": "fa239e7f8ef759c77adda7b7a17063fa88076ab5",
       "article": "https://en.wikipedia.org/wiki/Milford_Sound",
-      "width": 800,
-      "height": 290,
-      "bytes": 21376
+      "width": 640,
+      "height": 232,
+      "bytes": 11592
     },
     "tokyo|japan": {
-      "src": "/photos/discovery/3ead42a0636f87ba688f7685c89c7d2fe0c9f4e2.webp",
+      "src": "/photos/discovery/e73cd305e7b4739e3223e434d3aaa49c0796ce7e4b355a086596f43ce680b5bd.webp",
       "alt": "View of Tokyo, Japan",
       "creditId": "3ead42a0636f87ba688f7685c89c7d2fe0c9f4e2",
       "article": "https://en.wikipedia.org/wiki/Tokyo",
-      "width": 800,
-      "height": 426,
-      "bytes": 62200
+      "width": 640,
+      "height": 341,
+      "bytes": 37828
     },
     "kyoto|japan": {
-      "src": "/photos/discovery/991d4dbc772b5dc63f6f8c359f8548752a25d250.webp",
+      "src": "/photos/discovery/e005960b9594e4bc7b2d1fc78ed4cd69e8742d7f4a349ffb2bf36a4407bc31d9.webp",
       "alt": "View of Kyoto, Japan",
       "creditId": "991d4dbc772b5dc63f6f8c359f8548752a25d250",
       "article": "https://en.wikipedia.org/wiki/Kyoto",
-      "width": 800,
-      "height": 528,
-      "bytes": 101028
+      "width": 640,
+      "height": 422,
+      "bytes": 59572
     },
     "bangkok|thailand": {
-      "src": "/photos/discovery/aaf8eed2058d8a2579d9ea5f00da8566f934dbbf.webp",
+      "src": "/photos/discovery/ac74064766dede32555dcf23e4b5e8baab8a3712f96218558bcf43782304857f.webp",
       "alt": "View of Bangkok, Thailand",
       "creditId": "aaf8eed2058d8a2579d9ea5f00da8566f934dbbf",
       "article": "https://en.wikipedia.org/wiki/Bangkok",
-      "width": 800,
-      "height": 533,
-      "bytes": 80922
+      "width": 640,
+      "height": 426,
+      "bytes": 49750
     },
     "ha long|vietnam": {
-      "src": "/photos/discovery/aab93c9aa5a106f7ef156125418d8e3febd24c13.webp",
+      "src": "/photos/discovery/bbb071270696da86bee6d45546f4bdcca5636d279000c9902a8556479c7fd2e9.webp",
       "alt": "View of Ha Long, Vietnam",
       "creditId": "aab93c9aa5a106f7ef156125418d8e3febd24c13",
       "article": "https://en.wikipedia.org/wiki/H%E1%BA%A1_Long",
-      "width": 800,
-      "height": 600,
-      "bytes": 66148
+      "width": 640,
+      "height": 480,
+      "bytes": 40068
     },
     "hanoi|vietnam": {
-      "src": "/photos/discovery/6c37bdd243fe90d76a182ae6c27d0293bafdcbb9.webp",
+      "src": "/photos/discovery/5b0ffdb88b6be47983274463a73e962c60291460a78fb2d06116fe30fb9b425d.webp",
       "alt": "View of Hanoi, Vietnam",
       "creditId": "6c37bdd243fe90d76a182ae6c27d0293bafdcbb9",
       "article": "https://en.wikipedia.org/wiki/Hanoi",
-      "width": 800,
-      "height": 427,
-      "bytes": 55470
+      "width": 640,
+      "height": 342,
+      "bytes": 33334
     },
     "ho chi minh city|vietnam": {
-      "src": "/photos/discovery/597e647b76bc8cf2658bb820609296a91edc0ac9.webp",
+      "src": "/photos/discovery/bac6548e2daaa7e6a74b03770154c294430676478aefeffcfc0d61d47929b0d0.webp",
       "alt": "View of Ho Chi Minh City, Vietnam",
       "creditId": "597e647b76bc8cf2658bb820609296a91edc0ac9",
       "article": "https://en.wikipedia.org/wiki/Ho_Chi_Minh_City",
-      "width": 782,
-      "height": 600,
-      "bytes": 83336
+      "width": 626,
+      "height": 480,
+      "bytes": 48532
     },
     "agra|india": {
-      "src": "/photos/discovery/50c89570fe7bdfef55f1f7be7a32dda908ab9802.webp",
+      "src": "/photos/discovery/82c522367d26daba2a592bb5998e622ffc6b92a3a367178eab47dced9ebedf84.webp",
       "alt": "View of Agra, India",
       "creditId": "50c89570fe7bdfef55f1f7be7a32dda908ab9802",
       "article": "https://en.wikipedia.org/wiki/Agra",
-      "width": 800,
-      "height": 526,
-      "bytes": 40002
+      "width": 640,
+      "height": 421,
+      "bytes": 23130
     },
     "delhi|india": {
-      "src": "/photos/discovery/27f0c6915f193c49fa8897a60780db0183343629.webp",
+      "src": "/photos/discovery/c926db32a7b5ca22cdd056dda24de9c2580b6c1f84b2d176e2da09d24e10a260.webp",
       "alt": "View of Delhi, India",
       "creditId": "27f0c6915f193c49fa8897a60780db0183343629",
       "article": "https://en.wikipedia.org/wiki/Delhi",
-      "width": 506,
-      "height": 600,
-      "bytes": 28078
+      "width": 405,
+      "height": 480,
+      "bytes": 16712
     },
     "mumbai|india": {
-      "src": "/photos/discovery/7a28f3635b1ff34322cd5884a7ce31bfd7a2835d.webp",
+      "src": "/photos/discovery/ad1aa42bf080e113cae234c499e81a7a2483454a8c35bdf143f7f59257cf2c2e.webp",
       "alt": "View of Mumbai, India",
       "creditId": "7a28f3635b1ff34322cd5884a7ce31bfd7a2835d",
       "article": "https://en.wikipedia.org/wiki/Mumbai",
-      "width": 800,
-      "height": 600,
-      "bytes": 73532
+      "width": 640,
+      "height": 480,
+      "bytes": 42636
     },
     "kochi|india": {
-      "src": "/photos/discovery/ead0cdd418ee21e98be93cf861f749fb7cd9ab11.webp",
+      "src": "/photos/discovery/fde608af6f5f6f75b5570592b1385ce9dc34eff47d34159ae463d9a2831ef90e.webp",
       "alt": "View of Kochi, India",
       "creditId": "ead0cdd418ee21e98be93cf861f749fb7cd9ab11",
       "article": "https://en.wikipedia.org/wiki/Kochi",
-      "width": 800,
-      "height": 533,
-      "bytes": 30862
+      "width": 640,
+      "height": 426,
+      "bytes": 18976
     },
     "singapore|singapore": {
-      "src": "/photos/discovery/dbc6768edb64ebf36b183ddeb60bcb909fd18dad.webp",
+      "src": "/photos/discovery/0d6f99643a8ded3ff407c63e85853eb4408801a60fbbb66711d6b67eb860f579.webp",
       "alt": "View of Singapore, Singapore",
       "creditId": "dbc6768edb64ebf36b183ddeb60bcb909fd18dad",
       "article": "https://en.wikipedia.org/wiki/Singapore",
-      "width": 800,
-      "height": 533,
-      "bytes": 75962
+      "width": 640,
+      "height": 426,
+      "bytes": 45624
     },
     "hong kong|china": {
-      "src": "/photos/discovery/ea9a30d43466aca5db2eaf480e89e2cffce52684.webp",
+      "src": "/photos/discovery/b9d9d44f92d3f96d0d4f853e47537665da6adc6a4a3e3f48e6d88cfa8337d1e9.webp",
       "alt": "View of Hong Kong, China",
       "creditId": "ea9a30d43466aca5db2eaf480e89e2cffce52684",
       "article": "https://en.wikipedia.org/wiki/Hong_Kong",
-      "width": 800,
-      "height": 383,
-      "bytes": 82222
+      "width": 640,
+      "height": 306,
+      "bytes": 47000
     },
     "beijing|china": {
-      "src": "/photos/discovery/94aae27a3e7f77f64c5143a2ccf123fa28c6c484.webp",
+      "src": "/photos/discovery/f107ec938b0587ffe8c15dc9a69b22c69065e727e0b01d8639995f2e76fb7933.webp",
       "alt": "View of Beijing, China",
       "creditId": "94aae27a3e7f77f64c5143a2ccf123fa28c6c484",
       "article": "https://en.wikipedia.org/wiki/Beijing",
-      "width": 800,
-      "height": 533,
-      "bytes": 75268
+      "width": 640,
+      "height": 426,
+      "bytes": 41098
     },
     "shanghai|china": {
-      "src": "/photos/discovery/b144483b5058e745c0ef9dd280ea1e067f263adc.webp",
+      "src": "/photos/discovery/125c2bef6ce4b9ee68c93a6e22d9d7b873a9fb8381e63804ce4273ece74ea009.webp",
       "alt": "View of Shanghai, China",
       "creditId": "b144483b5058e745c0ef9dd280ea1e067f263adc",
       "article": "https://en.wikipedia.org/wiki/Shanghai",
-      "width": 800,
-      "height": 534,
-      "bytes": 64774
+      "width": 640,
+      "height": 427,
+      "bytes": 38444
     },
     "luxembourg city|luxembourg": {
-      "src": "/photos/discovery/d72f7fdcff79bb4d27816d1671ec53992a3f1edd.webp",
+      "src": "/photos/discovery/dc9885c95caf8e288220abc7cd3cb04728691d407c3b04588faa1356f6f81afd.webp",
       "alt": "View of Luxembourg City, Luxembourg",
       "creditId": "d72f7fdcff79bb4d27816d1671ec53992a3f1edd",
       "article": "https://en.wikipedia.org/wiki/Luxembourg_City",
-      "width": 800,
-      "height": 423,
-      "bytes": 65074
+      "width": 640,
+      "height": 338,
+      "bytes": 38678
     },
     "valletta|malta": {
-      "src": "/photos/discovery/48ce5773c2f36a6e5246275c24046aff881d0b5a.webp",
+      "src": "/photos/discovery/828dca4bab47905cd651a860004a9c580958027deee4f07e8a61a9b2ae1232d8.webp",
       "alt": "View of Valletta, Malta",
       "creditId": "48ce5773c2f36a6e5246275c24046aff881d0b5a",
       "article": "https://en.wikipedia.org/wiki/Valletta",
-      "width": 800,
-      "height": 427,
-      "bytes": 62282
+      "width": 640,
+      "height": 342,
+      "bytes": 37500
     },
     "mdina|malta": {
-      "src": "/photos/discovery/48bba97f75005a4bee005f01e41235b81a1d56c9.webp",
+      "src": "/photos/discovery/e96626aa8db1c48c103d6e9648f4a7108e8eb8c3fddd162c1ff9ca8ea888777f.webp",
       "alt": "View of Mdina, Malta",
       "creditId": "48bba97f75005a4bee005f01e41235b81a1d56c9",
       "article": "https://en.wikipedia.org/wiki/Mdina",
-      "width": 800,
-      "height": 533,
-      "bytes": 56272
+      "width": 640,
+      "height": 426,
+      "bytes": 33696
     },
     "sarajevo|bosnia and herzegovina": {
-      "src": "/photos/discovery/388dfc52ecee26d88521bdc9477212263ca9076b.webp",
+      "src": "/photos/discovery/7c5121dabf6a27247f61512b8d2190800386098e612ff767ba6df7d40787ee3a.webp",
       "alt": "View of Sarajevo, Bosnia and Herzegovina",
       "creditId": "388dfc52ecee26d88521bdc9477212263ca9076b",
       "article": "https://en.wikipedia.org/wiki/Sarajevo",
-      "width": 800,
-      "height": 478,
-      "bytes": 86230
+      "width": 640,
+      "height": 382,
+      "bytes": 50700
     },
     "mostar|bosnia and herzegovina": {
-      "src": "/photos/discovery/5f8a835790258eaf32effd7e327080fd4becec67.webp",
+      "src": "/photos/discovery/422eef850bc4ad2180ad5f079bed0514625ad5331c86fba5bbbeac710ec0b5c1.webp",
       "alt": "View of Mostar, Bosnia and Herzegovina",
       "creditId": "5f8a835790258eaf32effd7e327080fd4becec67",
       "article": "https://en.wikipedia.org/wiki/Mostar",
-      "width": 800,
-      "height": 289,
-      "bytes": 61482
+      "width": 640,
+      "height": 231,
+      "bytes": 35600
     },
     "tirana|albania": {
-      "src": "/photos/discovery/164e68a652175fb95515a8da91a5cbeaa0da7647.webp",
+      "src": "/photos/discovery/116bce769dac145145d6e589f836041f3dd346ec25f0a35850ec28b175e6498e.webp",
       "alt": "View of Tirana, Albania",
       "creditId": "164e68a652175fb95515a8da91a5cbeaa0da7647",
       "article": "https://en.wikipedia.org/wiki/Tirana",
-      "width": 800,
-      "height": 401,
-      "bytes": 60882
+      "width": 640,
+      "height": 321,
+      "bytes": 34902
     },
     "berat|albania": {
-      "src": "/photos/discovery/147911fab8ed714712005da97513bfab86afc6c4.webp",
+      "src": "/photos/discovery/5d8f76b5277692c7532ccf6de8ec06ee1212724670559c48b589cddd3c018bcc.webp",
       "alt": "View of Berat, Albania",
       "creditId": "147911fab8ed714712005da97513bfab86afc6c4",
       "article": "https://en.wikipedia.org/wiki/Berat",
-      "width": 800,
-      "height": 450,
-      "bytes": 105822
+      "width": 640,
+      "height": 360,
+      "bytes": 62598
     },
     "gjirokaster|albania": {
-      "src": "/photos/discovery/3666da11571b39de8e05219c3dbb348fb10d1f41.webp",
+      "src": "/photos/discovery/51551777d55572ebcd379ea195a5b3dac93ec92215812c8156f33f88a09fb32d.webp",
       "alt": "View of Gjirokastër, Albania",
       "creditId": "3666da11571b39de8e05219c3dbb348fb10d1f41",
       "article": "https://en.wikipedia.org/wiki/Gjirokast%C3%ABr",
-      "width": 800,
-      "height": 533,
-      "bytes": 109916
+      "width": 640,
+      "height": 426,
+      "bytes": 64684
     },
     "butrint|albania": {
-      "src": "/photos/discovery/5950d34db8b6b7d40b3cd6d07a4b287b60e75793.webp",
+      "src": "/photos/discovery/2fe400e5ffc29aeb7e135d38413c78a159593e16ff41168c3b321701f5ea94a7.webp",
       "alt": "View of Butrint, Albania",
       "creditId": "5950d34db8b6b7d40b3cd6d07a4b287b60e75793",
       "article": "https://en.wikipedia.org/wiki/Butrint",
-      "width": 800,
-      "height": 536,
-      "bytes": 133224
+      "width": 640,
+      "height": 429,
+      "bytes": 81438
     },
     "kotor|montenegro": {
-      "src": "/photos/discovery/2ef66d820f90d68dcf17bb767bdadead5d568f07.webp",
+      "src": "/photos/discovery/5b00507b93296143db03a5542910ebd7dcc1f3ef1a18a5a809c1591fcb6e1220.webp",
       "alt": "View of Kotor, Montenegro",
       "creditId": "2ef66d820f90d68dcf17bb767bdadead5d568f07",
       "article": "https://en.wikipedia.org/wiki/Kotor",
-      "width": 800,
-      "height": 533,
-      "bytes": 106022
+      "width": 640,
+      "height": 426,
+      "bytes": 61736
     },
     "cetinje|montenegro": {
-      "src": "/photos/discovery/89aaf290e049361ad35f3b71c26a8f91b756e03f.webp",
+      "src": "/photos/discovery/9963e6c535c18accaf035c74cd5b15b3854bec9528830800a813ef54e8389e4f.webp",
       "alt": "View of Cetinje, Montenegro",
       "creditId": "89aaf290e049361ad35f3b71c26a8f91b756e03f",
       "article": "https://en.wikipedia.org/wiki/Cetinje",
-      "width": 800,
-      "height": 522,
-      "bytes": 50364
+      "width": 640,
+      "height": 418,
+      "bytes": 29950
     },
     "zabljak|montenegro": {
-      "src": "/photos/discovery/f5f0a5f46395a2c4f0d8883bfc24669286040df7.webp",
+      "src": "/photos/discovery/ecf7ab1bf3a563466eb30bd6711939c3b440aab1763ad14a8d30a93bf97a08cd.webp",
       "alt": "View of Žabljak, Montenegro",
       "creditId": "f5f0a5f46395a2c4f0d8883bfc24669286040df7",
       "article": "https://en.wikipedia.org/wiki/%C5%BDabljak",
-      "width": 800,
-      "height": 533,
-      "bytes": 61170
+      "width": 640,
+      "height": 426,
+      "bytes": 38542
     },
     "skopje|north macedonia": {
-      "src": "/photos/discovery/a787c4ed8f7037ed134ae8d798195a936e3910e1.webp",
+      "src": "/photos/discovery/6be0f1d30e8858a7f2faa0179e302df18970685061b40e5f7fc04ba16b03b722.webp",
       "alt": "View of Skopje, North Macedonia",
       "creditId": "a787c4ed8f7037ed134ae8d798195a936e3910e1",
       "article": "https://en.wikipedia.org/wiki/Skopje",
-      "width": 800,
-      "height": 298,
-      "bytes": 46406
+      "width": 640,
+      "height": 238,
+      "bytes": 27464
     },
     "ohrid|north macedonia": {
-      "src": "/photos/discovery/3a8f94c628e2ae6f923523d5a07e29149f58b513.webp",
+      "src": "/photos/discovery/f4b8bdd644e5c3721947a62bff299b7af4e760a015b3a36c9451dd063c9d4f37.webp",
       "alt": "View of Ohrid, North Macedonia",
       "creditId": "3a8f94c628e2ae6f923523d5a07e29149f58b513",
       "article": "https://en.wikipedia.org/wiki/Ohrid",
-      "width": 800,
-      "height": 536,
-      "bytes": 68198
+      "width": 640,
+      "height": 429,
+      "bytes": 39658
     },
     "seoul|south korea": {
-      "src": "/photos/discovery/4553d8a0ccd018a470ad708c15bbbf4e4771055b.webp",
+      "src": "/photos/discovery/64c58de04880b822e199661c4f549a7f4516a248d13426a6dfa4e4fb9644abbe.webp",
       "alt": "View of Seoul, South Korea",
       "creditId": "4553d8a0ccd018a470ad708c15bbbf4e4771055b",
       "article": "https://en.wikipedia.org/wiki/Seoul",
-      "width": 797,
-      "height": 600,
-      "bytes": 81510
+      "width": 638,
+      "height": 480,
+      "bytes": 49962
     },
     "taipei|taiwan": {
-      "src": "/photos/discovery/7da8a67790056deb6c8bbeca23b2ec4c3d9a1b37.webp",
+      "src": "/photos/discovery/347de93fdb927088f81d915f6664ad737e82651527a4dc4c82ece68b235adc90.webp",
       "alt": "View of Taipei, Taiwan",
       "creditId": "7da8a67790056deb6c8bbeca23b2ec4c3d9a1b37",
       "article": "https://en.wikipedia.org/wiki/Taipei",
-      "width": 800,
-      "height": 533,
-      "bytes": 80968
+      "width": 640,
+      "height": 426,
+      "bytes": 48320
     },
     "kuala lumpur|malaysia": {
-      "src": "/photos/discovery/2242f74a95c5f0456c41be1931ed283790a935df.webp",
+      "src": "/photos/discovery/a605d83e5289206bf5198d1fdace76fc942504387aa2772c01787d09b5b07653.webp",
       "alt": "View of Kuala Lumpur, Malaysia",
       "creditId": "2242f74a95c5f0456c41be1931ed283790a935df",
       "article": "https://en.wikipedia.org/wiki/Kuala_Lumpur",
-      "width": 800,
-      "height": 450,
-      "bytes": 87176
+      "width": 640,
+      "height": 360,
+      "bytes": 53722
     },
     "monteverde|costa rica": {
-      "src": "/photos/discovery/d2cd84837109a637df5174bd9f09a8f110844806.webp",
+      "src": "/photos/discovery/174857c013895f33c4f86012f5930fe2d65d37b030da0fdee3332e1f75ba6281.webp",
       "alt": "View of Monteverde, Costa Rica",
       "creditId": "d2cd84837109a637df5174bd9f09a8f110844806",
       "article": "https://en.wikipedia.org/wiki/Monteverde",
-      "width": 800,
-      "height": 533,
-      "bytes": 81914
+      "width": 640,
+      "height": 426,
+      "bytes": 49712
     },
     "panama city|panama": {
-      "src": "/photos/discovery/2e836864186a23ac7720dcbe6e8cc4c7239d2d63.webp",
+      "src": "/photos/discovery/e9d09e8ed948ad23c895744d4ac422faa9d2c4d68dc586f456cd95d8ad011de5.webp",
       "alt": "View of Panama City, Panama",
       "creditId": "2e836864186a23ac7720dcbe6e8cc4c7239d2d63",
       "article": "https://en.wikipedia.org/wiki/Panama_City",
-      "width": 800,
-      "height": 450,
-      "bytes": 80704
+      "width": 640,
+      "height": 360,
+      "bytes": 48370
     },
     "quito|ecuador": {
-      "src": "/photos/discovery/00594c9d9e348b83374416c5590c3a146952279e.webp",
+      "src": "/photos/discovery/63671514db1cb3765dcde23546c2a9935d3958b11f1e1f25d5ddf1d51f6b3f7b.webp",
       "alt": "View of Quito, Ecuador",
       "creditId": "00594c9d9e348b83374416c5590c3a146952279e",
       "article": "https://en.wikipedia.org/wiki/Quito",
-      "width": 800,
-      "height": 390,
-      "bytes": 63498
+      "width": 640,
+      "height": 312,
+      "bytes": 37998
     },
     "cotopaxi|ecuador": {
-      "src": "/photos/discovery/37148b4b653418d6d66aeee287b268adfae6b94b.webp",
+      "src": "/photos/discovery/d0fb58fd70c13153391e890c52d34528078d0493814b2a9ce8f9259488eeb849.webp",
       "alt": "View of Cotopaxi, Ecuador",
       "creditId": "37148b4b653418d6d66aeee287b268adfae6b94b",
       "article": "https://en.wikipedia.org/wiki/Cotopaxi",
-      "width": 800,
-      "height": 411,
-      "bytes": 28356
+      "width": 640,
+      "height": 329,
+      "bytes": 16758
     },
     "santiago|chile": {
-      "src": "/photos/discovery/9f333079b6400d9d92389f8d91140502a5724114.webp",
+      "src": "/photos/discovery/ba75aee8e574efad114402f139560d96d2f0b1cce74bf1939f0fd5d8dc0140fd.webp",
       "alt": "View of Santiago, Chile",
       "creditId": "9f333079b6400d9d92389f8d91140502a5724114",
       "article": "https://en.wikipedia.org/wiki/Santiago",
-      "width": 800,
-      "height": 533,
-      "bytes": 72266
+      "width": 640,
+      "height": 426,
+      "bytes": 42190
     },
     "puerto natales|chile": {
-      "src": "/photos/discovery/1e1ff6cf9275d7a4865fe8b0a13e2ef23221ba60.webp",
+      "src": "/photos/discovery/d5bf9200fc58de055c56eabff424b43d1c9ea8f1ac71115bb8cb3bbe894876cf.webp",
       "alt": "View of Puerto Natales, Chile",
       "creditId": "1e1ff6cf9275d7a4865fe8b0a13e2ef23221ba60",
       "article": "https://en.wikipedia.org/wiki/Puerto_Natales",
-      "width": 800,
-      "height": 450,
-      "bytes": 53936
+      "width": 640,
+      "height": 360,
+      "bytes": 32774
     },
     "montevideo|uruguay": {
-      "src": "/photos/discovery/0d19e0c9b372264ebfd405cfc4baedff0054c09b.webp",
+      "src": "/photos/discovery/90bb255a24cc7c19b303138f3781f5aa4fc5eeb6bff6ecf0bf140ddf71f1a9f6.webp",
       "alt": "View of Montevideo, Uruguay",
       "creditId": "0d19e0c9b372264ebfd405cfc4baedff0054c09b",
       "article": "https://en.wikipedia.org/wiki/Montevideo",
-      "width": 800,
-      "height": 532,
-      "bytes": 64838
+      "width": 640,
+      "height": 426,
+      "bytes": 38014
     },
     "nairobi|kenya": {
-      "src": "/photos/discovery/4e228768db176cf29322a8bb9b0d027b5844c934.webp",
+      "src": "/photos/discovery/65a4311ebf802bcb14296dcc051d6d44a42ce3d6320ff31f2d118885e416cf57.webp",
       "alt": "View of Nairobi, Kenya",
       "creditId": "4e228768db176cf29322a8bb9b0d027b5844c934",
       "article": "https://en.wikipedia.org/wiki/Nairobi",
-      "width": 800,
-      "height": 534,
-      "bytes": 55604
+      "width": 640,
+      "height": 427,
+      "bytes": 30236
     },
     "arusha|tanzania": {
-      "src": "/photos/discovery/bbf66a2845f22b2829d33440b0ad6b56f019867e.webp",
+      "src": "/photos/discovery/098827aee3f68694323ba728a96650bea1b8fb2f93e591f3edde02a7c367f14a.webp",
       "alt": "View of Arusha, Tanzania",
       "creditId": "bbf66a2845f22b2829d33440b0ad6b56f019867e",
       "article": "https://en.wikipedia.org/wiki/Arusha",
-      "width": 800,
-      "height": 557,
-      "bytes": 103810
+      "width": 640,
+      "height": 446,
+      "bytes": 62956
     },
     "serengeti|tanzania": {
-      "src": "/photos/discovery/a7abc5f254e0fe5f342add18d4265e97a6eeb4c5.webp",
+      "src": "/photos/discovery/d7a1da462f3c522e64e616c5dcb6102e4b284b6289fd75627c9948a38f2ef4bf.webp",
       "alt": "View of Serengeti, Tanzania",
       "creditId": "a7abc5f254e0fe5f342add18d4265e97a6eeb4c5",
       "article": "https://en.wikipedia.org/wiki/Serengeti",
-      "width": 800,
-      "height": 536,
-      "bytes": 74182
+      "width": 640,
+      "height": 429,
+      "bytes": 42996
     },
     "zanzibar city|tanzania": {
-      "src": "/photos/discovery/60c91d8e567bbb2158cdb4cde8ad0d5c4db7e172.webp",
+      "src": "/photos/discovery/9d1ed8ea73e12bbc3ef806c02e6df4803b27197335d6197e1de503d768ac0694.webp",
       "alt": "View of Zanzibar City, Tanzania",
       "creditId": "60c91d8e567bbb2158cdb4cde8ad0d5c4db7e172",
       "article": "https://en.wikipedia.org/wiki/Zanzibar_City",
-      "width": 800,
-      "height": 450,
-      "bytes": 66336
+      "width": 640,
+      "height": 360,
+      "bytes": 41846
     },
     "windhoek|namibia": {
-      "src": "/photos/discovery/7bcfefeb15e78e901cf23f84d51c92e89a28581e.webp",
+      "src": "/photos/discovery/89d064390eb76f893fa6713eb9097d644d3450d8ce7ea23247ab3089bfc95d19.webp",
       "alt": "View of Windhoek, Namibia",
       "creditId": "7bcfefeb15e78e901cf23f84d51c92e89a28581e",
       "article": "https://en.wikipedia.org/wiki/Windhoek",
-      "width": 800,
-      "height": 450,
-      "bytes": 104254
-    },
-    "namib desert|namibia": {
-      "src": "/photos/discovery/5ef4b87595268a9d8586bb35169928c165c70125.webp",
-      "alt": "View of Namib Desert, Namibia",
-      "creditId": "5ef4b87595268a9d8586bb35169928c165c70125",
-      "article": "https://en.wikipedia.org/wiki/Namib",
-      "width": 429,
-      "height": 600,
-      "bytes": 47038
+      "width": 640,
+      "height": 360,
+      "bytes": 63556
     },
     "etosha|namibia": {
-      "src": "/photos/discovery/d1134b53ea96f42e01afe92ec3560d55677fbe5e.webp",
+      "src": "/photos/discovery/f23a9f4c215c86a1d3477cea998311fd6753f126d278c50319649469c41719c8.webp",
       "alt": "View of Etosha, Namibia",
       "creditId": "d1134b53ea96f42e01afe92ec3560d55677fbe5e",
       "article": "https://en.wikipedia.org/wiki/Etosha_National_Park",
-      "width": 800,
-      "height": 533,
-      "bytes": 46430
+      "width": 640,
+      "height": 426,
+      "bytes": 26480
     },
     "kathmandu|nepal": {
-      "src": "/photos/discovery/b2d16e781fbc674f5cb460177dc25acddfbb0d17.webp",
+      "src": "/photos/discovery/03c4e8f5256db2e10f4c478072ac7cc456b425321034d59c71639daa5f1a8724.webp",
       "alt": "View of Kathmandu, Nepal",
       "creditId": "b2d16e781fbc674f5cb460177dc25acddfbb0d17",
       "article": "https://en.wikipedia.org/wiki/Kathmandu",
-      "width": 800,
-      "height": 495,
-      "bytes": 58204
+      "width": 640,
+      "height": 396,
+      "bytes": 35216
     },
     "pokhara|nepal": {
-      "src": "/photos/discovery/afe77af2e3544f1879c18a77190e95b19c4f2c0d.webp",
+      "src": "/photos/discovery/f5c3aa8a7b32555cdb8e509e2fc4d46ac43389b4c70f62f2b2e20371e9d827ef.webp",
       "alt": "View of Pokhara, Nepal",
       "creditId": "afe77af2e3544f1879c18a77190e95b19c4f2c0d",
       "article": "https://en.wikipedia.org/wiki/Pokhara",
-      "width": 800,
-      "height": 533,
-      "bytes": 75408
+      "width": 640,
+      "height": 426,
+      "bytes": 44448
     },
     "sigiriya|sri lanka": {
-      "src": "/photos/discovery/8f19608a09519883606a6c9617ac3e711da4cc7d.webp",
+      "src": "/photos/discovery/7034904a3855b8bcf39000b82dc5f08c48fe3c362e4bd9c4c55b02577887e4e1.webp",
       "alt": "View of Sigiriya, Sri Lanka",
       "creditId": "8f19608a09519883606a6c9617ac3e711da4cc7d",
       "article": "https://en.wikipedia.org/wiki/Sigiriya",
-      "width": 800,
-      "height": 533,
-      "bytes": 84012
+      "width": 640,
+      "height": 426,
+      "bytes": 47626
     },
     "galle|sri lanka": {
-      "src": "/photos/discovery/eb61cc6d85989c50c05969f6b0b3a6fa8a2dead4.webp",
+      "src": "/photos/discovery/20c7722069df6bf8806cf1f8949c3ea11f95706ace2889dd28c01a139c247042.webp",
       "alt": "View of Galle, Sri Lanka",
       "creditId": "eb61cc6d85989c50c05969f6b0b3a6fa8a2dead4",
       "article": "https://en.wikipedia.org/wiki/Galle",
-      "width": 800,
-      "height": 599,
-      "bytes": 97736
+      "width": 640,
+      "height": 479,
+      "bytes": 53930
     }
   },
   "vacation": {
     "rome": {
-      "src": "/photos/discovery/6b3dfec168bce48fdf0a120d582c1f832123c262.webp",
+      "src": "/photos/discovery/d04f19976ed468a328bbcb8db8e0e369e1fd7fb77dede863a6cac57a999cfab7.webp",
       "alt": "Rome",
       "creditId": "6b3dfec168bce48fdf0a120d582c1f832123c262",
       "article": "https://en.wikipedia.org/wiki/Rome",
-      "width": 800,
-      "height": 532,
-      "bytes": 92320
+      "width": 640,
+      "height": 426,
+      "bytes": 55630
     },
     "paris": {
-      "src": "/photos/discovery/9865b08776f7e905634dd3a65afcb0719a1bfba1.webp",
+      "src": "/photos/discovery/f841c43eea28881b418f0b3d7a5612e74cde4b4e7cc510512395859ced6f1471.webp",
       "alt": "Paris",
       "creditId": "9865b08776f7e905634dd3a65afcb0719a1bfba1",
       "article": "https://en.wikipedia.org/wiki/Paris",
-      "width": 800,
-      "height": 500,
-      "bytes": 77440
+      "width": 640,
+      "height": 400,
+      "bytes": 45502
     },
     "venice": {
-      "src": "/photos/discovery/09cb272e79ee5888fded26f1848fbb04ab0a46da.webp",
+      "src": "/photos/discovery/2e009fd78c0240a02b6d234b2b6af9c80dd0538e6ac58fc358fc6966485fbc2e.webp",
       "alt": "Venice",
       "creditId": "09cb272e79ee5888fded26f1848fbb04ab0a46da",
       "article": "https://en.wikipedia.org/wiki/Venice",
-      "width": 800,
-      "height": 448,
-      "bytes": 46240
+      "width": 640,
+      "height": 358,
+      "bytes": 26538
     },
     "florence": {
-      "src": "/photos/discovery/42886f4699875165181269321752f478b0b5ee8b.webp",
+      "src": "/photos/discovery/eead5e58ac207a6b71b604984dada0261359b9b87364c222b3671a3f7548514b.webp",
       "alt": "Florence",
       "creditId": "42886f4699875165181269321752f478b0b5ee8b",
       "article": "https://en.wikipedia.org/wiki/Florence",
-      "width": 800,
-      "height": 534,
-      "bytes": 53738
+      "width": 640,
+      "height": 427,
+      "bytes": 31416
     },
     "italian-dolomites": {
-      "src": "/photos/discovery/25c16285b33c09c859aff4b7f2db8712976a5d60.webp",
+      "src": "/photos/discovery/994cc957da1851deecd6b42797fabf27731e3e49fef897572b6e49e846eb0136.webp",
       "alt": "Dolomites",
       "creditId": "25c16285b33c09c859aff4b7f2db8712976a5d60",
       "article": "https://en.wikipedia.org/wiki/Dolomites",
-      "width": 800,
-      "height": 553,
-      "bytes": 95568
+      "width": 640,
+      "height": 442,
+      "bytes": 55090
     },
     "lucerne": {
-      "src": "/photos/discovery/502e8fd516cf103682e55dc7a9a6fa9c1f73ae6c.webp",
+      "src": "/photos/discovery/3950093dd42142a43788d662ec01212766538a53d9274930105dfb6882cd83fb.webp",
       "alt": "Lucerne",
       "creditId": "502e8fd516cf103682e55dc7a9a6fa9c1f73ae6c",
       "article": "https://en.wikipedia.org/wiki/Lucerne",
-      "width": 800,
-      "height": 533,
-      "bytes": 98510
+      "width": 640,
+      "height": 426,
+      "bytes": 57396
     },
     "london": {
-      "src": "/photos/discovery/25a4edbec6ebd332d79f2d30c6977a1d4ea5f5cd.webp",
+      "src": "/photos/discovery/4285a4d91c67fbde2ba40ce828b90edc6f087d76eedd35276097500206f98e1e.webp",
       "alt": "London",
       "creditId": "25a4edbec6ebd332d79f2d30c6977a1d4ea5f5cd",
       "article": "https://en.wikipedia.org/wiki/London",
-      "width": 800,
-      "height": 450,
-      "bytes": 67128
+      "width": 640,
+      "height": 360,
+      "bytes": 39350
     },
     "amsterdam": {
-      "src": "/photos/discovery/9646aa7bccbff1d67b88266f21734abfcdbdeb48.webp",
+      "src": "/photos/discovery/7059658310c4d2100a0a6c367086276857cdfdb9a366d912c5a270d24a4fcd5e.webp",
       "alt": "Amsterdam",
       "creditId": "9646aa7bccbff1d67b88266f21734abfcdbdeb48",
       "article": "https://en.wikipedia.org/wiki/Amsterdam",
-      "width": 800,
-      "height": 533,
-      "bytes": 105266
+      "width": 640,
+      "height": 426,
+      "bytes": 61794
     },
     "prague": {
-      "src": "/photos/discovery/f11dd1b5c1aa4c9751283e85cdd0d9f7d69b85f4.webp",
+      "src": "/photos/discovery/50837c90f3466703e1f2f348c9e940bdd6a7eb2902b7b170fbcab56b6e8c2fa8.webp",
       "alt": "Prague",
       "creditId": "f11dd1b5c1aa4c9751283e85cdd0d9f7d69b85f4",
       "article": "https://en.wikipedia.org/wiki/Prague",
-      "width": 800,
-      "height": 476,
-      "bytes": 91242
-    },
-    "vienna": {
-      "src": "/photos/discovery/57f213b9775d439dc90137d0cac4f65fd52339d1.webp",
-      "alt": "Vienna",
-      "creditId": "57f213b9775d439dc90137d0cac4f65fd52339d1",
-      "article": "https://en.wikipedia.org/wiki/Vienna",
-      "width": 800,
-      "height": 360,
-      "bytes": 71504
+      "width": 640,
+      "height": 381,
+      "bytes": 52910
     },
     "budapest": {
-      "src": "/photos/discovery/3d817d708d2e4c6f6cd765084716fcf95d8c6d7e.webp",
+      "src": "/photos/discovery/28cc717ac243d6165ffb7576918151f09e549c19e87405cf4ed82f57125d22ca.webp",
       "alt": "Budapest",
       "creditId": "3d817d708d2e4c6f6cd765084716fcf95d8c6d7e",
       "article": "https://en.wikipedia.org/wiki/Budapest",
-      "width": 800,
-      "height": 414,
-      "bytes": 73476
+      "width": 640,
+      "height": 331,
+      "bytes": 43428
     },
     "nice-cote-dazur": {
-      "src": "/photos/discovery/7cd661aedd325078adb2849bfd5f182b5c94d185.webp",
+      "src": "/photos/discovery/22979ea2144167dc4ac8f1763dee303ebd5c3a07273dea434d1f814047d0dd91.webp",
       "alt": "Nice",
       "creditId": "7cd661aedd325078adb2849bfd5f182b5c94d185",
       "article": "https://en.wikipedia.org/wiki/Nice",
-      "width": 800,
-      "height": 533,
-      "bytes": 53378
+      "width": 640,
+      "height": 426,
+      "bytes": 31182
     },
     "french-alps": {
-      "src": "/photos/discovery/84d1ed199fa68cd4cec20c9d45a30ceefeaa939d.webp",
+      "src": "/photos/discovery/a455ae53a827a48d627a8e55cc465c76b53578805de5659f67fae8ec3215cca0.webp",
       "alt": "French Alps",
       "creditId": "84d1ed199fa68cd4cec20c9d45a30ceefeaa939d",
       "article": "https://en.wikipedia.org/wiki/French_Alps",
-      "width": 800,
-      "height": 600,
-      "bytes": 119320
+      "width": 640,
+      "height": 480,
+      "bytes": 71580
     },
     "miami-beach": {
-      "src": "/photos/discovery/326ada3a0843e79d71e08a8d6b175f07b52bf1ca.webp",
+      "src": "/photos/discovery/5771a8e2dacfd45c60c4823dfd1124dddbd20004e04c4b1a97c1a1ab44602bbb.webp",
       "alt": "Miami Beach, Florida",
       "creditId": "326ada3a0843e79d71e08a8d6b175f07b52bf1ca",
       "article": "https://en.wikipedia.org/wiki/Miami_Beach,_Florida",
-      "width": 800,
-      "height": 461,
-      "bytes": 71726
+      "width": 640,
+      "height": 369,
+      "bytes": 44334
     },
     "hollywood-hallandale": {
-      "src": "/photos/discovery/0a3483a8c9c6dd8f0cd3baf61b0567c30fc04205.webp",
+      "src": "/photos/discovery/4d7fb5a3e7ae8be60df50ba4aa86aa0132422b03cbe13fdb77ee2c63dc459a21.webp",
       "alt": "Hollywood, Florida",
       "creditId": "0a3483a8c9c6dd8f0cd3baf61b0567c30fc04205",
       "article": "https://en.wikipedia.org/wiki/Hollywood,_Florida",
-      "width": 800,
-      "height": 600,
-      "bytes": 56090
+      "width": 640,
+      "height": 480,
+      "bytes": 34830
     },
     "orlando": {
-      "src": "/photos/discovery/521e32bdf53666cac00c7b7410e481a4450f4cd0.webp",
+      "src": "/photos/discovery/0315cf43ed8dc0ffdba58e1cee7c9588b0899d6a6c62c34a9935dec290dedbe6.webp",
       "alt": "Orlando, Florida",
       "creditId": "521e32bdf53666cac00c7b7410e481a4450f4cd0",
       "article": "https://en.wikipedia.org/wiki/Orlando,_Florida",
-      "width": 800,
-      "height": 480,
-      "bytes": 79458
+      "width": 640,
+      "height": 384,
+      "bytes": 46730
     },
     "jerusalem": {
-      "src": "/photos/discovery/dcfad854858bd512e69c3c0c82da2aaf8f28b861.webp",
+      "src": "/photos/discovery/c795c593cd3bcb2de9b9798ce063f2f83cb3fae80ef3050ae60e0572ce9cd2d5.webp",
       "alt": "Jerusalem",
       "creditId": "dcfad854858bd512e69c3c0c82da2aaf8f28b861",
       "article": "https://en.wikipedia.org/wiki/Jerusalem",
-      "width": 800,
-      "height": 405,
-      "bytes": 101530
+      "width": 640,
+      "height": 324,
+      "bytes": 61672
     },
     "krakow": {
-      "src": "/photos/discovery/e4cf36b6afed6702bce932783098f71e0cf825db.webp",
+      "src": "/photos/discovery/7b90b679bb4a185cb5c4a9d97451dab17e79385908c18ab4107faf523021bc40.webp",
       "alt": "Kraków",
       "creditId": "e4cf36b6afed6702bce932783098f71e0cf825db",
       "article": "https://en.wikipedia.org/wiki/Krak%C3%B3w",
-      "width": 800,
-      "height": 393,
-      "bytes": 43566
+      "width": 640,
+      "height": 314,
+      "bytes": 26788
     }
   },
   "credits": {
@@ -7266,18 +7329,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Ponte_Vecchio_from_Ponte_alle_Grazie.jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Ponte_Vecchio_from_Ponte_alle_Grazie.jpg",
       "sha1": "84231563ef28d74afcbd3b32ba4467673aba5d49",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "d9e6e9b2a26190a8330a05282d516b92e0c17d04": {
-      "id": "d9e6e9b2a26190a8330a05282d516b92e0c17d04",
-      "title": "Blick auf und vom Piazzale Michelangelo (LM28908).jpg",
-      "author": "Michael Wittwer",
-      "license": "CC BY-SA 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Blick_auf_und_vom_Piazzale_Michelangelo_(LM28908).jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/Blick_auf_und_vom_Piazzale_Michelangelo_%28LM28908%29.jpg",
-      "sha1": "d9e6e9b2a26190a8330a05282d516b92e0c17d04",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -8325,18 +8376,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "e7c328c1da7350acd95523947b71ffe031b5cb51": {
-      "id": "e7c328c1da7350acd95523947b71ffe031b5cb51",
-      "title": "Lonely Dancer (4937475766).jpg",
-      "author": "Geerd-Olaf Freyer from Aachen, Deutschland",
-      "license": "CC BY-SA 2.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Lonely_Dancer_(4937475766).jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/10/Lonely_Dancer_%284937475766%29.jpg",
-      "sha1": "e7c328c1da7350acd95523947b71ffe031b5cb51",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "161faa0af93201940738b806c6518c63cd2a9091": {
       "id": "161faa0af93201940738b806c6518c63cd2a9091",
       "title": "Castelo dos Mouros. Sintra, Portugal.jpg",
@@ -8394,30 +8433,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Memorial_to_the_Murdered_Jews_of_Europeabove.jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Memorial_to_the_Murdered_Jews_of_Europeabove.jpg",
       "sha1": "b8f3087213f9c2ec6363bae23782d1be0647d262",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "0c24beec5377653e2761f0a7e7090f4485346910": {
-      "id": "0c24beec5377653e2761f0a7e7090f4485346910",
-      "title": "Segment with Graffiti of the Berlin Wall (3 of 4) (cropped).jpg",
-      "author": "Lklundin",
-      "license": "CC BY-SA 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Segment_with_Graffiti_of_the_Berlin_Wall_(3_of_4)_(cropped).jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Segment_with_Graffiti_of_the_Berlin_Wall_%283_of_4%29_%28cropped%29.jpg",
-      "sha1": "0c24beec5377653e2761f0a7e7090f4485346910",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "29759ca858884f72f7390104b0dffc356edb402c": {
-      "id": "29759ca858884f72f7390104b0dffc356edb402c",
-      "title": "Berlin - Checkpoint Charlie 1963.jpg",
-      "author": "Roger Wollstadt",
-      "license": "CC BY-SA 2.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Berlin_-_Checkpoint_Charlie_1963.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/75/Berlin_-_Checkpoint_Charlie_1963.jpg",
-      "sha1": "29759ca858884f72f7390104b0dffc356edb402c",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -8550,18 +8565,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Wien_Kunsthistorisches_Museum.jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/32/Wien_Kunsthistorisches_Museum.jpg",
       "sha1": "ffba2266f56faa7efc37e900f60eafa0d5234c35",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "0f6b0ef3e7c3910029f27b8f194b20bdae8b8d09": {
-      "id": "0f6b0ef3e7c3910029f27b8f194b20bdae8b8d09",
-      "title": "Wien 02 Prater a.jpg",
-      "author": "Gugerell",
-      "license": "CC0",
-      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Wien_02_Prater_a.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/78/Wien_02_Prater_a.jpg",
-      "sha1": "0f6b0ef3e7c3910029f27b8f194b20bdae8b8d09",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -8742,18 +8745,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Delfshaven,_Rotterdam_(38296094062).jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/07/Delfshaven%2C_Rotterdam_%2838296094062%29.jpg",
       "sha1": "c4f908ebb9c686d7b1055bd383b87bfc1ae07449",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "23423652aade51598c30423b0094ffa982ac9a7a": {
-      "id": "23423652aade51598c30423b0094ffa982ac9a7a",
-      "title": "Bruxelles Manneken Pis cropped.jpg",
-      "author": "Bruxelles_Manneken_Pis.jpg: Myrabella\nderivative work: Myrabella (talk)",
-      "license": "CC BY-SA 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Bruxelles_Manneken_Pis_cropped.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Bruxelles_Manneken_Pis_cropped.jpg",
-      "sha1": "23423652aade51598c30423b0094ffa982ac9a7a",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -9429,18 +9420,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "57f213b9775d439dc90137d0cac4f65fd52339d1": {
-      "id": "57f213b9775d439dc90137d0cac4f65fd52339d1",
-      "title": "Schoenbrunn philharmoniker 2012.jpg",
-      "author": "Superbass",
-      "license": "CC BY-SA 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Schoenbrunn_philharmoniker_2012.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Schoenbrunn_philharmoniker_2012.jpg",
-      "sha1": "57f213b9775d439dc90137d0cac4f65fd52339d1",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "f3879ce30e5fe1f578af42bb6b3d65821590ee6a": {
       "id": "f3879ce30e5fe1f578af42bb6b3d65821590ee6a",
       "title": "Hallstatt - Zentrum .JPG",
@@ -9846,18 +9825,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Budapest_Donauinsel_2.jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Budapest_Donauinsel_2.jpg",
       "sha1": "418ada2b3ca6a60b3207bbaf847c28749ca25c0c",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "6fe5651933965561d212dacdd86caee43d7676b6": {
-      "id": "6fe5651933965561d212dacdd86caee43d7676b6",
-      "title": "Sz bejarat.jpg",
-      "author": "unknown, \"Riado\" civil defence news",
-      "license": "CC BY-SA 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sz_bejarat.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Sz_bejarat.jpg",
-      "sha1": "6fe5651933965561d212dacdd86caee43d7676b6",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -10269,18 +10236,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "375e18788c48fdde3d1a811e9685607382914360": {
-      "id": "375e18788c48fdde3d1a811e9685607382914360",
-      "title": "Global Citizen Festival Central Park New York City from NYonAir (15351915006).jpg",
-      "author": "Anthony Quintano from Hillsborough, NJ, United States",
-      "license": "CC BY 2.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Global_Citizen_Festival_Central_Park_New_York_City_from_NYonAir_(15351915006).jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Global_Citizen_Festival_Central_Park_New_York_City_from_NYonAir_%2815351915006%29.jpg",
-      "sha1": "375e18788c48fdde3d1a811e9685607382914360",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "96873724856705271f1df8c14b4493a01798824f": {
       "id": "96873724856705271f1df8c14b4493a01798824f",
       "title": "9-11 Memorial and Museum (28815276064).jpg",
@@ -10677,18 +10632,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "98548d5d590ba9319d61887a143735bcc5f2b2e7": {
-      "id": "98548d5d590ba9319d61887a143735bcc5f2b2e7",
-      "title": "LaJolla-2 (45716612345).jpg",
-      "author": "Ajay Suresh from New York, NY, USA",
-      "license": "CC BY 2.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:LaJolla-2_(45716612345).jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cc/LaJolla-2_%2845716612345%29.jpg",
-      "sha1": "98548d5d590ba9319d61887a143735bcc5f2b2e7",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "de591432d42cef87d7aeb74b7ed2888e7bc66e33": {
       "id": "de591432d42cef87d7aeb74b7ed2888e7bc66e33",
       "title": "USA-The Freedom Trail.JPG",
@@ -11013,18 +10956,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "f98aae201b0ba9c6e119c8b18d78399fc6d7c948": {
-      "id": "f98aae201b0ba9c6e119c8b18d78399fc6d7c948",
-      "title": "Istanbul and Bosporus big.jpg",
-      "author": "Astronaut photograph ISS008-E-21752",
-      "license": "Public domain",
-      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Istanbul_and_Bosporus_big.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Istanbul_and_Bosporus_big.jpg",
-      "sha1": "f98aae201b0ba9c6e119c8b18d78399fc6d7c948",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "05178c0b28916ef00f5f2a3d695c68130ce9a470": {
       "id": "05178c0b28916ef00f5f2a3d695c68130ce9a470",
       "title": "Dolmabahce Istanbul Turkey.jpg",
@@ -11229,18 +11160,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "c5f93e26e1b6a25c3861045426defeacdc17f168": {
-      "id": "c5f93e26e1b6a25c3861045426defeacdc17f168",
-      "title": "Vigeland Sculpture Park - Panoramic view towards the Monolith, Oslo, Norway.jpg",
-      "author": "Christian David",
-      "license": "CC BY-SA 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Vigeland_Sculpture_Park_-_Panoramic_view_towards_the_Monolith,_Oslo,_Norway.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/aa/Vigeland_Sculpture_Park_-_Panoramic_view_towards_the_Monolith%2C_Oslo%2C_Norway.jpg",
-      "sha1": "c5f93e26e1b6a25c3861045426defeacdc17f168",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "af3ce2c7e5ddfe0beb6cf8a4533a52acd422a81c": {
       "id": "af3ce2c7e5ddfe0beb6cf8a4533a52acd422a81c",
       "title": "Bergen panorama at night - panoramio (1).jpg",
@@ -11406,18 +11325,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Yenny_Ateneo_Grand_Splendid.jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Yenny_Ateneo_Grand_Splendid.jpg",
       "sha1": "aa6ce7de2da7ec43645a9639c6bd26a4eb082f55",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "bdab6cd4278b8d94acc579120dba0c238064dbad": {
-      "id": "bdab6cd4278b8d94acc579120dba0c238064dbad",
-      "title": "San Telmo montage.jpg",
-      "author": "Bleff",
-      "license": "CC BY-SA 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:San_Telmo_montage.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/53/San_Telmo_montage.jpg",
-      "sha1": "bdab6cd4278b8d94acc579120dba0c238064dbad",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -12537,18 +12444,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "ac1dae1532bb8642876723dae5ad9612b2556305": {
-      "id": "ac1dae1532bb8642876723dae5ad9612b2556305",
-      "title": "Selig Luxembourg from Paffendall.jpg",
-      "author": "Christophe-Guillaume Selig (1791-1837)",
-      "license": "Public domain",
-      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Selig_Luxembourg_from_Paffendall.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/57/Selig_Luxembourg_from_Paffendall.jpg",
-      "sha1": "ac1dae1532bb8642876723dae5ad9612b2556305",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "b0f42d02ba21be5b80fb5e5b002363e0991b2fda": {
       "id": "b0f42d02ba21be5b80fb5e5b002363e0991b2fda",
       "title": "Luxemburg BW 2016-09-15 11-46-49 stitch.jpg",
@@ -12678,18 +12573,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Mostar_Old_Town_Panorama_2007.jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Mostar_Old_Town_Panorama_2007.jpg",
       "sha1": "b429f8e3c970e9e5b2a55dcda42db5aec705d15b",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "c96bda4dd18f9e406aec40d393d7342b2ffd4334": {
-      "id": "c96bda4dd18f9e406aec40d393d7342b2ffd4334",
-      "title": "Lumi i Bunes, burimi nga Liqeni i Shkodres 01.jpg",
-      "author": "Tiziana Lohja",
-      "license": "CC BY-SA 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Lumi_i_Bunes,_burimi_nga_Liqeni_i_Shkodres_01.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Lumi_i_Bunes%2C_burimi_nga_Liqeni_i_Shkodres_01.jpg",
-      "sha1": "c96bda4dd18f9e406aec40d393d7342b2ffd4334",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -13473,18 +13356,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "a1ae0856bf960cf9b792b565b331c5d27f1871aa": {
-      "id": "a1ae0856bf960cf9b792b565b331c5d27f1871aa",
-      "title": "Sicilia Palermo5 tango7174.jpg",
-      "author": "Tango7174",
-      "license": "CC BY-SA 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sicilia_Palermo5_tango7174.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Sicilia_Palermo5_tango7174.jpg",
-      "sha1": "a1ae0856bf960cf9b792b565b331c5d27f1871aa",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "29e3a651d06bf44fef67a40e505bfe8064d861ee": {
       "id": "29e3a651d06bf44fef67a40e505bfe8064d861ee",
       "title": "Prato della Valle.JPG",
@@ -13842,18 +13713,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Frauenkirche_and_Neues_Rathaus_Munich_March_2013.JPG",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Frauenkirche_and_Neues_Rathaus_Munich_March_2013.JPG",
       "sha1": "512814a72e7e77830ac3207af1613805fa06bfad",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
-    "e61704c9c7c15d495513c30d61fd058b10b83a1d": {
-      "id": "e61704c9c7c15d495513c30d61fd058b10b83a1d",
-      "title": "KZDachau1945.jpg",
-      "author": "Unknown authorUnknown author",
-      "license": "Public domain",
-      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:KZDachau1945.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4f/KZDachau1945.jpg",
-      "sha1": "e61704c9c7c15d495513c30d61fd058b10b83a1d",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
@@ -15657,18 +15516,6 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     },
-    "5ef4b87595268a9d8586bb35169928c165c70125": {
-      "id": "5ef4b87595268a9d8586bb35169928c165c70125",
-      "title": "Namib desert MODIS.jpg",
-      "author": "Jeff Schmaltz, MODIS Land Rapid Response Team, NASA GSFC",
-      "license": "Public domain",
-      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Namib_desert_MODIS.jpg",
-      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Namib_desert_MODIS.jpg",
-      "sha1": "5ef4b87595268a9d8586bb35169928c165c70125",
-      "checkedAt": "2026-11-04",
-      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
-    },
     "b2d16e781fbc674f5cb460177dc25acddfbb0d17": {
       "id": "b2d16e781fbc674f5cb460177dc25acddfbb0d17",
       "title": "Kathmandu-Durbar Square-06-Mahavishnu-Kuh-Vishnu-Pratapamalla-Jagannath-2007-gje.jpg",
@@ -15702,6 +15549,306 @@ export const discoveryPhotos: DiscoveryPhotoIndex = {
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Alps_aerial_1.jpg",
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/54/Alps_aerial_1.jpg",
       "sha1": "84d1ed199fa68cd4cec20c9d45a30ceefeaa939d",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "8fbca1928e1ff6a636a22b9c8efdc3c419410985": {
+      "id": "8fbca1928e1ff6a636a22b9c8efdc3c419410985",
+      "title": "CH Landwasser 2.jpg",
+      "author": "Daniel Schwen",
+      "license": "CC BY-SA 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:CH_Landwasser_2.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6a/CH_Landwasser_2.jpg",
+      "sha1": "8fbca1928e1ff6a636a22b9c8efdc3c419410985",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "c064895b90fe7286844c6ccfe19d83fa6abd77e6": {
+      "id": "c064895b90fe7286844c6ccfe19d83fa6abd77e6",
+      "title": "005 Toledo - Inneres der Synagoge Santa Maria la Blanca.jpg",
+      "author": "Constantin Uhde",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:005_Toledo_-_Inneres_der_Synagoge_Santa_Maria_la_Blanca.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/69/005_Toledo_-_Inneres_der_Synagoge_Santa_Maria_la_Blanca.jpg",
+      "sha1": "c064895b90fe7286844c6ccfe19d83fa6abd77e6",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "68a0f98a29257c92cffc8acffae3175442954612": {
+      "id": "68a0f98a29257c92cffc8acffae3175442954612",
+      "title": "Córdoba 2015 10 23 2642 (26218166275).jpg",
+      "author": "Harvey Barrison from Massapequa, NY, USA",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:C%C3%B3rdoba_2015_10_23_2642_(26218166275).jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f4/C%C3%B3rdoba_2015_10_23_2642_%2826218166275%29.jpg",
+      "sha1": "68a0f98a29257c92cffc8acffae3175442954612",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "e5be703d5aeb1e66a1df7dae00b057d978b16371": {
+      "id": "e5be703d5aeb1e66a1df7dae00b057d978b16371",
+      "title": "Adolf Eichmann at Trial1961.jpg",
+      "author": "Israel Government Press Office",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Adolf_Eichmann_at_Trial1961.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/eb/Adolf_Eichmann_at_Trial1961.jpg",
+      "sha1": "e5be703d5aeb1e66a1df7dae00b057d978b16371",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "a48e2af17b080812892b9996f019c918b78481ce": {
+      "id": "a48e2af17b080812892b9996f019c918b78481ce",
+      "title": "Biserica Sf Mihail Cu Cadirile Din Jur Si Turnul Neogotic In Lucru, la 1859.jpg",
+      "author": "Veress Ferenc (1832-1916)",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Biserica_Sf_Mihail_Cu_Cadirile_Din_Jur_Si_Turnul_Neogotic_In_Lucru,_la_1859.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Biserica_Sf_Mihail_Cu_Cadirile_Din_Jur_Si_Turnul_Neogotic_In_Lucru%2C_la_1859.jpg",
+      "sha1": "a48e2af17b080812892b9996f019c918b78481ce",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "c1f7aab80119689fc74b725afc49e328f1f8362b": {
+      "id": "c1f7aab80119689fc74b725afc49e328f1f8362b",
+      "title": "2011-Vestigii-DSC03530.JPG",
+      "author": "Paul Zamfira",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:2011-Vestigii-DSC03530.JPG",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/2011-Vestigii-DSC03530.JPG",
+      "sha1": "c1f7aab80119689fc74b725afc49e328f1f8362b",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "bb0840f66ba8884180a4127b66267a29297d0ebb": {
+      "id": "bb0840f66ba8884180a4127b66267a29297d0ebb",
+      "title": "046CupolaSPietro.jpg",
+      "author": "MarkusMark",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:046CupolaSPietro.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5a/046CupolaSPietro.jpg",
+      "sha1": "bb0840f66ba8884180a4127b66267a29297d0ebb",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "e5392189b88ab3650f563dcc9c94ebf51400d0a7": {
+      "id": "e5392189b88ab3650f563dcc9c94ebf51400d0a7",
+      "title": "144.Suleman Moschee.JPG",
+      "author": "Magdalena Siudy (Freta)",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:144.Suleman_Moschee.JPG",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cf/144.Suleman_Moschee.JPG",
+      "sha1": "e5392189b88ab3650f563dcc9c94ebf51400d0a7",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "aeda26ac278dab290608a50ce09a57ea8c430b3b": {
+      "id": "aeda26ac278dab290608a50ce09a57ea8c430b3b",
+      "title": "\"Þingvellir in Iceland\" - Apr 2015.jpg",
+      "author": "Murphsmurph",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:%22%C3%9Eingvellir_in_Iceland%22_-_Apr_2015.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/86/%22%C3%9Eingvellir_in_Iceland%22_-_Apr_2015.jpg",
+      "sha1": "aeda26ac278dab290608a50ce09a57ea8c430b3b",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "657832aa76018652a9e0b975dc33245f0cd8bb4c": {
+      "id": "657832aa76018652a9e0b975dc33245f0cd8bb4c",
+      "title": "Strokkur, Área geotérmica de Geysir, Suðurland, Islandia, 2014-08-16, DD 083.JPG",
+      "author": "Diego Delso",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Strokkur,_%C3%81rea_geot%C3%A9rmica_de_Geysir,_Su%C3%B0urland,_Islandia,_2014-08-16,_DD_083.JPG",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/be/Strokkur%2C_%C3%81rea_geot%C3%A9rmica_de_Geysir%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_083.JPG",
+      "sha1": "657832aa76018652a9e0b975dc33245f0cd8bb4c",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "8ab288b125b1af15a39192575c2ed073bb2367c5": {
+      "id": "8ab288b125b1af15a39192575c2ed073bb2367c5",
+      "title": "Gullfoss from the Air (cropped).jpg",
+      "author": "Nickspix",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Gullfoss_from_the_Air_(cropped).jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/18/Gullfoss_from_the_Air_%28cropped%29.jpg",
+      "sha1": "8ab288b125b1af15a39192575c2ed073bb2367c5",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "b82cb2665967cdd2478afc7dba6730de7194dfe6": {
+      "id": "b82cb2665967cdd2478afc7dba6730de7194dfe6",
+      "title": "2008-05-24 35 Skógafoss.jpg",
+      "author": "Hansueli Krapf",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:2008-05-24_35_Sk%C3%B3gafoss.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/2008-05-24_35_Sk%C3%B3gafoss.jpg",
+      "sha1": "b82cb2665967cdd2478afc7dba6730de7194dfe6",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "ba2d1bd235768a54160a0474def3242556c3ca94": {
+      "id": "ba2d1bd235768a54160a0474def3242556c3ca94",
+      "title": "An iceberg in Jokulsarlon.jpg",
+      "author": "Someone35",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:An_iceberg_in_Jokulsarlon.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9a/An_iceberg_in_Jokulsarlon.jpg",
+      "sha1": "ba2d1bd235768a54160a0474def3242556c3ca94",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "f4affa091f6161f188a98c57cd474ac6a12c333c": {
+      "id": "f4affa091f6161f188a98c57cd474ac6a12c333c",
+      "title": "KahalShalomSynagogue ListOfNames.JPG",
+      "author": "Benjitheijneb",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:KahalShalomSynagogue_ListOfNames.JPG",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/95/KahalShalomSynagogue_ListOfNames.JPG",
+      "sha1": "f4affa091f6161f188a98c57cd474ac6a12c333c",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "a7e91bcb2531c642be87a3cc71c94d6e7e458067": {
+      "id": "a7e91bcb2531c642be87a3cc71c94d6e7e458067",
+      "title": "Carved unicorn212334.jpg",
+      "author": "Smdjkd001",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Carved_unicorn212334.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/61/Carved_unicorn212334.jpg",
+      "sha1": "a7e91bcb2531c642be87a3cc71c94d6e7e458067",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "8d66c770b010dc27784d27dc869b3b80f0839007": {
+      "id": "8d66c770b010dc27784d27dc869b3b80f0839007",
+      "title": "Beit Govrin Maresha 20.jpg",
+      "author": "עומר מרקובסקי",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Beit_Govrin_Maresha_20.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Beit_Govrin_Maresha_20.jpg",
+      "sha1": "8d66c770b010dc27784d27dc869b3b80f0839007",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "f53bf251055bb063932c2676dce03cf8f8eca724": {
+      "id": "f53bf251055bb063932c2676dce03cf8f8eca724",
+      "title": "007 - 06.08.16 - Swarovski Kristallwelten.jpg",
+      "author": "David Spigiel",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:007_-_06.08.16_-_Swarovski_Kristallwelten.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c4/007_-_06.08.16_-_Swarovski_Kristallwelten.jpg",
+      "sha1": "f53bf251055bb063932c2676dce03cf8f8eca724",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "e24c550bb7a07102efe91cdef65864c5947547d4": {
+      "id": "e24c550bb7a07102efe91cdef65864c5947547d4",
+      "title": "20130603 Split 085.jpg",
+      "author": "Mark Ahsmann",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:20130603_Split_085.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/63/20130603_Split_085.jpg",
+      "sha1": "e24c550bb7a07102efe91cdef65864c5947547d4",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "0ba780e6589f79783024592446e3c10f16f5c14d": {
+      "id": "0ba780e6589f79783024592446e3c10f16f5c14d",
+      "title": "Aerial view of the Larnaca International Airport in 2022.jpg",
+      "author": "Photographer: Mosbatho",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Aerial_view_of_the_Larnaca_International_Airport_in_2022.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/39/Aerial_view_of_the_Larnaca_International_Airport_in_2022.jpg",
+      "sha1": "0ba780e6589f79783024592446e3c10f16f5c14d",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "b959715f56ecde2d987c79903f69b852357339bc": {
+      "id": "b959715f56ecde2d987c79903f69b852357339bc",
+      "title": "A Kruger landscape.jpg",
+      "author": "Robert Cutts",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:A_Kruger_landscape.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/74/A_Kruger_landscape.jpg",
+      "sha1": "b959715f56ecde2d987c79903f69b852357339bc",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "15d73039ff9693d6c32c160421255d7bdf2c3818": {
+      "id": "15d73039ff9693d6c32c160421255d7bdf2c3818",
+      "title": "Lake Wakatipu from Queenstown gondola.jpg",
+      "author": "Avenue",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Lake_Wakatipu_from_Queenstown_gondola.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Lake_Wakatipu_from_Queenstown_gondola.jpg",
+      "sha1": "15d73039ff9693d6c32c160421255d7bdf2c3818",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "8e80deeffb9a187bcd035ef996f537e3b5be8d3a": {
+      "id": "8e80deeffb9a187bcd035ef996f537e3b5be8d3a",
+      "title": "Aoraki (Mount Cook) from Hooker Glacier Lake.jpg",
+      "author": "Atanamir",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Aoraki_(Mount_Cook)_from_Hooker_Glacier_Lake.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/61/Aoraki_%28Mount_Cook%29_from_Hooker_Glacier_Lake.jpg",
+      "sha1": "8e80deeffb9a187bcd035ef996f537e3b5be8d3a",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "74c44e11bd23081d450ac4c00f39750dff1d4a3d": {
+      "id": "74c44e11bd23081d450ac4c00f39750dff1d4a3d",
+      "title": "Panorama4 Poas volcano crater.jpg",
+      "author": "Mariordo Mario Roberto Duran Ortiz",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Panorama4_Poas_volcano_crater.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Panorama4_Poas_volcano_crater.jpg",
+      "sha1": "74c44e11bd23081d450ac4c00f39750dff1d4a3d",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "f61789364624292c2c2b8af57a8a6362eba0fc83": {
+      "id": "f61789364624292c2c2b8af57a8a6362eba0fc83",
+      "title": "A boat to unite two countries.JPG",
+      "author": "Roxyuru",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:A_boat_to_unite_two_countries.JPG",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b4/A_boat_to_unite_two_countries.JPG",
+      "sha1": "f61789364624292c2c2b8af57a8a6362eba0fc83",
+      "checkedAt": "2026-11-04",
+      "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
+    },
+    "c12f2f981d2fb5654b5d22e3bf7f0e01ccf9a394": {
+      "id": "c12f2f981d2fb5654b5d22e3bf7f0e01ccf9a394",
+      "title": "Dambulla-buddha.jpg",
+      "author": "Lankapic",
+      "license": "CC BY 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Dambulla-buddha.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/75/Dambulla-buddha.jpg",
+      "sha1": "c12f2f981d2fb5654b5d22e3bf7f0e01ccf9a394",
       "checkedAt": "2026-11-04",
       "changes": "Resized and converted to WebP; displayed with a responsive crop. No generative alteration."
     }
