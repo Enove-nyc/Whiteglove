@@ -26,7 +26,7 @@ function counts() {
   const result = spawnSync('docker', ['logs', process.env.COST_PG_CONTAINER], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
   assert.equal(result.status, 0);
   const lines = (result.stdout + result.stderr).split('\n');
-  return { ...Object.fromEntries(['Page', 'PlaceReview'].map(table => [table, lines.filter(line => line.includes('SELECT') && line.includes(`"${table}"`)).length])), PlaceReviewText: lines.filter(line => line.includes('SELECT') && line.includes('"PlaceReview"."text"')).length };
+  return { ...Object.fromEntries(['Page', 'PlaceReview', 'PracticalPlace'].map(table => [table, lines.filter(line => line.includes('SELECT') && line.includes(`"${table}"`)).length])), PlaceReviewText: lines.filter(line => line.includes('SELECT') && line.includes('"PlaceReview"."text"')).length };
 }
 async function reviews(origin, ref = 'cost-fixture-place') {
   const r = await fetch(origin + '/api/reviews?placeKind=listing&placeRef=' + ref);
@@ -119,6 +119,25 @@ await check('a failed read executes once and is not cached as a permanent empty 
   assert.equal(reads, 2, 'Exactly one failed query per request, no duplicate fallback retry.');
   fixture('restore-review-column');
   for (const origin of origins) assert.equal((await reviews(origin)).length, 200);
+});
+await check('warm country and city searches reuse a cacheable full index without more SQL', async () => {
+  const before = counts();
+  for (const origin of origins) await page(origin, '/api/search?q=Riga', 'Riga');
+  const warm = counts();
+  assert(warm.PracticalPlace > before.PracticalPlace, 'Cold search must exercise the real database-backed index');
+  for (const origin of origins) for (const query of ['Japan','Italy','Rome','Riga','Seoul']) await page(origin, '/api/search?q='+query, query);
+  const after = counts();
+  report.sql.searchWarmReads = (after.Page-warm.Page)+(after.PracticalPlace-warm.PracticalPlace);
+  assert.equal(after.Page,warm.Page,'Warm search must not re-read information pages');
+  assert.equal(after.PracticalPlace,warm.PracticalPlace,'Warm search must not re-read practical listings');
+  const response = await fetch('http://127.0.0.1:6380', {method:'POST',body:JSON.stringify(['GET','white-glove:content-cache-invalidation-key'])});
+  const key=(await response.json()).result, notice={at:Date.now(),nonce:randomBytes(16).toString('hex')};
+  const signature=createHmac('sha256',key).update(JSON.stringify([notice.at,notice.nonce])).digest('hex');
+  for(const origin of origins) {
+    assert.equal((await fetch(origin+endpoint,{method:'POST',headers:{'content-type':'application/json','x-white-glove-cache-signature':signature},body:JSON.stringify(notice)})).status,200);
+    await page(origin,'/api/search?q=Riga','Riga');
+  }
+  assert(counts().PracticalPlace >= after.PracticalPlace + 2, 'A signed saved-edit notice must refresh both compressed indexes');
 });
 mkdirSync('cost-results', { recursive: true });
 writeFileSync('cost-results/report.json', JSON.stringify(report, null, 2));

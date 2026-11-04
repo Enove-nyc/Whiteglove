@@ -924,3 +924,8 @@ html[data-app-shell] nav[aria-label="Main"]::before {
     transform: none;
   }
 }
+
+/* Tall list filters must scroll away on short screens so card actions stay reachable. */
+@media (max-height: 700px) {
+  .wg-list-toolbar { position: static; }
+}
