@@ -218,8 +218,7 @@ if(isolated){
    await go('/things-to-do?country=Italy&city=Rome');
    const card=page.getByRole('region',{name:'Things to do results'}).locator(':scope > article').first();
    const addedName=(await card.getByRole('heading').first().innerText()).trim();
-   const adding=page.waitForResponse(r=>r.url().endsWith('/api/account/itinerary')&&r.request().method()==='POST');
-   await card.getByRole('button',{name:'Add to itinerary',exact:true}).click();assert.equal((await adding).status(),200);
+   const [adding]=await Promise.all([page.waitForResponse(r=>r.url().endsWith('/api/account/itinerary')&&r.request().method()==='POST'),card.getByRole('button',{name:'Add to itinerary',exact:true}).click()]);assert.equal(adding.status(),200);
    const refreshed=await guest.request.get(origin+'/api/account/itinerary');assert((await refreshed.json()).itinerary.activities.some(a=>a.name===addedName));
    await go('/itinerary');await page.getByText(addedName,{exact:true}).first().waitFor();
    assert.equal(await page.locator('a[href*="whitegloveitineraries.com"]').count(),0);
