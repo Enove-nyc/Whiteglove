@@ -1,0 +1,19 @@
+name: Inspect discovery browser failure artifacts
+on:
+  push:
+    branches: [codex/discovery-diagnostics]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the existing browser report and screenshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 41853002789 --repo Enove-nyc/Whiteglove --name runtime-cost-validation --dir /tmp/discovery-validation-report
+      - name: Show bounded diagnostics
+        run: python scripts/inspect-discovery-report.py
