@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
-import { BRAND_NAME } from "@/lib/site-brand-core";
 
 /**
  * The site does not tell a customer what the owner has not finished.
@@ -81,18 +80,12 @@ describe("an empty section does not render a heading over its own absence", () =
   });
 });
 
-describe("the pricing page names the product it is pricing", () => {
-  it("does not describe this site as the one that carries a client's trip", () => {
-    /**
-     * It said `${BRAND_NAME[brand]} is where you build a trip, hand it to the
-     * person taking it, and stay with them while they travel` — so on
-     * whiteglovekoshertravel.com it claimed the kosher guide does that. It
-     * does not: that is White Glove Itineraries, and these plans are its plans
-     * on either domain.
-     */
+describe("Kosher Travel pricing stands on its own", () => {
+  it("describes this site's self-service planner without marketing the other company", () => {
     const page = readFileSync("app/pricing/page.tsx", "utf8");
-    assert.match(page, /\$\{BRAND_NAME\.itineraries\} is where you build a trip/);
-    assert.doesNotMatch(page, /\$\{BRAND_NAME\[brand\]\} is where you build a trip/);
-    assert.equal(BRAND_NAME.itineraries, "White Glove Itineraries");
+    assert.match(page, /Build your own itinerary with White Glove Kosher Travel/);
+    assert.match(page, /href="\/itinerary"/);
+    assert.doesNotMatch(page, /href="https:\/\/www\.whitegloveitineraries\.com/);
+    assert.doesNotMatch(page, /is where you build a trip, hand it to the person/);
   });
 });

@@ -436,23 +436,22 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
     }
   }
 
+  // NO "LINK TO AN EXISTING DESTINATION" BLOCKER on practical or kosher food.
+  // A town page that does not exist yet is made when the listing is published
+  // (see publishContentImportCandidate), so a listing in a new town is not sent
+  // off to create the town first and come back.
   if (input.kind === "PRACTICAL") {
     if (!isPracticalCategory(category)) publishBlockers.push("Choose a supported practical-travel category.");
-    if (!clean(input.destinationSlug)) publishBlockers.push("Link this practical listing to an existing destination.");
   }
 
   if (input.kind === "KOSHER_FOOD") {
-    if (!isUsableSourceUrl(input.kosherSourceUrl)) {
-      publishBlockers.push("Add an official community or certification-directory source before publishing kosher food.");
-    }
-    if (!clean(input.destinationSlug)) publishBlockers.push("Link this kosher food listing to an existing destination.");
-    // A source directory is a useful editorial lead, but the site deliberately
-    // reserves the public decision for the destination editor, where a person
-    // can check the current certification and wording rather than treating a
-    // bulk source as a blanket kosher promise.
-    publishBlockers.push("Confirm current kosher status in the destination editor before publishing.");
-    if (input.kosherClaim === "confirmed") {
-      publishBlockers.push("A bulk import cannot publish a confirmed kosher claim.");
+    // The kosher status is confirmed HERE, by the person reviewing it — not on
+    // a different screen. This used to push an unconditional "confirm current
+    // kosher status in the destination editor" blocker, which made kosher food
+    // impossible to publish from the review screen at all and sent the owner
+    // to a page that could not do it either.
+    if (input.kosherClaim !== "confirmed") {
+      publishBlockers.push("Set the kosher status below to “Checked — kosher” before publishing.");
     }
   }
 
@@ -474,7 +473,7 @@ export function prepareBulkContentCandidate(input: BulkContentCandidateInput): P
     summary: clean(input.summary),
     anchorName: clean(input.anchorName),
     anchorCoords: clean(input.anchorCoords),
-    kosherClaim: input.kosherClaim === "reported" ? "reported" : "none",
+    kosherClaim: input.kosherClaim === "confirmed" ? "confirmed" : input.kosherClaim === "reported" ? "reported" : "none",
     kosherSourceUrl: clean(input.kosherSourceUrl),
     sourceUrl,
     sourceId,

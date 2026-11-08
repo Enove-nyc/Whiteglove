@@ -39,7 +39,10 @@ export async function generateMetadata({ params }: { params: Promise<{ person: s
   });
 }
 
-export const revalidate = 60;
+// A day. The rule, and why it is safe, is in lib/cache-windows.ts;
+// tests/cache-windows.test.ts holds this number to it. Written out
+// because Next reads this export statically and refuses an import.
+export const revalidate = 86_400;
 
 /**
  * One person.

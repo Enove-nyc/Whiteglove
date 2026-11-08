@@ -8,10 +8,10 @@ export const dynamic = "force-dynamic";
 export default async function AdminImportNeedsReviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; just?: string }>;
 }) {
   const queue = await getImportReviewQueue();
-  const { q = "" } = await searchParams;
+  const { q = "", just } = await searchParams;
 
   return (
     <>
@@ -39,6 +39,12 @@ export default async function AdminImportNeedsReviewPage({
           </div>
         </div>
       </header>
+
+      {just && (
+        <p className="mt-6 border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
+          The previous one was {just}. No staged candidate is waiting for review now — what is left below is in source packs.
+        </p>
+      )}
 
       {queue.error && (
         <section className="mt-8 border border-rose-200 bg-rose-50 p-6">

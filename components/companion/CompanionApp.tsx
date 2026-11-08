@@ -32,8 +32,10 @@
  * to be.
  */
 
-import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import PersonalTravelWallet from "@/components/companion/PersonalTravelWallet";
+import TripGroupChat from "@/components/companion/TripGroupChat";
 import {
   COMPANION_DEMO_TRIP,
   COMPANION_KIND,
@@ -43,7 +45,8 @@ import {
   type CompanionWalletRow,
 } from "@/data/companion-demo";
 import { Icon } from "@/components/icons/Icon";
-import PaymentCheckout from "@/components/companion/PaymentCheckout";
+import dynamic from "next/dynamic";
+const PaymentCheckout = dynamic(() => import("@/components/companion/PaymentCheckout"), { ssr: false });
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { followAlong, type FollowStop } from "@/lib/trip-progress";
 
@@ -51,6 +54,12 @@ import { followAlong, type FollowStop } from "@/lib/trip-progress";
  * initials avatar, kickers. The chat toolbar's icons match it rather than
  * showing as whatever color the device's native emoji happen to render in. */
 const ICON_BLUE = "#193F46";
+
+function subscribeOnline(callback: () => void) {
+  window.addEventListener("online", callback); window.addEventListener("offline", callback);
+  return () => { window.removeEventListener("online", callback); window.removeEventListener("offline", callback); };
+}
+const getIsOffline = () => typeof window !== "undefined" && !window.navigator.onLine;
 
 type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile" | "pay";
 type ChatSide = "client" | "advisor";
@@ -79,6 +88,7 @@ type State = {
   messages: { from: "them" | "me"; text: string }[];
 };
 
+const TAP_INLINE = { padding: "13px 8px", margin: "-13px -8px" };
 const GOLD = "#C6A15B";
 const CREAM = "var(--color-canvas)";
 
@@ -515,11 +525,18 @@ function PayScreen({ shareId }: { shareId: string }) {
 }
 
 export default function CompanionApp({
+  travelerGroupCode,
+  travelerPreview = false,
+  personalWalletKey,
   trip = COMPANION_DEMO_TRIP,
   chat,
   advisorInbox = false,
   sharedDraft,
 }: {
+  /** A traveler-owned group, with no advisor role. */
+  travelerGroupCode?: string;
+  travelerPreview?: boolean;
+  personalWalletKey?: string;
   trip?: CompanionTrip;
   chat?: CompanionChat;
   /** The advisor's own side: a Messages tab that lists every client's chat. */
@@ -531,13 +548,15 @@ export default function CompanionApp({
 }) {
   const router = useRouter();
   const liveChat = chat ?? null;
+  const groupCode = travelerGroupCode;
+  const groupMode = Boolean(groupCode) || travelerPreview;
   // A client on a per-trip code, as opposed to whoever is signed into the
   // account that owns the trip (an advisor, or a Gold member on their own).
   // Attachments are served only to the owning account (lib/attachments.ts),
   // so a client link could never open one anyway — the wallet's "add" control
   // is only ever offered to the side that can actually use it.
-  const isClientViewer = liveChat?.side === "client";
-  const hasMessages = Boolean(liveChat) || advisorInbox;
+  const isClientViewer = groupMode || liveChat?.side === "client";
+  const hasMessages = groupMode || Boolean(liveChat) || advisorInbox;
   // Held until the advisor opens a client's thread to put it in — cleared the
   // moment that happens, so going back to the inbox and opening someone else
   // afterward doesn't carry the same shared place along with it.
@@ -598,17 +617,7 @@ export default function CompanionApp({
   // shown is fresh. `navigator.onLine` starts true on the server (there is
   // no navigator there), so the banner only ever appears client-side, after
   // the browser actually reports a dropped connection.
-  const [isOffline, setIsOffline] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
-  useEffect(() => {
-    const goOffline = () => setIsOffline(true);
-    const goOnline = () => setIsOffline(false);
-    window.addEventListener("offline", goOffline);
-    window.addEventListener("online", goOnline);
-    return () => {
-      window.removeEventListener("offline", goOffline);
-      window.removeEventListener("online", goOnline);
-    };
-  }, []);
+  const isOffline = useSyncExternalStore(subscribeOnline, getIsOffline, () => false);
   // The OS/browser Back button steps back through the app's own screens (see
   // pushScreenHistory/go/back). A popstate restores the screen the popped entry
   // names, or the home screen at the base entry — one more Back then leaves.
@@ -618,8 +627,17 @@ export default function CompanionApp({
       const target = ((e.state as { wgScreen?: Screen } | null)?.wgScreen) ?? "home";
       setSt((s) => (s.screen === target ? s : { ...s, screen: target, prev: null }));
     };
+    // An app update can reload the page after its service worker activates.
+    // Restore the tab already recorded in history instead of losing the
+    // traveler's place in their wallet or conversation.
+    const restore = window.setTimeout(() => {
+      const screen = window.history.state?.wgScreen;
+      if (["home", "day", "activity", "chat", "messages", "alerts", "wallet", "profile", "pay"].includes(screen)) {
+        setSt((state) => ({ ...state, screen, prev: null }));
+      }
+    }, 0);
     window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
+    return () => { clearTimeout(restore); window.removeEventListener("popstate", onPop); };
   }, []);
 
   // On a computer or a tablet a real (non-showcase) trip is not a phone in a
@@ -691,7 +709,8 @@ export default function CompanionApp({
   }
 
   const hasConcierge = trip.concierge;
-  const isConcierge = hasConcierge && st.tmode === "concierge";
+  const showcaseSwitches = hasConcierge && !trip.previewAsClient;
+  const isConcierge = hasConcierge && (trip.previewAsClient || st.tmode === "concierge");
   const isGuideMode = !isConcierge;
   /**
    * A REAL advisor thread exists (hasMessages), as opposed to the showcase's
@@ -752,14 +771,14 @@ export default function CompanionApp({
   const liveAlerts = trip.liveAlerts ?? [];
   const unacknowledgedAlerts = liveAlerts.filter((a) => !a.acknowledged);
   const advisorTrips = trip.advisorTrips ?? [];
-  const advisorHome = hasConcierge && st.role === "advisor" && st.screen === "home";
+  const advisorHome = showcaseSwitches && st.role === "advisor" && st.screen === "home";
 
   const titles: Record<Screen, string> = {
     home: trip.homeTitle,
     day: sel.name,
     activity: "On the day",
     chat: advisor,
-    messages: advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Advisor",
+    messages: groupMode ? "Trip group chat" : advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Advisor",
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
@@ -770,7 +789,7 @@ export default function CompanionApp({
     day: `Day ${curDay + 1} of ${trip.days.length}`,
     activity: sel.name,
     chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
-    messages: advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
+    messages: groupMode ? "Everyone on this trip" : advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
     alerts: open ? "One needs you" : unacknowledgedAlerts.length > 0 ? `${unacknowledgedAlerts.length} to see` : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
@@ -833,12 +852,12 @@ export default function CompanionApp({
   // You — so a real trip's Guide notes live inside the You tab (see
   // guideSection below) rather than getting a tab of their own.
   const tabDefs: [Screen, string][] = [["home", "Trip"]];
-  if (hasConcierge) tabDefs.push([conciergeTabScreen, isGuideMode ? "Guide" : "Concierge"]);
-  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", advisorInbox ? "Messages" : "Advisor"]);
+  if (hasConcierge) tabDefs.push([conciergeTabScreen, trip.previewAsClient ? "Advisor" : isGuideMode ? "Guide" : "Concierge"]);
+  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", groupMode ? "Chat" : advisorInbox ? "Messages" : "Advisor"]);
   tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
   const tabs = tabDefs.map(([id, label]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
-    return { id, label, bg: on ? GOLD : "transparent", fg: on ? ON_GOLD : MUTED, badge: id === "messages" && unread && st.screen !== "messages" };
+    return { id, label, bg: on ? GOLD : "transparent", fg: on ? ON_GOLD : INK, badge: id === "messages" && unread && st.screen !== "messages" };
   });
 
   const quickReplies = (
@@ -1443,6 +1462,7 @@ export default function CompanionApp({
 
   const walletScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
+      {personalWalletKey ? <PersonalTravelWallet key={personalWalletKey} tripKey={personalWalletKey} /> : null}
       <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: "#193F46", background: "#FAF8F3", padding: "10px 14px", borderRadius: 14, alignSelf: "flex-start" }}>
         <span style={{ width: 7, height: 7, borderRadius: 14, background: "#193F46" }} />Kept on the phone — works with no signal
       </div>
@@ -1499,14 +1519,14 @@ export default function CompanionApp({
                   file through their own account; the client opens it through
                   this trip's code, and only the files the adviser marked for
                   them are in the payload at all. See app/api/trip-file. */}
-              {r.attachments && r.attachments.length > 0 && (!isClientViewer || liveChat?.shareId) && (
+              {r.attachments && r.attachments.length > 0 && (!isClientViewer || groupCode || liveChat?.shareId) && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 2 }}>
                   {r.attachments.map((att) => (
                     <span key={att.id} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
                       <a
                         href={
                           isClientViewer
-                            ? `/api/trip-file/${encodeURIComponent(liveChat!.shareId)}?id=${encodeURIComponent(att.id)}`
+                            ? `/api/trip-file/${encodeURIComponent(groupCode ?? liveChat!.shareId)}?id=${encodeURIComponent(att.id)}`
                             : `/api/account/attachments?id=${encodeURIComponent(att.id)}`
                         }
                         target="_blank"
@@ -1605,7 +1625,7 @@ export default function CompanionApp({
       {/* Trip kind — Concierge or Guide — lives here on the phone, where the
           desktop showcase has it as a toolbar above the frame. Only when a
           live advisor is attached; a wired trip is read one way. */}
-      {hasConcierge && (
+      {showcaseSwitches && (
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <div style={{ ...kicker(NAVY), paddingLeft: 4 }}>How you are reading this trip</div>
           <div style={{ display: "flex", gap: 6, padding: 5, background: "var(--color-surface-muted)", borderRadius: 14, alignSelf: "flex-start" }}>
@@ -1619,15 +1639,20 @@ export default function CompanionApp({
         {/* A client on a code from their adviser has no account — "signed in"
             would simply be false for them, so this reads differently for the
             two people who can land on this screen. */}
-        <span style={kicker("#6B4A1C")}>{liveChat?.side === "client" ? "Your trip" : "Signed in as"}</span>
+        <span style={kicker("#6B4A1C")}>{groupMode || liveChat?.side === "client" ? "Your trip" : "Signed in as"}</span>
         <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "#6B4A1C", textWrap: "pretty" }}>
-          {liveChat?.side === "client"
+          {travelerPreview
+            ? "This is a sample trip. Your own trip code opens your itinerary and group conversation."
+            : groupCode
+            ? "You opened this trip with its code. Your group shares the itinerary and chat; personal wallet files stay on each person’s device."
+            : liveChat?.side === "client"
             ? "You opened this with the code your adviser sent you — no account needed."
             : st.role === "advisor"
               ? "The advisor side: the trips you are holding today, and the one that needs a decision from you."
               : "The trip is in your name. Two others can look at it; nobody but you can change it."}
         </p>
-        {hasConcierge && (
+        {groupCode ? <a href="/app?enter=1" style={{ ...TAP_INLINE, color: INK, textDecoration: "underline" }}>Open a different trip code</a> : null}
+        {showcaseSwitches && (
           <div style={{ display: "flex", gap: 6, padding: 5, background: "rgba(255,255,255,.8)", borderRadius: 14, alignSelf: "flex-start" }}>
             {roleOpts.map((r) => (
               <button key={r.id} onClick={r.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, background: r.bg, color: r.fg }}>{r.label}</button>
@@ -1661,7 +1686,9 @@ export default function CompanionApp({
   else if (st.screen === "alerts") body = alertsScreen;
   else if (st.screen === "chat") body = isConcierge ? conciergeChat : guideChat;
   else if (st.screen === "messages")
-    body = advisorInbox ? (
+    body = groupMode ? (
+      <TripGroupChat key={groupCode} code={groupCode} preview={travelerPreview} />
+    ) : advisorInbox ? (
       <AdvisorInbox pendingShare={pendingShare} onPendingShareUsed={() => setPendingShare(null)} />
     ) : liveChat ? (
       <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} places={shareablePlaces} />
@@ -1763,7 +1790,7 @@ export default function CompanionApp({
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "17px 30px", borderBottom: "1px solid rgba(16, 47, 53,.09)", background: "#FAF8F3" }}>
           {canBack && <button onClick={back} aria-label="Back" className="wg-fade" style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#fff", width: 34, height: 34, borderRadius: 12, cursor: "pointer", fontSize: 15, color: INK, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>←</button>}
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <div style={{ font: "600 9.5px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#C6A15B" }}>{kickers[st.screen]}</div>
+            <div style={{ font: "600 9.5px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#6B4A1C" }}>{kickers[st.screen]}</div>
             <div style={{ font: `400 20px/1.1 ${serif}`, letterSpacing: "-.01em" }}>{titles[st.screen]}</div>
           </div>
         </div>
@@ -1799,7 +1826,7 @@ export default function CompanionApp({
           <div className="wg-chrome-intro">
             <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#C6A15B" }}>White Glove · app</div>
           </div>
-          {hasConcierge && (
+          {showcaseSwitches && (
             <div className="wg-toolbar-group">
               <div className="wg-toolbar-label">Trip kind</div>
               <div className="wg-toolbar">
@@ -1816,7 +1843,7 @@ export default function CompanionApp({
         <div className="wg-frame">{phone}</div>
       </div>
 
-      {hasConcierge && (
+      {showcaseSwitches && (
         <p className="wg-hint">Try it: open the rain notice, pick one of the two afternoons, then look at Tuesday again. The day, the chat and the notice all move together. Switch to the advisor side under <strong style={{ fontWeight: 600, color: "#D8BC7A" }}>You</strong>.</p>
       )}
     </div>
@@ -3433,8 +3460,11 @@ const CSS = `
 
 /* Phone: full screen on a phone, a device in a frame on a desktop. */
 .wg-phone { height: 100dvh; width: 100%; }
-.wg-stage { display: flex; justify-content: center; }
-.wg-frame { width: 100%; }
+.wg-stage { display: flex; justify-content: center; min-width: 0; max-width: 100%; }
+.wg-frame { width: 100%; min-width: 0; max-width: 100%; }
+.wg-sample-app .wg-app-root { min-height: 0; }
+.wg-sample-app .wg-phone { height: min(48rem, 80svh); }
+.wg-sample-app .wg-frame { height: auto; border-radius: 1rem; box-shadow: none; }
 .wg-chrome { display: none; }
 .wg-hint { display: none; }
 
@@ -3456,3 +3486,5 @@ const CSS = `
   .wg-hint { display: block; max-width: 620px; margin: 0; text-align: center; font-size: 13px; line-height: 1.6; color: #cdd6dd; text-wrap: pretty; }
 }
 `;
+
+

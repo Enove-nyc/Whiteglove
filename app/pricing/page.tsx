@@ -1,3 +1,4 @@
+import DevelopmentNotice from "@/components/DevelopmentNotice";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -55,19 +56,18 @@ const WHAT_IT_DOES = [
       "Build the trip day by day — flights, hotels, drivers, tours and meals in the order they happen. Import a confirmation email and it files itself.",
   },
   {
-    step: "Hand it over",
+    step: "Keep it together",
     detail:
-      "Send your client a link. It opens as an app on their phone: today's plan, the map, their travel wallet, and a way to reach you.",
+      "Keep the schedule, places and practical details together as your plans develop.",
   },
   {
-    step: "Stay in touch",
+    step: "Take it with you",
     detail:
-      "Their questions land in one inbox, against the right trip. You see what has been paid, what is outstanding, and what leaves next.",
+      "Return to your saved itinerary, make changes and print a copy for your journey.",
   },
 ] as const;
 
 export default async function PricingPage() {
-  const brand = await currentBrand();
   const offering = await readPlanOffering();
 
   // The same read the account page does, so the two pages can never quote
@@ -86,31 +86,18 @@ export default async function PricingPage() {
     if (line) lines.set(plan, line);
   }
 
-  const cards = planCards();
+  const cards = planCards().filter((card) => card.free || card.oneTime);
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
+      <DevelopmentNotice />
 
       <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
-        {/* THE PRODUCT BEING PRICED IS NAMED, and it was not.
-            BRAND_NAME[brand] put the reader's own domain in this sentence, so
-            on whiteglovekoshertravel.com it read "White Glove Kosher Travel is
-            where you build a trip, hand it to the person taking it, and stay
-            with them while they travel" — which is a description of the other
-            product. Kosher Travel does not hand anybody a trip and does not
-            travel with them; that is White Glove Itineraries, and these plans
-            are its plans on either domain.
-
-            Naming it here is the one-directional link the two products are
-            allowed: Kosher Travel may point at Itineraries. Nothing on the
-            other side points back. */}
         <PageHeader
           eyebrow="Plans and pricing"
-          title="The trip you plan, in your client's pocket."
-          description={`${BRAND_NAME.itineraries} is where you build a trip, hand it to the person taking it, and stay with them while they travel.${
-            brand === "itineraries" ? "" : " The guide on this site stays free."
-          }`}
+          title="Your itinerary, built here."
+          description="Build your own itinerary with White Glove Kosher Travel: organise flights, places to stay and activities in one day-by-day plan."
         />
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
@@ -136,7 +123,7 @@ export default async function PricingPage() {
               lib/account-limits.ts computes it now, and the account page reads
               the same function, so the two cannot drift apart again. */}
           <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-6 text-stone-600">
-            One trip for yourself, or the tools to run clients. {planParitySentence()}
+            Plan your own trip on this site. {planParitySentence()}
           </p>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -156,14 +143,14 @@ export default async function PricingPage() {
                   ) : price ? (
                     <p className="mt-1 text-2xl font-bold text-[var(--navy)]">
                       {price}
-                      {card.oneTime && <span className="ml-2 text-xs font-semibold text-stone-500">once</span>}
+                      {card.oneTime && <span className="ml-2 text-xs font-semibold text-stone-700">once</span>}
                     </p>
                   ) : (
                     // No price is settled for this plan. Say what it is for and
                     // nothing about money — never a placeholder, and never a
                     // note about why. See the header of this file.
-                    <p className="mt-1 text-sm font-semibold text-stone-500">
-                      {card.oneTime ? "A single, one-time fee" : "A monthly subscription"}
+                    <p className="mt-1 text-sm font-semibold text-stone-700">
+                      {card.oneTime ? "App access for your own trip" : "Adviser account"}
                     </p>
                   )}
 
@@ -185,35 +172,14 @@ export default async function PricingPage() {
                   </ul>
 
                   <div className="mt-6">
-                    <LinkButton href="/account">Choose {card.name}</LinkButton>
+                    <LinkButton href="/itinerary">Open the itinerary planner</LinkButton>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* AGENCY IS A DOOR, NOT A CARD WITH A PRICE ON IT.
-              A company with several advisers under one subscription is a real
-              customer and there is no settled price for one, so it gets a way
-              to start the conversation and no number — never a placeholder,
-              never "from", never a coming-soon badge on a fourth card
-              pretending to be the others. It sits under the three rather than
-              beside them, because it is not a thing to compare: it is what to
-              do when the three do not fit. */}
-          <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border border-[var(--gold-light)] bg-white p-6">
-            <div>
-              <h3 className="text-lg font-bold text-[var(--navy)]">Agency</h3>
-              <p className="mt-1 text-sm leading-6 text-stone-600">
-                Several advisers in one company, working the same clients and trips.
-              </p>
-            </div>
-            <Link
-              href="/contact?reason=agency"
-              className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-            >
-              Talk to us
-            </Link>
-          </div>
+
         </div>
       </section>
 
@@ -221,10 +187,9 @@ export default async function PricingPage() {
         <h2 className="text-xl font-bold text-[var(--navy)]">Questions worth answering first</h2>
         <dl className="mt-6 flex flex-col gap-6">
           <div>
-            <dt className="text-sm font-bold text-[var(--navy)]">Does my client need an account?</dt>
+            <dt className="text-sm font-bold text-[var(--navy)]">Do I need an account?</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              No. You send them a link that opens their trip and nothing else. There is no sign-up, no password, and
-              they cannot see anybody else&apos;s trip.
+              Yes. Sign in to build and save your itinerary, then return to it when your plans change.
             </dd>
           </div>
           <div>
@@ -242,15 +207,13 @@ export default async function PricingPage() {
           <div>
             <dt className="text-sm font-bold text-[var(--navy)]">Can I stop, or move to a smaller plan?</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              Yes, from your account page at any time — switch plan or stop altogether. It opens the same billing page
-              you would use to change your card, and the trips you have already built stay yours.
+              Existing subscribers can manage their billing from the account page. New accounts are available by invitation. Your saved itineraries remain accessible.
             </dd>
           </div>
           <div>
             <dt className="text-sm font-bold text-[var(--navy)]">I am planning one trip, for myself.</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              One Trip is for exactly that — a single fee, no subscription, and the app on your own phone while you
-              travel.
+              Planning it is free. A Trip Pass adds the app on your phone for one trip, with no subscription.
             </dd>
           </div>
         </dl>
@@ -267,7 +230,7 @@ export default async function PricingPage() {
           </Link>
           , or read how{" "}
           <Link href="/app" className="font-semibold text-[var(--gold-ink)] underline">
-            the app reaches your client
+            the companion app works
           </Link>
           .
         </p>
@@ -277,3 +240,5 @@ export default async function PricingPage() {
     </main>
   );
 }
+
+

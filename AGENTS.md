@@ -40,6 +40,17 @@ This section is the memory that carries across chats. It is loaded at the start 
 
   AND THE PORT IS PART OF THE JOB, NOT A FOLLOW-UP. The two deployments run from two codebases, so merging here does not put anything on whitegloveitineraries.com. A trip feature is not finished until it exists on the side it is for. When only one side can be done in a sitting, say so in plain words in the same message — never leave it implied.
 
+  THE ITINERARIES REPOSITORY IS NOT IN A SESSION BY DEFAULT, and a session that
+  does not notice will "port" a feature by writing it here twice. GitHub access
+  is scoped to `enove-nyc/whiteglove` alone; the other one is
+  `Enove-nyc/Whiteglove-Itineraries` and has to be asked for with `add_repo`
+  (owner `Enove-nyc`, repo `Whiteglove-Itineraries`, access `push`) and then
+  cloned beside this one — `/home/user/whiteglove-itineraries` is where every
+  session so far has put it, and the paths in this file assume that. Do this
+  BEFORE starting anything that touches both, not after. Its remote answers to
+  the lowercase name too, but pushes print a "repository moved" notice; the
+  capitalised name is the real one.
+
   THE ONE THING THAT STAYS ONE-DIRECTIONAL is the marketing link: `ContinueInItineraries` and `lib/itineraries-handoff.ts` are Kosher Travel's alone and must never be ported. Their absence from the itineraries repository is correct, not drift.
 
 - **Forwarding a booking in by email is wired, and the DNS behind it is not obvious.** White Glove Itineraries receives at **`trips.whitegloveitineraries.com`** — a subdomain, and it had to be. The root `whitegloveitineraries.com` and `whiteglovekoshertravel.com` both carry Cloudflare Email Routing MX records for the owner's real mail, and `mail.whitegloveitineraries.com` is delegated to Brevo's own nameservers. A receiving MX on any of those three takes over mail that is already working. Resend's Cloudflare integration wrote the records for the new subdomain itself, so there was nothing to add by hand.
@@ -79,6 +90,8 @@ This section is the memory that carries across chats. It is loaded at the start 
 - **A code carries messages only when somebody else is on the other end.** Every per-trip code has a kind (`ShareKind` in `lib/account-store.ts`): a **client** code is an adviser handing a trip to the person taking it, and it carries the conversation; a **self** code is somebody carrying their own trip on their own phone, and it carries none. This is a fact about the CODE, not about the plan — an Advisor Pro opening her own family's trip gets the same silence as a Trip Pass holder, because in both cases the thread would be addressed to the reader. The block is two things and no more: `resolveCompanionShare` returns null for a self code, which closes the chat and report routes and anything added later in one place; and the page hands `CompanionApp` no `chat` prop, which removes the tab, the badge, the polling and the home-screen card together. Do not add a plan check for this, and do not hide the tab with CSS. A stored code with no kind reads as "client" — every code that existed before kinds did was made by an adviser to send to somebody.
 - **The kosher homepage is settled: search-only hero, Featured is the six sections.** The opening is the search and nothing above it — no headline, no eyebrow, no pitch paragraph, no browse links; the `<h1>` stays `sr-only` so the page has one for search engines without showing it. Featured is the six main SECTIONS of the site (things to do, where to stay, kosher food, heritage, map, directory), not destinations ranked by what people opened — it was destinations once and the owner asked for the shape of the site instead. An outside audit has since recommended reversing both (a "what are you trying to do?" panel above the search, and a "Popular now" list of destinations); he was asked directly and said both stand as he set them. Do not re-raise either, and do not implement them from a fresh audit. `tests/homepage-sections.test.ts` pins both. The separate "Explore" list that used to sit below Featured is gone for a different reason: six of its eight links were an exact copy of the Featured cards, left over from when Featured showed destinations. About and Verification, its only non-duplicates, are in the footer.
 
+- **Listing candidates publish from their own review screen, and that includes kosher food.** Every kind — attraction, place to stay, practical, kosher food — is checked and published on `/admin/imports/[id]`; there is no second screen a candidate has to be finished on. Kosher status is confirmed THERE, with a "Kosher status" select whose "Checked — kosher" value is the publish gate (`kosherClaim === "confirmed"` in `lib/bulk-content.ts`); the old unconditional "confirm current kosher status in the destination editor" blocker made kosher food impossible to publish from the review screen and pointed at a page that could not do it either — do not bring it back. A TOWN PAGE IS MADE IF MISSING: `destinationIdFor` in `lib/content-imports.ts` takes the chosen town, else the town matching city and country, else creates one through `ensureDestinationForCity`. The owner was blocked with "link this to an existing destination" on a listing in a new town, with no way to add the town from there. The editor's fields are CONTROLLED on purpose — React resets a form submitted through an action, and uncontrolled inputs snap back to the server's values, which is how a refused publish saved his edits and then wiped them off the screen. "Next" and "Skip" on a candidate come from the review queue's own rows (`nextReviewCandidateAfter` in `lib/import-review-queue.ts`), never from a raw table query, so they walk exactly what the Needs review count counts.
+
 - **The packing list (`/packing`) is open to everyone.** It used to be signed-in only, so the one page whose whole subject is a list of things to go and buy sent a visitor to the login door. Every visitor now gets a starter list (`data/packing-basics.ts`) they can check off in the browser; somebody with a trip in the planner gets the list generated from that trip in its place, saved to their account as before. It is linked from the footer and from Travel gear, and is indexable. Do not put the sign-in gate back.
 
 - **One admin dashboard runs both sides.** The owner is the only person who signs into it, so it is not split per brand and must not be: everything for Kosher Travel and everything for Itineraries lives on the same dashboard, reached the same way. Its own chrome is therefore brand-neutral — "White Glove admin", never one company's name — while each screen inside stays whatever it is (shuls and hechsherim are kosher work; plans and client apps are itineraries work; both belong here). Do not build a second dashboard, a per-brand admin, or a brand switcher for it, and do not add an admin screen to only one of the two deployments.
@@ -105,12 +118,7 @@ This section is the memory that carries across chats. It is loaded at the start 
 
 - **On the Itineraries website, the app pages carry the ordinary site header and footer.** `/app` and `/advisor` used to render the app full-screen with no site furniture — right for the installed app, wrong on the website, at the owner's word. Both now sit inside `Navbar minimal` + `Footer minimal`; inside the installed app they are still the whole screen (the header wrapped in `.wg-web-chrome` and the footer `footer#contact`, both hidden by the in-app rules in globals.css). The Navbar's phone bottom bar is off on those pages (`bottomBar={false}`) because the app has its own tabs. Itineraries-repository detail, recorded here so a kosher-side session does not "tidy" the pattern away.
 
-- **The Android apps' signing keys and their passwords are recorded here, because losing one wastes a whole session on a Play Console upload-key reset.** There are four Play apps, all under the White Glove Travel LLC developer account. Each is signed with its own **upload key** (Google holds the separate app-signing key; the upload key is only what you sign the bundle with before uploading). The upload passwords ARE the durable fact — a keystore file is useless without its password, and the password is not derivable from the file:
-  - **Admin** — package `com.whitegloveadmin.app`, keystore `upload-keystore.jks` (alias `upload`), upload cert SHA-256 `53:F0:3B:17:1B:CC:FF:9D:6B:E1:A5:AA:D2:9D:40:A3:49:24:9D:A7:0A:FF:86:84:87:5D:F8:B0:F8:77:1C:42`. The upload password is a `WGadmin-` prefixed string held by the owner — ask him for it rather than guessing; do not commit it to the repo. The two fingerprints in `public/.well-known/assetlinks.json` for this package (`40:26:FF:77…` and `83:E1:CF:83…`) are the Google-held app-signing keys that govern whether it opens as the app vs. in Chrome — those are NOT the upload key above.
-  - **Advisor** — package `com.whitegloveadvisor.app`, upload keystore is the PWABuilder `signing.keystore` (alias `my-key-alias`, PKCS12), upload cert SHA-256 `54:3E:50:41:6B:1A:31:A8:D8:7B:86:BE:03:D1:0C:3F:0D:F9:BF:D4:FE:F1:60:9D:10:B2:8F:AD:63:41:7B:36` (CN=White Glove Admin, O=White Glove Itineraries). The keystore also lives base64-encoded as the GitHub secret `WG_ADVISOR_KEYSTORE_BASE64`; its password is owner-held — in the package's `signing-key-info.txt` and as the secret `WG_ADVISOR_KEYSTORE_PASSWORD`. Ask him for it; do not commit it. Not a keytool key: it was never printed in any chat, so there is nothing to search a transcript for. The native shell is the Admin Capacitor project cloned with appId/namespace/`MainActivity` package, `strings.xml` (`app_name` Advisor, `package_name`, `custom_url_scheme`) and `server.url` `https://whitegloveitineraries.com/advisor` switched to the advisor — the activity must stay `com.whitegloveadvisor.app.MainActivity` to match the published app. Last built versionCode 10 (with the biometric plugin).
-  - Play now **requires targetSdkVersion / compileSdkVersion 36**; a bundle targeting 34 is rejected at upload. Set both in `android/variables.gradle` and bump `versionCode` in `android/app/build.gradle` before each release.
-  - Build + sign recipe (Capacitor native shell, Bubblewrap's SDK): `ANDROID_HOME=/root/.bubblewrap/android_sdk ./gradlew :app:bundleRelease --no-daemon` produces an **unsigned** AAB, then `jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore upload-keystore.jks -storepass <pw> -keypass <pw> -signedjar signed.aab unsigned.aab <alias>`. Verify with `jarsigner -verify`.
-  - These passwords live in the owner's own password manager as the source of truth; they are duplicated here only so a session that has the keystore file can finish the job without another reset.
+- **Native signing credentials stay in their secret stores.** Never record a signing password or private key in this file, a source file, a commit message, logs or chat. Use the existing GitHub Actions native-release workflows and their protected secrets; the owner’s password manager remains the source of truth for any credentials they manage. Public package names and certificate fingerprints may be documented without private key material. For the Advisor and Itineraries native shells, use their existing signed-artifact workflows in the Itineraries repository on `claude/native-apps`; do not recreate signing identities. Preserve the existing signing certificates and bump the release version code. Android builds require compile/target SDK 36.
 
 ## Do not hand the owner checklists
 
@@ -138,3 +146,69 @@ The three ways into the site are named once in `lib/starting-points.ts` — get 
 ## Working surface palette
 
 Use warm ivory #F7F4EE for the site-wide canvas, warm white #FFFDFC for cards and forms, and #EFE9DF for secondary surfaces on both products. Preserve teal #193F46 / #102F35 and brass #C6A15B. Mushroom is only an occasional accent or disabled state, never a large working surface. Use semantic tokens for web surfaces; standalone email, print and manifests use matching literal values.
+
+
+## Current launch direction — 3 November 2026
+
+White Glove Itineraries is a public development preview, not an open company or a service currently for sale. Keep the full site viewable, make this status clear on every page, and describe capabilities as future plans. Do not restore purchase invitations or open new purchases without the owner explicitly opening the product. Preserve existing account/trip access and billing-management rights. The development flag must not overwrite the shared offering record.
+
+The immediate public-site focus is White Glove Kosher Travel. Its homepage keeps the search-only hero and six section links, but the owner has now requested real photographs for all six sections. Use actual photographs with documented commercial reuse rights, never generated images, and provide required credits on /sources. This replaces the earlier icon-only treatment; the sections and navigation remain as settled.
+
+
+## Owner direction — 3 November 2026, independent companies
+
+The owner now wants White Glove Kosher Travel and White Glove Itineraries positioned as two separate companies. Kosher Travel must offer a complete self-service itinerary section on its own domain; do not funnel travellers into Itineraries or describe it as the fuller planner. This supersedes the earlier one-company/one-way marketing handoff. The owner explicitly chose to KEEP the current shared login details and trips. The two company identities share the existing customer backend. Do not split account namespaces, migrate trips, or reopen the shared-account decision.
+
+Use concise, professional development copy: the company is in development, preparing for launch, and looks forward to welcoming visitors soon. Do not describe the website as what the final product will look like. Keep the full site available and purchases closed until launch is explicitly approved. Real examples may remain clearly labelled as samples.
+
+Mobile layouts must keep controls clear of fixed navigation, avoid nested phone borders spilling outside their container, and preserve the companion app's own control sizing. The owner is considering a one- or two-dollar itinerary fee on Kosher Travel. This is a proposal, not an approved price or authorization to start charging; preserve existing access while designing separate, tested billing.
+
+
+## Owner direction — travel appeal and quiet demo status
+
+The owner wants a polished, usable-looking website with a compact but visible Demo / In development status, rather than repeated prominent not-open paragraphs. About and pricing must still explain that the company is in development and purchases are unavailable. Purchases stay closed. The full-screen site notice remains unless the owner separately changes it. Keep the separate company identities and the owner-confirmed shared login details and trips; do not migrate or split customer data.
+
+The Kosher Travel homepage should feel inviting for travellers, with soft sea-blue, mint and warm-sand shading, light card surfaces and gentle gradients. Keep contrast and mobile controls readable, the search-only hero and six section links. Replace the bold tight food close-up with a calmer real licensed food photograph; no generated photographs. A reference to an unreleased Beeper-like app is awaiting its name or URL, so do not claim to have identified or copied it.
+
+
+## Current owner direction — invitation-only accounts, normal product language
+
+The owner has replaced the earlier development/demo presentation: use normal present-tense product language, as an operating website. Do not show our Demo badges, development strips, coming-soon pitches or repeated not-open wording. Keep real illustrative trips labelled as samples and preserve the existing travel-verification notice.
+
+Public authentication is LOGIN ONLY. No public signup tab, button or create-account invitation. A new account must use an expiring, single-use invitation link issued by the owner from Admin → Accounts. The server enforces the invitation, including identity binding and atomic consumption; hiding signup controls is not sufficient. Google signs in existing accounts only and must not silently create new accounts. Existing account access, recovery, shared login details and shared trips remain intact. Do not split customer stores.
+
+Keep purchases closed: normal product wording and private registration do not authorize charging or establish a one-/two-dollar itinerary price. The owner generates and copies links personally; do not send invitations or other messages through tools unless explicitly requested. Invitation credentials must not appear in logs, documents or persisted plaintext. No further app-reference question is needed; this instruction replaces that reference.
+
+## Standing owner instruction — fix causes, minimize costs, preserve useful alerts
+
+Confirmed by the owner on 3 November 2026. This supersedes earlier suggestions to turn off GitHub notifications or treat the two email addresses as separate owner accounts.
+
+- Make White Glove hosting and database usage as cheap as possible, aiming for free operation where technically viable. Investigate and fix waste, excessive queries, resource use, configuration and architecture. Report actual bills, changes and measured savings accurately; do not promise zero cost without verifying it.
+- Do not treat taking the site or its useful features offline, hiding errors, or suppressing alerts as the cost fix. Preserve existing accounts, shared login details, trips and data while optimizing. Discuss material functionality trade-offs explicitly.
+- When GitHub reports a failed run, diagnose and fix the failed workflow, test or underlying application. Keep useful failure notifications enabled. Do not recommend disabling Actions email, filtering, archiving or muting notifications as the solution to a failing run. Earlier archival of development-run messages was inbox cleanup only, not a fix. If the owner changed notification settings following the earlier advice, explain how to restore failure alerts; do not assume they changed them.
+- The owner confirms that skristikartu@gmail.com and whitegloveitineraries@gmail.com are linked to the same account. Do not ask again whether they control the first address or assume it identifies a different owner. A connector authorization failure still needs investigation into project permissions, organization scope or integration ownership; the linked-address fact does not itself prove that a connector can access the project.
+- The relevant Neon quota alert names White Glove KT, project bold-glade-26719402, and a 100 CU-hour monthly allowance. Keep the known live project separate from the unrelated project exposed by the connector; do not repoint production or discard data as a shortcut.
+- Ask only short, clearly visible questions when information or a material decision is truly needed. Continue authorized independent work while waiting.
+
+
+
+## Database cost changes
+
+Public content reads use bounded caches; successful writes refresh both deployments. Preserve schema-migration failure checks, public/private filters, review limits, transaction semantics and existing uncached admin reads. Cache refresh failures must be logged; do not suppress GitHub failure alerts. Account/trip storage remains unchanged.
+
+
+## Runtime memory and public promotion reads
+
+Keep Next's filesystem cache active when cacheMaxMemorySize is zero: zero disables the extra process memory cache, not the six-hour SQL bundles or shared tag invalidation. Do not remove working cache freshness protections to cut RAM.
+
+The public promotion read path is lib/public-promotions.ts, with shared selection rules in lib/promotion-rules.ts. One current store read supplies all three global slots. Keep advertiser contacts and internal counters out of public API payloads and server-to-client props; administrative records retain them. Public reads must not construct the administrative destination directory or cache an old edit in a process-local value.
+
+
+## Owner direction — traveler apps, 4 November 2026
+
+White Glove Kosher Travel is the active business. Its installed app is a clean travel-information search experience, with an optional AI companion; itinerary building and booking remain on the website. Preserve ordinary browser planning and booking.
+
+The separate White Glove Itineraries business is paused. Reuse its EXISTING installed app as a traveler companion for anyone, including travelers who built their own itinerary on Kosher Travel. Do not create another installed app or require an advisor. The companion opens a specific trip by its code, shows the itinerary, offers a personal travel wallet for boarding passes, hotel confirmations and entry tickets, and a group chat for the people on that trip. No advisor is involved in this self-service flow, and chat has no travel-date cutoff. The existing Advisor and Admin apps remain separate.
+
+The companion code and chat use the existing shared backend across both deployments; preserve accounts, trips and private attachment boundaries. Opening an already-shared itinerary in the companion does not consume a Trip Pass or start a purchase. Do not reopen purchases. Personal wallet files are stored privately on that device, with explicit offline/device-only wording, removal controls, and sign-out cleanup; do not claim cloud sync. Group display names are self-chosen, not verified identities. Keep trip codes private and tell the owner plainly what is implemented and what has actually been verified.
+

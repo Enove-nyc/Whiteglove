@@ -246,13 +246,28 @@ export function ListingQuickPanel({
               )}
               {saved && !error && <p className="text-sm font-semibold text-[var(--gold-ink)]">Saved.</p>}
 
-              <p className="text-xs leading-5 text-stone-500">
-                This is the short version.{" "}
-                <Link href={listing.fullEditHref} className="font-semibold text-[var(--navy)] underline">
-                  Open the full editor
-                </Link>{" "}
-                for everything else.
-              </p>
+              {listing.savable ? (
+                <p className="text-xs leading-5 text-stone-500">
+                  This is the short version.{" "}
+                  <Link href={listing.fullEditHref} className="font-semibold text-[var(--navy)] underline">
+                    Open the full editor
+                  </Link>{" "}
+                  for everything else.
+                </p>
+              ) : (
+                /* A BUILT-IN LISTING HAS NO EDITOR. This used to say "open the
+                   full editor" here too, and the link went to /admin/add — the
+                   generic Add page — so the owner pressed an editor link,
+                   landed on a form for something new, and had no idea why.
+                   Say what it is, and offer the one thing that can be done. */
+                <p className="text-xs leading-5 text-stone-500">
+                  This listing is built into the site, so there is nothing here to save.{" "}
+                  <Link href={`/admin/add?q=${encodeURIComponent(listing.fields.name)}`} className="font-semibold text-[var(--navy)] underline">
+                    Add your own copy of it
+                  </Link>{" "}
+                  to have one you can change.
+                </p>
+              )}
             </div>
 
             {listing.savable && (

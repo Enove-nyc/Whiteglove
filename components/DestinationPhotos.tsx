@@ -7,11 +7,8 @@ import type { DestinationPhoto } from "@/lib/vacation-destinations-view";
  * or of a beis hachaim, but not of Rome — a holiday destination had no way to
  * carry one, which is why every destination page was words alone.
  *
- * EVERY PICTURE CARRIES ITS CREDIT, visibly, under it. That is not decoration
- * either: a photograph belongs to whoever took it, and the site publishes one
- * on the strength of being allowed to. lib/photos.ts holds a picture back to
- * draft until somebody says whose it is, so an uncredited one never reaches
- * this component — the line below is the promise that rule exists to keep.
+ * Owner-provided credit text stays with uploaded photographs. Licensed resource
+ * photographs are acknowledged centrally on /sources, linked from the footer.
  *
  * Renders nothing at all when there are no pictures, rather than an empty
  * frame. An unfinished section is hidden until it has something in it.
@@ -50,3 +47,4 @@ export default function DestinationPhotos({ photos, name }: { photos: readonly D
     </section>
   );
 }
+

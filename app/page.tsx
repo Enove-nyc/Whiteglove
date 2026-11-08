@@ -1,3 +1,4 @@
+import HomeSearchHero from "@/components/HomeSearchHero";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
 import DestinationSearch from "@/components/DestinationSearch";
 import Footer from "@/components/Footer";
@@ -10,7 +11,9 @@ import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { pageMetadata } from "@/lib/seo";
-import { Icon, type IconName } from "@/components/icons/Icon";
+import { Icon } from "@/components/icons/Icon";
+import Image from "next/image";
+import { HOME_PHOTOS, type HomePhotoKey } from "@/data/homepage-photos";
 import TravelAssistantBox from "@/components/TravelAssistantBox";
 import { ASSISTANT_HOME_LABEL, ASSISTANT_HOME_SUPPORT } from "@/lib/assistant-disclosure";
 import { readBookingLink } from "@/lib/booking-access-store";
@@ -85,37 +88,14 @@ export async function generateMetadata() {
  *     /verification; a second copy here was the front page explaining itself.
  */
 
-/**
- * The six cards on the front page — the site's main sections, not individual
- * places.
- *
- * This row used to be six destinations chosen by what people opened; the owner
- * asked for it to be the sections instead, so a first-time visitor sees the
- * whole shape of the site — what to do, where to stay, what to eat, the
- * heritage, the map and the directory — rather than six towns. Same card as
- * before; only what it points at changed. Each opens its own section.
- */
-/**
- * The six sections, each with a mark of its own.
- *
- * THEY ALL CARRIED THE SAME PHOTOGRAPH. Every card drew the branded default
- * (lib/default-photo.ts) — an aeroplane — so a page whose whole job is to show
- * a visitor the six shapes of the site showed them the same picture six times.
- * Nothing distinguished Kosher food from Heritage above the label, which is
- * the one place a picture could have been doing work.
- *
- * NOT PHOTOGRAPHS, DELIBERATELY. Six licensed images is a purchase, and a
- * stand-in from a stock site is worse than the default it replaced. A mark on
- * the site's own navy is the thing the design system already owns: it tells
- * the six apart at a glance, and it does not pretend to be a place.
- */
-const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: string; icon: IconName }> = [
-  { label: "Things to do", blurb: "Attractions across every destination.", href: "/things-to-do", icon: "camera" },
-  { label: "Where to stay", blurb: "Places to stay and kosher apartments.", href: "/hotels", icon: "bed" },
-  { label: "Kosher food", blurb: "Restaurants, bakeries and groceries.", href: "/kosher", icon: "utensils" },
-  { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage", icon: "star-of-david" },
-  { label: "Map", blurb: "Everything on the site, placed.", href: "/map", icon: "map" },
-  { label: "Local help", blurb: "Drivers, guides and agencies — their businesses, not ours.", href: "/directory", icon: "account" },
+/** Six section links, illustrated with real photographs under verified reusable licenses. */
+const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: string; photo: HomePhotoKey }> = [
+  { label: "Things to do", blurb: "Attractions across every destination.", href: "/things-to-do", photo: "things-to-do" },
+  { label: "Where to stay", blurb: "Places to stay and kosher apartments.", href: "/hotels", photo: "where-to-stay" },
+  { label: "Kosher food", blurb: "Restaurants, bakeries and groceries.", href: "/kosher", photo: "kosher-food" },
+  { label: "Heritage", blurb: "Kevarim, batei hachaim and old kehillos.", href: "/heritage", photo: "heritage" },
+  { label: "Map", blurb: "Everything on the site, placed.", href: "/map", photo: "map" },
+  { label: "Local help", blurb: "Drivers, guides and agencies — their businesses, not ours.", href: "/directory", photo: "local-help" },
 ];
 
 export default async function Home() {
@@ -142,7 +122,7 @@ export default async function Home() {
   ]);
 
   return (
-    <main className="min-h-screen overflow-x-clip bg-[var(--cream)] text-[var(--ink)]">
+    <main className="wg-travel-home min-h-screen overflow-x-clip bg-[var(--cream)] text-[var(--ink)]">
       <StructuredData data={website()} />
       <SearchMemory />
       <Navbar />
@@ -150,11 +130,7 @@ export default async function Home() {
       {/* ---- 1. The hero: one place, one search ---------------------------
           NO overflow-hidden on this section — the search dropdown is
           absolutely positioned and reaches below the hero's edge. */}
-      <section className="relative bg-[var(--navy)] px-5 py-14 text-white sm:px-8 sm:py-20">
-        {/* The photograph slot: wash first, then the navy overlay that keeps
-            the words readable over whatever eventually sits underneath it. */}
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#193F46] to-[#193F46]" />
-        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgba(13,25,45,.78),rgba(13,25,45,.30)_45%,transparent_80%)]" />
+      <HomeSearchHero>
         <div className="relative mx-auto max-w-7xl">
           {/* The whole opening is the search, at the owner's word: no visible
               headline, no eyebrow, no pitch paragraph, no browse links — the
@@ -171,7 +147,7 @@ export default async function Home() {
             </div>
           )}
         </div>
-      </section>
+      </HomeSearchHero>
 
       {spotlight && (
         <section className="mx-auto max-w-7xl px-5 pt-8 sm:px-8">
@@ -200,26 +176,28 @@ export default async function Home() {
           so a screen reader lists "Where to stay" rather than "Explore" six
           times. */}
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+        <div className="flex items-center justify-between gap-4">
         <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
           Featured
         </h2>
-        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        </div>
+        <ul className="wg-travel-categories mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {HOME_CATEGORIES.map((category) => (
             <li key={category.href}>
               <Link
                 href={category.href}
-                className="wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
+                className="wg-travel-card wg-card group block h-full overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)]"
               >
-                {/* The section's own mark, not the same aeroplane six times.
-                    aria-hidden because the label under it already names the
-                    section and the whole card is one link. */}
-                <div
-                  aria-hidden="true"
-                  className="flex aspect-[4/3] w-full items-center justify-center bg-[var(--navy)] bg-[radial-gradient(circle_at_30%_25%,rgba(198,166,100,.22),transparent_62%)]"
-                >
-                  <Icon name={category.icon} className="h-16 w-16 text-[var(--gold-light)] transition group-hover:text-white" />
-                </div>
-                <div className="p-5">
+                <Image
+                  src={HOME_PHOTOS[category.photo].image}
+                  alt=""
+                  width={1000}
+                  height={750}
+                  unoptimized
+                  loading="lazy"
+                  className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                />
+                <div className="wg-travel-card-copy p-5">
                   <p className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)] transition group-hover:text-[var(--gold-ink)]">
                     {category.label}
                   </p>
@@ -249,9 +227,9 @@ export default async function Home() {
               href={card.href}
               aria-label={card.name}
               title={card.name}
-              className="wg-card flex min-h-28 flex-col items-center justify-center gap-2 border border-[var(--gold-light)] bg-[var(--surface)] p-5 text-[var(--navy)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
+              className="wg-travel-start wg-card flex min-h-28 flex-col items-center justify-center gap-2 border border-[var(--gold-light)] bg-[var(--surface)] p-5 text-[var(--navy)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
             >
-              <Icon name={card.icon} className="h-7 w-7" />
+              <span className="wg-travel-start-icon"><Icon name={card.icon} className="h-6 w-6" /></span>
               <span className="text-sm font-bold uppercase tracking-[0.12em]">{card.label}</span>
             </Link>
           ))}
@@ -266,7 +244,7 @@ export default async function Home() {
           is in lib/assistant-disclosure.ts, so the wording here, the wording
           beside the input and the label on every answer cannot drift apart. */}
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <div className="rounded-xl border border-dashed border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
+        <div className="wg-travel-assistant rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 sm:p-6">
           <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">{ASSISTANT_HOME_LABEL}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{ASSISTANT_HOME_SUPPORT}</p>
           <div className="mt-4">
@@ -290,3 +268,5 @@ export default async function Home() {
     </main>
   );
 }
+
+

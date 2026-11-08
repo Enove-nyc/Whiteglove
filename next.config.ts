@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 import { contentSecurityPolicy, reportingEndpointsHeader } from "./lib/csp-policy";
 
 const nextConfig: NextConfig = {
+  // Keep the development badge off tablet touch targets in isolated UI runs.
+  // Next still displays compile/runtime errors when this indicator is off.
+  devIndicators: process.env.COMPANION_E2E === "1" ? false : undefined,
+  // Reuse the filesystem cache instead of retaining another 50 MiB per process.
+  // SQL cache lifetimes and authenticated cross-site invalidation remain active.
+  cacheMaxMemorySize: 0,
   // The site advertised its framework and version on every response, for no
   // reason a visitor benefits from.
   poweredByHeader: false,
@@ -53,6 +59,11 @@ const nextConfig: NextConfig = {
     const CSP_REPORT_PATH = "/api/csp-report";
     return [
       {
+        // Source hashes change with each prepared photograph.
+        source: "/photos/discovery/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         // STABLE FILENAMES MUST NOT BE IMMUTABLE. This build emits
         // non-content-hashed names under /_next/static (the same chunk name
         // across releases, different contents each deploy). Next's default for
@@ -65,6 +76,11 @@ const nextConfig: NextConfig = {
         // network-first is the belt to this suspenders.
         source: "/_next/static/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
+      },
+      {
+        // Imported media has a content hash in its filename; cache it without freezing application chunks.
+        source: "/_next/static/media/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {
         source: "/:path*",
@@ -204,3 +220,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

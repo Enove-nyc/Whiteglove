@@ -1,3 +1,4 @@
+import { forgetPersonalWallet } from "@/lib/personal-travel-wallet";
 /**
  * Emptying everything the ending session left on this device.
  *
@@ -25,6 +26,7 @@
  * clear in that case anyway, because there was nothing to save it with.
  */
 export async function forgetOfflineDocuments(): Promise<void> {
+  await forgetPersonalWallet().catch(() => {});
   try {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
     const registration = await navigator.serviceWorker.getRegistration();
@@ -101,3 +103,4 @@ async function sweepPrivatePages(): Promise<void> {
       }),
   );
 }
+

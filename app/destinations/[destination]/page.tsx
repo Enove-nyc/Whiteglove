@@ -1,3 +1,5 @@
+import PlacePhoto from "@/components/PlacePhoto";
+import { photoForAttraction } from "@/lib/discovery-photos";
 import Link from "next/link";
 import { RememberVisit } from "@/components/RememberVisit";
 import { cache, Suspense } from "react";
@@ -82,7 +84,10 @@ import { placeMapUrl } from "@/data/route-utils";
  * returned, and this route has no loading.tsx of its own to serve ahead of it.
  * Move either of those and a wrong address starts answering 200 again.
  */
-export const revalidate = 900;
+// A day. The rule, and why it is safe, is in lib/cache-windows.ts;
+// tests/cache-windows.test.ts holds this number to it. Written out
+// because Next reads this export statically and refuses an import.
+export const revalidate = 86_400;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
@@ -448,6 +453,7 @@ async function ThingsToDo({ destination }: { destination: VacationDestination })
       <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {facts.attractions.map((attraction) => (
           <li key={attraction.slug} className="wg-card flex flex-col border border-[var(--gold-light)] bg-[var(--surface)] p-5">
+            <PlacePhoto photo={photoForAttraction(attraction)} />
             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500">
               {attraction.kind} · {attraction.city}
             </p>
@@ -1033,3 +1039,4 @@ export default async function VacationDestinationPage({ params }: { params: Prom
     </main>
   );
 }
+

@@ -4,7 +4,7 @@ import Link from "next/link";
 import GloveMark from "@/components/GloveMark";
 import { useSiteBrand } from "@/components/useSiteBrand";
 import PromotionBanner from "@/components/PromotionBanner";
-import type { Promotion } from "@/lib/admin-content";
+import type { PublicPromotion } from "@/lib/admin-content";
 
 // The band at the bottom of an itinerary.
 //
@@ -22,7 +22,7 @@ import type { Promotion } from "@/lib/admin-content";
 // out of an installed itineraries app entirely (Android drops a Trusted Web
 // Activity to an ordinary browser tab, address bar and all, the moment
 // navigation leaves the verified domain).
-export default function ItineraryFooter({ promotion }: { promotion: Promotion | null }) {
+export default function ItineraryFooter({ promotion }: { promotion: PublicPromotion | null }) {
   // THROUGH THE SHARED HOOK, not an effect. This rendered "kosher", then
   // corrected itself after mount — a second render nobody asked for, which
   // React's lint rule refuses. useSiteBrand reads the same three sources in the

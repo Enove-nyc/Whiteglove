@@ -110,7 +110,9 @@ export default function ImportNeedsReviewQueue({
     [queue.items, status, kind, origin, market, batch, query],
   );
   const shown = filtered.slice(0, limit);
-  const openItems = filtered.filter((item) => isOpenReviewStatus(item.status));
+  // Whatever the filter shows is what the panel walks — the count on the panel
+  // is the same number as the card that was pressed, never a third figure.
+  const openItems = filtered;
   const current = openItems[Math.min(focusIndex, Math.max(openItems.length - 1, 0))] ?? null;
   const currentNumber = current ? Math.min(focusIndex, openItems.length - 1) + 1 : 0;
 
@@ -165,7 +167,9 @@ export default function ImportNeedsReviewQueue({
             </h2>
           </div>
           <p className="text-sm font-semibold text-[var(--navy)]" aria-live="polite">
-            {openItems.length === 0 ? "None remaining" : `${currentNumber} of ${openItems.length} remaining`}
+            {openItems.length === 0
+              ? "None remaining"
+              : `${openItems.length} remaining${currentNumber > 1 ? ` · on number ${currentNumber}` : ""}`}
           </p>
         </div>
         {current ? (

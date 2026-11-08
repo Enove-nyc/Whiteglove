@@ -29,6 +29,8 @@
  * The same condition is asked here, so the two can never disagree.
  */
 
+import { photoForCity } from "@/lib/discovery-photos";
+import type { PlacePhoto } from "@/lib/discovery-photo-types";
 import { getDestinationRecord } from "@/data/destination-database";
 import { destinationHref, destinations as heritageDestinations } from "@/data/destinations";
 
@@ -43,6 +45,7 @@ export type HeritageCardModel = {
   kevarim: number;
   /** Its own line, when somebody has written one. Never invented. */
   summary?: string;
+  photo?: PlacePhoto;
 };
 
 /** True when a town has anything on it at all — the sitemap's test, asked once. */
@@ -74,5 +77,7 @@ export function heritageCards(): HeritageCardModel[] {
       href: destinationHref(town),
       kevarim: getDestinationRecord(town.slug)?.cemeteries.length ?? 0,
       summary: town.summary,
+      photo: photoForCity(town.city, town.country),
     }));
 }
+

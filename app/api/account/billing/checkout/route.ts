@@ -1,3 +1,4 @@
+import { ITINERARIES_IN_DEVELOPMENT } from "@/lib/launch-status";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { PLAN_LABELS } from "@/lib/account-plans";
@@ -43,6 +44,7 @@ async function ownTrip(email: string, wanted: unknown): Promise<string | undefin
 }
 
 export async function POST(request: NextRequest) {
+  if (ITINERARIES_IN_DEVELOPMENT) return NextResponse.json({ error: "New purchases are not available. Contact White Glove about your account." }, { status: 409 });
   const cookieStore = await cookies();
   const account = await getCurrentAccountData(cookieStore.get(accountCookieName())?.value);
   if (!account) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
@@ -128,3 +130,4 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ url: session.data.url });
 }
+

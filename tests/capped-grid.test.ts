@@ -94,12 +94,12 @@ describe("the long directories are capped", () => {
     });
   }
 
-  it("keeps the search box in reach on a list that long", () => {
+  it("keeps desktop search in reach while mobile filters can scroll away", () => {
     // The filters used to scroll away thousands of pixels above the records
     // they filter, which is half of why these pages were unusable rather than
     // merely long. top-16 is the header's own scrolled height.
     const TOOLBAR = readFileSync("components/ListToolbar.tsx", "utf8");
-    assert.match(TOOLBAR, /sticky top-16 z-\[var\(--wg-z-list-toolbar\)\]/);
+    assert.match(TOOLBAR, /lg:sticky lg:top-16 z-\[var\(--wg-z-list-toolbar\)\]/);
     assert.match(CSS, /--wg-z-list-toolbar: 35;/);
     // Under the site header, never over it.
     assert.match(CSS, /--wg-z-header: 40;/);

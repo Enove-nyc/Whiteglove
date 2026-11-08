@@ -22,6 +22,7 @@ import {
   type BulkContentKind,
 } from "@/lib/bulk-content";
 import {
+  contentImportCandidateBatchSlug,
   createOnSiteMatcher,
   getContentImportDashboard,
   RETIRED_IMPORT_BATCH_SLUGS,
@@ -469,6 +470,32 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
       error: error instanceof Error ? error.message : "The review queue could not be loaded.",
     };
   }
+}
+
+/**
+ * The next candidate still waiting after a decision on `afterId` — first in the
+ * same source pack, then anywhere — or null when nothing is waiting.
+ *
+ * DRAWN FROM THE QUEUE, NOT FROM THE TABLE. The first version asked the
+ * database for any NEEDS_REVIEW row, and the database holds rows the queue
+ * deliberately leaves out: candidates from a disallowed source, and leads whose
+ * place is already on the site. So "next" kept handing the owner records the
+ * Needs review count had never counted, the count never moved, and the numbers
+ * looked off. Now "next" walks exactly the rows the count counts, in the order
+ * the queue lists them, and reaches the queue page when they run out.
+ */
+export async function nextReviewCandidateAfter(afterId: string): Promise<{ href: string; name: string } | null> {
+  const queue = await getImportReviewQueue();
+  const waiting = queue.items.filter((item) => item.origin === "database" && item.status === "NEEDS_REVIEW");
+  // When the current one is still waiting (a skip, not a decision), carry on
+  // FROM it — the ones after it first, then round to the start — so skipping
+  // walks the whole queue instead of bouncing between the first two.
+  const at = waiting.findIndex((item) => item.id === `db:${afterId}`);
+  const ahead = at >= 0 ? [...waiting.slice(at + 1), ...waiting.slice(0, at)] : waiting;
+  if (ahead.length === 0) return null;
+  const batchSlug = await contentImportCandidateBatchSlug(afterId).catch(() => null);
+  const pick = (batchSlug && ahead.find((item) => item.batchSlug === batchSlug)) || ahead[0];
+  return { href: pick.href, name: pick.name };
 }
 
 /** Slim pack rows for admin search. Read-only — does not rewrite pack files. */

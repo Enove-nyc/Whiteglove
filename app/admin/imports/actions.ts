@@ -17,8 +17,8 @@ import {
   setContentImportCandidateStatus,
   stageBuiltInContentBatch,
   updateContentImportCandidate,
-  nextContentImportCandidateAfter,
 } from "@/lib/content-imports";
+import { nextReviewCandidateAfter } from "@/lib/import-review-queue";
 import { isValidAccessToken } from "@/lib/secure-access";
 import { VACATION_SOURCES_TAG } from "@/lib/vacation-sources";
 
@@ -126,8 +126,8 @@ export async function reviewContentImportCandidateAction(
   // catch below would otherwise swallow it and report a failure.
   let goTo: string | null = null;
   const onward = async (just: string) => {
-    const next = await nextContentImportCandidateAfter(id);
-    return next ? `${contentImportCandidatePath(next.sourceId, next.id)}&just=${just}` : `/admin/imports/needs-review?just=${just}`;
+    const next = await nextReviewCandidateAfter(id);
+    return next ? `${next.href}&just=${just}` : `/admin/imports/needs-review?just=${just}`;
   };
   let result: ContentImportActionResult;
   try {
@@ -186,6 +186,11 @@ export async function reviewContentImportCandidateAction(
       } catch (error) {
         const why = error instanceof Error ? error.message : "It does not meet the public-listing rules yet.";
         const reasons = why.split(/(?<=[.!?])\s+(?=[A-Z])/).filter(Boolean);
+        // The edits ARE in the database; refresh the screen so its blockers
+        // list and review state describe what was just saved.
+        revalidatePath("/admin/imports");
+        revalidatePath("/admin/imports/needs-review");
+        revalidatePath(contentImportCandidatePath(updated.sourceId));
         return { ok: false, message: ["Your edits are saved. It is not public yet, because:", ...reasons.map((r) => `• ${r}`)].join("\n") };
       }
       revalidatePublishedTripContent();

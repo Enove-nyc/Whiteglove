@@ -46,12 +46,14 @@ const VISIBLE_EXAMPLES = 3;
 
 export default function TravelAssistantBox({
   embedded = false,
+  examples = EXAMPLES,
   /** The page already shows the label above it, so the panel does not repeat it. */
   labelledOutside = false,
   /** A question handed over by the site assistant. See the note below. */
   initialAsk = "",
 }: {
   embedded?: boolean;
+  examples?: readonly string[];
   labelledOutside?: boolean;
   initialAsk?: string;
 }) {
@@ -128,7 +130,7 @@ export default function TravelAssistantBox({
     // is itself a warning.)
   }, [initialAsk]);
 
-  const visible = showMoreExamples ? EXAMPLES : EXAMPLES.slice(0, VISIBLE_EXAMPLES);
+  const visible = showMoreExamples ? examples : examples.slice(0, VISIBLE_EXAMPLES);
 
   return (
     <div data-ai-assistant="">
@@ -137,7 +139,7 @@ export default function TravelAssistantBox({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="travel-assistant-panel"
-        aria-label={ASSISTANT_HOME_LABEL}
+        aria-label="AI assistant — ask a travel question"
         title={ASSISTANT_HOME_LABEL}
         className="inline-flex min-h-11 items-center gap-2 rounded-md border border-[var(--gold-light)] bg-[#FAF8F3] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)]"
       >
@@ -239,7 +241,7 @@ export default function TravelAssistantBox({
                 {ex}
               </button>
             ))}
-            {EXAMPLES.length > VISIBLE_EXAMPLES ? (
+            {examples.length > VISIBLE_EXAMPLES ? (
               <button
                 type="button"
                 onClick={() => setShowMoreExamples((v) => !v)}

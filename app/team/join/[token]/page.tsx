@@ -59,7 +59,7 @@ export default async function TeamJoinPage({ params }: { params: Promise<{ token
           <TeamJoinButton token={token} />
         ) : (
           <div className="mt-6 flex flex-wrap gap-3">
-            <LinkButton href={`/login?next=${encodeURIComponent(`/team/join/${token}`)}`}>Log in or create an account</LinkButton>
+            <LinkButton href={`/login?next=${encodeURIComponent(`/team/join/${token}`)}`}>Log in</LinkButton>
           </div>
         )}
       </section>
@@ -67,3 +67,4 @@ export default async function TeamJoinPage({ params }: { params: Promise<{ token
     </main>
   );
 }
+

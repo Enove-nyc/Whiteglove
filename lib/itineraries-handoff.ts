@@ -48,6 +48,10 @@ export const HANDOFF_ACTION = "Open it in Itineraries";
  * an advertisement, and this site does not put one in front of an empty
  * planner.
  */
+// Independent companies: keep the complete planner on this site.
+const ENABLE_ITINERARIES_HANDOFF = false;
+
 export function shouldOfferHandoff({ brand, hasTrip }: { brand: string; hasTrip: boolean }): boolean {
-  return brand === "kosher" && hasTrip;
+  return ENABLE_ITINERARIES_HANDOFF && brand === "kosher" && hasTrip;
 }
+

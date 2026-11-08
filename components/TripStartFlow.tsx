@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSignedIn } from "@/lib/use-signed-in";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { hasAnything, type TravelPreferences } from "@/data/travel-preferences";
@@ -156,7 +157,11 @@ export default function TripStartFlow({
    * before this arrived never has their own words replaced.
    */
   const [prefilled, setPrefilled] = useState(false);
+  // Only a signed-in visitor has preferences to read; asking for them while
+  // signed out was a guaranteed 401 on every load of the planner.
+  const signedIn = useSignedIn();
   useEffect(() => {
+    if (!signedIn) return;
     let cancelled = false;
     void (async () => {
       try {

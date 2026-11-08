@@ -9,6 +9,9 @@
  * The browser never receives this index — only ranked hit rows go over the wire.
  */
 
+import { encodeSearchIndex, decodeSearchIndex } from "@/lib/search-index-cache";
+import { cityNames } from "@/lib/destination-geography";
+import { geographicSearchDocuments } from "@/lib/geographic-search";
 import { cemeteries } from "@/data/cemeteries";
 import { destinationHaystack, destinationHref as heritageDestinationHref, destinations, getDestination } from "@/data/destinations";
 import { HECHSHERIM } from "@/data/hechsherim";
@@ -18,7 +21,7 @@ import { SEASONS, TRIP_THEMES, vacationDestinations, type VacationDestination } 
 import { getVacationDestinations } from "@/lib/vacation-destinations-view";
 import { getAreaList, getAttractionList, getStayList } from "@/lib/attractions-view";
 import { isDisallowedImportSource } from "@/lib/bulk-content";
-import { bustTag, cachedRead } from "@/lib/cache-tags";
+import { bustTag, cachedRead, DB_CACHE_SECONDS } from "@/lib/cache-tags";
 import { notableMikvahListings, staticMikvahListings } from "@/lib/mikvaos";
 import { heritageTownHref } from "@/lib/route-migration";
 import { extraSpellings, normalize } from "@/lib/place-search";
@@ -77,8 +80,13 @@ export async function invalidateSiteSearchIndex(): Promise<void> {
  * was doing by hand — a second concurrent call while the first is still
  * building does not trigger a second build.
  */
+let decodedIndex: { encoded: string; documents: SearchDocument[] } | undefined;
 export async function getSearchIndex(): Promise<SearchDocument[]> {
-  return cachedRead(buildSearchIndex, ["site-search-index"], [SEARCH_INDEX_TAG]);
+  // Always consult the tagged cache first; a process-local decoded copy must
+  // never hide a committed edit from the shared invalidation mechanism.
+  const encoded = await cachedRead(async () => encodeSearchIndex(await buildSearchIndex()), ["site-search-index-gzip-v1"], [SEARCH_INDEX_TAG], DB_CACHE_SECONDS);
+  if (decodedIndex?.encoded !== encoded) decodedIndex = { encoded, documents: decodeSearchIndex(encoded) };
+  return decodedIndex.documents;
 }
 
 type DraftDoc = Omit<SearchDocument, "normTokens" | "normCompact">;
@@ -110,7 +118,8 @@ export async function buildSearchIndex(): Promise<SearchDocument[]> {
   pushHeritageTowns(docs);
   pushCemeteries(docs);
   pushTzaddikim(docs);
-  await pushAttractionsStaysAreas(docs);
+  const geographicPlaces = await pushAttractionsStaysAreas(docs);
+  docs.push(...geographicSearchDocuments(geographicPlaces, destinations));
   await pushPublishedPracticalPlaces(docs);
   pushStaticPracticalPlaces(docs, destinations);
   pushEateries(docs);
@@ -160,7 +169,7 @@ function pushVacationDestinations(docs: DraftDoc[], destinations: readonly Vacat
       names: [
         d.name,
         d.slug.replace(/-/g, " "),
-        ...d.cities,
+        ...d.cities.flatMap(cityNames),
         d.region ?? "",
         d.country,
         extraSpellings([d.slug, d.name, ...d.cities]),
@@ -340,6 +349,7 @@ async function pushAttractionsStaysAreas(docs: DraftDoc[]) {
       vacation: false,
     });
   });
+  return attractions;
 }
 
 /**
@@ -925,3 +935,4 @@ function pushStaticPracticalPlaces(docs: DraftDoc[], destinations: readonly Vaca
     }
   }
 }
+

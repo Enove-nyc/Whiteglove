@@ -1,3 +1,4 @@
+import DevelopmentNotice from "@/components/DevelopmentNotice";
 import Link from "next/link";
 import TravelPreferencesPanel from "@/components/TravelPreferencesPanel";
 import RecentPlaces from "@/components/RecentPlaces";
@@ -143,6 +144,7 @@ export default async function AccountPage() {
   return (
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
+      <DevelopmentNotice />
       <section className="mx-auto max-w-5xl px-5 py-14 sm:px-8 sm:py-20">
         <PageHeader
           eyebrow="Your account"

@@ -36,14 +36,39 @@ function disallowFor(path: string): string[] {
   return [`${path}$`, `${path}/`];
 }
 
+/**
+ * Crawlers that are asked not to come back.
+ *
+ * NOT A JUDGEMENT ON THEM, A BILL. Over seven days this site answered 43,851
+ * requests, nearly all of them crawlers working through the 809 addresses in
+ * the sitemap, around the clock. Every one wakes a database that bills for
+ * being awake. The ones below were the loudest in the logs and send no readers
+ * in return: two short-video scrapers and two link-graph bots.
+ *
+ * WHO IS DELIBERATELY NOT HERE. Google, Bing and Applebot bring readers.
+ * OpenAI's and Anthropic's bring the answers people now ask instead of
+ * searching, and a kosher guide that is invisible to those is invisible to the
+ * next generation of travellers. Semrush and Ahrefs are left alone because
+ * they are the owner's own tools when he wants them, and turning off a tool
+ * you use to save a few pennies is a bad trade.
+ *
+ * AND IT IS A REQUEST, NOT A WALL. robots.txt is honoured by the well-behaved
+ * and ignored by the rest; the crawlers below do generally honour it. Anything
+ * that does not is a job for Cloudflare, not for this file.
+ */
+const NO_READERS_IN_RETURN = ["Bytespider", "TikTokSpider", "DotBot", "Amazonbot"] as const;
+
 export default function robots(): MetadataRoute.Robots {
   const origin = siteOrigin();
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: PRIVATE_PATHS.flatMap(disallowFor),
-    },
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: PRIVATE_PATHS.flatMap(disallowFor),
+      },
+      ...NO_READERS_IN_RETURN.map((userAgent) => ({ userAgent, disallow: "/" })),
+    ],
     // Only when there is a real address. A relative sitemap line is invalid and
     // would make the whole file suspect.
     ...(origin ? { sitemap: new URL("/sitemap.xml", origin).toString(), host: origin.host } : {}),

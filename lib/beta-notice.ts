@@ -93,7 +93,7 @@ export function shouldShow(
  * rather than a courtesy. /embed is the partner search form iframed from /book.
  */
 export function isOwnersOwnScreen(path: string): boolean {
-  return /^\/(admin|login|access|embed)(\/|$)/.test(path);
+  return /^\/(admin|login|join|access|embed)(\/|$)/.test(path);
 }
 
 /**
@@ -139,3 +139,4 @@ export function noticeProblem(notice: BetaNotice): string | null {
   if (notice.body.trim().length < 20) return "Say what to confirm before travelling. A line is enough.";
   return null;
 }
+

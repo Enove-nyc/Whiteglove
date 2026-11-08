@@ -13,7 +13,8 @@ describe("content import review regressions", () => {
     const action = readFileSync("app/admin/imports/actions.ts", "utf8");
     const storage = readFileSync("lib/content-imports.ts", "utf8");
 
-    assert.match(editor, /name="sourceEvidence"/);
+    // The field is controlled now (bound to state by name), not a bare name attribute.
+    assert.match(editor, /bind\("sourceEvidence"\)/);
     assert.match(action, /sourceEvidence: sourceEvidence\(formData\)/);
     // WHAT THE EDITOR TYPED HAS TO SURVIVE THE SAVE, and this used to be
     // checked by looking for one exact expression —

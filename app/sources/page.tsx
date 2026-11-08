@@ -1,3 +1,5 @@
+import DiscoveryPhotoCredits from "@/components/DiscoveryPhotoCredits";
+import HomepagePhotoCredits from "@/components/HomepagePhotoCredits";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { pageMetadata } from "@/lib/seo";
@@ -46,7 +48,7 @@ export default function SourcesPage() {
         <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
           Where the listings come from.
         </h1>
-        <p className="mt-5 max-w-2xl text-[15px] leading-7 text-stone-600">
+        <p className="mt-5 max-w-2xl text-[15px] leading-7 text-stone-700">
           White Glove compiles its listings from the directories and public pages below. They are
           gathered here as a single acknowledgement of the work we drew on. A site listed here is
           credited, not endorsed — its presence says only that some information came from it.
@@ -59,7 +61,7 @@ export default function SourcesPage() {
               <section key={category}>
                 <h2 className="border-b border-[var(--gold-light)] pb-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">
                   {category}
-                  <span className="ml-2 align-middle text-sm font-normal text-stone-400">{list.length}</span>
+                  <span className="ml-2 align-middle text-sm font-normal text-stone-700">{list.length}</span>
                 </h2>
                 <ul className="mt-5 gap-x-8 sm:columns-2 lg:columns-3 [&>li]:break-inside-avoid">
                   {list.map((entry) => (
@@ -68,7 +70,7 @@ export default function SourcesPage() {
                         href={entry.url}
                         target="_blank"
                         rel="noreferrer nofollow"
-                        className="text-stone-600 underline decoration-stone-300 underline-offset-2 hover:text-[var(--navy)]"
+                        className="text-stone-700 underline decoration-stone-300 underline-offset-2 hover:text-[var(--navy)]"
                       >
                         {entry.host}
                       </a>
@@ -79,8 +81,11 @@ export default function SourcesPage() {
             );
           })}
         </div>
+        <HomepagePhotoCredits />
+        <DiscoveryPhotoCredits />
       </div>
       <Footer />
     </main>
   );
 }
+
