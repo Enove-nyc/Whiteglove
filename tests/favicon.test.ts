@@ -3,19 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 import { describe, it } from "node:test";
 
-/**
- * The tab icon is the logo — the artwork, not a drawing of it.
- *
- * It took five goes to get here, and each wrong turn is worth a check so it is
- * not taken again: a coloured tile behind it, the compass rose standing in for
- * the whole mark, and a hand-drawn version that was legible and was not the
- * logo. All of it is now built from public/logo-mark.png by
- * scripts/build-icons.mjs.
- *
- * These tests read the committed files rather than rebuilding them, so they
- * need no image library. Rebuilding needs sharp, which arrives with Next and is
- * not a dependency this repo declares.
- */
+/** Browser icons retain the original artwork on the owner-requested gold background. */
 
 const ICO = "app/favicon.ico";
 const ICON = "app/icon.png";
@@ -59,7 +47,7 @@ describe("the tab icon", () => {
     assert.deepEqual(icoFrames(readFileSync(ICO)).map((f) => f.size), [16, 32, 48, 64]);
   });
 
-  it("has no background behind it", () => {
+  it("uses RGBA frames", () => {
     // Every complaint about this icon has been about a coloured square: first
     // blue, then gold. Every frame must be able to be transparent.
     for (const frame of icoFrames(readFileSync(ICO))) {
@@ -68,18 +56,12 @@ describe("the tab icon", () => {
     assert.equal(pngHeader(readFileSync(ICON)).colourType, 6, "app/icon.png is not RGBA");
   });
 
-  it("really is transparent, not white painted on", () => {
-    // Colour type 6 only means it COULD be transparent. The corner of the
-    // largest frame is the thing that was actually wrong before.
-    const largest = icoFrames(readFileSync(ICO)).at(-1);
-    assert.ok(largest, "no frames");
-    // Each row starts with its filter byte, so the first pixel is at 1.
-    const idat = findChunk(largest.png, "IDAT");
-    const rows = inflateSync(idat);
-    // Byte 0 of each row is the filter; the first pixel follows it.
-    assert.equal(rows[4], 0, `the top-left pixel has alpha ${rows[4]} — there is a background behind the mark`);
+  it("has the requested opaque gold background in every ICO size", () => {
+    for (const frame of icoFrames(readFileSync(ICO))) {
+      const rows = inflateSync(findChunk(frame.png, "IDAT"));
+      assert.deepEqual([...rows.subarray(1, 5)], [198, 161, 91, 255]);
+    }
   });
-
   it("is the same shape in every frame", () => {
     // A tab icon that changes shape as it scales reads as two different
     // icons. Every frame is square and comes from the same artwork.

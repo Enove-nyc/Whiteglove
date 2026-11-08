@@ -46,6 +46,8 @@ import sharp from "sharp";
 
 const SRC = "public/logo-mark.png";
 const GOLD = [0xa8, 0x84, 0x46];
+const TAB_INK = [0x19, 0x3f, 0x46];
+const TAB_BACKGROUND = { r: 0xc6, g: 0xa1, b: 0x5b, alpha: 1 };
 /** The home-screen tile. iOS ignores transparency and composites onto black. */
 const TILE = [0x14, 0x21, 0x3d];
 
@@ -55,7 +57,7 @@ const TILE = [0x14, 0x21, 0x3d];
  * `dilate` is in source pixels, so the same number means the same amount of
  * growth whatever it is later shrunk to.
  */
-async function ink({ dilate = 0 } = {}) {
+async function ink({ dilate = 0, color = GOLD } = {}) {
   const { data, info } = await sharp(SRC).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
   let a = new Uint8Array(w * h);
@@ -64,9 +66,9 @@ async function ink({ dilate = 0 } = {}) {
 
   const out = Buffer.alloc(w * h * 4);
   for (let i = 0, p = 0; i < out.length; i += 4, p++) {
-    out[i] = GOLD[0];
-    out[i + 1] = GOLD[1];
-    out[i + 2] = GOLD[2];
+    out[i] = color[0];
+    out[i + 1] = color[1];
+    out[i + 2] = color[2];
     out[i + 3] = a[p];
   }
   return sharp(out, { raw: { width: w, height: h, channels: 4 } });
@@ -161,7 +163,8 @@ function png(raw, size) {
 export async function buildIco() {
   const frames = [];
   for (const { size, dilate } of ICO_FRAMES) {
-    const raw = await square(await ink({ dilate }), size).raw().toBuffer();
+    const raw = await square(await ink({ dilate, color: TAB_INK }), size, TAB_BACKGROUND)
+      .flatten({ background: TAB_BACKGROUND }).ensureAlpha().raw().toBuffer();
     frames.push({ size, data: png(raw, size) });
   }
   const header = Buffer.alloc(6);
@@ -192,8 +195,11 @@ if (process.argv[1]?.endsWith("build-icons.mjs")) {
   // The tab's own PNG, which a modern browser prefers over the .ico. Large
   // enough that the artwork needs almost nothing done to it — this one is the
   // mark as drawn, and it is the one most people will actually see.
-  await square(await ink({ dilate: 3 }), 180).png().toFile("app/icon.png");
+  await square(await ink({ dilate: 3, color: TAB_INK }), 180, TAB_BACKGROUND)
+    .flatten({ background: TAB_BACKGROUND }).ensureAlpha().png().toFile("app/icon.png");
   console.log("app/icon.png — 180px");
+
+  if (process.argv.includes("--favicon-only")) process.exit(0);
 
   // Home-screen icons. Opaque on purpose: iOS does not honour transparency in
   // an apple-touch-icon, it composites onto black, and a gold mark on black is

@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     //
     // app/icon.png is the tab icon; the App Router links favicon.ico for us
     // and both come out of the same build.
-    icon: [{ url: "/icon.png", type: "image/png", sizes: "96x96" }],
+    icon: [{ url: "/icon.png?v=gold-20261108", type: "image/png", sizes: "180x180" }],
     //
     // The navy background is right where it is used. An installed app icon
     // (app/manifest.ts) is drawn on the home screen with no page behind it, and
