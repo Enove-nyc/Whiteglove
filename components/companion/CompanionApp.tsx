@@ -80,7 +80,7 @@ type State = {
 };
 
 const GOLD = "#C6A15B";
-const CREAM = "#D5CEC3";
+const CREAM = "var(--color-canvas)";
 
 /**
  * THE SAME COLOUR PASS THE ITINERARIES COPY OF THIS COMPONENT HAD.
@@ -1200,8 +1200,8 @@ export default function CompanionApp({
     <div style={{ padding: "16px 18px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
       {(sel.weather || sel.walk) && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {sel.weather && <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "#C7BFB1", color: "#102F35", padding: "8px 12px", borderRadius: 14 }}>{sel.weather}</span>}
-          {sel.walk && <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "#C7BFB1", color: "#102F35", padding: "8px 12px", borderRadius: 14 }}>{sel.walk}</span>}
+          {sel.weather && <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "var(--color-surface-muted)", color: "#102F35", padding: "8px 12px", borderRadius: 14 }}>{sel.weather}</span>}
+          {sel.walk && <span style={{ font: "600 11.5px/1 Inter,sans-serif", background: "var(--color-surface-muted)", color: "#102F35", padding: "8px 12px", borderRadius: 14 }}>{sel.walk}</span>}
         </div>
       )}
       {sel.shabbosNote && (
@@ -1395,7 +1395,7 @@ export default function CompanionApp({
   const conciergeChat = (
     <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
       <div style={{ flex: 1, padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
-        <div style={{ alignSelf: "center", font: "400 11px/1 ui-monospace,Menlo,monospace", color: FAINT, background: "#C7BFB1", padding: "7px 12px", borderRadius: 14 }}>Tuesday 27 October</div>
+        <div style={{ alignSelf: "center", font: "400 11px/1 ui-monospace,Menlo,monospace", color: FAINT, background: "var(--color-surface-muted)", padding: "7px 12px", borderRadius: 14 }}>Tuesday 27 October</div>
         {st.messages.map((m, i) => {
           const mine = m.from === "me";
           return (
@@ -1608,7 +1608,7 @@ export default function CompanionApp({
       {hasConcierge && (
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <div style={{ ...kicker(NAVY), paddingLeft: 4 }}>How you are reading this trip</div>
-          <div style={{ display: "flex", gap: 6, padding: 5, background: "#C7BFB1", borderRadius: 14, alignSelf: "flex-start" }}>
+          <div style={{ display: "flex", gap: 6, padding: 5, background: "var(--color-surface-muted)", borderRadius: 14, alignSelf: "flex-start" }}>
             {tmodeOpts.map((o) => (
               <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
             ))}
@@ -1713,7 +1713,7 @@ export default function CompanionApp({
       {/* content */}
       <div className="wg-scroll" style={{ flex: 1, overflow: "auto", WebkitOverflowScrolling: "touch" }}>{body}</div>
       {/* tabs */}
-      <div style={{ flexShrink: 0, padding: "9px 12px", background: "#C7BFB1", borderTop: "1px solid rgba(16, 47, 53,.08)", display: "flex", gap: 5 }}>
+      <div style={{ flexShrink: 0, padding: "9px 12px", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(16, 47, 53,.08)", display: "flex", gap: 5 }}>
         {tabs.map((t) => (
           <button key={t.id} onClick={() => go(t.id)} style={{ position: "relative", flex: 1, border: 0, cursor: "pointer", background: t.bg, color: t.fg, font: `400 13px/1 ${serif}`, padding: "12px 6px", borderRadius: 14 }}>
             {t.label}
@@ -2997,7 +2997,7 @@ function LiveChat({
       {staged ? (
         <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(16, 47, 53,.08)", padding: "12px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ flex: "none", width: 56, height: 56, borderRadius: 12, overflow: "hidden", background: "#C7BFB1", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ flex: "none", width: 56, height: 56, borderRadius: 12, overflow: "hidden", background: "var(--color-surface-muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {staged.kind === "image" && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={staged.previewUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -3361,7 +3361,7 @@ function AdvisorInbox({
   if (open) {
     return (
       <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
-        <button onClick={() => setOpen(null)} className="wg-warm" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, border: 0, borderBottom: "1px solid rgba(16, 47, 53,.08)", background: "#C7BFB1", cursor: "pointer", padding: "12px 16px", textAlign: "left" }}>
+        <button onClick={() => setOpen(null)} className="wg-warm" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, border: 0, borderBottom: "1px solid rgba(16, 47, 53,.08)", background: "var(--color-surface-muted)", cursor: "pointer", padding: "12px 16px", textAlign: "left" }}>
           <span style={{ fontSize: 15, color: "#57534e" }}>←</span>
           <span style={{ font: `400 17px/1.1 ${serif}` }}>{open.client || open.name}</span>
         </button>
@@ -3450,7 +3450,7 @@ const CSS = `
   .wg-chrome-intro { max-width: 520px; display: flex; flex-direction: column; gap: 8px; }
   .wg-toolbar-group { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
   .wg-toolbar-label { font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #9fb0bd; }
-  .wg-toolbar { display: flex; gap: 6px; padding: 5px; background: #C7BFB1; border-radius: 14px; }
+  .wg-toolbar { display: flex; gap: 6px; padding: 5px; background: var(--color-surface-muted); border-radius: 14px; }
   .wg-frame { width: 402px; height: 812px; border-radius: 44px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.28), 0 0 0 10px #102F35, 0 0 0 11px rgba(255,255,255,.06); }
   .wg-phone { height: 812px; }
   .wg-hint { display: block; max-width: 620px; margin: 0; text-align: center; font-size: 13px; line-height: 1.6; color: #cdd6dd; text-wrap: pretty; }

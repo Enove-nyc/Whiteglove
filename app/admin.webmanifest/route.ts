@@ -40,7 +40,7 @@ export async function GET() {
     start_url: base,
     scope: base,
     display: "standalone",
-    background_color: "#D5CEC3",
+    background_color: "#F7F4EE",
     theme_color: "#102F35",
     orientation: "portrait",
     categories: ["business", "productivity"],

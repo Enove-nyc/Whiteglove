@@ -1446,7 +1446,8 @@ export async function saveAccountItinerary(email: string, itinerary: Itinerary, 
   const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
   const { trips, activeId } = withTrips(data);
-  const targetId = id && trips.some((t) => t.id === id) ? id : activeId;
+  if (id && !trips.some((t) => t.id === id)) return false;
+  const targetId = id ?? activeId;
   const target = trips.find((t) => t.id === targetId);
   const stamped = { ...itinerary, updatedAt: new Date().toISOString() };
   // "What Changed?" — see data/trip-alerts.ts. Computed against the record
