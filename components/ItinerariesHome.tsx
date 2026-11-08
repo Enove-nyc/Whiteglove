@@ -27,14 +27,13 @@ export default function ItinerariesHome() {
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar brand="itineraries" />
 
-      <section className="relative overflow-hidden bg-[var(--navy)] px-5 py-20 text-white sm:px-8 sm:py-28">
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[var(--navy)] via-[#193F46] to-[#193F46]" />
+      <section className="wg-itineraries-hero relative overflow-hidden px-5 py-20 sm:px-8 sm:py-28">
         <div className="relative mx-auto max-w-3xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#D8BC7A]">White Glove Itineraries</p>
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">White Glove Itineraries</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight sm:text-6xl">
             The trip you plan, in your client&apos;s pocket.
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#c9d3da] sm:text-lg">
+          <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[var(--header-muted)] sm:text-lg">
             Build an itinerary a day at a time, then hand it over as an app on their phone —
             the days, the map, a travel wallet kept for when there is no signal, and a chat
             with you. One link per client.
@@ -52,7 +51,7 @@ export default function ItinerariesHome() {
             <Link href="/itinerary" className={`${cta} bg-white text-[var(--navy)] hover:bg-[var(--gold-light)]`}>
               Build a trip
             </Link>
-            <Link href="/sample-itinerary" className={`${cta} border border-white/40 text-white hover:bg-white/10`}>
+            <Link href="/sample-itinerary" className={`${cta} border border-[var(--header-border)] text-[var(--header-ink)] hover:bg-white/40`}>
               See a finished one
             </Link>
           </div>

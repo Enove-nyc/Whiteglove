@@ -63,7 +63,7 @@ export default function HomeSearchHero({ children }: { children: ReactNode }) {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setSearchFocused(false);
       }}
     >
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden bg-gradient-to-br from-[#164b60] via-[#247f87] to-[#75b6b0]">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden bg-[var(--header-background)]">
         {photos.map((photo, index) => ready.has(index) ? (
           // Local responsive WebP variants are prepared once; no runtime image proxy.
           // eslint-disable-next-line @next/next/no-img-element
@@ -73,8 +73,8 @@ export default function HomeSearchHero({ children }: { children: ReactNode }) {
             fetchPriority={index === 0 ? "high" : "auto"} decoding="async"
             className={"absolute inset-0 h-full w-full object-cover transition-opacity duration-[1400ms] motion-reduce:transition-none " + (index === active ? "opacity-100" : "opacity-0")} />
         ) : null)}
-        <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(12,45,64,.32),rgba(10,49,58,.10)_60%,rgba(10,31,49,.22))]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d263c]/85 via-transparent to-[#15384c]/10" />
+        <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(42,35,27,.24),rgba(42,35,27,.04)_60%,rgba(42,35,27,.16))]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#30281f]/65 via-transparent to-[#30281f]/5" />
       </div>
       <div data-hero-search className="relative z-20 w-full">{children}</div>
     </section>
