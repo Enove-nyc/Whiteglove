@@ -9,6 +9,7 @@ import { bookingHref } from "@/lib/booking-access";
 import { Children, createContext, isValidElement, useContext, useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
+import { GUEST_TRIP_KEY } from "@/lib/guest-trip";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import AssistantAnswer from "@/components/AssistantAnswer";
 import { useRequireSignIn } from "@/components/SignInGate";
@@ -92,8 +93,7 @@ type Tab = "flight" | "hotel" | "activity" | "import" | null;
  * import or measured road times. Address autocomplete runs in their browser.
  */
 const GuestContext = createContext(false);
-/** Where a guest's trip is kept, on their own device. */
-export const GUEST_TRIP_KEY = "wg-guest-itinerary";
+
 type ItineraryView = "days" | "calendar";
 
 export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false, kosher = false, guest = false }: {

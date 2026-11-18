@@ -726,8 +726,9 @@ function HotelsForm({
   liveEnabled?: boolean;
 }) {
   const [dest, setDest] = useState(prefill?.destination ?? "");
-  const [checkin, setCheckin] = useState("");
-  const [checkout, setCheckout] = useState("");
+  // Dates chosen on the home page's search arrive as depart/return.
+  const [checkin, setCheckin] = useState(prefill?.depart ?? "");
+  const [checkout, setCheckout] = useState(prefill?.ret ?? "");
   const [guests, setGuests] = useState("2");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);

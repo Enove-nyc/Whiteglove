@@ -1,61 +1,124 @@
+import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import HomeAudience from "@/components/HomeAudience";
+import HomeTravelSearch from "@/components/HomeTravelSearch";
+import HomeStartItinerary from "@/components/HomeStartItinerary";
+import { Icon, type IconName } from "@/components/icons/Icon";
 
-const PLANNED_FEATURES = [
-  {
-    title: "Build a complete itinerary",
-    body: "Organise flights, accommodation, transport, activities and notes in one day-by-day itinerary.",
-    href: "/sample-itinerary",
-    link: "Explore a sample itinerary",
-  },
-  {
-    title: "Put the trip on the traveller’s phone",
-    body: "Keep the itinerary, schedule, directions and travel documents together on the traveller’s phone.",
-    href: "/app/preview",
-    link: "Explore the companion app",
-  },
-  {
-    title: "Help advisers manage their clients’ trips",
-    body: "Manage client trips, share itineraries and keep conversations with the right trip as plans develop.",
-    href: "/about",
-    link: "Explore the platform",
-  },
-] as const;
+/**
+ * The White Glove Itineraries home page, laid out from the owner's own design
+ * (AGENTS.md, 18 November 2026): book the trip, then build the itinerary.
+ *
+ * THE PHOTOGRAPH IS REAL AND CREDITED, never generated: "Bellagio, Lake Como,
+ * Italy" by Ray in Manila, CC BY 2.0, from Wikimedia Commons. The licence asks
+ * for the credit, so it is on the picture itself.
+ */
+const PHOTO_CREDIT = {
+  title: "Bellagio, Lake Como, Italy",
+  author: "Ray in Manila",
+  licence: "CC BY 2.0",
+  source: "https://commons.wikimedia.org/wiki/File:Bellagio,_Lake_Como,_Italy_(51180622244).jpg",
+  licenceUrl: "https://creativecommons.org/licenses/by/2.0/",
+};
+
+const SAMPLE_LINES: Array<{ icon: IconName; text: string }> = [
+  { icon: "plane", text: "Flight to Milan" },
+  { icon: "bed", text: "Hotel in Bellagio" },
+  { icon: "ticket", text: "Lake Como boat tour" },
+];
 
 export default function ItinerariesHome() {
   return (
     <main className="wg-itineraries-home min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar brand="itineraries" />
-      <section className="wg-itineraries-hero px-5 py-16 text-[var(--header-ink)] sm:px-8 sm:py-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">For travellers and travel advisers</p>
-          <HomeAudience />
 
+      <section className="relative">
+        <div className="mx-auto grid max-w-7xl lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <div className="px-5 pb-8 pt-10 sm:px-8 sm:pt-14 lg:pb-40 lg:pt-20">
+            <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,5.4vw,4.1rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-[var(--navy-deep)]">
+              Book the trip.
+              <br />
+              Build the itinerary.
+            </h1>
+            <p className="mt-5 max-w-md text-lg leading-8 text-[#3D4766] sm:text-xl">
+              Find flights, stays and more, then organise your whole trip in one place.
+            </p>
+          </div>
+          <figure className="relative h-64 sm:h-80 lg:absolute lg:inset-y-0 lg:right-0 lg:h-auto lg:w-[48%]">
+            <Image
+              src="/photos/home-lake-como.webp"
+              alt="Bellagio's yellow lakeside villas on Lake Como, Italy"
+              fill
+              priority
+              sizes="(min-width: 1024px) 48vw, 100vw"
+              className="object-cover"
+            />
+            <figcaption className="absolute right-3 top-3 rounded bg-black/45 px-2 py-0.5 text-[11px] text-white/90">
+              Photo:{" "}
+              <a href={PHOTO_CREDIT.source} className="underline underline-offset-2" target="_blank" rel="noopener noreferrer">
+                {PHOTO_CREDIT.title}
+              </a>{" "}
+              by {PHOTO_CREDIT.author},{" "}
+              <a href={PHOTO_CREDIT.licenceUrl} className="underline underline-offset-2" target="_blank" rel="noopener noreferrer">
+                {PHOTO_CREDIT.licence}
+              </a>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:-mt-32">
+          <HomeTravelSearch />
         </div>
       </section>
-      <section id="planned-features" className="mx-auto max-w-5xl px-5 py-14 sm:px-8 sm:py-20">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Your trip, together</p>
-        <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">One connected experience, from planning to travelling.</h2>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-stone-700">
-          Build, organise and carry your trip in one connected place — from the first plan to the last day.
-        </p>
-        <div className="mt-9 grid gap-6 md:grid-cols-3">
-          {PLANNED_FEATURES.map((feature) => (
-            <article key={feature.title} className="flex flex-col rounded-xl border border-[var(--gold-light)] bg-white p-6">
-              <h3 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{feature.title}</h3>
-              <p className="mt-4 flex-1 text-sm leading-7 text-stone-700">{feature.body}</p>
-              <Link href={feature.href} className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">{feature.link} →</Link>
-            </article>
-          ))}
+
+      <section className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_1px_minmax(0,1.1fr)] lg:items-center lg:gap-12">
+          <div>
+            <h2 className="font-[family-name:var(--font-display)] text-4xl font-semibold leading-tight text-[var(--navy-deep)] sm:text-5xl">
+              Start your itinerary
+            </h2>
+            <p className="mt-3 text-lg leading-7 text-[#3D4766]">Give your trip a name and add the details when you&rsquo;re ready.</p>
+            <HomeStartItinerary />
+          </div>
+
+          <div aria-hidden="true" className="hidden h-full min-h-40 bg-[var(--gold)] lg:block" />
+
+          <Link
+            href="/sample-itinerary"
+            className="group grid overflow-hidden rounded-2xl border border-[#E6DCC8] bg-white shadow-[0_8px_26px_rgba(21,32,74,.06)] transition hover:shadow-[0_14px_34px_rgba(21,32,74,.12)] sm:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]"
+          >
+            <span className="relative block h-48 sm:h-full sm:min-h-52">
+              <Image
+                src="/photos/home-lake-como-1200.webp"
+                alt=""
+                fill
+                sizes="(min-width: 640px) 280px, 100vw"
+                className="object-cover"
+              />
+            </span>
+            <span className="block p-5 sm:p-6">
+              <span className="block text-xs font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">Sample itinerary</span>
+              <span className="mt-2 block font-[family-name:var(--font-display)] text-2xl font-semibold leading-tight text-[var(--navy-deep)] sm:text-[1.75rem]">
+                A week on Lake Como
+              </span>
+              <span className="mt-3 block divide-y divide-[#EDE6D8]">
+                {SAMPLE_LINES.map((line) => (
+                  <span key={line.text} className="flex items-center gap-3 py-2.5 text-[15px] text-[var(--ink)]">
+                    <Icon name={line.icon} className="h-5 w-5 shrink-0 text-[var(--navy)]" />
+                    {line.text}
+                  </span>
+                ))}
+              </span>
+              <span className="mt-3 inline-block text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4 group-hover:decoration-[var(--navy)]">
+                See the whole week
+              </span>
+            </span>
+          </Link>
         </div>
-        <p className="mt-7 text-sm leading-6 text-stone-700">Your itinerary stays in your account, ready to revisit whenever your plans change.</p>
       </section>
-      <Footer />
+
+      <Footer brand="itineraries" />
     </main>
   );
 }
-
-
-

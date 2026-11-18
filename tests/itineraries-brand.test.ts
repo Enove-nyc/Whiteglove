@@ -31,10 +31,10 @@ const guideHref = (href: string) =>
     .some((p) => href === p || href.startsWith(`${p}?`) || href.startsWith(`${p}/`));
 
 describe("the itineraries bar is a planner, not a guide", () => {
-  it("carries only Plan, Book and the app", () => {
+  it("carries only Find travel and My itineraries (the owner's design)", () => {
     assert.deepEqual(
       ITINERARIES_CATEGORIES.map((c) => c.label),
-      ["Plan", "Book", "The app"],
+      ["Find travel", "My itineraries"],
     );
   });
 
@@ -55,7 +55,7 @@ describe("the itineraries bar is a planner, not a guide", () => {
 
   it("resolves Book to the booking searches, never a browse", () => {
     const open = itinerariesBookingCategoryFor({ searchIsPublic: true, label: "Book", href: "/book", description: "" });
-    assert.deepEqual(open.links.map((l) => l.label), ["Flights", "Hotels", "Cars"]);
+    assert.deepEqual(open.links.map((l) => l.label), ["Flights", "Hotels", "Car rentals", "Things to do"]);
     // Locked, it collapses to the one public assistance link — still not a browse.
     const locked = itinerariesBookingCategoryFor({ searchIsPublic: false, label: "Ask us to book", href: "/contact", description: "d" });
     assert.equal(locked.links.length, 1);

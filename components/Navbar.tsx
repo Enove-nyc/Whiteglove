@@ -135,7 +135,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
     ? []
     : categoriesForBrand(brand).map((category) =>
         isItineraries
-          ? category.label === "Book"
+          ? category.label === "Find travel"
             ? itinerariesBookingCategoryFor(booking)
             : category
           : category.label === "Travel"

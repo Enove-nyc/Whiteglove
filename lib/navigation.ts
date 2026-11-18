@@ -196,25 +196,22 @@ export function travelCategoryFor(booking: BookingLink): NavCategory {
  */
 export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
   {
-    label: "Plan",
-    links: [
-      { label: "Get recommendations", href: "/plan" },
-      { label: "Build a trip", href: "/itinerary" },
-      { label: "Your route", href: "/my-route" },
-    ],
-  },
-  {
-    label: "Book",
+    // The owner's design (18 November 2026): "Find travel" and "My itineraries".
+    label: "Find travel",
     // Filled by itinerariesBookingCategoryFor — the booking searches, resolved
-    // through the owner's lock. No browsable stays/activities directory: that is
-    // guide, not planner.
+    // through the owner's lock, plus Things to do through the partner hand-off.
     links: [],
   },
   {
-    label: "The app",
+    label: "My itineraries",
     links: [
-      { label: "The White Glove app", href: "/app", description: "The trip in your client's pocket" },
-      { label: "Plans and pricing", href: "/pricing", description: "What it does, and what it costs" },
+      { label: "Build a trip", href: "/itinerary" },
+      { label: "Get recommendations", href: "/plan" },
+      { label: "Your route", href: "/my-route" },
+      { label: "The White Glove app", href: "/app", description: "Open your trip with its code" },
+      // The public demonstration, no sign-in needed (tests/itineraries-home-links).
+      { label: "See the app in action", href: "/app/preview" },
+      { label: "Plans and pricing", href: "/pricing" },
     ],
   },
 ] as const;
@@ -222,12 +219,14 @@ export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
 /** Book, resolved to the Flights/Hotels/Cars searches through the booking lock
  *  — the itineraries mirror of travelCategoryFor. Search only, never a browse. */
 export function itinerariesBookingCategoryFor(booking: BookingLink): NavCategory {
-  const book = ITINERARIES_CATEGORIES.find((category) => category.label === "Book")!;
+  const book = ITINERARIES_CATEGORIES.find((category) => category.label === "Find travel")!;
   const bookingLinks: NavLink[] = booking.searchIsPublic
     ? [
         { label: "Flights", href: `${BOOKING_SEARCH_PATH}?type=flights` },
         { label: "Hotels", href: `${BOOKING_SEARCH_PATH}?type=hotels` },
-        { label: "Cars", href: `${BOOKING_SEARCH_PATH}?type=cars` },
+        { label: "Car rentals", href: `${BOOKING_SEARCH_PATH}?type=cars` },
+        // GetYourGuide through the owner's Stay22 desk (app/go).
+        { label: "Things to do", href: "/go?product=activity&page=%2F&placement=nav" },
       ]
     : [{ label: booking.label, href: booking.href, description: booking.description }];
   return { ...book, links: bookingLinks };

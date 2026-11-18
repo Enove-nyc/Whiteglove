@@ -18,7 +18,7 @@ describe("a planner trip, wired into the app", () => {
   it("carries the real days, in order, one per calendar day", () => {
     assert.equal(trip.days.length, days.length);
     assert.ok(trip.days.length >= 7, "the sample is a week");
-    assert.equal(trip.days[0].dom, "25"); // 25 October
+    assert.equal(trip.days[0].dom, "13"); // 13 June
     assert.equal(trip.days[0].dow, "Sun");
   });
 
@@ -80,8 +80,8 @@ describe("a planner trip, wired into the app", () => {
   });
 
   it("reads the dates and the travellers off the itinerary", () => {
-    assert.match(trip.tripDates, /October/);
-    assert.match(trip.tripDates, /2026/);
+    assert.match(trip.tripDates, /June/);
+    assert.match(trip.tripDates, /2027/);
     assert.match(trip.homeKicker, /day 1 of/);
     assert.ok(trip.family.length > 0);
   });

@@ -50,20 +50,21 @@ describe("the sample itinerary", () => {
      * This product has no such database, and must not borrow the other one's:
      * that coupling is the thing being removed, not a check worth keeping. So
      * the rule here is the part that still applies — every named place is a
-     * real Rome landmark anybody can verify, and nothing is named that would
+     * real Lake Como landmark anybody can verify, and nothing is named that would
      * be a CLAIM. That second half is the test below, and it is the one that
      * does the work.
      */
     const placed = SAMPLE_ITINERARY.activities.filter((activity) => activity.coordinates);
     assert.ok(placed.length >= 5, "the sample stopped placing its stops");
-    const LANDMARKS = /colosseum|forum|pantheon|trevi|vatican|borghese|trastevere|ostia/i;
+    // Lake Como since 18 November 2026, to match the home page photograph.
+    const LANDMARKS = /bellagio|melzi|varenna|menaggio|balbianello|como|brunate|vezio/i;
     for (const activity of placed) {
       assert.match(activity.name, LANDMARKS, `${activity.name} is not a landmark anybody can check`);
-      // A coordinate that is not in Rome or its province is a made-up place
+      // A coordinate that is not on or around the lake is a made-up place
       // with a real name on it.
       const [lat, lng] = (activity.coordinates ?? "").split(",").map((part) => Number(part.trim()));
-      assert.ok(lat > 41.6 && lat < 42.1, `${activity.name} is not near Rome`);
-      assert.ok(lng > 12.2 && lng < 12.7, `${activity.name} is not near Rome`);
+      assert.ok(lat > 45.75 && lat < 46.2, `${activity.name} is not on Lake Como`);
+      assert.ok(lng > 9.0 && lng < 9.4, `${activity.name} is not on Lake Como`);
     }
   });
 
@@ -84,7 +85,7 @@ describe("the sample itinerary", () => {
   it("SAYS IT IS A SAMPLE, on the page and in the data", () => {
     assert.match(SAMPLE_NOTICE, /sample, not a booking/i);
     assert.match(SAMPLE_PAGE, /SAMPLE_NOTICE/);
-    assert.match(SAMPLE_PAGE, /A week in Rome/i);
+    assert.match(SAMPLE_PAGE, /A week on Lake Como/i);
   });
 
   it("shows the parts an ordinary itinerary gets wrong", () => {
@@ -105,7 +106,7 @@ describe("the sample itinerary", () => {
       "every day on the sample is full",
     );
     // A day out of the city, planned as the only thing on its day.
-    const dayOut = SAMPLE_ITINERARY.activities.find((activity) => /ostia/i.test(activity.name));
+    const dayOut = SAMPLE_ITINERARY.activities.find((activity) => /brunate/i.test(activity.name));
     assert.ok(dayOut, "the sample has no day out of the city");
     assert.ok((dayOut.durationMins ?? 0) >= 240, "the day out is squeezed in beside something else");
     assert.equal(

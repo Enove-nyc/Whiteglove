@@ -16,7 +16,9 @@ describe("the homepage cards open onto the thing they name", () => {
   const HOME = readFileSync("components/ItinerariesHome.tsx", "utf8");
 
   it("offers the public client app preview without asking a prospective visitor to sign in", () => {
-    assert.match(HOME, /href: "\/app\/preview"/);
+    // The home page follows the owner's design (18 November 2026) and carries
+    // no app card; the preview is in the "My itineraries" menu on every page.
+    assert.match(readFileSync("lib/navigation.ts", "utf8"), /href: "\/app\/preview"/);
     assert.doesNotMatch(HOME, /href: "\/login\?next=/);
   });
 
