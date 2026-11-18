@@ -16,6 +16,7 @@ import {
 } from "@/lib/edge-lock";
 import { MIGRATION_LISTS, movedTo } from "@/lib/route-migration";
 import { BRAND_ORIGIN, brandFromRequestHeaders } from "@/lib/site-brand-core";
+import { CLOSURE_HTML, closureAction, isClosedKosherHost } from "@/lib/kosher-closure";
 
 /**
  * The guide lives on the kosher site; the itineraries site is strictly the
@@ -179,6 +180,26 @@ function publicOrigin(): string | null {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // White Glove Kosher Travel has closed. On its own domain every page is the
+  // closing notice, except trip and login links, which forward to the same
+  // path on White Glove Itineraries (same accounts, same trips), and the admin.
+  // See lib/kosher-closure.ts.
+  if (isClosedKosherHost(request.headers)) {
+    const action = closureAction(pathname, request.nextUrl.search);
+    if (action.kind === "forward") return NextResponse.redirect(action.url, 307);
+    if (action.kind === "notice") {
+      return new NextResponse(CLOSURE_HTML, {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "public, max-age=300",
+          "x-robots-tag": "noindex",
+        },
+      });
+    }
+  }
+
   if (pathname.startsWith("/api/")) return NextResponse.next();
   if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
 
