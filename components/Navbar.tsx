@@ -10,6 +10,7 @@ import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
 import { brandForHost, configuredBrand } from "@/lib/site-brand-core";
+import { inKosherSite } from "@/lib/kosher-site-archive";
 import AccountMenu from "@/components/AccountMenu";
 import { ACCOUNT_PLACES, advisorPlacesFor } from "@/lib/account-places";
 import type { AccountPlan } from "@/lib/account-plans";
@@ -64,10 +65,12 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
   const built = configuredBrand();
   const fromHost = useSyncExternalStore(
     NO_CHANGE,
-    () => brandForHost(window.location.hostname),
-    () => built ?? "kosher",
+    () => (inKosherSite(window.location.pathname) ? "kosher" : brandForHost(window.location.hostname)),
+    () => built ?? "itineraries",
   );
-  const brand = brandProp ?? built ?? fromHost;
+  // The owner's Kosher Travel view inside the admin (/site) is Kosher Travel
+  // whatever this build is; everywhere else, as before.
+  const brand = brandProp ?? (fromHost === "kosher" ? "kosher" : built ?? fromHost);
   const isItineraries = brand === "itineraries";
   // Where the logo goes. On the marketing site it is the home page. Inside the
   // itineraries app (minimal chrome) the home page is a marketing page the app

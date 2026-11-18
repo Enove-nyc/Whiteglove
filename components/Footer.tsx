@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { brandForHost, configuredBrand } from "@/lib/site-brand-core";
+import { inKosherSite } from "@/lib/kosher-site-archive";
 
 /**
  * The bottom of every page — kept extremely small at the owner's word.
@@ -70,10 +71,10 @@ export default function Footer({ brand: brandProp, minimal = false }: { brand?: 
   const built = configuredBrand();
   const fromHost = useSyncExternalStore(
     NO_CHANGE,
-    () => brandForHost(window.location.hostname),
-    () => built ?? "kosher",
+    () => (inKosherSite(window.location.pathname) ? "kosher" : brandForHost(window.location.hostname)),
+    () => built ?? "itineraries",
   );
-  const isItineraries = (brandProp ?? built ?? fromHost) === "itineraries";
+  const isItineraries = (brandProp ?? (fromHost === "kosher" ? "kosher" : built ?? fromHost)) === "itineraries";
   const allLinks = isItineraries ? ITINERARIES_LINKS : KOSHER_LINKS;
   // Inside the app, keep only support/legal (Contact, Terms, Privacy) — no
   // Pricing or other marketing. Contact/Terms/Privacy belong in an app.

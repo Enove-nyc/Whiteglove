@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { brandForHost, configuredBrand, type SiteBrand } from "@/lib/site-brand-core";
+import { inKosherSite } from "@/lib/kosher-site-archive";
 
 /**
  * Which of the two sites this browser is on.
@@ -26,11 +27,11 @@ import { brandForHost, configuredBrand, type SiteBrand } from "@/lib/site-brand-
 const subscribe = () => () => {};
 
 function onThisHost(): SiteBrand {
-  return brandForHost(window.location.hostname);
+  return inKosherSite(window.location.pathname) ? "kosher" : brandForHost(window.location.hostname);
 }
 
 function onThisBuild(): SiteBrand {
-  return configuredBrand() ?? "kosher";
+  return configuredBrand() ?? "itineraries";
 }
 
 export function useSiteBrand(): SiteBrand {

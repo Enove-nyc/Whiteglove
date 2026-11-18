@@ -6,6 +6,7 @@ import { useCallback, useEffect, useId, useState, useSyncExternalStore } from "r
 import { type BetaNotice, DISMISS_KEY, readDismissed, shouldShow, SHOWN_KEY } from "@/lib/beta-notice";
 import { useFocusTrap } from "@/components/useFocusTrap";
 import { brandForHost, configuredBrand } from "@/lib/site-brand-core";
+import { inKosherSite } from "@/lib/kosher-site-archive";
 
 /**
  * The site notice: one line, and two actions — Verification and Close.
@@ -75,8 +76,8 @@ export default function NewSiteNotice({ notice }: { notice: BetaNotice }) {
   const built = configuredBrand();
   const isItineraries = useSyncExternalStore(
     () => () => {},
-    () => brandForHost(window.location.hostname) === "itineraries",
-    () => built === "itineraries",
+    () => !inKosherSite(window.location.pathname) && brandForHost(window.location.hostname) === "itineraries",
+    () => (built ?? "itineraries") === "itineraries",
   );
   // Pressed, this visit. Separate from what is stored, so it goes at once
   // rather than waiting for a storage event that never comes in this tab.

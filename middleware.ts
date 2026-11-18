@@ -17,7 +17,8 @@ import {
 import { MIGRATION_LISTS, movedTo } from "@/lib/route-migration";
 import { guideAnswer } from "@/lib/guide-paths";
 import { isDirectoryApi, isPublicPage } from "@/lib/public-access";
-import { brandFromRequestHeaders } from "@/lib/site-brand-core";
+import { BRAND_HEADER, brandFromRequestHeaders } from "@/lib/site-brand-core";
+import { KOSHER_SITE_PREFIX, kosherSiteRoute, refererPath } from "@/lib/kosher-site-archive";
 import { CLOSURE_HTML, closureAction, isClosedKosherHost } from "@/lib/kosher-closure";
 import { isAndroidAppHeaders } from "@/lib/android-app";
 import { isMainstreamPath } from "@/lib/mainstream-property-check";
@@ -323,6 +324,43 @@ export async function middleware(request: NextRequest) {
 
   const onAdminHost = isAdminHost(request);
 
+  // THE WHOLE KOSHER TRAVEL SITE, FOR THE OWNER, INSIDE THE ADMIN. On the admin
+  // host, /site/... serves the closed Kosher Travel site as it was, branded as
+  // it was, to the owner signed in to the admin and nobody else. A link
+  // followed from a /site page is kept under /site. See lib/kosher-site-archive.ts.
+  // Any host, so it works before the admin subdomain's DNS exists too.
+  {
+    const referer = request.headers.get("referer");
+    let fromPath: string | null = null;
+    try {
+      // Same host only: a link from somewhere else never steers this.
+      const host = (request.headers.get("host") || request.nextUrl.host).toLowerCase();
+      if (referer && new URL(referer).host.toLowerCase() === host) fromPath = refererPath(referer);
+    } catch {
+      fromPath = null;
+    }
+    const route = kosherSiteRoute(pathname, fromPath);
+    if (route) {
+      if (!(await isOwner(request))) {
+        const login = new URL(onAdminHost ? "/login" : "/admin/login", request.url);
+        login.searchParams.set("next", pathname);
+        return NextResponse.redirect(login);
+      }
+      if (route.kind === "enter") {
+        const to = request.nextUrl.clone();
+        to.pathname = route.to;
+        return NextResponse.redirect(to, 307);
+      }
+      const headers = new Headers(request.headers);
+      headers.set(BRAND_HEADER, "kosher");
+      const target = request.nextUrl.clone();
+      target.pathname = route.path;
+      const response = NextResponse.rewrite(target, { request: { headers } });
+      response.headers.set("x-robots-tag", "noindex, nofollow");
+      return response;
+    }
+  }
+
   // ONLY THE PLANNER, BOOKING AND THE COMPANION ARE PUBLIC. White Glove Kosher
   // Travel has closed and its directory is kept for the owner alone (AGENTS.md,
   // 18 November 2026). Every page not on the allow-list in lib/public-access.ts
@@ -373,6 +411,11 @@ export async function middleware(request: NextRequest) {
   // /cemeteries — and before this they were rewritten into /admin/cemeteries
   // and 404'd, so the site was unreachable from inside the admin.
   if (onAdminHost && adminPath === pathname && pathname !== "/version" && !pathname.startsWith("/admin")) {
+    // A page the public can no longer open (the kevarim screen links to
+    // /cemeteries) is opened in the owner's Kosher Travel view instead.
+    if (!isPublicPage(pathname)) {
+      return NextResponse.redirect(new URL(KOSHER_SITE_PREFIX + pathname + request.nextUrl.search, request.url), 307);
+    }
     const origin = publicOrigin();
     if (origin) {
       const url = new URL(request.url);
