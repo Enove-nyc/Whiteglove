@@ -41,7 +41,7 @@ export async function GET() {
     scope: base,
     display: "standalone",
     background_color: "#F7F4EE",
-    theme_color: "#102F35",
+    theme_color: "#15204A",
     orientation: "portrait",
     categories: ["business", "productivity"],
     icons: [

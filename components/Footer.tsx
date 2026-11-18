@@ -47,10 +47,7 @@ const KOSHER_LINKS = [
 // The itineraries site is the planner; Advertise and Sources belong to the
 // kosher guide, so its footer carries only the three everyone needs.
 const ITINERARIES_LINKS = [
-  // What it costs, said where somebody looks for it. The page existed only in
-  // the other repository until now, so this site answered a visitor asking the
-  // most ordinary question about a paid product with a 404.
-  { label: "Pricing", href: "/pricing" },
+  // No Pricing: it came off the public site at the owner's word, 18 November 2026.
   { label: "Contact", href: "/contact" },
   { label: "Support", href: "/contact?reason=help" },
   { label: "Terms", href: "/terms" },

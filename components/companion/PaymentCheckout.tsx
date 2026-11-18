@@ -65,7 +65,7 @@ function CardStep({ onPaid, onBack }: { onPaid: () => void; onBack: () => void }
         >
           {submitting ? "Paying…" : "Pay"}
         </button>
-        <button onClick={onBack} disabled={submitting} style={{ border: "1px solid rgba(16, 47, 53,.15)", background: "none", cursor: "pointer", color: "#57534e", font: "600 13px/1 Inter,sans-serif", padding: "13px 16px", borderRadius: 14 }}>
+        <button onClick={onBack} disabled={submitting} style={{ border: "1px solid rgba(21,32,74,.15)", background: "none", cursor: "pointer", color: "#57534e", font: "600 13px/1 Inter,sans-serif", padding: "13px 16px", borderRadius: 14 }}>
           Back
         </button>
       </div>
@@ -117,7 +117,7 @@ export default function PaymentCheckout({ payment, publishableKey, onDone }: { p
   if (paid) {
     return (
       <div style={{ padding: "8px 4px", display: "flex", flexDirection: "column", gap: 8 }}>
-        <p style={{ margin: 0, font: `400 20px/1.3 ${serif}`, color: "#102F35" }}>Thank you.</p>
+        <p style={{ margin: 0, font: `400 20px/1.3 ${serif}`, color: "#15204A" }}>Thank you.</p>
         <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: "#57534e" }}>
           Your payment is on its way to being confirmed — it will show here once it has gone through.
         </p>
@@ -140,7 +140,7 @@ export default function PaymentCheckout({ payment, publishableKey, onDone }: { p
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div>
         <p style={{ margin: 0, fontSize: 13, color: "#78716c" }}>Amount to pay</p>
-        <p style={{ margin: "2px 0 0", font: `400 26px/1.2 ${serif}`, color: "#102F35" }}>{formatCents(amountCents, payment.currency)}</p>
+        <p style={{ margin: "2px 0 0", font: `400 26px/1.2 ${serif}`, color: "#15204A" }}>{formatCents(amountCents, payment.currency)}</p>
       </div>
       {!customOpen ? (
         <button onClick={() => setCustomOpen(true)} style={{ alignSelf: "flex-start", border: 0, background: "none", cursor: "pointer", color: "#6B4A1C", font: "600 13px/1 Inter,sans-serif", padding: 0 }}>
@@ -159,7 +159,7 @@ export default function PaymentCheckout({ payment, publishableKey, onDone }: { p
               const n = Number(e.target.value);
               if (Number.isFinite(n) && n > 0) setAmountCents(Math.min(Math.round(n * 100), payment.remainingCents));
             }}
-            style={{ border: "1px solid rgba(16, 47, 53,.15)", borderRadius: 10, padding: "10px 12px", fontSize: 15 }}
+            style={{ border: "1px solid rgba(21,32,74,.15)", borderRadius: 10, padding: "10px 12px", fontSize: 15 }}
           />
         </label>
       )}

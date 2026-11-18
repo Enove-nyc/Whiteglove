@@ -21,8 +21,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
       : "Kosher food, destinations, shuls and practical travel information while you travel.",
     start_url: itineraries ? "/" : "/travel",
     display: "standalone",
-    background_color: "#102F35",
-    theme_color: "#102F35",
+    background_color: "#15204A",
+    theme_color: "#15204A",
     orientation: "portrait",
     categories: ["travel", "lifestyle"],
     icons: [

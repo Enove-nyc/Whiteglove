@@ -51,3 +51,6 @@ scratch-*.mjs
 
 # Isolated traveler companion screenshots
 /companion-results/
+
+# Netlify local build output
+.netlify/

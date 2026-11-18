@@ -380,7 +380,7 @@ export default function AccountPlanPanel({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="plan-soon-title"
-                className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(16, 47, 53,.20)] sm:p-8"
+                className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(21,32,74,.20)] sm:p-8"
               >
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">
                   {PLAN_LABELS[asking]}

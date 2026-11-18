@@ -18,7 +18,7 @@ import { BRAND_DOMAIN, BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core"
 // screen dump while the owner's printed as this was the whole problem — the
 // person being handed the itinerary is usually the one who wants it on paper.
 
-const INK = "#102F35";
+const INK = "#15204A";
 const MAROON = "#6f2b3e";
 /**
  * Two golds, for the same reason the rest of the site has two.
@@ -344,7 +344,7 @@ const css = `
     font-family: var(--font-display), Georgia, serif;
     font-size: 20pt;
     line-height: 1.05;
-    color: #193F46;
+    color: #1F2E5C;
   }
   .wg-crest-wordmark-sub {
     margin-top: 3pt;

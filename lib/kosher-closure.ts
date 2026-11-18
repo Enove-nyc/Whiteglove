@@ -21,34 +21,26 @@ function bare(host: string | null | undefined): string {
   return (host ?? "").toLowerCase().split(",")[0].split(":")[0].trim();
 }
 
-/** True when the request arrived on whiteglovekoshertravel.com (or www.). */
+/** True when the request arrived on whiteglovekoshertravel.com or any subdomain of it. */
 export function isClosedKosherHost(headers: HeaderBag): boolean {
-  const kosher = BRAND_HOSTS.kosher;
-  return kosher.includes(bare(headers.get("x-forwarded-host"))) || kosher.includes(bare(headers.get("host")));
+  // The domain and ANY subdomain of it ("no subdomains, nothing else").
+  const closed = (host: string) => BRAND_HOSTS.kosher.includes(host) || host.endsWith(".whiteglovekoshertravel.com");
+  return closed(bare(headers.get("x-forwarded-host"))) || closed(bare(headers.get("host")));
 }
 
+export type ClosureAction = { kind: "notice" };
+
 /**
- * Paths that carry somebody's own trip or login. They exist on White Glove
- * Itineraries under the same path and read the same store, so a code or link
- * somebody was sent keeps working instead of landing on the notice.
+ * What the closed kosher domain does with a path: show the notice. Always.
+ *
+ * THE OWNER'S WORD (18 November 2026): "under White Glove Kosher Travel domain
+ * should only be one page that we are closed. Not an admin, nothing, no
+ * subdomains, nothing else." So there is no admin here, no API, no trip-link
+ * forwarding and no files — every address is the one notice. Its two buttons
+ * are ordinary links to White Glove Itineraries, where the admin and every
+ * traveller's trips now live.
  */
-const FORWARDED_PREFIXES = ["/i", "/t", "/p", "/f", "/r", "/form", "/app", "/login"];
-
-export type ClosureAction =
-  | { kind: "pass" }
-  | { kind: "forward"; url: string }
-  | { kind: "notice" };
-
-/** What the closed kosher domain does with a path. */
-export function closureAction(pathname: string, search = ""): ClosureAction {
-  // The owner's dashboard and the deployment checks stay reachable until the
-  // merged site carries them.
-  if (pathname === "/version" || pathname === "/admin" || pathname.startsWith("/admin/")) return { kind: "pass" };
-  if (pathname.startsWith("/api/")) return { kind: "pass" };
-  if (/\.[a-z0-9]+$/i.test(pathname)) return { kind: "pass" };
-  if (FORWARDED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    return { kind: "forward", url: `${BRAND_ORIGIN.itineraries}${pathname}${search}` };
-  }
+export function closureAction(_pathname?: string): ClosureAction {
   return { kind: "notice" };
 }
 

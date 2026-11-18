@@ -67,6 +67,14 @@ export const DEPLOYMENT_SETTINGS: Connection[] = [
     where: "Set it on the deployment itself — Railway → the service → Variables.",
   },
   {
+    vars: ["MEDIA_STORE", "NETLIFY_BLOBS_CONTEXT"],
+    what: "Where uploaded photos, documents, voice notes and videos are kept on Netlify.",
+    without:
+      "Netlify sets NETLIFY_BLOBS_CONTEXT on its own, which turns its file store on. MEDIA_STORE=netlify-blobs turns it on explicitly. Without either, files fall back to a disk (none on Netlify) and then the shared Redis store.",
+    weight: "nicety",
+    where: "Set MEDIA_STORE on the site itself — Netlify → the site → Site configuration → Environment variables. NETLIFY_BLOBS_CONTEXT is Netlify's own.",
+  },
+  {
     vars: ["PLATFORM_FEE_BPS"],
     what: "White Glove's take rate on a trip payment, in basis points (10 = 0.1%).",
     without:

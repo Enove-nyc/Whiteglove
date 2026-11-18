@@ -1,5 +1,6 @@
 import type { AccountPlan } from "@/lib/account-plans";
 import { mayBrandOwnItinerary, mayServeCompanionClients } from "@/lib/account-limits";
+import { ADVISER_SCREENS_ARE_PUBLIC } from "@/lib/public-access";
 
 /**
  * Where an account can go, as data — deliberately not in a component file.
@@ -50,7 +51,7 @@ const ADVISOR_PLACES = [
 ] as const;
 
 export function advisorPlacesFor(plan: AccountPlan | undefined) {
-  if (!plan) return [];
+  if (!plan || !ADVISER_SCREENS_ARE_PUBLIC) return [];
   const clients = mayServeCompanionClients(plan);
   const brand = mayBrandOwnItinerary(plan);
   return ADVISOR_PLACES.filter((place) => (place.need === "brand" ? brand : clients));
@@ -102,6 +103,6 @@ export type TripPlace = (typeof TRIP_PLACES)[number];
  */
 export function tripPlacesFor(plan: AccountPlan | undefined): TripPlace[] {
   if (!plan) return [];
-  const clients = mayServeCompanionClients(plan);
+  const clients = ADVISER_SCREENS_ARE_PUBLIC && mayServeCompanionClients(plan);
   return TRIP_PLACES.filter((place) => place.need === "any" || clients);
 }

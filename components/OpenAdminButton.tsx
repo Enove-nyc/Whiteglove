@@ -13,18 +13,11 @@ import { useRouter } from "next/navigation";
  * answer, from a button that said they could get in.
  *
  * It asks the server for the session first, then goes.
- *
- * And where this administrator has a second factor, the server answers
- * `needsCode` rather than an error — the account is right, there is simply
- * one more step — so this turns into a code field instead of reading as a
- * refusal.
  */
 export default function OpenAdminButton({ adminHref }: { adminHref?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [needsCode, setNeedsCode] = useState(false);
-  const [code, setCode] = useState("");
 
   if (adminHref) {
     return (
@@ -44,16 +37,11 @@ export default function OpenAdminButton({ adminHref }: { adminHref?: string }) {
       const response = await fetch("/api/admin/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(code.trim() ? { code: code.trim() } : {}),
+        body: "{}",
       });
-      const data = (await response.json().catch(() => null)) as { error?: string; needsCode?: boolean } | null;
+      const data = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok) {
-        if (data?.needsCode) {
-          setNeedsCode(true);
-          setError(data.error || "");
-        } else {
-          setError(data?.error || "Could not open the admin area.");
-        }
+        setError(data?.error || "Could not open the admin area.");
         return;
       }
       router.push("/admin");
@@ -66,32 +54,14 @@ export default function OpenAdminButton({ adminHref }: { adminHref?: string }) {
 
   return (
     <span className="inline-flex flex-wrap items-center gap-3">
-      {needsCode && (
-        <input
-          autoFocus
-          value={code}
-          onChange={(event) => setCode(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") void open();
-          }}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          placeholder="123456"
-          aria-label="Code from your authenticator app"
-          className="w-32 border border-[var(--gold-light)] bg-white px-3 py-3 tracking-[0.3em] outline-none focus:border-[var(--gold)]"
-        />
-      )}
       <button
         type="button"
         onClick={open}
         disabled={busy}
         className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-60"
       >
-        {busy ? "Opening…" : needsCode ? "Confirm" : "Open the admin area →"}
+        {busy ? "Opening…" : "Open the admin area →"}
       </button>
-      {needsCode && !error && (
-        <span className="text-sm text-stone-600">Enter the code from your app, or a recovery code.</span>
-      )}
       {error && <span className="text-sm font-semibold text-red-700">{error}</span>}
     </span>
   );

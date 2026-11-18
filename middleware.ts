@@ -261,13 +261,11 @@ async function isOwner(request: NextRequest): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // White Glove Kosher Travel has closed. On its own domain every page is the
-  // closing notice, except trip and login links, which forward to the same
-  // path on White Glove Itineraries (same accounts, same trips), and the admin.
-  // See lib/kosher-closure.ts.
+  // White Glove Kosher Travel has closed. On its own domain, and any subdomain
+  // of it, every address is the one closing notice — no admin, no API, no
+  // forwarding (the owner's word, 18 November 2026). See lib/kosher-closure.ts.
   if (isClosedKosherHost(request.headers)) {
-    const action = closureAction(pathname, request.nextUrl.search);
-    if (action.kind === "forward") return NextResponse.redirect(action.url, 307);
+    const action = closureAction(pathname);
     if (action.kind === "notice") {
       return new NextResponse(CLOSURE_HTML, {
         status: 200,

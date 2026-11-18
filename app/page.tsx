@@ -28,6 +28,7 @@ import { brandFromRequestHeaders, currentBrand } from "@/lib/site-brand";
 import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
+import { ADVISER_SCREENS_ARE_PUBLIC } from "@/lib/public-access";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -118,7 +119,7 @@ export default async function Home() {
     const who = account?.email || readSessionEmail(cookie) || "";
     if (who) {
       const plan = await getPlan(who).catch(() => "free" as const);
-      redirect(mayServeCompanionClients(plan) ? "/advisor" : "/app");
+      redirect(ADVISER_SCREENS_ARE_PUBLIC && mayServeCompanionClients(plan) ? "/advisor" : "/app");
     }
     return (
       <>

@@ -9,6 +9,7 @@ import { bookingHref } from "@/lib/booking-access";
 import { Children, createContext, isValidElement, useContext, useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
+import { GUEST_TRIP_KEY } from "@/lib/guest-trip";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import AssistantAnswer from "@/components/AssistantAnswer";
 import { useRequireSignIn } from "@/components/SignInGate";
@@ -92,8 +93,7 @@ type Tab = "flight" | "hotel" | "activity" | "import" | null;
  * import or measured road times. Address autocomplete runs in their browser.
  */
 const GuestContext = createContext(false);
-/** Where a guest's trip is kept, on their own device. */
-export const GUEST_TRIP_KEY = "wg-guest-itinerary";
+
 type ItineraryView = "days" | "calendar";
 
 export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false, kosher = false, guest = false }: {
@@ -717,7 +717,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   type="button"
                   onClick={() => set({ showZmanim: !itin.showZmanim })}
                   aria-pressed={Boolean(itin.showZmanim)}
-                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(16, 47, 53,.08)] transition ${
+                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(21,32,74,.08)] transition ${
                     itin.showZmanim
                       ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
                       : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
@@ -726,7 +726,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
                 </button>
               )}
-              <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(16, 47, 53,.08)]">
+              <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(21,32,74,.08)]">
                 <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${view === "calendar" ? "translate-x-full" : "translate-x-0"}`} />
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
                 <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "calendar" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Calendar</button>
@@ -737,7 +737,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   rounded rectangle inside the pill track. Mirroring the toggle
                   above — an absolutely-inset span under a transparent link —
                   keeps the fill immune to that rule. */}
-              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(16, 47, 53,.08)]">
+              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(21,32,74,.08)]">
                 <span aria-hidden="true" className="absolute inset-1.5 rounded-full bg-[var(--navy)] transition-colors group-hover:bg-[var(--gold)]" />
                 <Link href="/itinerary/print" target="_blank" className="relative z-10 inline-flex h-full items-center justify-center px-5 text-xs font-bold text-white">Print / PDF</Link>
               </span>

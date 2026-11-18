@@ -53,7 +53,7 @@ describe("the header is pushed below the status bar, and the strip it leaves is 
     const strip = CSS.slice(CSS.indexOf('nav[aria-label="Main"]::before'));
     assert.match(strip, /height: var\(--wg-safe-top\);/);
     assert.match(strip, /background: var\(--navy\);/);
-    assert.match(readFileSync("app/layout.tsx", "utf8"), /themeColor: "#102F35"/);
+    assert.match(readFileSync("app/layout.tsx", "utf8"), /themeColor: "#15204A"/);
   });
 
   it("the phone bottom bar's inset, written long before this, is left as it was", () => {

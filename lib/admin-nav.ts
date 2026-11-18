@@ -116,6 +116,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
       { href: "/admin/settings/website", label: "Website access", blurb: "Open or close the site.", keywords: "open closed lock site access password" },
       { href: "/admin/settings/passwords", label: "Passwords", blurb: "Change the codes.", keywords: "password code admin login" },
       { href: "/admin/settings/security", label: "Security policy", blurb: "The load rule, and what it blocks.", keywords: "csp content policy report only block allow load rule" },
+      { href: "/admin/settings/move-files", label: "Move uploaded files", blurb: "Copy files off the old hosts.", keywords: "netlify railway move migrate media photos uploads blobs" },
       { href: "/admin/settings/trello", label: "Trello", blurb: "Pictures, listings and reports." },
       { href: "/admin/accounts", label: "Users", blurb: "People who signed up.", keywords: "user account customer signed up" },
       { href: "/admin/messages", label: "Messages", blurb: "What people wrote from the site." },

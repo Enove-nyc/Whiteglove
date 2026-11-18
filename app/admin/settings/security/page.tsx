@@ -1,11 +1,8 @@
 import Link from "next/link";
 import CspClearButton from "@/components/CspClearButton";
-import TwoFactorPanel from "@/components/admin/TwoFactorPanel";
 import { cspReportStoreAvailable, readCspSummary } from "@/lib/csp-reports";
-import { readTwoFactor, SHARED_DOOR, twoFactorStorageAvailable } from "@/lib/admin-2fa-store";
 import { describeAction, isWeighty, KEEP_DAYS } from "@/lib/admin-actions";
 import { adminActionLogAvailable, readAdminActions } from "@/lib/admin-actions-store";
-import { currentAdmin } from "@/lib/admin-current";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
@@ -22,15 +19,6 @@ export const dynamic = "force-dynamic";
  */
 export default async function AdminSecurityPage() {
   const summary = await readCspSummary();
-
-  // Which door this session came through decides which factor is managed here.
-  // Somebody on the shared password manages the shared one; somebody signed in
-  // as themselves manages their own. Never a choice on screen — offering one
-  // would let a holder of the shared password reach the owner's.
-  const { identity } = await currentAdmin();
-  const door = identity?.how === "account" ? identity.email : SHARED_DOOR;
-  const doorLabel = identity?.how === "account" ? identity.email : "the shared admin password";
-  const enrolled = twoFactorStorageAvailable() ? (await readTwoFactor(door)) !== null : false;
 
   const actions = adminActionLogAvailable() ? await readAdminActions() : [];
 
@@ -60,23 +48,9 @@ export default async function AdminSecurityPage() {
         </div>
       </header>
 
-      {/* Above the report table: what is blocked matters, but who can get in
-          at all matters more, and this screen is where somebody looks for it. */}
-      {twoFactorStorageAvailable() ? (
-        <TwoFactorPanel enrolled={enrolled} who={doorLabel} shared={door === SHARED_DOOR} />
-      ) : (
-        <div className="border border-[var(--gold-light)] bg-white p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Two-factor</p>
-          <p className="mt-3 text-sm leading-6 text-stone-600">
-            This needs the private store connected before a second factor can be kept.
-          </p>
-        </div>
-      )}
-
       {/* WHO CHANGED THE LOCKS. The sign-in log says who came in and the change
           log says what the content says; neither says that an account was
-          granted the finances, a password was changed, or two-factor was
-          turned off — which are the actions somebody takes when they should
+          granted the finances, or a password was changed — which are the actions somebody takes when they should
           not be there at all. There is no button to empty this: a record the
           recorded party can erase is not a record. */}
       <section aria-labelledby="admin-actions-heading" className="border border-[var(--gold-light)] bg-white p-6">
@@ -86,8 +60,8 @@ export default async function AdminSecurityPage() {
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
           {actions.length === 0
-            ? "Access granted or taken away, a password changed, the site closed, two-factor turned on or off — each will be recorded here as it happens."
-            : `Access granted or taken away, passwords changed, the site closed or opened, two-factor turned on or off. Kept for ${KEEP_DAYS} days, and there is deliberately no way to clear this from in here.`}
+            ? "Access granted or taken away, a password changed, the site closed — each will be recorded here as it happens."
+            : `Access granted or taken away, passwords changed, the site closed or opened. Kept for ${KEEP_DAYS} days, and there is deliberately no way to clear this from in here.`}
         </p>
 
         {actions.length > 0 && (

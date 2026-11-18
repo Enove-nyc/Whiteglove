@@ -4,6 +4,11 @@ import { contentSecurityPolicy, reportingEndpointsHeader } from "./lib/csp-polic
 import { MAINSTREAM_CSP, MAINSTREAM_PATH } from "./lib/mainstream-property-check";
 
 const nextConfig: NextConfig = {
+  // The public folder is served as static files by the host; the server never
+  // reads it except llms.txt (app/site-overview.md). Left in, it was 47 MB of a
+  // Netlify function bundle whose zipped limit is 50 MB.
+  outputFileTracingExcludes: { "*": ["public/**/*"] },
+  outputFileTracingIncludes: { "/site-overview.md": ["public/llms.txt"] },
   // Keep the development badge off tablet touch targets in isolated UI runs.
   // Next still displays compile/runtime errors when this indicator is off.
   devIndicators: process.env.COMPANION_E2E === "1" ? false : undefined,

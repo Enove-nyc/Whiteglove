@@ -40,12 +40,11 @@ describe("the page describes what this site can actually do", () => {
 });
 
 describe("somebody can find it", () => {
-  it("is linked from the footer of this site", () => {
-    // A page nothing links to is a page nobody reads. It was reachable in the
-    // other repository from the footer and the navigation.
+  it("is not linked from the footer while it is off the public site", () => {
+    // The owner's word, 18 November 2026: pricing came off the public site.
     const footer = readFileSync("components/Footer.tsx", "utf8");
     const block = footer.slice(footer.indexOf("const ITINERARIES_LINKS"), footer.indexOf("export default function Footer"));
-    assert.match(block, /href: "\/pricing"/);
+    assert.doesNotMatch(block, /href: "\/pricing"/);
   });
 
   it("is in the sitemap", () => {

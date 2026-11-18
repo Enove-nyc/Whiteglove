@@ -59,7 +59,7 @@ export function useConfirm(): { dialog: ReactNode; ask: (request: ConfirmRequest
         role="dialog"
         aria-modal="true"
         aria-labelledby="wg-confirm-title"
-        className="w-full max-w-md rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(16,47,53,.20)]"
+        className="w-full max-w-md rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(21,32,74,.20)]"
       >
         <h2 id="wg-confirm-title" className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">
           {request.title}

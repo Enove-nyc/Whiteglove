@@ -103,7 +103,7 @@
  * overwrite the transform Leaflet positions the marker with. */
 .wg-map-pin {
   /* Bare line art on pale tiles needs an edge of its own now the disc is gone. */
-  filter: drop-shadow(0 1px 1px rgba(16, 47, 53, 0.5));
+  filter: drop-shadow(0 1px 1px rgba(21,32,74, 0.5));
 }
 .wg-map-pin > span {
   transform-origin: 50% 100%;
@@ -260,7 +260,7 @@ summary:focus-visible,
 [tabindex]:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgba(16, 47, 53, 0.55);
+  box-shadow: 0 0 0 5px rgba(21,32,74, 0.55);
 }
 
 /* Skip to content. Off-screen until it is focused, which is the first Tab on
@@ -393,14 +393,14 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 
 .wg-card {
   border-radius: 0.75rem;
-  box-shadow: 0 8px 28px rgba(16, 47, 53, 0.055);
+  box-shadow: 0 8px 28px rgba(21,32,74, 0.055);
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 @media (hover: hover) {
   .wg-card:hover {
     border-color: var(--gold);
-    box-shadow: 0 14px 38px rgba(16, 47, 53, 0.09);
+    box-shadow: 0 14px 38px rgba(21,32,74, 0.09);
     transform: translateY(-2px);
   }
 }
@@ -496,7 +496,7 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 .itinerary-planner > div > div,
 .itinerary-planner article {
   border-radius: 0.75rem;
-  box-shadow: 0 5px 20px rgba(16, 47, 53, 0.045);
+  box-shadow: 0 5px 20px rgba(21,32,74, 0.045);
 }
 
 .itinerary-planner button,
@@ -626,9 +626,10 @@ nav :where(svg, .glove-mark),
  * both naming schemes resolve to one palette rather than competing.
  */
 :root {
-  /* Brand — Deep Heritage Teal, and its dark endpoint. */
-  --navy: #193F46;
-  --navy-deep: #102F35;
+  /* Brand — navy, from the owner's own design (18 November 2026), and its
+   * dark endpoint. It replaced Deep Heritage Teal; brass stays the accent. */
+  --navy: #1F2E5C;
+  --navy-deep: #15204A;
   /* Accent — Antique Brass. --gold is a tone for rules, borders and ornament
    * (it is NOT a text colour: ~2.5–3:1 on light grounds — fine for 3:1 non-text
    * but fails 4.5:1 for words). */
@@ -644,7 +645,7 @@ nav :where(svg, .glove-mark),
    *   surface #FAF8F3 7.55:1 · mushroom #D5CEC3 5.13:1 · deep mushroom #C7BFB1 4.7:1
    *
    * On the teal sections the text accent is --gold-light (Bright Gold), which
-   * clears 6.2:1 on #193F46; --gold-ink would be unreadable there. This is the
+   * clears 6.2:1 on #1F2E5C; --gold-ink would be unreadable there. This is the
    * one required accessibility shade outside the approved list, and it exists
    * only so gold-coloured words stay legible.
    */
@@ -655,16 +656,17 @@ nav :where(svg, .glove-mark),
   --cream-deep: #EFE9DF;
   /* Warm white cards and forms. */
   --surface: #FFFDFC;
-  --ink: #102F35;
+  --ink: #15204A;
   --wg-radius: 1rem;
-  --wg-shadow: 0 14px 40px rgba(16, 47, 53, 0.14);
+  --wg-shadow: 0 14px 40px rgba(21,32,74, 0.14);
 
   /* Semantic aliases (approved names) — same values, so nothing competes.
    * --color-background/--color-foreground are owned by the @theme block above. */
-  --header-background: #E1EED8;
-  --header-ink: #263D2D;
-  --header-muted: #49604E;
-  --header-border: #BDD0B1;
+  /* The header in the owner's design: light ivory with navy words. */
+  --header-background: #FAF7F1;
+  --header-ink: #15204A;
+  --header-muted: #4A5578;
+  --header-border: #E6DCC8;
   --color-canvas: var(--cream);
   --color-surface-muted: var(--cream-deep);
   --color-surface: var(--surface);
@@ -678,10 +680,10 @@ nav :where(svg, .glove-mark),
   --color-text-muted: #536566;
   --color-text-on-dark: var(--surface);
   --color-border: rgba(198, 161, 91, 0.50);
-  --color-border-subtle: rgba(25, 63, 70, 0.16);
+  --color-border-subtle: rgba(31,46,92, 0.16);
   --color-focus: var(--gold-light);
   --color-selection: rgba(216, 188, 122, 0.30);
-  --gradient-primary: linear-gradient(135deg, #193F46 0%, #102F35 100%);
+  --gradient-primary: linear-gradient(135deg, #1F2E5C 0%, #15204A 100%);
   --gradient-gold: linear-gradient(135deg, #B89048 0%, #DFC886 100%);
 }
 
@@ -919,7 +921,7 @@ html[data-app-shell] nav[aria-label="Main"]::before {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 4px 12px rgba(20,66,70,.12);
 }
 .wg-travel-hero form button[type="submit"]:hover {
-  background: #344F39;
+  background: #2B3B70;
 }
 .wg-travel-categories > li { --card-wash: #edf6f7; }
 .wg-travel-categories > li:nth-child(2) { --card-wash: #fff6e8; }
@@ -965,7 +967,7 @@ html[data-app-shell] nav[aria-label="Main"]::before {
 }
 .wg-site-header {
   --navy: var(--header-ink);
-  --cream-deep: #D0E2C5;
+  --cream-deep: #EFE9DF;
   background: var(--header-background);
   border-color: var(--header-border);
 }

@@ -2,14 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { accessToken, sameOrigin } from "@/lib/secure-access";
 import { hasStoredPassword, identifySiteCode, passwordStorageAvailable, verifyAccessPassword } from "@/lib/access-passwords";
 import { recordFailedAttempt, tooManyAttempts } from "@/lib/access-attempts";
-import { checkSecondFactor, deviceGenerationOf, readTwoFactor, SHARED_DOOR } from "@/lib/admin-2fa-store";
-import {
-  checkTrustedDevice,
-  mintTrustedDevice,
-  TRUSTED_DEVICE_COOKIE,
-  TRUSTED_DEVICE_DAYS,
-  trustedDeviceMaxAge,
-} from "@/lib/admin-trusted-device";
 import { accessGeneration, recordSignIn, whereFrom } from "@/lib/signin-log";
 import { mintSiteAccess, PREVIEW_MINUTES, SITE_COOKIE } from "@/lib/site-access";
 
@@ -21,9 +13,6 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as {
     scope?: "admin" | "site";
     password?: string;
-    code?: string;
-    /** "and stop asking on this one" — only ever honoured alongside a correct code. */
-    rememberDevice?: boolean;
   } | null;
   if (!body || (body.scope !== "admin" && body.scope !== "site")) {
     return NextResponse.json({ error: "That password is not correct." }, { status: 401 });
@@ -64,62 +53,15 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json({ error: "That password is not correct." }, { status: 401 });
     }
-    // SECOND FACTOR ON THE SHARED DOOR.
-    //
-    // This is the weaker of the two ways in and the reason this feature
-    // exists: one password, handed out over years, never taken back, and no
-    // account behind it to disable. A code cannot fix that on its own — but
-    // it does mean the password alone stops being enough, which is the only
-    // thing that helps against a copy somebody still has from a year ago.
-    //
-    // Checked only AFTER the password, so a wrong password is never told
-    // whether a second factor is even configured.
-    // The record rather than the boolean, because the device cookie has to be
-    // checked against this door's actual secret and generation.
-    const enrolled = await readTwoFactor(SHARED_DOOR);
-
-    /**
-     * A DEVICE THAT HAS ALREADY PROVED ITSELF IS NOT ASKED AGAIN.
-     *
-     * The owner's own report: he signs in many times a day and typing six
-     * digits every time made him want the second factor gone altogether. A
-     * second factor nobody can live with gets switched off, and then there is
-     * none. So the code is asked once per device per month instead of once per
-     * sign-in — the password is still required every time, on every device, so
-     * a stolen password alone still opens nothing from a machine that has
-     * never produced a code.
-     */
-    const trusted =
-      enrolled !== null &&
-      checkTrustedDevice(
-        request.cookies.get(TRUSTED_DEVICE_COOKIE)?.value,
-        SHARED_DOOR,
-        enrolled.secret,
-        deviceGenerationOf(enrolled),
-      );
-
-    let rememberThisDevice = false;
-    if (enrolled && !trusted) {
-      const code = body.code?.trim();
-      if (!code) return NextResponse.json({ needsCode: true, canRememberDevice: true, rememberDays: TRUSTED_DEVICE_DAYS }, { status: 401 });
-      const second = await checkSecondFactor(SHARED_DOOR, code);
-      if (!second.ok) {
-        await recordFailedAttempt(request, "admin");
-        return NextResponse.json({ needsCode: true, canRememberDevice: true, rememberDays: TRUSTED_DEVICE_DAYS, error: second.error }, { status: 401 });
-      }
-      if (second.usedRecoveryCode) {
-        console.warn("[admin] shared-door recovery code used", { left: second.recoveryCodesLeft });
-      }
-      // Only ever set off the back of a code that was actually correct.
-      rememberThisDevice = body.rememberDevice === true;
-    }
-
+    // NO SECOND FACTOR. The owner had the one-time-code step removed entirely
+    // (AGENTS.md, 18 November 2026): the admin password is the whole check,
+    // behind the attempt limit above.
     const token = accessToken("admin");
     // No signing secret means no cookie can be trusted, so none is issued.
     if (!token) return noSecret;
     await recordSignIn({
       at: new Date().toISOString(),
-      how: trusted ? "remembered device" : "admin code",
+      how: "admin code",
       ...whereFrom(request.headers),
     });
     const response = NextResponse.json({ ok: true });
@@ -134,18 +76,6 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 12,
       path: "/",
     });
-    if (rememberThisDevice && enrolled) {
-      const device = mintTrustedDevice(SHARED_DOOR, enrolled.secret, deviceGenerationOf(enrolled));
-      if (device) {
-        response.cookies.set(TRUSTED_DEVICE_COOKIE, device, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: trustedDeviceMaxAge(),
-          path: "/",
-        });
-      }
-    }
     return response;
   }
 

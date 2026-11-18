@@ -19,7 +19,7 @@ import ComingSoonNotice from "@/components/ComingSoonNotice";
 // is still here to be read but cannot be submitted — see lib/features.ts.
 
 const inputClass =
-  "mt-2 min-h-12 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-base text-[var(--navy)] shadow-[0_3px_10px_rgba(16, 47, 53,.04)] outline-none transition placeholder:text-stone-400 focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]";
+  "mt-2 min-h-12 w-full rounded-xl border border-[var(--gold-light)] bg-white px-4 py-3 text-base text-[var(--navy)] shadow-[0_3px_10px_rgba(21,32,74,.04)] outline-none transition placeholder:text-stone-400 focus:border-[var(--gold)] focus:ring-4 focus:ring-[rgba(170,139,82,.12)]";
 const caption = "text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500";
 
 const EMPTY = {
@@ -182,7 +182,7 @@ export default function FlightRequestForm({ open, words = BUILT_IN_WORDS }: {
       <button
         type="submit"
         disabled={busy || !open}
-        className="mt-8 min-h-12 w-full rounded-full border border-[var(--navy)] bg-[var(--navy)] px-8 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(16, 47, 53,.16)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className="mt-8 min-h-12 w-full rounded-full border border-[var(--navy)] bg-[var(--navy)] px-8 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_20px_rgba(21,32,74,.16)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {!open ? "Currently unavailable" : busy ? "Sending…" : "Send the request"}
       </button>

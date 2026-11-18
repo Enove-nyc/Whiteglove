@@ -108,9 +108,70 @@ export function diskMediaActive(): boolean {
   return mediaDir() !== null;
 }
 
+/* ---- Netlify Blobs -------------------------------------------------------
+ *
+ * ON NETLIFY THERE IS NO DISK. The site moved off Railway, whose /data volume
+ * held every uploaded file (AGENTS.md, 18 November 2026). Netlify's own file
+ * store takes that place: the same { contentType, data } record, under the
+ * same id, in a store named "media". Detected from the environment Netlify
+ * gives a running function, so anywhere else this is simply off and the disk
+ * and Redis behave exactly as before.
+ */
+export function blobMediaActive(): boolean {
+  return Boolean(
+    process.env.MEDIA_STORE === "netlify-blobs" ||
+      process.env.NETLIFY_BLOBS_CONTEXT ||
+      (globalThis as { netlifyBlobsContext?: unknown }).netlifyBlobsContext,
+  );
+}
+
+async function blobStore() {
+  if (!blobMediaActive()) return null;
+  try {
+    const { getStore } = await import("@netlify/blobs");
+    return getStore({ name: "media", consistency: "strong" });
+  } catch {
+    return null;
+  }
+}
+
+async function blobRead(id: string): Promise<StoredMedia | null> {
+  const store = await blobStore();
+  if (!store) return null;
+  try {
+    const parsed = (await store.get(id, { type: "json" })) as StoredMedia | null;
+    return parsed?.data ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function blobWrite(id: string, media: StoredMedia): Promise<boolean> {
+  const store = await blobStore();
+  if (!store) return false;
+  try {
+    await store.setJSON(id, media);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Whether a file is already in the Netlify store — for the one-off copy from Railway. */
+export async function mediaInBlobs(id: string): Promise<boolean> {
+  if (!MEDIA_ID.test(id)) return false;
+  return (await blobRead(id)) !== null;
+}
+
+/** Put one file copied from the old host into the Netlify store. */
+export async function putMediaInBlobs(id: string, media: StoredMedia): Promise<boolean> {
+  if (!MEDIA_ID.test(id)) return false;
+  return blobWrite(id, media);
+}
+
 /** What the upload routes should enforce, wherever the store is today. */
 export function effectiveMediaLimit(): number {
-  return diskMediaActive() ? MAX_DISK_MEDIA_BYTES : MAX_MEDIA_BYTES;
+  return blobMediaActive() || diskMediaActive() ? MAX_DISK_MEDIA_BYTES : MAX_MEDIA_BYTES;
 }
 
 const mediaKey = (id: string) => `white-glove:media:${id}`;
@@ -122,10 +183,10 @@ function redisConfig() {
 }
 
 export function mediaStoreAvailable() {
-  return diskMediaActive() || Boolean(redisConfig());
+  return blobMediaActive() || diskMediaActive() || Boolean(redisConfig());
 }
 
-type StoredMedia = { contentType: string; data: string };
+export type StoredMedia = { contentType: string; data: string };
 
 async function redisCommand(path: string, body?: string): Promise<Response | null> {
   const config = redisConfig();
@@ -190,6 +251,7 @@ async function diskWrite(id: string, media: StoredMedia): Promise<boolean> {
  * between a guess and someone else's picture. */
 export async function putMedia(contentType: string, base64: string): Promise<string | null> {
   const id = `m-${Date.now()}-${randomBytes(16).toString("hex")}`;
+  if (await blobWrite(id, { contentType, data: base64 })) return id;
   if (await diskWrite(id, { contentType, data: base64 })) return id;
   const res = await redisCommand(`set/${encodeURIComponent(mediaKey(id))}`, JSON.stringify({ contentType, data: base64 } satisfies StoredMedia));
   return res?.ok ? id : null;
@@ -197,6 +259,9 @@ export async function putMedia(contentType: string, base64: string): Promise<str
 
 export async function getMedia(id: string): Promise<StoredMedia | null> {
   if (!MEDIA_ID.test(id)) return null;
+
+  const inBlobs = await blobRead(id);
+  if (inBlobs) return inBlobs;
 
   const onDisk = await diskRead(id);
   if (onDisk) return onDisk;
@@ -260,4 +325,22 @@ export async function deleteMediaFromDisk(id: string): Promise<void> {
   const dir = mediaDir();
   if (!dir || !MEDIA_ID.test(id)) return;
   await unlink(fileFor(dir, id)).catch(() => undefined);
+}
+
+/**
+ * The ids of every file on this host's disk, in order, a page at a time — so a
+ * new host can copy them across (app/api/cron/media-list). Ids only: each file
+ * is then fetched through /api/media, which already serves it by id.
+ */
+export async function listDiskMediaIds(after = "", limit = 200): Promise<string[]> {
+  const dir = mediaDir();
+  if (!dir) return [];
+  const { readdir } = await import("node:fs/promises");
+  const names = await readdir(dir).catch(() => [] as string[]);
+  return names
+    .filter((name) => name.endsWith(".json"))
+    .map((name) => name.slice(0, -5))
+    .filter((id) => MEDIA_ID.test(id) && id > after)
+    .sort()
+    .slice(0, Math.max(1, Math.min(limit, 500)));
 }

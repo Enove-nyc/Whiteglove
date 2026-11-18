@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { isPublicPage } from "@/lib/public-access";
 import { planCards, whatThisAdds } from "@/data/plan-comparison";
 import { PLAN_FEATURES } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
@@ -105,10 +106,12 @@ describe("what moving up actually buys", () => {
 });
 
 describe("the page can be found without an account", () => {
-  it("it is in the itineraries footer and nav, and in the sitemap", () => {
-    assert.match(readFileSync("components/Footer.tsx", "utf8"), /label: "Pricing", href: "\/pricing"/);
-    assert.match(readFileSync("lib/navigation.ts", "utf8"), /href: "\/pricing"/);
-    assert.match(readFileSync("lib/site-map.ts", "utf8"), /path: "\/pricing"/);
+  it("is off the public site for now, and nothing public links to it", () => {
+    // The owner's word, 18 November 2026: purchases are closed and pricing came
+    // off the public site. The page stays, for the owner, behind the admin.
+    assert.doesNotMatch(readFileSync("components/Footer.tsx", "utf8"), /label: "Pricing", href: "\/pricing"/);
+    assert.doesNotMatch(readFileSync("lib/navigation.ts", "utf8"), /href: "\/pricing"/);
+    assert.equal(isPublicPage("/pricing"), false);
   });
 
   it("it is not behind a sign-in", () => {

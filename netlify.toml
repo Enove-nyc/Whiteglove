@@ -1,0 +1,10 @@
+# White Glove Itineraries on Netlify (moved off Railway, 18 November 2026).
+# Netlify's Next.js runtime builds the app; uploaded files live in Netlify
+# Blobs (lib/media.ts). Daily jobs are called by the GitHub workflow
+# .github/workflows/daily-notifications.yml, not by a timer in the server.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

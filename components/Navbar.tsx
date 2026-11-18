@@ -135,7 +135,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
     ? []
     : categoriesForBrand(brand).map((category) =>
         isItineraries
-          ? category.label === "Book"
+          ? category.label === "Find travel"
             ? itinerariesBookingCategoryFor(booking)
             : category
           : category.label === "Travel"
@@ -272,7 +272,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
       <nav
         ref={navRef}
         aria-label="Main"
-        className={`wg-site-header relative sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[var(--header-background)] shadow-[0_1px_12px_rgba(16, 47, 53,.05)] backdrop-blur-md transition-[min-height] ${
+        className={`wg-site-header relative sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[var(--header-background)] shadow-[0_1px_12px_rgba(21,32,74,.05)] backdrop-blur-md transition-[min-height] ${
           scrolled ? "min-h-16" : "min-h-20"
         }`}
       >
@@ -342,7 +342,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
                       role="menu"
                       onMouseEnter={stayOpen}
                       onMouseLeave={closeOnHoverOut}
-                      className={`absolute left-0 top-full z-20 mt-1 rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(16, 47, 53,.15)] ${
+                      className={`absolute left-0 top-full z-20 mt-1 rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(21,32,74,.15)] ${
                         category.groups ? "grid w-[26rem] grid-cols-2 gap-x-6 p-4" : "min-w-48 py-2"
                       }`}
                     >
@@ -470,7 +470,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
         )}
 
         {mobileOpen && (
-          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-20 max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(16, 47, 53,.15)] lg:hidden">
+          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-20 max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(21,32,74,.15)] lg:hidden">
             <ul className="divide-y divide-[var(--gold-light)]/60 px-5 sm:px-8">
               {categories.map((category) => {
                 const key = category.label;

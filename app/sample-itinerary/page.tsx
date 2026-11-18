@@ -23,12 +23,12 @@ export async function generateMetadata() {
   return pageMetadata({
     title:
       brand === "itineraries"
-        ? `A sample itinerary — a week in Rome | ${BRAND_NAME.itineraries}`
-        : `A sample itinerary — a week in Rome | ${BRAND_NAME.kosher}`,
+        ? `A sample itinerary — a week on Lake Como | ${BRAND_NAME.itineraries}`
+        : `A sample itinerary — a week on Lake Como | ${BRAND_NAME.kosher}`,
     description:
       brand === "itineraries"
-        ? "A whole week in Rome for a family of five, as the itinerary is handed over: a day per page, real walking and driving times, and what is filled in on a live trip that is left blank here."
-        : "A whole week in Rome for a family of five, as the itinerary is delivered: a day per page, real walking and driving times, the kosher side per day, and a Shabbos with nothing scheduled on it.",
+        ? "A whole week on Lake Como for a family of five, as the itinerary is handed over: a day per page, real walking and driving times, and what is filled in on a live trip that is left blank here."
+        : "A whole week on Lake Como for a family of five, as the itinerary is delivered: a day per page, real walking and driving times, the kosher side per day, and a Shabbos with nothing scheduled on it.",
     path: "/sample-itinerary",
   });
 }
@@ -52,7 +52,7 @@ export async function generateMetadata() {
  * WHAT IS NOT HERE, and why the page says so twice: a hotel name, an airline, a
  * flight number, a confirmation code, a price. Every one of those would be a
  * claim about something that has not happened, on a site whose argument is that
- * what it prints has been checked. The places ARE real — they are the Rome
+ * what it prints has been checked. The places ARE real — they are the Lake Como
  * records this site already publishes with sources — and the rest is marked as
  * the shape of the thing rather than dressed up as a booking.
  *
@@ -103,7 +103,7 @@ export default async function SampleItineraryPage() {
           <div className="mx-auto max-w-7xl">
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">Sample itinerary</p>
             <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
-              A week in Rome.
+              A week on Lake Como.
             </h1>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-700">
               {/* NOT "THE DOCUMENT" ANY MORE. The page shows the same week
@@ -113,7 +113,7 @@ export default async function SampleItineraryPage() {
                   page existed to correct. */}
               {itineraries
                 ? "An illustrative family itinerary, with a day-by-day schedule, companion app and printable travel plan."
-                : "A self-service family itinerary for seven nights in Rome, including Shabbos, with site, app and print views."}
+                : "A self-service family itinerary for seven nights on Lake Como with site, app and print views."}
             </p>
             <p className="mt-4 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#FAF8F3] px-5 py-3 leading-7 text-stone-700">
               <span className="font-semibold text-[var(--navy)]">{SAMPLE_NOTICE}</span>
@@ -132,7 +132,7 @@ export default async function SampleItineraryPage() {
           </h2>
           <p className="mt-3 max-w-3xl leading-7 text-stone-700">
             {itineraries
-              ? "Read on the site, opened as an app on your client's phone, or printed as a cover and a page per day. One trip behind all three — it stays in your account, where you can move a day and hand it over again."
+              ? "Read on the site, opened as an app on your phone, or printed as a cover and a page per day. One trip behind all three, so you can move a day and print it again."
               : "Read on the site, opened as an app on your phone, or printed as a cover and a page per day. One trip behind all three — it arrives in your account too, where you can move a day and print it again."}
           </p>
 
@@ -180,7 +180,7 @@ export default async function SampleItineraryPage() {
               description={
                 itineraries
                   ? "The places are real. Nothing here is booked, and none of it is invented to look like it was."
-                  : "The places are real — they are the Rome records this site publishes, with their sources. Nothing else here is booked."
+                  : "The places are real. Nothing here is booked, and none of it is invented to look like it was."
               }
             />
             {/* The kosher wording says "yours" because that visitor is the
@@ -238,7 +238,7 @@ export default async function SampleItineraryPage() {
             </div>
             <p className="mt-4 leading-7 text-stone-700">
               {itineraries
-                ? "The planner builds this document from the days you enter, and the same trip opens as an app on a phone. Planning your own trips is free; a Trip Pass upgrades one trip to the app, and an adviser plan runs your clients’ trips."
+                ? "The planner builds this from the days you enter. Start with a name and add flights, hotels and plans as you book them."
                 : "Build the same document yourself, for your own dates — or answer three short steps for destination ideas first. Sign in to start; it’s free."}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -249,10 +249,10 @@ export default async function SampleItineraryPage() {
                 Open the itinerary planner
               </Link>
               <Link
-                href={itineraries ? "/pricing" : "/plan"}
+                href={itineraries ? "/book" : "/plan"}
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
-                {itineraries ? "What it costs" : "Get recommendations"}
+                {itineraries ? "Book travel" : "Get recommendations"}
               </Link>
             </div>
           </div>
