@@ -19,23 +19,17 @@ describe("Kosher Travel closure", () => {
     assert.equal(isClosedKosherHost(headers({ host: "white-glove.netlify.app" })), false);
   });
 
-  it("forwards trip and login links to the same path on Itineraries", () => {
-    assert.deepEqual(closureAction("/i/abc123", "?x=1"), { kind: "forward", url: "https://www.whitegloveitineraries.com/i/abc123?x=1" });
-    assert.deepEqual(closureAction("/app"), { kind: "forward", url: "https://www.whitegloveitineraries.com/app" });
-    assert.deepEqual(closureAction("/login"), { kind: "forward", url: "https://www.whitegloveitineraries.com/login" });
-  });
-
-  it("keeps the admin, the API and the deployment check reachable", () => {
-    for (const p of ["/admin", "/admin/login", "/api/health", "/version", "/icon.png"]) {
-      assert.deepEqual(closureAction(p), { kind: "pass" }, p);
-    }
-    assert.deepEqual(closureAction("/administrator"), { kind: "notice" });
-  });
-
-  it("shows the notice everywhere else", () => {
-    for (const p of ["/", "/destinations/rome", "/kosher", "/itinerary", "/info"]) {
+  it("is one page and nothing else: no admin, no API, no forwarding, no files", () => {
+    // The owner's word, 18 November 2026.
+    for (const p of ["/", "/admin", "/admin/login", "/api/health", "/api/access", "/version", "/i/abc123", "/app", "/login", "/icon.png", "/destinations/rome"]) {
       assert.deepEqual(closureAction(p), { kind: "notice" }, p);
     }
+  });
+
+  it("covers every subdomain of the closed domain too", () => {
+    assert.equal(isClosedKosherHost(headers({ host: "admin.whiteglovekoshertravel.com" })), true);
+    assert.equal(isClosedKosherHost(headers({ host: "anything.whiteglovekoshertravel.com" })), true);
+    assert.equal(isClosedKosherHost(headers({ host: "admin.whitegloveitineraries.com" })), false);
   });
 
   it("tells travellers where their trips are and that the login is the same", () => {
