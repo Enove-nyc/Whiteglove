@@ -54,3 +54,6 @@ scratch-*.mjs
 
 # Netlify local build output
 .netlify/
+.open-next/
+.wrangler/
+.dev.vars

@@ -3,13 +3,14 @@
 import { useState } from "react";
 
 /**
- * Runs the one-off copy of uploaded files from the two old Railway hosts into
- * Netlify Blobs (app/api/admin/media-copy), a small batch at a time, and says
+ * Runs the one-off copy of uploaded files from the old hosts into this host's
+ * file store (app/api/admin/media-copy), a small batch at a time, and says
  * how far it has got. Safe to press again: files already copied are skipped.
  */
 const SOURCES = [
   { id: "kosher", label: "Old Kosher Travel host" },
   { id: "itineraries", label: "Old Itineraries host" },
+  { id: "netlify", label: "Netlify" },
 ] as const;
 
 type Progress = { copied: number; skipped: number; failed: number; done: boolean; error?: string };

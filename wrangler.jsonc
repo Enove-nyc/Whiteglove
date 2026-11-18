@@ -1,0 +1,41 @@
+// White Glove Itineraries on Cloudflare Workers, through OpenNext
+// (@opennextjs/cloudflare). See open-next.config.ts and AGENTS.md.
+//
+// The storage below is created by Wrangler on the first deploy if it does not
+// exist yet: uploaded files in the "whiteglove-media" R2 bucket (lib/media.ts,
+// MEDIA_STORE=r2), Next's page cache in "whiteglove-cache", and the cache's
+// revalidation tags in the "whiteglove-tag-cache" D1 database.
+//
+// keep_vars: the site's settings and secrets are set in the Cloudflare
+// dashboard, and a deploy must never wipe them.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "whiteglove",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "keep_vars": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "MEDIA_STORE": "r2"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "whiteglove"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "MEDIA", "bucket_name": "whiteglove-media" },
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "whiteglove-cache" }
+  ],
+  "d1_databases": [
+    { "binding": "NEXT_TAG_CACHE_D1", "database_name": "whiteglove-tag-cache" }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

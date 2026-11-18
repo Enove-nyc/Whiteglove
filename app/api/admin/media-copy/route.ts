@@ -5,8 +5,8 @@ import { isValidAccessToken, sameOrigin } from "@/lib/secure-access";
 export const dynamic = "force-dynamic";
 
 /**
- * Copy the uploaded files from the old Railway hosts into Netlify Blobs — the
- * one-off move of 18 November 2026. Each Railway service kept its own disk, so
+ * Copy the uploaded files from an old host into this host's file store (Netlify
+ * Blobs or Cloudflare R2) — the one-off moves of 18 November 2026. Each Railway service kept its own disk, so
  * there are two sources. The admin screen calls this repeatedly, a small batch
  * each time (a Netlify function has seconds, not minutes), until both report
  * done. Safe to run again: a file already copied is skipped.
@@ -14,6 +14,9 @@ export const dynamic = "force-dynamic";
 const SOURCES: Record<string, string> = {
   kosher: "https://whiteglove-production.up.railway.app",
   itineraries: "https://luminous-liberation-production-82fd.up.railway.app",
+  // Anything uploaded while the site ran on Netlify (from 18 November 2026),
+  // for the move on to Cloudflare. Its own address, so it never copies from itself.
+  netlify: "https://whiteglove-0yqk.netlify.app",
 };
 
 const BATCH = 12;
@@ -23,7 +26,7 @@ export async function POST(request: NextRequest) {
   if (!isValidAccessToken("admin", request.cookies.get("white_glove_admin")?.value)) {
     return NextResponse.json({ error: "Sign in to the admin first." }, { status: 401 });
   }
-  if (!blobMediaActive()) return NextResponse.json({ error: "This host has no Netlify file store." }, { status: 400 });
+  if (!blobMediaActive()) return NextResponse.json({ error: "This host has no file store for uploads." }, { status: 400 });
   const secret = process.env.CRON_SECRET;
   if (!secret) return NextResponse.json({ error: "CRON_SECRET is not set on this host." }, { status: 500 });
 

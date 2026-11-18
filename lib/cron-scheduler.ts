@@ -50,6 +50,10 @@ async function tick(): Promise<void> {
 export function startTripSchedulers(): void {
   if (started) return;
   if (process.env.NODE_ENV !== "production") return;
+  // A Cloudflare Worker has no long-lived process for a timer to live in, and
+  // a timer set outside a request is refused there. The daily jobs reach it
+  // through .github/workflows/daily-notifications.yml instead.
+  if ((globalThis as { navigator?: { userAgent?: string } }).navigator?.userAgent === "Cloudflare-Workers") return;
   started = true;
 
   // A moment after boot rather than during it, so startup is not racing a

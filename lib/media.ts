@@ -108,16 +108,34 @@ export function diskMediaActive(): boolean {
   return mediaDir() !== null;
 }
 
-/* ---- Netlify Blobs -------------------------------------------------------
+/* ---- The host's object store: Netlify Blobs or Cloudflare R2 -------------
  *
- * ON NETLIFY THERE IS NO DISK. The site moved off Railway, whose /data volume
- * held every uploaded file (AGENTS.md, 18 November 2026). Netlify's own file
- * store takes that place: the same { contentType, data } record, under the
- * same id, in a store named "media". Detected from the environment Netlify
- * gives a running function, so anywhere else this is simply off and the disk
- * and Redis behave exactly as before.
+ * A SERVERLESS HOST HAS NO DISK. The site moved off Railway, whose /data
+ * volume held every uploaded file (AGENTS.md, 18 November 2026). The host's
+ * own object store takes that place: the same { contentType, data } record,
+ * under the same id. On Netlify that is Netlify Blobs (a store named "media"),
+ * detected from the environment Netlify gives a running function. On
+ * Cloudflare it is the R2 bucket bound as MEDIA, chosen with MEDIA_STORE=r2.
+ * Anywhere else this is simply off and the disk and Redis behave as before.
  */
-export function blobMediaActive(): boolean {
+type ObjectStore = {
+  get(id: string): Promise<StoredMedia | null>;
+  put(id: string, media: StoredMedia): Promise<void>;
+  /** Ids after `after`, in order, at most `limit` of them. */
+  list(after: string, limit: number): Promise<string[]>;
+};
+
+type R2Like = {
+  get(key: string): Promise<{ json<T>(): Promise<T> } | null>;
+  put(key: string, value: string, options?: { httpMetadata?: { contentType?: string } }): Promise<unknown>;
+  list(options: { startAfter?: string; limit?: number }): Promise<{ objects: Array<{ key: string }> }>;
+};
+
+function r2Active(): boolean {
+  return process.env.MEDIA_STORE === "r2";
+}
+
+function netlifyBlobsActive(): boolean {
   return Boolean(
     process.env.MEDIA_STORE === "netlify-blobs" ||
       process.env.NETLIFY_BLOBS_CONTEXT ||
@@ -125,21 +143,62 @@ export function blobMediaActive(): boolean {
   );
 }
 
-async function blobStore() {
-  if (!blobMediaActive()) return null;
+/** Whether uploaded files live in the host's object store (Netlify Blobs or R2). */
+export function blobMediaActive(): boolean {
+  return r2Active() || netlifyBlobsActive();
+}
+
+async function objectStore(): Promise<ObjectStore | null> {
   try {
-    const { getStore } = await import("@netlify/blobs");
-    return getStore({ name: "media", consistency: "strong" });
+    if (r2Active()) {
+      const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+      const bucket = (getCloudflareContext().env as unknown as { MEDIA?: R2Like }).MEDIA;
+      if (!bucket) return null;
+      return {
+        async get(id) {
+          const object = await bucket.get(id);
+          return object ? await object.json<StoredMedia>() : null;
+        },
+        async put(id, media) {
+          await bucket.put(id, JSON.stringify(media), { httpMetadata: { contentType: "application/json" } });
+        },
+        async list(after, limit) {
+          const page = await bucket.list({ startAfter: after || undefined, limit });
+          return page.objects.map((object) => object.key);
+        },
+      };
+    }
+    if (netlifyBlobsActive()) {
+      const { getStore } = await import("@netlify/blobs");
+      const store = getStore({ name: "media", consistency: "strong" });
+      return {
+        async get(id) {
+          return (await store.get(id, { type: "json" })) as StoredMedia | null;
+        },
+        async put(id, media) {
+          await store.setJSON(id, media);
+        },
+        async list(after, limit) {
+          const { blobs } = await store.list();
+          return blobs
+            .map((blob) => blob.key)
+            .filter((key) => key > after)
+            .sort()
+            .slice(0, limit);
+        },
+      };
+    }
   } catch {
     return null;
   }
+  return null;
 }
 
 async function blobRead(id: string): Promise<StoredMedia | null> {
-  const store = await blobStore();
+  const store = await objectStore();
   if (!store) return null;
   try {
-    const parsed = (await store.get(id, { type: "json" })) as StoredMedia | null;
+    const parsed = await store.get(id);
     return parsed?.data ? parsed : null;
   } catch {
     return null;
@@ -147,23 +206,23 @@ async function blobRead(id: string): Promise<StoredMedia | null> {
 }
 
 async function blobWrite(id: string, media: StoredMedia): Promise<boolean> {
-  const store = await blobStore();
+  const store = await objectStore();
   if (!store) return false;
   try {
-    await store.setJSON(id, media);
+    await store.put(id, media);
     return true;
   } catch {
     return false;
   }
 }
 
-/** Whether a file is already in the Netlify store — for the one-off copy from Railway. */
+/** Whether a file is already in the host's object store — for the one-off copy between hosts. */
 export async function mediaInBlobs(id: string): Promise<boolean> {
   if (!MEDIA_ID.test(id)) return false;
   return (await blobRead(id)) !== null;
 }
 
-/** Put one file copied from the old host into the Netlify store. */
+/** Put one file copied from an old host into this host's object store. */
 export async function putMediaInBlobs(id: string, media: StoredMedia): Promise<boolean> {
   if (!MEDIA_ID.test(id)) return false;
   return blobWrite(id, media);
@@ -334,7 +393,14 @@ export async function deleteMediaFromDisk(id: string): Promise<void> {
  */
 export async function listDiskMediaIds(after = "", limit = 200): Promise<string[]> {
   const dir = mediaDir();
-  if (!dir) return [];
+  if (!dir) {
+    // No disk: list the host's object store instead, so a later host can copy
+    // from this one the same way this one copied from Railway.
+    const store = await objectStore();
+    if (!store) return [];
+    const ids = await store.list(after, Math.max(1, Math.min(limit, 500))).catch(() => [] as string[]);
+    return ids.filter((id) => MEDIA_ID.test(id));
+  }
   const { readdir } = await import("node:fs/promises");
   const names = await readdir(dir).catch(() => [] as string[]);
   return names
