@@ -39,7 +39,7 @@ import { blocksOf, blockHasContent, splitLinks, type BlastBlock } from "@/lib/em
 
 /* ---- the palette, matched to app/globals.css ---------------------------- */
 
-const NAVY = "#102F35";
+const NAVY = "#15204A";
 const INK = "#2d2c2a";
 const BODY_INK = "#4a4a48";
 const GOLD = "#C6A15B";

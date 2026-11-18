@@ -44,7 +44,7 @@ export default function PersonalTravelWallet({ tripKey }: { tripKey: string }) {
     catch { setError("The file could not be removed. Please try again."); }
     finally { setBusy(false); }
   }
-  return <section aria-labelledby={`${inputId}-heading`} className="rounded-2xl border border-stone-200 bg-white p-4 text-[#102F35]">
+  return <section aria-labelledby={`${inputId}-heading`} className="rounded-2xl border border-stone-200 bg-white p-4 text-[#15204A]">
     <h2 id={`${inputId}-heading`} className="text-lg font-semibold">Your personal wallet</h2>
     <p className="mt-2 text-sm leading-6 text-stone-600">Boarding passes, hotel confirmations and entry tickets. Files stay on this device, work offline and are private to you. They are not shared with the trip group or synced to another phone. Signing out or clearing app data removes them.</p>
     <label htmlFor={`${inputId}-kind`} className="mt-4 block text-sm font-semibold">Document type</label>
@@ -52,7 +52,7 @@ export default function PersonalTravelWallet({ tripKey }: { tripKey: string }) {
       {["Boarding pass", "Hotel confirmation", "Entry ticket", "Other travel document"].map((label) => <option key={label}>{label}</option>)}
     </select>
     <label htmlFor={inputId} className="mt-3 block text-sm font-semibold">Add a PDF or photo · up to 15 MB</label>
-    <input id={inputId} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" disabled={busy || !scope} className="mt-2 min-h-11 w-full min-w-0 text-sm file:mr-3 file:min-h-11 file:rounded-xl file:border-0 file:bg-[#102F35] file:px-4 file:text-white" onChange={(event) => {
+    <input id={inputId} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" disabled={busy || !scope} className="mt-2 min-h-11 w-full min-w-0 text-sm file:mr-3 file:min-h-11 file:rounded-xl file:border-0 file:bg-[#15204A] file:px-4 file:text-white" onChange={(event) => {
       const file = event.target.files?.[0]; event.target.value = ""; if (file) void add(file);
     }} />
     <p role="status" className="mt-2 text-sm leading-6">{busy ? "Saving changes…" : notice}</p>

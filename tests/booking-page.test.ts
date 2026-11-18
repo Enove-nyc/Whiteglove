@@ -82,11 +82,13 @@ describe("getting to the fields", () => {
 describe("saving to the trip", () => {
   it("does not offer Add to my trip before a partner search", () => {
     // At search time the traveller has not chosen a hotel, flight or car yet.
-    // The itinerary save belongs on the after-partner BookedPrompt, not on the
-    // cash search action row.
+    // And after the partner tab opens nothing asks for a booking code either
+    // (AGENTS.md, "The Book page does not ask for a booking code"): a quiet
+    // pointer to the itinerary sits under the search instead.
     assert.doesNotMatch(PANEL_PROSE, /\+ Add to my trip/);
-    assert.match(PANEL, /function BookedPrompt/);
-    assert.match(PANEL_PROSE, /I booked it — add it to my trip/);
+    assert.doesNotMatch(PANEL, /function BookedPrompt/);
+    assert.doesNotMatch(PANEL_PROSE, /I booked it — add it to my trip|Booking reference/);
+    assert.match(PANEL, /function BookedPointer/);
   });
 });
 

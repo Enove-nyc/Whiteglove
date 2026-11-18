@@ -149,7 +149,7 @@ The three ways into the site are named once in `lib/starting-points.ts` — get 
 
 ## Working surface palette
 
-Use warm ivory #F7F4EE for the site-wide canvas, warm white #FFFDFC for cards and forms, and #EFE9DF for secondary surfaces on both products. Preserve teal #193F46 / #102F35 and brass #C6A15B. Mushroom is only an occasional accent or disabled state, never a large working surface. Use semantic tokens for web surfaces; standalone email, print and manifests use matching literal values.
+Use warm ivory #F7F4EE for the site-wide canvas, warm white #FFFDFC for cards and forms, and #EFE9DF for secondary surfaces on both products. Brand navy #1F2E5C / #15204A (replaced teal #193F46 / #102F35 at the owner's word on 18 November 2026) and brass #C6A15B. Mushroom is only an occasional accent or disabled state, never a large working surface. Use semantic tokens for web surfaces; standalone email, print and manifests use matching literal values.
 
 
 ## Current launch direction — 3 November 2026

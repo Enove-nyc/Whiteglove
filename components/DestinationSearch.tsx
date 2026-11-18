@@ -330,7 +330,7 @@ export default function DestinationSearch({
       </label>
 
       <form
-        className={`flex max-w-full flex-col gap-2 rounded-2xl border border-[var(--navy)]/15 bg-white shadow-[0_12px_30px_rgba(16, 47, 53,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`}
+        className={`flex max-w-full flex-col gap-2 rounded-2xl border border-[var(--navy)]/15 bg-white shadow-[0_12px_30px_rgba(21,32,74,.08)] sm:flex-row ${compact ? "p-2" : "p-3"}`}
         onSubmit={submitSearch}
       >
         <div className="flex min-w-0 flex-1 items-center gap-2 px-2">

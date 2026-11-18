@@ -24,7 +24,7 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
   const match = /^\/i\/([A-Za-z0-9_-]+)\/app$/.exec(remembered);
   if (params.enter !== "1" && match && await getSharedItineraryByShareId(match[1])) redirect(remembered);
   const trips = account ? await getTrips(account.email) : [];
-  return <><Navbar minimal homeHref="/app" bottomBar={false} /><main className="min-h-screen bg-[#FAF8F3] px-5 pb-16 pt-[calc(2rem+env(safe-area-inset-top))] text-[#102F35]">
+  return <><Navbar minimal homeHref="/app" bottomBar={false} /><main className="min-h-screen bg-[#FAF8F3] px-5 pb-16 pt-[calc(2rem+env(safe-area-inset-top))] text-[#15204A]">
     {remembered && !match ? <ClientCodeMemory path={null} /> : null}
     <section className="mx-auto max-w-2xl">
       <p className="text-xs font-bold uppercase tracking-[0.2em]">White Glove · Trip companion</p>

@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
  * pretending.
  */
 
-const NAVY = "#102F35";
+const NAVY = "#15204A";
 const CREAM = "var(--color-canvas)";
 
 // A standard, stable Web-Push helper — the same one the client control uses;
@@ -149,7 +149,7 @@ export default function AdvisorNotify() {
         <div
           role="dialog"
           aria-label="Notifications"
-          style={{ position: "absolute", top: 42, right: 0, zIndex: 40, width: 250, background: "#ffffff", border: "1px solid rgba(16, 47, 53,.12)", borderRadius: 16, boxShadow: "0 18px 44px rgba(15,20,25,.22)", padding: 14, color: "#102F35", fontFamily: "Inter,system-ui,sans-serif" }}
+          style={{ position: "absolute", top: 42, right: 0, zIndex: 40, width: 250, background: "#ffffff", border: "1px solid rgba(21,32,74,.12)", borderRadius: 16, boxShadow: "0 18px 44px rgba(15,20,25,.22)", padding: 14, color: "#15204A", fontFamily: "Inter,system-ui,sans-serif" }}
         >
           <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Notifications</p>
           {status === "unsupported" ? (

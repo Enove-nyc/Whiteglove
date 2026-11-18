@@ -103,7 +103,7 @@ function Block({ block }: { block: PageBlock }) {
       if (!block.url) return null;
       return (
         <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
-          <figure className="overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-2 shadow-[0_12px_35px_rgba(16, 47, 53,.07)]">
+          <figure className="overflow-hidden rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-2 shadow-[0_12px_35px_rgba(21,32,74,.07)]">
             <Image
               src={block.url}
               alt={block.alt}
@@ -145,7 +145,7 @@ function Block({ block }: { block: PageBlock }) {
     case "quote":
       return (
         <section className="wg-page-section mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
-          <blockquote className="max-w-3xl rounded-r-xl border-l-4 border-[var(--gold)] bg-[var(--surface)] px-6 py-7 shadow-[0_8px_25px_rgba(16, 47, 53,.05)]">
+          <blockquote className="max-w-3xl rounded-r-xl border-l-4 border-[var(--gold)] bg-[var(--surface)] px-6 py-7 shadow-[0_8px_25px_rgba(21,32,74,.05)]">
             <p className="font-[family-name:var(--font-display)] text-2xl leading-9 text-[var(--navy)]">{block.text}</p>
             {block.attribution && <footer className="mt-3 text-sm text-stone-500">{block.attribution}</footer>}
           </blockquote>

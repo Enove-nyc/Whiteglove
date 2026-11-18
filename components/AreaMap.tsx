@@ -35,7 +35,7 @@ function escapeHtml(value: string) {
 
 function popupHtml(marker: MapMarker, centerName: string | null) {
   return [
-    `<strong style="font-size:14px;color:#102F35">${escapeHtml(marker.name)}</strong>`,
+    `<strong style="font-size:14px;color:#15204A">${escapeHtml(marker.name)}</strong>`,
     `<div style="color:${MAP_STYLE[marker.kind].color};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${escapeHtml(MAP_STYLE[marker.kind].label)}</div>`,
     marker.subtitle ? `<div style="color:#78716c;font-size:12px">${escapeHtml(marker.subtitle)}</div>` : "",
     marker.address ? `<div style="margin-top:4px;font-size:12px">${escapeHtml(marker.address)}</div>` : "",
@@ -43,9 +43,9 @@ function popupHtml(marker: MapMarker, centerName: string | null) {
       ? `<div style="margin-top:4px;font-size:12px;color:#78716c">${marker.km.toFixed(1)} km from ${escapeHtml(centerName)}</div>`
       : "",
     `<div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
-       <a href="${escapeHtml(placeDirectionsUrl(marker.address, `${marker.lat}, ${marker.lng}`))}" target="_blank" rel="noreferrer" style="font-weight:700;color:#102F35">Navigate &rarr;</a>
-       ${marker.href ? `<a href="${escapeHtml(marker.href)}" style="font-weight:700;color:#102F35">Open page &rarr;</a>` : ""}
-       ${marker.phone ? `<a href="tel:${escapeHtml(marker.phone.replace(/[^\d+]/g, ""))}" style="font-weight:700;color:#102F35">${escapeHtml(marker.phone)}</a>` : ""}
+       <a href="${escapeHtml(placeDirectionsUrl(marker.address, `${marker.lat}, ${marker.lng}`))}" target="_blank" rel="noreferrer" style="font-weight:700;color:#15204A">Navigate &rarr;</a>
+       ${marker.href ? `<a href="${escapeHtml(marker.href)}" style="font-weight:700;color:#15204A">Open page &rarr;</a>` : ""}
+       ${marker.phone ? `<a href="tel:${escapeHtml(marker.phone.replace(/[^\d+]/g, ""))}" style="font-weight:700;color:#15204A">${escapeHtml(marker.phone)}</a>` : ""}
      </div>`,
   ].filter(Boolean).join("");
 }
