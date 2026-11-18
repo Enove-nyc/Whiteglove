@@ -34,6 +34,7 @@ import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
 import { BRAND_ORIGIN } from "@/lib/site-brand-core";
+import { ADVISER_SCREENS_ARE_PUBLIC } from "@/lib/public-access";
 
 // Private to one person. Nothing here belongs in a search result. Brand-aware
 // for the same reason /login is: an itineraries visitor landing here right
@@ -225,7 +226,7 @@ export default async function AccountPage() {
             offer={offer}
           />
           {canBrand && <BusinessBrandPanel brand={brand ?? emptyBrand(who)} siteBrand={siteBrand} />}
-          {canBrand && (
+          {canBrand && ADVISER_SCREENS_ARE_PUBLIC && (
             <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600">
               Working with other advisors?{" "}
               <Link href="/agency" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
@@ -243,7 +244,7 @@ export default async function AccountPage() {
                 </div>
                 <LinkButton href="/app">Open the app</LinkButton>
               </div>
-              {canServeClients && (
+              {canServeClients && ADVISER_SCREENS_ARE_PUBLIC && (
                 <div className="mt-4 border-t border-[var(--gold-light)] pt-4">
                   {isTeamMember && (
                     <p className="mb-4 text-sm font-semibold text-[var(--gold-ink)]">

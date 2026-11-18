@@ -206,12 +206,10 @@ export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
     label: "My itineraries",
     links: [
       { label: "Build a trip", href: "/itinerary" },
-      { label: "Get recommendations", href: "/plan" },
       { label: "Your route", href: "/my-route" },
-      { label: "The White Glove app", href: "/app", description: "Open your trip with its code" },
-      // The public demonstration, no sign-in needed (tests/itineraries-home-links).
-      { label: "See the app in action", href: "/app/preview" },
-      { label: "Plans and pricing", href: "/pricing" },
+      // Get recommendations, the app pages, pricing and the adviser screens
+      // came off the public site at the owner's word (18 November 2026). The
+      // trip app still opens from a trip code; it is just not advertised.
     ],
   },
 ] as const;

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { TRIP_PLACES, tripPlacesFor } from "@/lib/account-places";
+import { ADVISER_SCREENS_ARE_PUBLIC } from "@/lib/public-access";
 import { tripBar, tripBarDates, tripBarTitle, tripRowMeta } from "@/lib/trip-bar";
 
 /**
@@ -31,7 +32,19 @@ const HARPERS = {
   itinerary: { title: "Rome", startDate: "2026-10-25", endDate: "2026-11-01" },
 };
 
-describe("what the bar says", () => {
+/**
+ * WHILE THE ADVISER SCREENS ARE OFF THE PUBLIC SITE (the owner's word, 18
+ * November 2026) no plan reaches more than the itinerary, so there is no bar.
+ * The checks of what it says run again the day the switch is turned back on.
+ */
+describe("while the adviser screens are off", () => {
+  it("shows no bar on any plan", () => {
+    if (ADVISER_SCREENS_ARE_PUBLIC) return;
+    for (const plan of ["free", "one_trip", "starter", "pro"] as const) assert.equal(tripBar(HARPERS, plan), null, plan);
+  });
+});
+
+describe("what the bar says", { skip: !ADVISER_SCREENS_ARE_PUBLIC }, () => {
   it("leads with the client, because that is what an advisor checks", () => {
     const bar = tripBar(HARPERS, "starter");
     assert.equal(bar?.client, "The Harpers");
@@ -106,7 +119,7 @@ describe("when the bar should not be there at all", () => {
     assert.equal(tripBar(HARPERS, undefined), null);
   });
 
-  it("is there for the plans that move between the screens", () => {
+  it("is there for the plans that move between the screens", { skip: !ADVISER_SCREENS_ARE_PUBLIC }, () => {
     for (const plan of ["starter", "pro"] as const) {
       assert.ok(tripBar(HARPERS, plan), `no bar on ${plan}`);
       assert.equal(tripBar(HARPERS, plan)!.places.length, TRIP_PLACES.length);

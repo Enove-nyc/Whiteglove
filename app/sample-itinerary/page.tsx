@@ -132,7 +132,7 @@ export default async function SampleItineraryPage() {
           </h2>
           <p className="mt-3 max-w-3xl leading-7 text-stone-700">
             {itineraries
-              ? "Read on the site, opened as an app on your client's phone, or printed as a cover and a page per day. One trip behind all three — it stays in your account, where you can move a day and hand it over again."
+              ? "Read on the site, opened as an app on your phone, or printed as a cover and a page per day. One trip behind all three, so you can move a day and print it again."
               : "Read on the site, opened as an app on your phone, or printed as a cover and a page per day. One trip behind all three — it arrives in your account too, where you can move a day and print it again."}
           </p>
 
@@ -238,7 +238,7 @@ export default async function SampleItineraryPage() {
             </div>
             <p className="mt-4 leading-7 text-stone-700">
               {itineraries
-                ? "The planner builds this document from the days you enter, and the same trip opens as an app on a phone. Planning your own trips is free; a Trip Pass upgrades one trip to the app, and an adviser plan runs your clients’ trips."
+                ? "The planner builds this from the days you enter. Start with a name and add flights, hotels and plans as you book them."
                 : "Build the same document yourself, for your own dates — or answer three short steps for destination ideas first. Sign in to start; it’s free."}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -249,10 +249,10 @@ export default async function SampleItineraryPage() {
                 Open the itinerary planner
               </Link>
               <Link
-                href={itineraries ? "/pricing" : "/plan"}
+                href={itineraries ? "/book" : "/plan"}
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
-                {itineraries ? "What it costs" : "Get recommendations"}
+                {itineraries ? "Book travel" : "Get recommendations"}
               </Link>
             </div>
           </div>

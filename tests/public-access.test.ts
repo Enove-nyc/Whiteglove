@@ -12,8 +12,16 @@ import { brandForHost } from "@/lib/site-brand-core";
  */
 describe("what the public can reach", () => {
   it("opens planning, booking, accounts, the companion and trip links", () => {
-    for (const p of ["/", "/itinerary", "/plan", "/book", "/login", "/account", "/app", "/i/abc", "/t/abc/app", "/p/abc", "/sample-itinerary", "/about", "/contact", "/privacy", "/terms", "/advisor"]) {
+    for (const p of ["/", "/itinerary", "/book", "/login", "/account", "/app", "/i/abc", "/t/abc/app", "/p/abc", "/sample-itinerary", "/about", "/contact", "/privacy", "/terms"]) {
       assert.equal(isPublicPage(p), true, p);
+    }
+  });
+
+  it("keeps pricing, the app demo, recommendations and the adviser screens for the owner alone", () => {
+    // The owner's word, 18 November 2026. The trip app itself stays public:
+    // a traveller holding a trip code opens their trip at /app.
+    for (const p of ["/pricing", "/app/preview", "/plan", "/advisor", "/clients", "/clients/x", "/pipeline", "/proposal", "/payments", "/forms", "/library", "/history", "/commissions", "/agency", "/team/join/x", "/group", "/addons", "/activity"]) {
+      assert.equal(isPublicPage(p), false, p);
     }
   });
 

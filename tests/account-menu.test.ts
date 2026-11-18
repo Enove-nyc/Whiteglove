@@ -86,23 +86,12 @@ describe("the advisor tools have a home in the menu too", () => {
     assert.deepEqual(advisorPlacesFor("one_trip"), []);
   });
 
-  it("gives Starter the client tools but not Agency, which needs Pro's own brand", () => {
-    const labels = advisorPlacesFor("starter").map((place) => place.label);
-    assert.ok(labels.includes("Trip pipeline"));
-    assert.ok(labels.includes("Proposals"));
-    assert.ok(labels.includes("Content library"));
-    assert.ok(labels.includes("Client forms"));
-    assert.ok(labels.includes("Payments"));
-    assert.ok(labels.includes("Group trip"));
-    assert.ok(!labels.includes("Agency"));
-  });
-
-  it("gives Pro everything, Agency included", () => {
-    const labels = advisorPlacesFor("pro").map((place) => place.label);
-    assert.ok(labels.includes("Dashboard"));
-    assert.ok(labels.includes("Messages"));
-    assert.ok(labels.includes("Agency"));
-    assert.equal(labels.length, 9);
+  it("offers no adviser tools while the adviser screens are off the public site", () => {
+    // The owner's word, 18 November 2026: the adviser screens came off the
+    // public site, so no plan is offered a door that now answers "not available".
+    for (const plan of ["free", "one_trip", "starter", "pro"] as const) {
+      assert.deepEqual(advisorPlacesFor(plan), [], plan);
+    }
   });
 
   it("only shows the extra section, with a caption, once there is something to show", () => {

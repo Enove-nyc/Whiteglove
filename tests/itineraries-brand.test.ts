@@ -91,11 +91,11 @@ describe("a page body never hands out a bare guide link on the itineraries domai
     assert.match(src, /useSiteBrand\(\)/);
     assert.doesNotMatch(src, /useEffect\([^)]*setItineraries/);
     assert.match(src, /itineraries \? "White Glove Itineraries" : "White Glove Kosher Travel"/);
-    // Both branches exist — the itineraries one links the app, the kosher
+    // Both branches exist — the itineraries one links booking, the kosher
     // one still links kevarim — and the choice happens before either href is
     // ever chosen, not after an unconditional render.
     const branch = src.slice(src.indexOf("itineraries ? ("), src.indexOf("</div>\n      </div>\n    </div>"));
-    assert.match(branch, /href="\/app"/);
+    assert.match(branch, /href="\/book"/);
     assert.match(branch, /href="\/cemeteries"/);
   });
 

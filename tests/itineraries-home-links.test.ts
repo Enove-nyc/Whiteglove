@@ -15,10 +15,10 @@ import { describe, it } from "node:test";
 describe("the homepage cards open onto the thing they name", () => {
   const HOME = readFileSync("components/ItinerariesHome.tsx", "utf8");
 
-  it("offers the public client app preview without asking a prospective visitor to sign in", () => {
-    // The home page follows the owner's design (18 November 2026) and carries
-    // no app card; the preview is in the "My itineraries" menu on every page.
-    assert.match(readFileSync("lib/navigation.ts", "utf8"), /href: "\/app\/preview"/);
+  it("no longer advertises the app preview, and never sends a visitor to a sign-in", () => {
+    // The owner took the app pages off the public site (18 November 2026): the
+    // preview is the owner's alone and nothing in the menu points at it.
+    assert.doesNotMatch(readFileSync("lib/navigation.ts", "utf8"), /href: "\/app\/preview"/);
     assert.doesNotMatch(HOME, /href: "\/login\?next=/);
   });
 

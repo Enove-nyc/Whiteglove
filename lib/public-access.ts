@@ -19,7 +19,6 @@
 export const PUBLIC_PAGE_PREFIXES = [
   // Planning and booking — the public product.
   "/itinerary",
-  "/plan",
   "/book",
   "/go", // partner hand-off links
   "/sample-itinerary",
@@ -28,13 +27,11 @@ export const PUBLIC_PAGE_PREFIXES = [
   "/translate",
   "/my-route",
   "/command-center",
-  "/group",
   // Accounts and access.
   "/login",
   "/access",
   "/account",
   "/join",
-  "/team",
   // The companion app and every per-trip link.
   "/app",
   "/offline",
@@ -46,23 +43,9 @@ export const PUBLIC_PAGE_PREFIXES = [
   "/a",
   "/form",
   "/rate",
-  "/addons",
-  "/activity",
-  // Advisor tools (each requires its own sign-in).
-  "/advisor",
-  "/agency",
-  "/clients",
-  "/pipeline",
-  "/proposal",
-  "/payments",
-  "/forms",
-  "/library",
-  "/history",
-  "/commissions",
   // The company pages.
   "/about",
   "/contact",
-  "/pricing",
   "/privacy",
   "/terms",
   // Machine endpoints that are routes rather than files.
@@ -101,13 +84,34 @@ export const DIRECTORY_API_PREFIXES = [
  */
 export const DIRECTORY_SEARCH_IS_PUBLIC = false;
 
+/**
+ * Whether the adviser screens (/advisor, clients, pipeline, proposals,
+ * payments, forms, group trips…) are offered to anyone. Off at the owner's
+ * word, 18 November 2026: the pages answer "not available" and no menu,
+ * account page or signed-in redirect points at them. Turning this back on
+ * also needs their prefixes returned to PUBLIC_PAGE_PREFIXES.
+ */
+export const ADVISER_SCREENS_ARE_PUBLIC = false;
+
 function under(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
+/**
+ * Pages under a public prefix that are still the owner's alone.
+ *
+ * THE OWNER'S WORD, 18 NOVEMBER 2026: pricing, the app demonstration, the
+ * adviser screens (/advisor, clients, pipeline, proposals, payments, forms…)
+ * and Get recommendations (/plan) come off the public site. The trip app
+ * itself (/app) stays, because a traveller holding a trip code — or the
+ * installed app — opens their trip there.
+ */
+export const OWNER_ONLY_PAGES = ["/app/preview"] as const;
+
 /** True when anyone may open this page. */
 export function isPublicPage(pathname: string): boolean {
   if (pathname === "/") return true;
+  if (OWNER_ONLY_PAGES.some((prefix) => under(pathname, prefix))) return false;
   return PUBLIC_PAGE_PREFIXES.some((prefix) => under(pathname, prefix));
 }
 
