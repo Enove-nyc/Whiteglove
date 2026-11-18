@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BUILT_IN_CONTENT_IMPORT_PACKAGES } from "@/data/imports";
+import { builtInContentImportPackages } from "@/data/imports";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { kosherFoodBatchCandidates, kosherFoodDedupeReport } from "@/data/imports/kosher-food-batch/candidates";
 import { namePlaceKeyFor } from "@/data/imports/kosher-food-batch/dedupe";
@@ -49,7 +49,7 @@ describe("kosher food finder review pack", () => {
 
   it("does not repeat a named kitchen already in an attraction / practical import pack", () => {
     const prior = new Set<string>();
-    for (const sourcePackage of BUILT_IN_CONTENT_IMPORT_PACKAGES) {
+    for (const sourcePackage of builtInContentImportPackages()) {
       if (sourcePackage.batch.slug === "kosher-food-batch") continue;
       for (const candidate of sourcePackage.candidates) {
         const looksLikeFood =
@@ -67,7 +67,7 @@ describe("kosher food finder review pack", () => {
   });
 
   it("registers as KOSHER_FOOD that can stage and cannot bulk-publish", () => {
-    const sourcePackage = BUILT_IN_CONTENT_IMPORT_PACKAGES.find((item) => item.batch.slug === "kosher-food-batch");
+    const sourcePackage = builtInContentImportPackages().find((item) => item.batch.slug === "kosher-food-batch");
     assert.ok(sourcePackage);
     assert.equal(sourcePackage.candidates.length, validatePack().candidateCount);
     for (const candidate of sourcePackage.candidates) {

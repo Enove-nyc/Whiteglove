@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { describe, it } from "node:test";
-import { BUILT_IN_CONTENT_IMPORT_PACKAGES } from "@/data/imports";
+import { builtInContentImportPackages } from "@/data/imports";
 import {
   contentImportCandidatePath,
   findBulkContentDuplicate,
@@ -237,7 +237,7 @@ describe("bulk content deduplication", () => {
 describe("checked-in import packages", () => {
   it("contains no retired map package or map-derived candidate", () => {
     assert.equal(existsSync("data/imports/osm-vacation-markets-2026-08.json"), false);
-    for (const sourcePackage of BUILT_IN_CONTENT_IMPORT_PACKAGES) {
+    for (const sourcePackage of builtInContentImportPackages()) {
       assert.equal(isDisallowedImportSource(sourcePackage.batch), false, `${sourcePackage.batch.slug} uses a prohibited source`);
       for (const candidate of sourcePackage.candidates) {
         assert.equal(isDisallowedImportSource(candidate), false, `${candidate.sourceId} uses a prohibited source`);

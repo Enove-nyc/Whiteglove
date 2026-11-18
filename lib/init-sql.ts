@@ -191,6 +191,8 @@ CREATE TABLE "VacationDestination" (
     "outlineTitle" TEXT,
     "outlineDays" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "cautions" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "seasonFeatured" BOOLEAN NOT NULL DEFAULT false,
+    "seasonActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -236,6 +238,17 @@ CREATE TABLE "KosherStay" (
     "website" TEXT,
     "sourceUrl" TEXT NOT NULL,
     "status" "ContentStatus" NOT NULL DEFAULT 'PUBLISHED',
+    "onSiteKosherFood" TEXT NOT NULL DEFAULT 'unknown',
+    "kosherBreakfast" TEXT NOT NULL DEFAULT 'unknown',
+    "shabbosMeals" TEXT NOT NULL DEFAULT 'unknown',
+    "nearbyKosherFood" TEXT NOT NULL DEFAULT 'unknown',
+    "nearbyShulOrMinyan" TEXT NOT NULL DEFAULT 'unknown',
+    "eruv" TEXT NOT NULL DEFAULT 'unknown',
+    "shabbosAccessInfo" TEXT,
+    "shabbosElevator" TEXT NOT NULL DEFAULT 'unknown',
+    "kitchenSelfCatering" TEXT NOT NULL DEFAULT 'unknown',
+    "kosherKitchen" TEXT NOT NULL DEFAULT 'unknown',
+    "walkingDistanceToJewishArea" TEXT NOT NULL DEFAULT 'unknown',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -315,6 +328,16 @@ CREATE TABLE "ContentImportCandidate" (
     "batchId" TEXT NOT NULL,
 
     CONSTRAINT "ContentImportCandidate_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ImportPack" (
+    "key" TEXT NOT NULL,
+    "hash" TEXT NOT NULL,
+    "data" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ImportPack_pkey" PRIMARY KEY ("key")
 );
 
 -- CreateTable

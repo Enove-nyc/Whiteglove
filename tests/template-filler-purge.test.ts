@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BUILT_IN_CONTENT_IMPORT_PACKAGES } from "@/data/imports";
+import { builtInContentImportPackages } from "@/data/imports";
 import { isTemplateFillerCandidate } from "@/lib/bulk-content";
 import { attractions } from "@/data/attractions";
 
@@ -49,7 +49,7 @@ describe("template-filler purge", () => {
   });
 
   it("removes about two thirds of the pack and leaves the real remainder", () => {
-    const all = BUILT_IN_CONTENT_IMPORT_PACKAGES.flatMap((p) => p.candidates);
+    const all = builtInContentImportPackages().flatMap((p) => p.candidates);
     const filler = all.filter((c) => isTemplateFillerCandidate(c.name));
     const real = all.filter((c) => !isTemplateFillerCandidate(c.name));
     // Guardrails, not exact pins: enough to catch the predicate silently

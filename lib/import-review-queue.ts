@@ -9,11 +9,8 @@
 import { readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/candidates";
-import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
-import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/candidates";
-import { worldwideBatch5Candidates } from "@/data/imports/worldwide-batch-5/candidates";
 import { kosherFoodBatchCandidates } from "@/data/imports/kosher-food-batch/candidates";
-import { nesiyatovaHeritageCandidates } from "@/data/imports/nesiyatova-heritage-batch/candidates";
+import { importPacks, loadImportPacks } from "@/lib/import-packs";
 import {
   contentImportCandidatePath,
   isDisallowedImportSource,
@@ -119,7 +116,7 @@ const KNOWN_PACKS: readonly KnownPack[] = [
     href: "/admin/imports",
     note: "Private heritage / practical leads from Nesiya Tova — open Bulk imports to stage. Nothing publishes until you verify each one.",
     loadCandidates: () =>
-      nesiyatovaHeritageCandidates.map((candidate) => ({
+      importPacks().nesiyatovaHeritageCandidates.map((candidate) => ({
         sourceId: candidate.sourceId,
         name: candidate.name,
         kind: kindFromImportKind(candidate.importKind),
@@ -161,7 +158,7 @@ const KNOWN_PACKS: readonly KnownPack[] = [
     href: "/admin/imports",
     note: "Private source pack — open Bulk imports to stage and review. Prefills category, summary and address.",
     loadCandidates: () =>
-      worldwideBatch5Candidates.map((candidate) => ({
+      importPacks().worldwideBatch5Candidates.map((candidate) => ({
         sourceId: candidate.sourceId,
         name: candidate.name,
         kind: kindFromImportKind(candidate.importKind),
@@ -182,7 +179,7 @@ const KNOWN_PACKS: readonly KnownPack[] = [
     href: "/admin/imports",
     note: "Private source pack — open Bulk imports to stage and review. Prefills category, summary and address.",
     loadCandidates: () =>
-      worldwideBatch4Candidates.map((candidate) => ({
+      importPacks().worldwideBatch4Candidates.map((candidate) => ({
         sourceId: candidate.sourceId,
         name: candidate.name,
         kind: kindFromImportKind(candidate.importKind),
@@ -204,7 +201,7 @@ const KNOWN_PACKS: readonly KnownPack[] = [
     href: "/admin/imports",
     note: "Private source pack — open Bulk imports to stage and review. Prefills category, summary and address.",
     loadCandidates: () =>
-      worldwideBatch3Candidates.map((candidate) => ({
+      importPacks().worldwideBatch3Candidates.map((candidate) => ({
         sourceId: candidate.sourceId,
         name: candidate.name,
         kind: kindFromImportKind(candidate.importKind),
@@ -365,6 +362,7 @@ function discoverUnregisteredPackDirs(): string[] {
  * Source-pack rows are omitted once the same sourceId is already in the database.
  */
 export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
+  await loadImportPacks();
   try {
     const dashboard = await getContentImportDashboard();
     // ONLY when the database actually answered. `dashboard.candidates` carries
@@ -485,6 +483,7 @@ export async function getImportReviewQueue(): Promise<ImportReviewQueue> {
  * the queue lists them, and reaches the queue page when they run out.
  */
 export async function nextReviewCandidateAfter(afterId: string): Promise<{ href: string; name: string } | null> {
+  await loadImportPacks();
   const queue = await getImportReviewQueue();
   const waiting = queue.items.filter((item) => item.origin === "database" && item.status === "NEEDS_REVIEW");
   // When the current one is still waiting (a skip, not a decision), carry on
@@ -514,6 +513,7 @@ export type PackSearchRow = {
   href: string;
 };
 
+/** Callers await loadImportPacks() first (lib/import-packs.ts). */
 export function listSourcePackSearchRows(): PackSearchRow[] {
   const out: PackSearchRow[] = [];
   for (const pack of activePacks()) {

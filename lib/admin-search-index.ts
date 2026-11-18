@@ -8,6 +8,7 @@
 import { allAdminDestinations } from "@/lib/admin-nav";
 import { listStagedCandidatesForAdminSearch } from "@/lib/content-imports";
 import { listSourcePackSearchRows } from "@/lib/import-review-queue";
+import { loadImportPacks } from "@/lib/import-packs";
 import { compact, normalize } from "@/lib/site-search-match";
 import { getSearchIndex } from "@/lib/site-search-index";
 import type { SearchDocument } from "@/lib/site-search-types";
@@ -191,6 +192,7 @@ async function pushCandidates(docs: AdminSearchDocument[]) {
     );
   }
 
+  await loadImportPacks();
   for (const row of listSourcePackSearchRows()) {
     if (stagedIds.has(row.sourceId)) continue;
     docs.push(

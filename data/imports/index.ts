@@ -1,16 +1,13 @@
 import { worldwideBatch2Candidates } from "@/data/imports/worldwide-batch-2/candidates";
 import { sourceCatalog as worldwideSources } from "@/data/imports/worldwide-batch-2/sources";
-import { worldwideBatch3Candidates } from "@/data/imports/worldwide-batch-3/candidates";
 import { sourceCatalog as worldwideBatch3Sources } from "@/data/imports/worldwide-batch-3/sources";
-import { worldwideBatch4Candidates } from "@/data/imports/worldwide-batch-4/candidates";
 import { sourceCatalog as worldwideBatch4Sources } from "@/data/imports/worldwide-batch-4/sources";
-import { worldwideBatch5Candidates } from "@/data/imports/worldwide-batch-5/candidates";
 import { sourceCatalog as worldwideBatch5Sources } from "@/data/imports/worldwide-batch-5/sources";
 import { kosherFoodBatchCandidates } from "@/data/imports/kosher-food-batch/candidates";
 import { sourceCatalog as kosherFoodSources } from "@/data/imports/kosher-food-batch/sources";
-import { nesiyatovaHeritageCandidates } from "@/data/imports/nesiyatova-heritage-batch/candidates";
 import type { BulkContentCandidateInput, BulkContentKind } from "@/lib/bulk-content";
 import { prefillBulkCandidateFromPack } from "@/lib/import-prefill";
+import { importPacks } from "@/lib/import-packs";
 
 /**
  * Checked-in source packages that the admin may stage. Adding a new documented
@@ -142,7 +139,17 @@ function batchFor(slug: string, name: string, sourceCount: number) {
 // owner's decision — ~1,500 bare place-names with no coordinates, address or
 // description, a research to-do list rather than reviewable listings. They are
 // gone from the built-in import packages and their directories were removed.
-export const BUILT_IN_CONTENT_IMPORT_PACKAGES: readonly BuiltInContentImportPackage[] = [
+let builtIn: readonly BuiltInContentImportPackage[] | null = null;
+
+/**
+ * The built-in packages. A function, not a constant, because four of the packs
+ * are loaded at run time (lib/import-packs.ts): server code awaits
+ * loadImportPacks() first, then this builds the list once and keeps it.
+ */
+export function builtInContentImportPackages(): readonly BuiltInContentImportPackage[] {
+  if (builtIn) return builtIn;
+  const { worldwideBatch3Candidates, worldwideBatch4Candidates, worldwideBatch5Candidates, nesiyatovaHeritageCandidates } = importPacks();
+  builtIn = [
   {
     schemaVersion: 1,
     batch: batchFor(
@@ -228,3 +235,5 @@ export const BUILT_IN_CONTENT_IMPORT_PACKAGES: readonly BuiltInContentImportPack
     })),
   },
 ];
+  return builtIn;
+}

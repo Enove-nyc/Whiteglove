@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:host": "npm run db:migrate && tsx scripts/sync-import-packs.ts && next build",
     "start": "node scripts/start.mjs",
     "lint": "eslint",
     "postinstall": "prisma generate",

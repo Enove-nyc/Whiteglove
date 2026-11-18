@@ -541,6 +541,17 @@ model ContentImportCandidate {
   @@index([sourceId])
 }
 
+// The large private review packs under data/imports, gzipped. They are read
+// only by the admin's review screens, so they live here rather than inside the
+// site's server code, which keeps it under the hosting size limit. Written by
+// scripts/sync-import-packs.ts on every build; read by lib/import-packs.ts.
+model ImportPack {
+  key       String   @id
+  hash      String
+  data      String
+  updatedAt DateTime @updatedAt
+}
+
 // Non-secret Trello scope for private bulk-candidate review. API credentials
 // remain server environment variables; no public content is related to this
 // setting or created by changing a card's Trello status.

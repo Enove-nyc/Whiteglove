@@ -16,7 +16,8 @@
 //
 // Usage: npx tsx scripts/audit-import-duplicates.mjs
 
-import { BUILT_IN_CONTENT_IMPORT_PACKAGES } from "../data/imports/index.ts";
+import { builtInContentImportPackages } from "../data/imports/index.ts";
+const BUILT_IN_CONTENT_IMPORT_PACKAGES = builtInContentImportPackages();
 import { prepareBulkContentCandidate } from "../lib/bulk-content.ts";
 
 const all = [];

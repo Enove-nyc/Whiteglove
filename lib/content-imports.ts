@@ -10,9 +10,10 @@
 
 import { attractions } from "@/data/attractions";
 import {
-  BUILT_IN_CONTENT_IMPORT_PACKAGES,
+  builtInContentImportPackages,
   type BuiltInContentImportPackage,
 } from "@/data/imports";
+import { loadImportPacks } from "@/lib/import-packs";
 import { heritageCemeteries } from "@/data/heritage-cemeteries";
 import { kosherEateries } from "@/data/kosher-eateries";
 import { kosherStays } from "@/data/kosher-stays";
@@ -54,7 +55,7 @@ const DB_OFF_MESSAGE = "Connect the private content database before staging sour
  * though the pack no longer exists. Rows from these batches stay in the table;
  * they just stop being counted or shown — the same treatment template-filler
  * and machine-generated rows already get below. Keep this in step with the
- * packs removed from BUILT_IN_CONTENT_IMPORT_PACKAGES.
+ * packs removed from builtInContentImportPackages().
  */
 export const RETIRED_IMPORT_BATCH_SLUGS: ReadonlySet<string> = new Set([
   "white-glove-europe-batch",
@@ -486,12 +487,13 @@ function storedInput(candidate: ContentImportCandidateView): BulkContentCandidat
 
 /** Source package + persisted queue. A failed DB read intentionally exposes no pseudo-published data. */
 export async function getContentImportDashboard(): Promise<ContentImportDashboard> {
+  await loadImportPacks();
   const packageRows = alreadyOnSite(
-    BUILT_IN_CONTENT_IMPORT_PACKAGES.flatMap((sourcePackage) =>
+    builtInContentImportPackages().flatMap((sourcePackage) =>
       packageCandidates(sourcePackage).map((candidate) => viewFromPrepared(sourcePackage, candidate)),
     ),
   );
-  const packageBatches = BUILT_IN_CONTENT_IMPORT_PACKAGES.map(packageBatch);
+  const packageBatches = builtInContentImportPackages().map(packageBatch);
   if (!isDbEnabled()) {
     return {
       configured: false,
@@ -528,9 +530,9 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
       }))
       .filter((item) => !isDisallowedImportSource(item));
     const importedBySlug = new Map(importedBatches.map((item) => [item.slug, item]));
-    const builtInSlugs = new Set(BUILT_IN_CONTENT_IMPORT_PACKAGES.map((item) => item.batch.slug));
+    const builtInSlugs = new Set(builtInContentImportPackages().map((item) => item.batch.slug));
     const batchesToShow = [
-      ...BUILT_IN_CONTENT_IMPORT_PACKAGES.map((sourcePackage) => {
+      ...builtInContentImportPackages().map((sourcePackage) => {
         const imported = importedBySlug.get(sourcePackage.batch.slug);
         return imported
           ? { ...imported, packageCandidates: sourcePackage.candidates.length }
@@ -540,7 +542,7 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
         (item) => !builtInSlugs.has(item.slug) && !RETIRED_IMPORT_BATCH_SLUGS.has(item.slug),
       ),
     ];
-    const readyToStage = BUILT_IN_CONTENT_IMPORT_PACKAGES
+    const readyToStage = builtInContentImportPackages()
       .filter((sourcePackage) => !importedBySlug.has(sourcePackage.batch.slug))
       .reduce((total, sourcePackage) => total + realCandidateCount(sourcePackage), 0);
     const candidateViews = (rows as unknown as StorageCandidate[])
@@ -587,7 +589,8 @@ export async function getContentImportDashboard(): Promise<ContentImportDashboar
  * discarded.
  */
 export async function stageBuiltInContentBatch(slug: string): Promise<{ created: number; total: number }> {
-  const sourcePackage = BUILT_IN_CONTENT_IMPORT_PACKAGES.find((item) => item.batch.slug === slug);
+  await loadImportPacks();
+  const sourcePackage = builtInContentImportPackages().find((item) => item.batch.slug === slug);
   if (!sourcePackage) throw new Error("Unknown source package.");
   if (isDisallowedImportSource(sourcePackage.batch)) {
     throw new Error("This source package is not permitted for White Glove imports.");

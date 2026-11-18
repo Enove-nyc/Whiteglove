@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BUILT_IN_CONTENT_IMPORT_PACKAGES } from "@/data/imports";
+import { builtInContentImportPackages } from "@/data/imports";
 import { cemeteries } from "@/data/cemeteries";
 import {
   nesiyatovaHeritageCandidates,
@@ -44,7 +44,7 @@ describe("Nesiya Tova heritage review pack", () => {
   });
 
   it("can stage all rows and keeps beis hachaim on its dedicated editor", () => {
-    const sourcePackage = BUILT_IN_CONTENT_IMPORT_PACKAGES.find(
+    const sourcePackage = builtInContentImportPackages().find(
       (item) => item.batch.slug === "nesiyatova-heritage-batch",
     );
     assert.ok(sourcePackage);

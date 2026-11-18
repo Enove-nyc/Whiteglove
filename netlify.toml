@@ -3,7 +3,9 @@
 # Blobs (lib/media.ts). Daily jobs are called by the GitHub workflow
 # .github/workflows/daily-notifications.yml, not by a timer in the server.
 [build]
-  command = "npm run build"
+  # Migrations, then the private review packs into the database
+  # (scripts/sync-import-packs.ts), then the build itself.
+  command = "npm run build:host"
   publish = ".next"
 
 [build.environment]
