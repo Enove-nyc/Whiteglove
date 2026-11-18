@@ -1,12 +1,15 @@
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { appendChat, type CompanionChatMessage } from "@/lib/companion-chat-store";
-import { checkTripFlightStatus, getAccountData, listAllAccounts, markReminderSent, withTrips } from "@/lib/account-store";
+import { checkTripFlightStatus, getAccountData, listAllAccounts, markReminderSent, pushToTripSubscribers, withTrips } from "@/lib/account-store";
 import {
   balanceDueReminderDue,
   balanceDueReminderText,
   departureReminderDue,
   departureReminderText,
+  balanceDueReminderPush,
+  departureReminderPush,
+  type ReminderPush,
 } from "@/lib/trip-reminders";
 
 // The scheduled trip work, as plain functions — the sweep over flights and the
@@ -64,8 +67,16 @@ export async function runFlightStatusSweep(): Promise<{ checked: number; alerted
  * thread. Only accounts on a plan that serves clients, re-read fresh so a
  * lapsed subscription cannot still send. `today` is a YYYY-MM-DD date.
  */
-export async function runTripReminders(today: string): Promise<{ sent: number }> {
+export async function runTripReminders(today: string): Promise<{ sent: number; pushed: number }> {
   let sent = 0;
+  let pushed = 0;
+  // THE THREAD IS THE DELIVERY; THE PUSH IS THE NUDGE. Stored and marked sent
+  // first, pushed only after, so a phone that is off never costs the client
+  // the reminder. pushToTripSubscribers never throws, so a failed push cannot
+  // fail the run.
+  const nudge = async (email: string, tripId: string, push: ReminderPush) => {
+    pushed += await pushToTripSubscribers(email, tripId, push);
+  };
   const accounts = await listAllAccounts();
   for (const account of accounts.filter((a) => mayServeCompanionClients(a.plan))) {
     // listAllAccounts' `plan` is a snapshot from the scan — read it fresh here
@@ -92,6 +103,7 @@ export async function runTripReminders(today: string): Promise<{ sent: number }>
         if (await wasDelivered(trip.shareId, message)) {
           await markReminderSent(account.email, trip.id, "departure", today);
           sent += 1;
+          await nudge(account.email, trip.id, departureReminderPush(reminderTrip));
         } else {
           console.error("[cron] trip-reminders: departure reminder did not save, will retry next run", { account: account.email, tripId: trip.id });
         }
@@ -101,11 +113,12 @@ export async function runTripReminders(today: string): Promise<{ sent: number }>
         if (await wasDelivered(trip.shareId, message)) {
           await markReminderSent(account.email, trip.id, "balanceDue", today);
           sent += 1;
+          await nudge(account.email, trip.id, balanceDueReminderPush(reminderTrip));
         } else {
           console.error("[cron] trip-reminders: balance-due reminder did not save, will retry next run", { account: account.email, tripId: trip.id });
         }
       }
     }
   }
-  return { sent };
+  return { sent, pushed };
 }

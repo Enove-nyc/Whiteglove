@@ -156,7 +156,7 @@ export default function TripStartFlow({
   // Through the shared hook rather than an effect: this rendered "kosher" and
   // corrected itself after mount, which React's lint rule refuses and which
   // ignored the deployment's own NEXT_PUBLIC_SITE_BRAND. See useSiteBrand.
-  const itineraries = useSiteBrand() === "itineraries";
+  const itineraries = useSiteBrand(brand) === "itineraries";
   const headingRef = useRef<HTMLHeadingElement>(null);
   /**
    * WHAT THE ACCOUNT ALREADY KNOWS, filled in rather than asked again.

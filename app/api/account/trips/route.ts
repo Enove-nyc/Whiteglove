@@ -43,7 +43,10 @@ async function signedInEmail() {
 export async function GET() {
   const email = await signedInEmail();
   if (!email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  const trips = await getTrips(email);
+  // withLinkOpens rather than getTrips: the trip list draws its "opened / not
+  // opened yet" line from this, worked out on the server in the trip's own
+  // timezone.
+  const trips = await withLinkOpens(email);
   // AND HEAL A PASS LEFT ON A TRIP THAT IS GONE. Releasing orphans used to run
   // only when a trip was deleted, so a pass orphaned any other way — a trip
   // deleted between paying and the webhook landing, an id that was never this

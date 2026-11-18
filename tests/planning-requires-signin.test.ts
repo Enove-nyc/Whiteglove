@@ -19,7 +19,8 @@ import { isPrivatePath } from "@/lib/site-map";
  * fails here today.
  */
 const GATED: Record<string, string> = {
-  "/itinerary": "app/itinerary/page.tsx",
+  // /itinerary is open to guests now (AGENTS.md, 18 November 2026); their
+  // trip stays in their own browser — tests/guest-planner.test.ts.
   "/my-route": "app/my-route/page.tsx",
 };
 

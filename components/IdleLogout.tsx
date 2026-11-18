@@ -1,6 +1,6 @@
 "use client";
 
-import { forgetOfflineDocuments } from "@/lib/offline-documents";
+import { forgetOfflineData } from "@/lib/offline-forget";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { withReturnPath } from "@/lib/return-path";
@@ -36,7 +36,7 @@ export default function IdleLogout({
       // The likeliest place this feature ever hurts somebody: a session left
       // open in a hotel business centre, timing out on its own, with boarding
       // passes still cached on the machine. They go with the session.
-      await forgetOfflineDocuments();
+      await forgetOfflineData();
       if (cancelled) return;
       if (redirectTo) {
         // The page they were on, so signing back in returns them to it rather

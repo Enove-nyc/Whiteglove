@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { publicPaths } from "@/lib/site-map";
+import { GUIDE_ONLY_PREFIXES } from "@/lib/guide-paths";
 
 /**
  * The page that answers "what do I actually get", on the site that charges for it.
@@ -21,11 +22,14 @@ import { publicPaths } from "@/lib/site-map";
  * scrolls further down.
  */
 
+/**
+ * READ, NOT PARSED. This used to pull the list out of middleware.ts with a
+ * regular expression, which broke the moment the list moved to
+ * lib/guide-paths.ts so the sitemap could read it too — and a test that parses
+ * source can only ever check the copy it happens to be looking at.
+ */
 function guideOnlyPrefixes(): string[] {
-  const source = readFileSync("middleware.ts", "utf8");
-  const block = source.match(/const GUIDE_ONLY_PREFIXES = \[([\s\S]*?)\];/);
-  assert.ok(block, "middleware.ts no longer declares GUIDE_ONLY_PREFIXES the way this test reads it");
-  return [...block[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  return [...GUIDE_ONLY_PREFIXES];
 }
 
 describe("the sample is reachable on the domain that sells it", () => {
@@ -107,8 +111,6 @@ describe("the printed sample carries the brand of the site showing it", () => {
   const source = readFileSync("app/sample-itinerary/page.tsx", "utf8");
 
   it("passes the brand rather than taking the default", () => {
-    // No /s flag: it needs ES2018, this project targets ES2017, and the
-    // pattern has no "." for dotAll to widen — [^>]* already crosses lines.
     //
     // THE CHAIN, not one call site. The page reads the brand and hands it to
     // SampleItineraryViews, which hands it to the printed document. Both links
@@ -136,8 +138,25 @@ describe("the itineraries front door offers it", () => {
   it("puts the finished document beside the empty planner", () => {
     // Both old actions asked somebody to start using the product before they
     // had seen what it produces.
-    const home = readFileSync("components/ItinerariesHome.tsx", "utf8");
-    assert.ok(home.includes('href="/sample-itinerary"'));
+    //
+    // Read across the hero's two files: the actions moved into HomeAudience
+    // when the hero learnt to ask who is reading it, and the point of this
+    // test is that the sample is offered from the front door — not which
+    // component happens to draw the button today.
+    const hero = ["components/ItinerariesHome.tsx", "components/HomeAudience.tsx"]
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n");
+    assert.ok(hero.includes('href="/sample-itinerary"'));
+  });
+
+  it("offers it to both audiences, not only the adviser", () => {
+    // The switch changes the first button and the copy. The evidence of what
+    // the product makes is the same evidence either way, so it must not be
+    // something only one of the two is shown.
+    const audience = readFileSync("components/HomeAudience.tsx", "utf8");
+    const perAudience = audience.slice(audience.indexOf("const COPY"), audience.indexOf("const CTA"));
+    assert.doesNotMatch(perAudience, /sample-itinerary/, "the sample is behind one of the two answers");
+    assert.ok(audience.includes('href="/sample-itinerary"'));
   });
 
   it("answers the pricing page's own question with it", () => {

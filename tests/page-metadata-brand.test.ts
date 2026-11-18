@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+import { GUIDE_ONLY_PREFIXES } from "@/lib/guide-paths";
 import { describe, it } from "node:test";
 
 /**
@@ -31,10 +32,9 @@ import { describe, it } from "node:test";
  */
 
 function guideOnlyPrefixes(): string[] {
-  const source = readFileSync("middleware.ts", "utf8");
-  const block = source.match(/const GUIDE_ONLY_PREFIXES = \[([\s\S]*?)\];/);
-  assert.ok(block, "middleware.ts no longer declares GUIDE_ONLY_PREFIXES the way this test reads it");
-  return [...block[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  // Read, not parsed: the list lives in lib/guide-paths.ts now, shared with
+  // the sitemap and the middleware.
+  return [...GUIDE_ONLY_PREFIXES];
 }
 
 /** Every app-router page file, with the route it serves. */

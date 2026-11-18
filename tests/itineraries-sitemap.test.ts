@@ -26,7 +26,7 @@ describe("the sitemap offers only what this domain actually serves", () => {
 
   it("filters the guide out", () => {
     assert.match(SITEMAP, /isGuidePath/, "the sitemap does not know which paths are the guide's");
-    assert.match(SITEMAP, /\.filter\(\(\{ path \}\) => !isGuidePath\(path\)\)/);
+    assert.match(SITEMAP, /\.filter\(\(\{ path \}\) => !isGuidePath\(path\)( && isPublicPage\(path\))?\)/);
   });
 
   it("leaves nothing behind that the middleware redirects away", () => {
@@ -80,7 +80,7 @@ describe("one list, read by both the router and the sitemap", () => {
 });
 
 describe("the redirect off this domain is permanent", () => {
-  it("answers 308, not 307 — and locally, not to the other site", () => {
+  it("answers locally, not to the other site", () => {
     /**
      * 307 was temporary on the grounds that the split was young, and it cost:
      * a temporary redirect tells a search engine to keep the itineraries URL
@@ -93,8 +93,12 @@ describe("the redirect off this domain is permanent", () => {
      * here — or 410 when there is no page here to send them to.
      */
     const middleware = readFileSync("middleware.ts", "utf8");
-    assert.match(middleware, /NextResponse\.redirect\(new URL\(answer\.to \+ request\.nextUrl\.search, request\.url\), 308\)/);
-    assert.match(middleware, /status: 410/);
+    // One site now (AGENTS.md, 18 November 2026): a private page answers 404
+    // and a directory path with a booking or planning equivalent a 307 — not
+    // 410/308 — because the owner still opens these pages himself and a
+    // browser remembers a permanent redirect.
+    assert.match(middleware, /NextResponse\.redirect\(new URL\(answer\.to \+ request\.nextUrl\.search, request\.url\), 307\)/);
+    assert.match(middleware, /status: 404/);
   });
 });
 

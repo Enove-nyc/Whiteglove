@@ -1,55 +1,40 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NewSiteNotice from "@/components/NewSiteNotice";
-import DevelopmentNotice from "@/components/DevelopmentNotice";
-import { ITINERARIES_IN_DEVELOPMENT } from "@/lib/launch-status";
+import SearchPalette from "@/components/SearchPalette";
 import SiteAssistant from "@/components/SiteAssistant";
 import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
-import AppShellFlag from "@/components/AppShellFlag";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
 import { SignInGateProvider } from "@/components/SignInGate";
 import IdleLogout from "@/components/IdleLogout";
 import { readBookingLink } from "@/lib/booking-access-store";
 import RequiredFields from "@/components/RequiredFields";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import AppShellFlag from "@/components/AppShellFlag";
+import KosherSearchShell from "@/components/KosherSearchShell";
 import SiteTracker from "@/components/SiteTracker";
 import TravelpayoutsScript from "@/components/TravelpayoutsScript";
 import { getBetaNotice } from "@/lib/beta-notice-store";
 import { googleConfig } from "@/lib/google-signin";
 import { smsConfigured } from "@/lib/sms";
 import { siteOrigin } from "@/lib/seo";
-import { BRAND_NAME, configuredBrand, type SiteBrand } from "@/lib/site-brand-core";
-
-/**
- * The brand this build serves, settled at BUILD TIME and not per request.
- *
- * WHY IT HAS TO BE BUILD-TIME HERE. This object is a module constant that every
- * page in the site inherits; reading the request inside it is not possible, and
- * the manifest route (app/manifest.ts) pays for a request-time read precisely
- * because it can. NEXT_PUBLIC_SITE_BRAND is substituted by name at build, so a
- * deployment that answers exactly one domain — this one does — can be told
- * which and cost nothing.
- *
- * WHAT IT WAS DOING WRONG. `applicationName` is what a phone writes under the
- * icon when the site is installed, and it said White Glove Kosher Travel on the
- * itineraries domain — while app/manifest.ts, three files away, correctly said
- * White Glove Itineraries. The install named one brand and the page named the
- * other. The fallback title and description were the same story.
- */
-const BRAND = configuredBrand() ?? "kosher";
-const BRAND_DESCRIPTION: Record<SiteBrand, string> = {
-  kosher: "Thoughtfully planned kosher travel and Jewish heritage journeys.",
-  itineraries: "Build, organise and carry your travel itinerary with White Glove Itineraries.",
-};
 
 export const metadata: Metadata = {
   // Set once, here, so every page below can give its canonical URL and its
   // share image as a plain path and have them resolved to this deployment's
   // real address. See lib/seo.ts.
   metadataBase: siteOrigin(),
-  title: BRAND_NAME[BRAND],
-  description: BRAND_DESCRIPTION[BRAND],
-  applicationName: BRAND_NAME[BRAND],
+  // NEUTRAL ON PURPOSE, NOT UNFINISHED. One root layout serves both domains,
+  // and it is a STATIC metadata export: reading the request's brand here would
+  // make every one of the 841 prerendered pages render on demand, to fix a
+  // string almost nobody sees — every real page sets its own title through
+  // pageMetadata(), which is brand-aware. So the fallback is the name both
+  // brands genuinely share, the same call lib/email.ts already makes for mail
+  // that could belong to either. app/manifest.ts, which is what an installed
+  // icon is actually labelled from, reads the brand properly.
+  title: "White Glove",
+  description: "Plan a trip, day by day, and hand it to the person taking it.",
+  applicationName: "White Glove",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "White Glove" },
   icons: {
     // Every icon here is built from public/logo-mark.png — the logo artwork
@@ -75,7 +60,7 @@ export const metadata: Metadata = {
     //
     // app/icon.png is the tab icon; the App Router links favicon.ico for us
     // and both come out of the same build.
-    icon: [{ url: "/icon.png", type: "image/png", sizes: "96x96" }],
+    icon: [{ url: "/icon.png?v=gold-20261108", type: "image/png", sizes: "180x180" }],
     //
     // The navy background is right where it is used. An installed app icon
     // (app/manifest.ts) is drawn on the home screen with no page behind it, and
@@ -120,7 +105,6 @@ export default async function RootLayout({
         {/* "Check anything you are going to rely on." Once per visitor, never
             over the admin or a sign-in box. A dismissible popup rather than a
             strip that pushes the brand and the proposition down the page. */}
-        {ITINERARIES_IN_DEVELOPMENT && <DevelopmentNotice />}
         <NewSiteNotice notice={betaNotice} />
         <SiteTracker />
         <TravelpayoutsScript />
@@ -129,19 +113,18 @@ export default async function RootLayout({
         {/* Flags <html data-app-shell> when running inside the installed app so
             website-only chrome (the marketing footer) is hidden there. */}
         <AppShellFlag />
+        {/* The kosher search app shell and the keyboard search both search the
+            directory, which is the owner's alone now (lib/public-access.ts). */}
+        {DIRECTORY_SEARCH_IS_PUBLIC && <KosherSearchShell />}
         <IdleLogout minutes={45} endpoint="/api/account/logout" requireAccount />
         {/* tabIndex -1 so the skip link can actually put the focus here.
             Without it the browser scrolls to the anchor and leaves the focus
             behind, and the next Tab starts at the header again.
 
-            AND NO overflow-y HERE. It carried `overflow-y-auto`, which the
-            other repository's identical wrapper does not, and it never
-            scrolled anything — the window is the scrollport on every page of
-            this site. What it did do is make this div a scroll container, and
-            a scroll container between a `position: sticky` element and the
-            viewport is the thing that element sticks to, so the site header
-            stuck to a box that never moves. Measured: with it, the header sat
-            at -2,076 after scrolling 2,500px; without it, at 0. */}
+            AND NO overflow-y HERE. A scroll container between a sticky header
+            and the viewport is what the header sticks to, so it stuck to a box
+            that never moves (measured on Itineraries: the header sat at -2,076
+            after scrolling 2,500px; without it, at 0). */}
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
           <BookingLinkProvider value={booking}>
             <SignInGateProvider googleAvailable={googleAvailable} phoneSignupAvailable={phoneSignupAvailable}>
@@ -153,8 +136,9 @@ export default async function RootLayout({
             is not part of the page's own content and must not land in the
             middle of the tab order of whatever page somebody is reading. */}
         {/* It answers from the directory, which is the owner's alone now
-            (lib/public-access.ts). */}
+            (lib/public-access.ts). So does the keyboard search below. */}
         {DIRECTORY_SEARCH_IS_PUBLIC && <SiteAssistant />}
+        {DIRECTORY_SEARCH_IS_PUBLIC && <SearchPalette />}
         {/* VERCEL SPEED INSIGHTS WAS HERE, and it went when the site did.
             The component asks for /_vercel/speed-insights/script.js, which
             only exists on Vercel's edge — served from Railway it is a 404 on

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getAccountData, getCurrentAccountData, readShareOpens, savePipelineStage, withTrips } from "@/lib/account-store";
+import { accountCookieName, getAccountData, getCurrentAccountData, readShareOpens, resolveBusinessOwner, savePipelineStage, withTrips } from "@/lib/account-store";
 import { openStatus, type OpenStatus } from "@/lib/share-opens";
 import { tripTimeZone } from "@/lib/trip-timezone";
 import { getPlan } from "@/lib/account-plan-store";
@@ -68,7 +68,10 @@ export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  const plan = await getPlan(account.email);
+  // A staff login works on the business it belongs to (data/team.ts); the
+  // business's trips, under the business's plan. Never a trip id off the request.
+  const owner = await resolveBusinessOwner(account.email);
+  const plan = await getPlan(owner);
   if (!mayServeCompanionClients(plan)) {
     return NextResponse.json({ error: "The trip pipeline is part of Advisor Starter and up." }, { status: 403 });
   }
@@ -76,7 +79,7 @@ export async function GET() {
   // else on this response (the rows themselves) is the same for Starter.
   const showAnalytics = mayViewPipelineAnalytics(plan);
 
-  const data = await getAccountData(account.email);
+  const data = await getAccountData(owner);
   const { trips } = withTrips(data);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -158,7 +161,8 @@ export async function POST(request: NextRequest) {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  if (!mayServeCompanionClients(await getPlan(account.email))) {
+  const owner = await resolveBusinessOwner(account.email);
+  if (!mayServeCompanionClients(await getPlan(owner))) {
     return NextResponse.json({ error: "The trip pipeline is part of Advisor Starter and up." }, { status: 403 });
   }
 
@@ -168,7 +172,7 @@ export async function POST(request: NextRequest) {
   if (!tripId || (stage !== "inquiry" && stage !== "planning")) {
     return NextResponse.json({ error: "Provide a trip and either inquiry or planning." }, { status: 400 });
   }
-  const ok = await savePipelineStage(account.email, tripId, stage as ManualTripStage);
+  const ok = await savePipelineStage(owner, tripId, stage as ManualTripStage);
   if (!ok) return NextResponse.json({ error: "Could not save that." }, { status: 503 });
   return NextResponse.json({ ok: true });
 }

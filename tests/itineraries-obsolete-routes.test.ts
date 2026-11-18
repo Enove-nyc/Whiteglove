@@ -82,8 +82,8 @@ describe("the three answers, by path", () => {
 describe("a real status, never a soft 200", () => {
   const middleware = readFileSync("middleware.ts", "utf8");
 
-  it("returns 410 with a readable body and noindex", () => {
-    assert.match(middleware, /status: 410/);
+  it("returns 404 with a readable body and noindex", () => {
+    assert.match(middleware, /status: 404/);
     // A status alone is for the crawler; a person who followed an old link
     // needs a way onward.
     assert.match(middleware, /Build a trip/);
@@ -92,10 +92,14 @@ describe("a real status, never a soft 200", () => {
     assert.match(middleware, /name="robots" content="noindex,nofollow"/);
   });
 
-  it("uses a permanent redirect, not a rewrite", () => {
+  it("uses a redirect, not a rewrite", () => {
     // A rewrite would leave the obsolete address in the bar with a 200 under
     // it, which is the defect this replaces.
-    assert.match(middleware, /NextResponse\.redirect\(new URL\(answer\.to \+ request\.nextUrl\.search, request\.url\), 308\)/);
+    // One site now (AGENTS.md, 18 November 2026): a private page answers 404
+    // and a directory path with a booking or planning equivalent a 307 — not
+    // 410/308 — because the owner still opens these pages himself and a
+    // browser remembers a permanent redirect.
+    assert.match(middleware, /NextResponse\.redirect\(new URL\(answer\.to \+ request\.nextUrl\.search, request\.url\), 307\)/);
   });
 
   it("keeps them all out of the sitemap", () => {

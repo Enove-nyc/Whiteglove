@@ -8,8 +8,8 @@ import { inKosherSite } from "@/lib/kosher-site-archive";
  * Which of the two sites this browser is on.
  *
  * WHY A HOOK AND NOT ANOTHER EFFECT. Four components had written the same six
- * lines by hand — a `useState(false)` and a `useEffect` that corrects it after
- * mount — and that shape is a synchronous setState inside an effect, which
+ * lines by hand — a `useState(false)` and an effect hook that corrects it
+ * after mount — and that shape is a synchronous setState inside an effect, which
  * React 19's lint rule refuses and is right to: it is an extra render pass on
  * every mount to learn something that never changes.
  *
@@ -24,21 +24,25 @@ import { inKosherSite } from "@/lib/kosher-site-archive";
  * brandForHost.
  */
 
-const subscribe = () => () => {};
+const NO_CHANGE = () => () => {};
 
-function onThisHost(): SiteBrand {
-  return inKosherSite(window.location.pathname) ? "kosher" : brandForHost(window.location.hostname);
+/**
+ * The brand to show. The order is: what the page passed (it resolved the brand
+ * on the server), then the owner's Kosher Travel view inside the admin (/site,
+ * lib/kosher-site-archive.ts — Kosher Travel whatever this build is), then the
+ * deployment's own setting, then the hostname. The server snapshot is the
+ * build's brand, Itineraries when unset (AGENTS.md, 18 November 2026: one site).
+ */
+export function useSiteBrand(brandProp?: SiteBrand): SiteBrand {
+  const built = configuredBrand();
+  const fromHost = useSyncExternalStore(
+    NO_CHANGE,
+    () => (inKosherSite(window.location.pathname) ? "kosher" : brandForHost(window.location.hostname)),
+    () => built ?? "itineraries",
+  );
+  return brandProp ?? (fromHost === "kosher" ? "kosher" : built ?? fromHost);
 }
 
-function onThisBuild(): SiteBrand {
-  return configuredBrand() ?? "itineraries";
-}
-
-export function useSiteBrand(): SiteBrand {
-  return useSyncExternalStore(subscribe, onThisHost, onThisBuild);
-}
-
-/** The common question, asked the way the call sites ask it. */
 export function useIsItineraries(): boolean {
   return useSiteBrand() === "itineraries";
 }

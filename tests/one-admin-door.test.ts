@@ -3,90 +3,38 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 /**
- * There is one admin, and it is not this deployment's.
+ * One admin, on the one site, with its second factor.
  *
- * THE HOLE THIS CLOSES. This service and the kosher one read the same private
- * store — the owner confirmed UPSTASH_REDIS_REST_URL is set to the same value
- * on both — so /admin here was a second, full-strength door onto exactly the
- * same data. And this deployment carries NO second factor: no
- * lib/admin-2fa-store, no two-factor route, no code field on the sign-in form.
- * The kosher admin asks for six digits; this one asked for the password and
- * nothing else, so anybody holding that password could walk past the
- * authenticator entirely by coming here instead.
- *
- * The tests below hold both halves: the door is shut, and the reason it had to
- * be — that this deployment never grew a second factor — is still true, so if
- * one is ever added here the mismatch is worth revisiting deliberately rather
- * than by accident.
+ * UNTIL 18 NOVEMBER 2026 this file held the opposite: the itineraries
+ * deployment read the same private store as the kosher one but had no second
+ * factor, so its /admin and /api/admin were shut and sent to the kosher host.
+ * The two codebases are merged now (AGENTS.md, "one site, Kosher Travel
+ * closed"): the admin with its six-digit second factor lives here, and the
+ * owner moves it onto its own subdomain with ADMIN_HOST / ADMIN_HOST_ONLY.
+ * What must stay true is that there is no door onto the admin without that
+ * second factor, and that nothing still sends it to the closed kosher domain.
  */
 
 const MIDDLEWARE = readFileSync("middleware.ts", "utf8");
 
-describe("the second admin door is shut", () => {
-  it("redirects every admin path away from this deployment", () => {
-    assert.match(
-      MIDDLEWARE,
-      /configuredBrand\(\) === "itineraries" && \(pathname === "\/admin" \|\| pathname\.startsWith\("\/admin\/"\)\)/,
-    );
-    assert.match(MIDDLEWARE, /BRAND_ORIGIN\.kosher\), 307\)/);
+describe("the one admin door", () => {
+  it("is not sent to the closed kosher domain any more", () => {
+    assert.doesNotMatch(MIDDLEWARE, /BRAND_ORIGIN\.kosher\), 307\)/);
+    assert.doesNotMatch(MIDDLEWARE, /configuredBrand\(\) === "itineraries" && pathname\.startsWith\("\/api\/admin\/"\)/);
   });
 
-  it("shuts it before the gate, not after", () => {
-    // Anything ordered after the admin-host branch or the token check would be
-    // reachable on the way past.
-    const shut = MIDDLEWARE.indexOf('configuredBrand() === "itineraries" && (pathname === "/admin"');
-    const adminHostBranch = MIDDLEWARE.indexOf('if (onAdminHost && pathname.startsWith("/admin"))');
-    const gate = MIDDLEWARE.indexOf('adminPath.startsWith("/admin") && adminPath !== "/admin/login"');
-    assert.ok(shut > 0 && adminHostBranch > 0 && gate > 0);
-    assert.ok(shut < adminHostBranch, "the admin-host branch runs first");
-    assert.ok(shut < gate, "the admin gate runs first");
+  it("carries the second factor: the store, the route and the session check", () => {
+    readFileSync("lib/admin-2fa-store.ts", "utf8");
+    readFileSync("app/api/admin/two-factor/route.ts", "utf8");
+    assert.match(readFileSync("app/api/admin/session/route.ts", "utf8"), /admin-2fa-store/);
   });
 
-  it("is decided by THIS BUILD's brand, so the kosher admin is untouched", () => {
-    // configuredBrand() reads NEXT_PUBLIC_SITE_BRAND, set only on this service.
-    // Reading the request's brand instead would shut the admin on the other
-    // deployment the moment somebody reached it through an itineraries host.
-    assert.ok(MIDDLEWARE.includes("configuredBrand()"));
-    const shut = MIDDLEWARE.indexOf('configuredBrand() === "itineraries" && (pathname === "/admin"');
-    const clause = MIDDLEWARE.slice(shut, shut + 200);
-    assert.ok(!clause.includes("brandFromRequestHeaders"), "the request's brand decides whether the admin exists");
-  });
-});
-
-describe("the admin API is shut too, not only the pages", () => {
-  // THE HALF THE PAGE REDIRECT MISSED. The redirect above catches /admin and
-  // /admin/... — the pages. But the middleware waves every /api/** straight
-  // through, so app/api/admin/** stayed live on this host against the same
-  // shared store: twenty-odd mutating endpoints, and /api/admin/session, which
-  // mints a full admin cookie for any admin-flagged account with no second
-  // factor. On this build the admin API must 404.
-  it("404s every admin API path on the itineraries build", () => {
-    assert.match(
-      MIDDLEWARE,
-      /configuredBrand\(\) === "itineraries" && pathname\.startsWith\("\/api\/admin\/"\)/,
-    );
+  it("still requires the admin cookie for every admin page", () => {
+    assert.match(MIDDLEWARE, /adminPath\.startsWith\("\/admin"\) && adminPath !== "\/admin\/login"/);
+    assert.match(MIDDLEWARE, /timingSafeEqual\(request\.cookies\.get\("white_glove_admin"\)\?\.value, token\)/);
   });
 
-  it("shuts it BEFORE the /api pass-through, or it guards nothing", () => {
-    const apiAdmin = MIDDLEWARE.indexOf('configuredBrand() === "itineraries" && pathname.startsWith("/api/admin/")');
-    const apiPass = MIDDLEWARE.indexOf('if (pathname.startsWith("/api/")) return NextResponse.next()');
-    assert.ok(apiAdmin > 0 && apiPass > 0);
-    assert.ok(apiAdmin < apiPass, "the admin-API 404 must run before /api/** is waved through");
-  });
-
-  it("is decided by THIS BUILD's brand, like the page redirect", () => {
-    const at = MIDDLEWARE.indexOf('configuredBrand() === "itineraries" && pathname.startsWith("/api/admin/")');
-    const clause = MIDDLEWARE.slice(at, at + 160);
-    assert.ok(!clause.includes("brandFromRequestHeaders"), "the request's brand must not decide whether the admin API exists");
-  });
-});
-
-describe("the reason it had to be shut is still true", () => {
-  it("this deployment still has no second factor to bypass", () => {
-    // If any of these ever appear here, the door was shut for a reason that has
-    // changed, and that is worth a deliberate decision rather than a surprise.
-    const access = readFileSync("app/api/access/route.ts", "utf8");
-    assert.ok(!access.includes("checkSecondFactor"), "a second factor arrived; revisit why the admin is shut");
-    assert.ok(!access.includes("needsCode"), "a second factor arrived; revisit why the admin is shut");
+  it("can live on its own subdomain only", () => {
+    assert.match(MIDDLEWARE, /process\.env\.ADMIN_HOST_ONLY === "1" && pathname\.startsWith\("\/admin"\)/);
   });
 });

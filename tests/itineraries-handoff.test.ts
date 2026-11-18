@@ -13,6 +13,7 @@ describe("Kosher Travel has an independent itinerary planner", () => {
     const page = readFileSync("app/itinerary/page.tsx", "utf8");
     assert.match(page, /<ItineraryBuilder/);
     assert.doesNotMatch(page, /ContinueInItineraries/);
-    assert.match(page, /requireSignedIn/);
+    // Open to guests since 18 November 2026 (tests/guest-planner.test.ts).
+    assert.doesNotMatch(page, /requireSignedIn/);
   });
 });

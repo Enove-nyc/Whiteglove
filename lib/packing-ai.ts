@@ -11,11 +11,10 @@
  */
 
 const SYSTEM = [
-  "You suggest a packing list for a specific trip, for an Orthodox / Torah-observant Jewish traveler.",
+  "You suggest a packing list for a specific trip, for a general traveler.",
   "You are given the trip's destinations, dates, trip length, and a short list of planned stops. Suggest practical items to pack given the climate, season, trip length, and the kind of stops planned (for example: modest swimwear for a beach stop, hiking boots for a nature stop, a suit for a formal event).",
-  "Always include a Shabbos/Yom Tov category when the trip spans a Friday or Saturday, covering items like a travel Kiddush cup, candles, or tzitzis, WITHOUT assuming any specific level of observance beyond Orthodox practice — keep it general.",
   "Always include standard travel documents (passport, tickets, insurance card) and standard toiletries as their own categories.",
-  "Group every item under a short category name — for example \"Clothing\", \"Documents\", \"Shabbos\", \"Toiletries\", \"Electronics\", \"Health\".",
+  "Group every item under a short category name — for example \"Clothing\", \"Documents\", \"Toiletries\", \"Electronics\", \"Health\".",
   "Respond with ONLY a JSON object, no other text, in exactly this shape:",
   '{"items":[{"label":"","category":""}]}',
   "Keep the list practical and not excessive — around 20 to 35 items total, each a short phrase (\"Comfortable walking shoes\", not a paragraph).",

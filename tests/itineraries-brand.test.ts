@@ -10,6 +10,7 @@ import {
 } from "@/lib/navigation";
 import { brandForHost, brandFromRequestHeaders } from "@/lib/site-brand-core";
 import { GUIDE_ONLY_PREFIXES, isGuidePath } from "@/lib/guide-paths";
+import { isPublicPage } from "@/lib/public-access";
 
 /**
  * whitegloveitineraries.com is its own site — STRICTLY the planner, not a guide.
@@ -115,7 +116,7 @@ describe("a page body never hands out a bare guide link on the itineraries domai
     // the brand is settled before the href is chosen — by a mechanism that
     // also honours the deployment's own NEXT_PUBLIC_SITE_BRAND, which the
     // hand-rolled effect ignored. useSiteBrand is itself pinned below.
-    assert.match(src, /useSiteBrand\(\)/);
+    assert.match(src, /useSiteBrand\((brand)?\)/);
     assert.doesNotMatch(src, /useEffect\([^)]*setItineraries/);
     assert.match(src, /\$\{BRAND_ORIGIN\.kosher\}\/heritage/);
   });
@@ -145,7 +146,7 @@ describe("a page body never hands out a bare guide link on the itineraries domai
 
   it("/plan does not offer the guide on the itineraries brand", () => {
     const src = readFileSync("app/plan/page.tsx", "utf8");
-    assert.match(src, /const itineraries = \(await currentBrand\(\)\) === "itineraries"/);
+    assert.match(src, /const itineraries = \(await currentBrand\(\)\) === "itineraries"|const brand = await currentBrand\(\);\s*const itineraries = brand === "itineraries"/);
     // The whole closing band is behind the check, so neither button renders.
     const band = src.slice(src.indexOf("{!itineraries && ("));
     assert.match(band, /href="\/destinations"/);
@@ -217,6 +218,10 @@ describe("the itineraries domain's own pages never title themselves 'Kosher Trav
     .filter((file) => {
       const route = routeOf(file);
       if (route.startsWith("/admin")) return false;
+      // ONE SITE NOW (AGENTS.md, 18 November 2026): a page the public cannot
+      // open is the owner's Kosher Travel view, titled as Kosher Travel on
+      // purpose. Only the public pages have to name the brand they are on.
+      if (!isPublicPage(route)) return false;
       // The kosher city-guide catch-all (/uman, /lizensk…). Not a prefix the
       // middleware can list, and this domain answers those with a redirect or
       // a 404 rather than rendering them, so its title is the kosher one on
@@ -237,7 +242,7 @@ describe("the itineraries domain's own pages never title themselves 'Kosher Trav
       // the brand it just read. What matters is that the title comes FROM the
       // brand rather than being typed once and shipped to both domains.
       assert.ok(
-        /White Glove Itineraries/.test(src) || /BRAND_NAME[.[]/.test(src),
+        /White Glove Itineraries/.test(src) || /BRAND_NAME[.[]/.test(src) || /ITINERARIES_TITLE/.test(src),
         `${path} must build its title from the brand`,
       );
     });

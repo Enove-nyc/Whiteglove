@@ -38,24 +38,9 @@ function disallowFor(path: string): string[] {
 }
 
 /**
- * Crawlers that are asked not to come back.
- *
- * NOT A JUDGEMENT ON THEM, A BILL. Over seven days this site answered 43,851
- * requests, nearly all of them crawlers working through the 809 addresses in
- * the sitemap, around the clock. Every one wakes a database that bills for
- * being awake. The ones below were the loudest in the logs and send no readers
- * in return: two short-video scrapers and two link-graph bots.
- *
- * WHO IS DELIBERATELY NOT HERE. Google, Bing and Applebot bring readers.
- * OpenAI's and Anthropic's bring the answers people now ask instead of
- * searching, and a kosher guide that is invisible to those is invisible to the
- * next generation of travellers. Semrush and Ahrefs are left alone because
- * they are the owner's own tools when he wants them, and turning off a tool
- * you use to save a few pennies is a bad trade.
- *
- * AND IT IS A REQUEST, NOT A WALL. robots.txt is honoured by the well-behaved
- * and ignored by the rest; the crawlers below do generally honour it. Anything
- * that does not is a job for Cloudflare, not for this file.
+ * Crawlers that read every page and send no visitors back. Turned away
+ * entirely: on a host billed by use, their reads are pure cost. (From the
+ * Kosher Travel side; see tests/cache-windows.test.ts.)
  */
 const NO_READERS_IN_RETURN = ["Bytespider", "TikTokSpider", "DotBot", "Amazonbot"] as const;
 

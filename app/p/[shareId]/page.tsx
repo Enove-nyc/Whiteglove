@@ -46,7 +46,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ share
     );
   }
 
-  const { proposal, tripName, ownerName, advisor } = shared;
+  const { proposal, tripName, ownerName, advisor, advisorWelcome } = shared;
   const today = new Date().toISOString().slice(0, 10);
   const expired = proposalExpired(proposal, today);
 
@@ -69,6 +69,15 @@ export default async function ProposalPage({ params }: { params: Promise<{ share
             {PROPOSAL_STATUS_LABEL[proposal.status]}
           </p>
         </div>
+
+        {/* The adviser's welcome video, before the client has even said yes
+            (data/advisor-welcome.ts). From the Kosher Travel side. */}
+        {advisorWelcome && (
+          <div className="mt-6">
+            <video src={`/api/media?id=${encodeURIComponent(advisorWelcome.mediaId)}`} controls className="w-full max-w-md rounded-xl border border-[var(--gold-light)]" />
+            {advisorWelcome.caption && <p className="mt-2 text-sm text-stone-600">{advisorWelcome.caption}</p>}
+          </div>
+        )}
 
         <ProposalClientView shareId={shareId} proposal={proposal} expired={expired} />
       </section>

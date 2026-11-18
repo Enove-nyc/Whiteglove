@@ -33,8 +33,9 @@ describe("public discovery and private crawler boundaries", () => {
 
   it("offers public pages and assets to every crawler without a special access grant", () => {
     const policy = robots();
-    assert.ok(!Array.isArray(policy.rules));
-    const rules = policy.rules as { userAgent: string; allow: string; disallow: string[] };
+    // A list now: the everyone rule first, then the crawlers turned away.
+    assert.ok(Array.isArray(policy.rules));
+    const rules = (policy.rules as Array<{ userAgent: string; allow: string; disallow: string[] }>)[0];
     assert.equal(rules.userAgent, "*");
     assert.equal(rules.allow, "/");
     for (const path of ["/", "/about", "/contact", "/pricing", "/sample-itinerary", "/privacy", "/terms", "/llms.txt", "/sitemap.xml", "/_next/static/app.js", "/application"]) {
@@ -43,7 +44,7 @@ describe("public discovery and private crawler boundaries", () => {
   });
 
   it("excludes newer trip, document, conversation and invitation paths, including queries", () => {
-    const rules = robots().rules as { disallow: string[] };
+    const rules = (robots().rules as Array<{ disallow: string[] }>)[0];
     for (const path of ["/app", "/app?enter=1", "/app/preview", "/advisor", "/agency/join", "/join?invite=placeholder", "/i/placeholder/app", "/t/placeholder/app", "/f/placeholder", "/p/placeholder", "/form/placeholder", "/payments", "/clients/placeholder", "/api/companion/chat", "/account?next=1", "/admin?next=1"]) {
       assert.ok(isPrivatePath(path), path);
       assert.ok(rules.disallow.some((rule) => matches(rule, path)), `${path} must not be discovered by crawling`);

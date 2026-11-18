@@ -21,6 +21,14 @@
 
 /** On both deployments. Nothing owed. */
 export const ON_BOTH: readonly string[] = [
+  // Brought in by the merge of the two codebases (18 November 2026). There is
+  // one codebase and one site now, so everything here is on the site it is for.
+  "app/api/account/trip-activity/route.ts",
+  "components/TripHistory.tsx",
+  "data/trip-changes.ts",
+  "lib/itineraries-discovery.ts",
+  "lib/trip-timezone.ts",
+
   "lib/itinerary-save-queue.ts",
 
   // Traveler-owned companion shared by the two deployments.
@@ -136,8 +144,6 @@ export const KOSHER_ONLY: Record<string, string> = {
     "Links a packing line to the travel-gear shelf. The shelf is a settled decision of THIS product with exactly two homes, and a general planner hanging affiliate links off a packing list is what the owner turned down.",
   "lib/itineraries-handoff.ts":
     "The marketing link to the other product. One-directional by settled decision — porting it would have Itineraries pointing home at a kosher site.",
-  "lib/offline-documents.ts":
-    "Clears the kept-documents cache on sign-out. Itineraries already had lib/offline-forget.ts doing that and more, whose own note says there is ONE cleaner because this is the failure that matters — so the port added a cache name there rather than a second implementation. Not a gap.",
 };
 
 /**

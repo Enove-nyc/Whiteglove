@@ -90,10 +90,13 @@ describe("what is worth waking a phone for", () => {
     assert.ok(!pushableAlerts(raised).some((a) => a.kind === "no-dates"), "and it should never be pushed");
   });
 
-  it("still pushes the Shabbos clash and the loose ends", () => {
+  it("still pushes the loose ends, but not the Shabbos clash", () => {
+    // One site now, and it is White Glove Itineraries, a general travel
+    // product (AGENTS.md, 18 November 2026): the Shabbos clash stays on the
+    // trip's own screens but does not wake a phone — the Itineraries rule.
     const raised = alertsFor([stop({ contacts: [] })], "2026-06-10", "2026-06-13");
     const pushable = pushableAlerts(raised).map((a) => a.kind);
-    assert.ok(pushable.includes("shabbos"));
+    assert.ok(!pushable.includes("shabbos"));
     assert.ok(pushable.includes("leaving-soon"));
   });
 });

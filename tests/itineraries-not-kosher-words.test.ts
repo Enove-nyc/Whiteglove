@@ -128,6 +128,7 @@ describe("the brand is settled before the HTML is sent, not after it arrives", (
 
   it("the flow prefers the server's answer to the hostname", () => {
     const flow = readFileSync("components/TripStartFlow.tsx", "utf8");
-    assert.match(flow, /const itineraries = brand \? brand === "itineraries" : fromHost/);
+    // The shared hook puts the page's own brand first (components/useSiteBrand.ts).
+    assert.match(flow, /const itineraries = brand \? brand === "itineraries" : fromHost|const itineraries = useSiteBrand\(brand\) === "itineraries"/);
   });
 });

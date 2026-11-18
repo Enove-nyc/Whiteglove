@@ -8,16 +8,20 @@ import { LinkButton } from "@/components/ui/Button";
 import { accountCookieName, getAccountRecord, getTeamInvite, readSessionEmail } from "@/lib/account-store";
 import { describeIdentity } from "@/lib/identity";
 import { pageMetadata } from "@/lib/seo";
+import { BRAND_NAME, currentBrand } from "@/lib/site-brand";
 
 // A staff invite link — see app/api/account/team/route.ts, which creates the
 // token, and lib/account-store.ts's acceptTeamInvite. Noindexed for the same
 // reason a client's app link or a proposal link is: it belongs to one person.
-export const metadata = pageMetadata({
-  title: "Join the team",
-  description: "Accept an invitation to join a business account as staff.",
-  path: "/team/join",
-  noIndex: true,
-});
+export async function generateMetadata() {
+  const brand = await currentBrand();
+  return pageMetadata({
+    title: `Join the team | ${BRAND_NAME[brand]}`,
+    description: "Accept an invitation to join a business account as staff.",
+    path: "/team/join",
+    noIndex: true,
+  });
+}
 
 export const dynamic = "force-dynamic";
 

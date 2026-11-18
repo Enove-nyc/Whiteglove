@@ -18,18 +18,11 @@ describe("the page describes what this site can actually do", () => {
   const COMPARISON = readFileSync("data/plan-comparison.ts", "utf8");
   const PAGE = readFileSync("app/pricing/page.tsx", "utf8");
 
-  it("promises no extra logins, because this repository has no seats to sell", () => {
-    // THE ONE WORTH PINNING. The other repository added agency staff seats and
-    // its comparison lists them. PlanLimits here carries no staffSeats at all,
-    // so a line copied across for tidiness would be a promise nobody here
-    // could keep — and a pricing page is the last place to describe something
-    // a person would not receive.
-    // The property access, not the word — the comment in that file explains
-    // why the line is absent and would otherwise match itself.
-    assert.doesNotMatch(COMPARISON, /limits\.staffSeats/);
-    assert.doesNotMatch(COMPARISON, /more logins for people who work with you/);
-    const limits = readFileSync("lib/account-limits.ts", "utf8");
-    assert.doesNotMatch(limits, /\bstaffSeats\b/, "if seats ever land here, revisit this test rather than deleting it");
+  it("promises extra logins only where the plan really carries them", () => {
+    // One codebase now (AGENTS.md, 18 November 2026), and it has team accounts
+    // (data/team.ts), so the comparison may list staff logins — but only from
+    // the plan's own limit, never typed out.
+    assert.match(COMPARISON, /limits\.staffSeats !== UNLIMITED && limits\.staffSeats > 0/);
   });
 
   it("names the plans this deployment actually has", () => {
@@ -39,11 +32,10 @@ describe("the page describes what this site can actually do", () => {
     assert.ok(planCards().length >= 3, "expected the paid plans");
   });
 
-  it("asks its metadata helper only for what that helper takes", () => {
-    // This repository's pageMetadata settles the site name from the title and
-    // takes no brand; the other one takes one because it serves both domains.
-    assert.doesNotMatch(PAGE, /\bbrand,\s*$/m);
-    assert.match(PAGE, /White Glove Itineraries/);
+  it("names the brand it is on", () => {
+    // The merged lib/seo.ts pageMetadata takes the brand explicitly.
+    assert.match(PAGE, /const brand = await currentBrand\(\);/);
+    assert.match(PAGE, /BRAND_NAME\[brand\]/);
   });
 });
 

@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import DestinationSearch from "@/components/DestinationSearch";
 import SitePromotions from "@/components/SitePromotions";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
 import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
-import { brandForHost, configuredBrand } from "@/lib/site-brand-core";
-import { inKosherSite } from "@/lib/kosher-site-archive";
+import { useSiteBrand } from "@/components/useSiteBrand";
 import AccountMenu from "@/components/AccountMenu";
 import { ACCOUNT_PLACES, advisorPlacesFor } from "@/lib/account-places";
 import type { AccountPlan } from "@/lib/account-plans";
@@ -37,9 +36,6 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * tools) and sign-out in place and drops only the four public categories.
  */
 
-/** The hostname never changes, so subscribing is a no-op. */
-const NO_CHANGE = () => () => {};
-
 export default function Navbar({ brand: brandProp, minimal = false, homeHref, bottomBar = true }: { brand?: "kosher" | "itineraries"; minimal?: boolean; homeHref?: string; /** Off on an app page: the app has its own bottom tabs, and a second fixed bar would sit on top of them. */ bottomBar?: boolean } = {}) {
   /**
    * WHICH BRAND THIS IS, DECIDED AS EARLY AS IT CAN BE.
@@ -58,19 +54,10 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
    * HTML never saw it change at all. Setting the variable removes the
    * correction; leaving it unset leaves the old behaviour exactly as it was.
    *
-   * Read through useSyncExternalStore rather than an effect — the primitive
-   * for exactly this, letting the server and the browser disagree honestly
-   * instead of rendering and then setting state on itself.
+   * All of it lives in components/useSiteBrand.ts now, shared with the
+   * footer, together with the owner's Kosher Travel view (/site).
    */
-  const built = configuredBrand();
-  const fromHost = useSyncExternalStore(
-    NO_CHANGE,
-    () => (inKosherSite(window.location.pathname) ? "kosher" : brandForHost(window.location.hostname)),
-    () => built ?? "itineraries",
-  );
-  // The owner's Kosher Travel view inside the admin (/site) is Kosher Travel
-  // whatever this build is; everywhere else, as before.
-  const brand = brandProp ?? (fromHost === "kosher" ? "kosher" : built ?? fromHost);
+  const brand = useSiteBrand(brandProp);
   const isItineraries = brand === "itineraries";
   // Where the logo goes. On the marketing site it is the home page. Inside the
   // itineraries app (minimal chrome) the home page is a marketing page the app

@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
-import { brandForHost, configuredBrand } from "@/lib/site-brand-core";
-import { inKosherSite } from "@/lib/kosher-site-archive";
+import { useSiteBrand } from "@/components/useSiteBrand";
 
 /**
  * The bottom of every page — kept extremely small at the owner's word.
@@ -26,6 +24,16 @@ import { inKosherSite } from "@/lib/kosher-site-archive";
  * customer pages is furniture for one person put in front of everybody else.
  */
 const KOSHER_LINKS = [
+  // About and Verification came off the front page, where they sat in an
+  // "Explore" list whose other six links were an exact copy of the Featured
+  // cards above them. They are not front-page decisions; they are the two
+  // pages somebody looks for when deciding whether to trust what they read,
+  // which is what a footer is for.
+  { label: "About", href: "/about" },
+  { label: "Verification", href: "/verification" },
+  // Open to everybody since the starter list arrived; before that it was a
+  // signed-in page and there was nothing to link a visitor to.
+  { label: "What to pack", href: "/packing" },
   { label: "Contact", href: "/contact" },
   // A door that lands on the support form already chosen, for a customer who
   // wants help rather than the general contact page — see lib/contact-reasons.
@@ -49,9 +57,6 @@ const ITINERARIES_LINKS = [
   { label: "Privacy", href: "/privacy" },
 ];
 
-/** The hostname never changes, so subscribing is a no-op. */
-const NO_CHANGE = () => () => {};
-
 // Footer links that are marketing, not support/legal — dropped in the app's
 // minimal footer so a sealed app surface has no tap-path out to the sales side.
 const FOOTER_MARKETING = new Set(["Pricing", "Advertise", "Sources"]);
@@ -63,18 +68,10 @@ export default function Footer({ brand: brandProp, minimal = false }: { brand?: 
    *
    * The footer settled from the hostname after mount too, so it signed itself
    * "White Glove Kosher Travel" for a frame on this site — and in the HTML,
-   * for anything that never runs the correction. Read through
-   * useSyncExternalStore rather than an effect, which is the primitive for
-   * exactly this and clears the standing set-state-in-effect violation this
-   * file carried.
+   * for anything that never runs the correction. Asked of
+   * components/useSiteBrand.ts, the same hook the header asks.
    */
-  const built = configuredBrand();
-  const fromHost = useSyncExternalStore(
-    NO_CHANGE,
-    () => (inKosherSite(window.location.pathname) ? "kosher" : brandForHost(window.location.hostname)),
-    () => built ?? "itineraries",
-  );
-  const isItineraries = (brandProp ?? (fromHost === "kosher" ? "kosher" : built ?? fromHost)) === "itineraries";
+  const isItineraries = useSiteBrand(brandProp) === "itineraries";
   const allLinks = isItineraries ? ITINERARIES_LINKS : KOSHER_LINKS;
   // Inside the app, keep only support/legal (Contact, Terms, Privacy) — no
   // Pricing or other marketing. Contact/Terms/Privacy belong in an app.

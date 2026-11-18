@@ -24,9 +24,14 @@ const withoutComments = (source: string) =>
   source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 
 describe("no trip is kept in the browser", () => {
-  it("the planner reads and writes the account, and nothing else", () => {
+  it("the planner reads and writes the account, and a guest's own browser only", () => {
     const builder = withoutComments(read("components/ItineraryBuilder.tsx"));
-    assert.doesNotMatch(builder, /localStorage\.setItem/);
+    // THE OWNER REOPENED IT FOR GUESTS (AGENTS.md, 18 November 2026): a
+    // visitor who is not signed in keeps their trip in their own browser, and
+    // that is the ONLY browser write — under GUEST_TRIP_KEY, in the guest
+    // branch of persist(). A signed-in traveller's trip is the account's alone.
+    assert.equal((builder.match(/localStorage\.setItem/g) ?? []).length, 1);
+    assert.match(builder, /window\.localStorage\.setItem\(GUEST_TRIP_KEY, JSON\.stringify\(next\)\)/);
     assert.match(builder, /fetch\("\/api\/account\/itinerary"/);
     // The one localStorage read left is the saved Route being imported into a
     // trip, which is a different collection and mirrored to the account.

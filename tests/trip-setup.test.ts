@@ -228,7 +228,12 @@ describe("the panel sits in front of the planner, not in its way", () => {
     const builder = readFileSync("components/ItineraryBuilder.tsx", "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/\/\/[^\n]*/g, "");
-    assert.doesNotMatch(builder, /localStorage\.setItem/, "the builder must not write a trip to the browser");
+    // THE OWNER REOPENED IT FOR GUESTS (AGENTS.md, 18 November 2026): a
+    // visitor who is not signed in keeps their trip in their own browser, and
+    // that is the ONLY browser write — under GUEST_TRIP_KEY, in the guest
+    // branch of persist(). A signed-in traveller's trip is the account's alone.
+    assert.equal((builder.match(/localStorage\.setItem/g) ?? []).length, 1, "only the guest copy may be written to the browser");
+    assert.match(builder, /window\.localStorage\.setItem\(GUEST_TRIP_KEY, JSON\.stringify\(next\)\)/);
     assert.doesNotMatch(builder, /localStorage\.getItem\(LS_KEY\)/, "and must not read one back");
   });
 

@@ -203,7 +203,7 @@ export default function SiteAssistant() {
   // All hooks above have already run unconditionally; bailing here, right
   // before the render, is what keeps this a normal early return rather than a
   // rules-of-hooks violation.
-  if (isClientCodeAppView(pathname) || isCompanionAppView(pathname) || isAdvisorAppView(pathname)) return null;
+  if (isCompanionAppView(pathname) || isAdvisorAppView(pathname)) return null;
 
   return (
     <>

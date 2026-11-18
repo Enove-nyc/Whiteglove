@@ -72,6 +72,7 @@ describe("the companion app tells a traveler when their own device has no connec
   it("the offline banner is gated on isOffline, not always rendered", () => {
     const idx = APP.indexOf("No connection — showing what was last loaded");
     const block = APP.slice(Math.max(0, idx - 400), idx);
-    assert.match(block, /\{isOffline && \(/);
+    // `offline` in the merged companion app (from Itineraries), `isOffline` before.
+    assert.match(block, /\{(isOffline|offline) && \(/);
   });
 });

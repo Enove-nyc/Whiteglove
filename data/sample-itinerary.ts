@@ -229,8 +229,8 @@ export const SAMPLE_ITINERARY: Itinerary = {
 export const WHAT_IS_IN_IT: ReadonlyArray<[string, string]> = [
   ["A day per page", "Every day as one running schedule — the time, what it is, where, and the line of detail that matters."],
   ["Real driving and walking times", "Between each stop, from road routing rather than straight-line distance, so the day holds up."],
-  ["The kosher side, per day", "Where you are eating, how far it is from where you are standing, and what to bring."],
-  ["A Friday that stops early", "The planner flags a day that runs into candle-lighting. That is what the last day here is showing."],
-  ["Room to change it", "It arrives in your account on this site as well as on paper. Move a day, drop a stop, print it again."],
-  ["Nothing invented", "Every place named links to a page with practical detail and a named source."],
+  ["A day with nothing on it", "Planned in, not left over. The week here has one, and it is the reason the other six survive contact."],
+  ["On the phone as well as on paper", "The same trip opens as an app for whoever is travelling, with the wallet kept for when there is no signal."],
+  ["Room to change it", "It stays in the account that built it. Move a day, drop a stop, hand it over again."],
+  ["Nothing invented", "No airline, no confirmation code and no price is printed here, because none of them has happened yet."],
 ];

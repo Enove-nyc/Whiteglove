@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, acknowledgeAlert, acknowledgeAllAlerts, getCurrentAccountData } from "@/lib/account-store";
+import { accountCookieName, acknowledgeAlert, acknowledgeAllAlerts, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   if (!tripId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
 
   if (body?.all) {
-    const ok = await acknowledgeAllAlerts(account.email, tripId);
+    const ok = await acknowledgeAllAlerts(await resolveBusinessOwner(account.email), tripId);
     if (!ok) return NextResponse.json({ error: "Could not update those." }, { status: 503 });
     return NextResponse.json({ ok: true });
   }
@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
   const alertId = body?.alertId?.trim();
   if (!alertId) return NextResponse.json({ error: "Which alert?" }, { status: 400 });
 
-  const ok = await acknowledgeAlert(account.email, tripId, alertId);
+  // A staff login dismisses alerts on the business it works for (data/team.ts).
+  const ok = await acknowledgeAlert(await resolveBusinessOwner(account.email), tripId, alertId);
   if (!ok) return NextResponse.json({ error: "Could not dismiss that." }, { status: 503 });
   return NextResponse.json({ ok: true });
 }
