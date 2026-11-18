@@ -22,12 +22,12 @@ describe("the large review packs stay out of the site bundle", () => {
   const site = [...sourceFiles("app"), ...sourceFiles("lib"), ...sourceFiles("components"), "data/imports/index.ts", "middleware.ts"];
 
   for (const { file } of IMPORT_PACK_SOURCES) {
-    const module = file.replace(/^data\//, "@/data/").replace(/\.ts$/, "");
-    it(`nothing in the site imports ${module} for real`, () => {
+    const spec = file.replace(/^data\//, "@/data/").replace(/\.ts$/, "");
+    it(`nothing in the site imports ${spec} for real`, () => {
       for (const path of site) {
         const text = readFileSync(path, "utf8");
-        const real = text.split("\n").filter((line) => line.includes(`"${module}"`) && !/^\s*import type /.test(line));
-        assert.deepEqual(real, [], `${path} imports ${module}`);
+        const real = text.split("\n").filter((line) => line.includes(`"${spec}"`) && !/^\s*import type /.test(line));
+        assert.deepEqual(real, [], `${path} imports ${spec}`);
       }
     });
   }
