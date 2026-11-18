@@ -78,9 +78,19 @@ export const BRAND_DOMAIN: Record<SiteBrand, string> = {
   itineraries: "whitegloveitineraries.com",
 };
 
-/** The brand a host belongs to. Anything unrecognised is the kosher default. */
+/**
+ * The brand a host belongs to.
+ *
+ * ONE SITE NOW (AGENTS.md, 18 November 2026). White Glove Kosher Travel has
+ * closed, so only its own hostnames are "kosher" — and those only ever show the
+ * closing notice (lib/kosher-closure.ts). Every other host, including a preview
+ * address or localhost, is White Glove Itineraries. It used to be the other
+ * way round, when this codebase was the kosher site and the itineraries domain
+ * was the one to recognise.
+ */
 export function brandForHost(host?: string | null): SiteBrand {
-  return host && host.toLowerCase().includes(ITINERARIES_HOST) ? "itineraries" : "kosher";
+  const bare = (host ?? "").toLowerCase().split(":")[0].trim();
+  return BRAND_HOSTS.kosher.includes(bare) ? "kosher" : "itineraries";
 }
 
 export function isItinerariesHost(host?: string | null): boolean {

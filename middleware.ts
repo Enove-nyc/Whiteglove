@@ -16,6 +16,7 @@ import {
 } from "@/lib/edge-lock";
 import { MIGRATION_LISTS, movedTo } from "@/lib/route-migration";
 import { guideAnswer } from "@/lib/guide-paths";
+import { isDirectoryApi, isPublicPage } from "@/lib/public-access";
 import { brandFromRequestHeaders } from "@/lib/site-brand-core";
 import { CLOSURE_HTML, closureAction, isClosedKosherHost } from "@/lib/kosher-closure";
 import { isAndroidAppHeaders } from "@/lib/android-app";
@@ -80,17 +81,17 @@ function goneResponse(): NextResponse {
     `<meta name="robots" content="noindex,nofollow">` +
     `<title>Page not available — White Glove Itineraries</title>` +
     `<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;` +
-    `background:#faf7f2;color:#14213d;font:16px/1.6 Inter,system-ui,sans-serif;padding:24px}` +
+    `background:#F7F4EE;color:#102F35;font:16px/1.6 Inter,system-ui,sans-serif;padding:24px}` +
     `main{max-width:34rem}h1{font:600 1.6rem/1.25 Georgia,serif;margin:0 0 .75rem}` +
     `p{margin:0 0 1.25rem;color:#57534e}a{display:inline-flex;min-height:44px;align-items:center;` +
     `padding:0 20px;margin:0 8px 8px 0;border-radius:999px;text-decoration:none;font-weight:600}` +
-    `.p{background:#14213d;color:#fff}.s{border:1px solid #c9b487;color:#14213d}</style></head>` +
-    `<body><main><h1>This page is not part of White Glove Itineraries.</h1>` +
-    `<p>The address you followed does not exist on this site.</p>` +
-    `<p><a class="p" href="/itinerary">Build a trip</a><a class="s" href="/">Home</a></p>` +
+    `.p{background:#193F46;color:#FFFDFC}.s{border:1px solid #C6A15B;color:#102F35}</style></head>` +
+    `<body><main><h1>This page is not available.</h1>` +
+    `<p>Plan your trip in the itinerary planner, or book through our travel partners.</p>` +
+    `<p><a class="p" href="/itinerary">Build a trip</a><a class="s" href="/book">Book</a><a class="s" href="/">Home</a></p>` +
     `</main></body></html>`;
   return new NextResponse(body, {
-    status: 410,
+    status: 404,
     headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex, nofollow" },
   });
 }
@@ -246,6 +247,16 @@ async function siteLockRedirect(request: NextRequest, pathname: string): Promise
   return NextResponse.redirect(url);
 }
 
+/**
+ * The owner, signed in to the admin. The directory is private to him: he sees
+ * every page and every directory search as before; nobody else does. See
+ * lib/public-access.ts.
+ */
+async function isOwner(request: NextRequest): Promise<boolean> {
+  const token = await edgeAccessToken("admin");
+  return timingSafeEqual(request.cookies.get("white_glove_admin")?.value, token);
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -266,6 +277,11 @@ export async function middleware(request: NextRequest) {
         },
       });
     }
+  }
+
+  // The directory's own searches are the owner's alone now (lib/public-access.ts).
+  if (isDirectoryApi(pathname) && !(await isOwner(request))) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   if (pathname.startsWith("/api/")) return NextResponse.next();
@@ -307,29 +323,21 @@ export async function middleware(request: NextRequest) {
 
   const onAdminHost = isAdminHost(request);
 
-  // The itineraries domain is strictly the planner — a guide page reached on it
-  // is sent to the kosher site, where the guide lives. Brand is read from the
-  // request (the proxy's x-wg-brand header first, then the Host), so it is right
-  // whether the request came straight to Railway or through the Cloudflare
-  // worker that fronts the itineraries domain.
+  // ONLY THE PLANNER, BOOKING AND THE COMPANION ARE PUBLIC. White Glove Kosher
+  // Travel has closed and its directory is kept for the owner alone (AGENTS.md,
+  // 18 November 2026). Every page not on the allow-list in lib/public-access.ts
+  // answers "not available" — except to the owner signed in to the admin, who
+  // sees it as before. A directory path with a booking or planning equivalent
+  // (/hotels, /esim, /stops…) is sent there instead of a dead end.
   //
-  // AND IT NO LONGER HANDS THEM TO THE OTHER SITE. Every one of these used to
-  // answer 308 to whiteglovekoshertravel.com, which was right about the
-  // mechanism and wrong about the destination: this product must not direct
-  // its visitors there, and a redirect is the most direct direction there is.
-  // A path with a neutral home here gets a permanent redirect to it; one with
-  // no answer here gets 410 Gone, which is the true thing to say about an
-  // address this domain has never served. See lib/guide-paths.ts.
-  //
-  // NEVER on the admin host: some admin screen names ("/destinations") are also
-  // guide prefixes, and the admin's own links out to them must reach the admin
-  // routing below, not get bounced to the kosher site.
-  if (!onAdminHost && brandFromRequestHeaders(request.headers) === "itineraries") {
+  // NEVER on the admin host, and never for /admin itself: the admin has its
+  // own sign-in below.
+  if (!onAdminHost && !pathname.startsWith("/admin") && !isPublicPage(pathname) && !(await isOwner(request))) {
     const answer = guideAnswer(pathname);
-    if (answer?.kind === "redirect") {
-      return NextResponse.redirect(new URL(answer.to + request.nextUrl.search, request.url), 308);
+    if (answer?.kind === "redirect" && isPublicPage(answer.to)) {
+      return NextResponse.redirect(new URL(answer.to + request.nextUrl.search, request.url), 307);
     }
-    if (answer?.kind === "gone") return goneResponse();
+    return goneResponse();
   }
 
   // The one admin dashboard lives on this site (with its second factor);

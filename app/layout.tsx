@@ -4,6 +4,7 @@ import NewSiteNotice from "@/components/NewSiteNotice";
 import DevelopmentNotice from "@/components/DevelopmentNotice";
 import { ITINERARIES_IN_DEVELOPMENT } from "@/lib/launch-status";
 import SiteAssistant from "@/components/SiteAssistant";
+import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
 import AppShellFlag from "@/components/AppShellFlag";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
 import { SignInGateProvider } from "@/components/SignInGate";
@@ -151,7 +152,9 @@ export default async function RootLayout({
         {/* ON EVERY PAGE, IN THE CORNER. Outside #main-content on purpose: it
             is not part of the page's own content and must not land in the
             middle of the tab order of whatever page somebody is reading. */}
-        <SiteAssistant />
+        {/* It answers from the directory, which is the owner's alone now
+            (lib/public-access.ts). */}
+        {DIRECTORY_SEARCH_IS_PUBLIC && <SiteAssistant />}
         {/* VERCEL SPEED INSIGHTS WAS HERE, and it went when the site did.
             The component asks for /_vercel/speed-insights/script.js, which
             only exists on Vercel's edge — served from Railway it is a 404 on

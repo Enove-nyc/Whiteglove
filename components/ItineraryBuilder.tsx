@@ -8,6 +8,7 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
 import { bookingHref } from "@/lib/booking-access";
 import { Children, isValidElement, useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import AssistantAnswer from "@/components/AssistantAnswer";
 import { useRequireSignIn } from "@/components/SignInGate";
@@ -1442,7 +1443,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
               307-redirects to the kosher domain and breaks the installed
               itineraries app. So it is a kosher-brand feature: hidden here, the
               same as the kosher-food-near-this-day block below. */}
-          {!itineraries && canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Nearby</button>}
+          {DIRECTORY_SEARCH_IS_PUBLIC && !itineraries && canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Nearby</button>}
           <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Getting ideas…" : "Ideas for free time"}</button>
         </div>
       )}
@@ -2012,9 +2013,15 @@ function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
     >
       {!overnight && (
         <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#FAF8F3] p-3">
-          <span className={caption}>Pick from our listed lodging</span>
-          <LodgingPicker onPick={pickLodging} />
-          <span className={`${caption} mt-3 block`}>…or search any hotel</span>
+          {/* Our own listed lodging is private to the owner now (lib/public-access.ts);
+              the Google hotel search below is open to everyone. */}
+          {DIRECTORY_SEARCH_IS_PUBLIC && (
+            <>
+              <span className={caption}>Pick from our listed lodging</span>
+              <LodgingPicker onPick={pickLodging} />
+            </>
+          )}
+          <span className={`${caption} ${DIRECTORY_SEARCH_IS_PUBLIC ? "mt-3 " : ""}block`}>{DIRECTORY_SEARCH_IS_PUBLIC ? "…or search any hotel" : "Search any hotel"}</span>
           <HotelPlacePicker onPick={pickPlace} />
           <p className="mt-2 text-[11px] text-stone-500">Confirm rates and availability directly, or type your own below.</p>
         </div>
@@ -2205,6 +2212,10 @@ function ActivityForm({ startDate, units, onAdd, itineraries = false }: {
 
   return (
     <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) return onAdd({ id: draftId, name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false, unitKey: a.unitKey || undefined }); }}>
+      {/* Searching our own listings is private to the owner now
+          (lib/public-access.ts). A traveller types the name and picks the
+          address from Google's suggestions below. */}
+      {DIRECTORY_SEARCH_IS_PUBLIC && (
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#FAF8F3] p-3">
         {!itineraries && (
           <>
@@ -2218,6 +2229,7 @@ function ActivityForm({ startDate, units, onAdd, itineraries = false }: {
         <AttractionPicker onPick={pickAttraction} itineraries={itineraries} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}.</p>}
       </div>
+      )}
       <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder={itineraries ? "Museum, meal, activity…" : "Kever, museum, meal…"} /></Field>
       <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>
