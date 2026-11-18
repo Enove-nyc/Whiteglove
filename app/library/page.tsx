@@ -3,9 +3,9 @@ import Footer from "@/components/Footer";
 import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import LibraryManager from "@/components/LibraryManager";
-import { PageHeader } from "@/components/ui/PageHeader";
+import AdvisorTabBar from "@/components/companion/AdvisorTabBar";
 import { requireSignedIn } from "@/lib/require-signed-in";
-import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { pageMetadata } from "@/lib/seo";
@@ -29,19 +29,21 @@ export default async function LibraryPage() {
   await requireSignedIn("/library");
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
-  // A staff login's plan gate is the business it's linked to, not its own.
-  const plan = account ? await getPlan(await resolveBusinessOwner(account.email)) : "free";
+  const plan = account ? await getPlan(account.email) : "free";
   const allowed = mayServeCompanionClients(plan);
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <Navbar minimal />
+    <main className="flex min-h-screen flex-col bg-[var(--cream)] pb-24 sm:pb-0">
+      <Navbar minimal homeHref="/advisor" />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
-        <PageHeader
-          eyebrow="Content library"
-          title="Your content library"
-          description="Hotels, activities, tours and contacts, saved once and ready to drop into any proposal instead of retyping them — group them into a destination pack, like Rome Family Trip, to add several at once."
-        />
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Content library</p>
+        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+          Your content library
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          Hotels, activities, tours and contacts, saved once and ready to drop into any proposal instead of retyping
+          them — group them into a destination pack, like Rome Family Trip, to add several at once.
+        </p>
 
         {allowed ? (
           <div className="mt-8">
@@ -59,7 +61,8 @@ export default async function LibraryPage() {
           />
         )}
       </section>
-      <Footer />
+      <Footer minimal />
+      {allowed && <AdvisorTabBar />}
     </main>
   );
 }

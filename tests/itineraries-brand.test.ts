@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
@@ -8,6 +9,7 @@ import {
   NAV_CATEGORIES,
 } from "@/lib/navigation";
 import { brandForHost, brandFromRequestHeaders } from "@/lib/site-brand-core";
+import { GUIDE_ONLY_PREFIXES, isGuidePath } from "@/lib/guide-paths";
 
 /**
  * whitegloveitineraries.com is its own site — STRICTLY the planner, not a guide.
@@ -186,31 +188,58 @@ describe("the itineraries domain's own pages never title themselves 'Kosher Trav
   // page the itineraries domain calls its own (/plan, /itinerary and its
   // print view, /my-route, /book, /f, /i) — each must now read the brand
   // before choosing a title, the same way app/page.tsx already does.
-  const pages = [
-    "app/login/page.tsx",
-    "app/account/page.tsx",
-    "app/plan/page.tsx",
-    "app/itinerary/page.tsx",
-    "app/itinerary/print/layout.tsx",
-    "app/my-route/page.tsx",
-    "app/book/page.tsx",
-    "app/f/[shareId]/page.tsx",
-    "app/i/[shareId]/page.tsx",
-    "app/proposal/page.tsx",
-    "app/p/[shareId]/page.tsx",
-    "app/library/page.tsx",
-    "app/forms/page.tsx",
-    "app/form/[shareId]/page.tsx",
-    "app/pipeline/page.tsx",
-    "app/payments/page.tsx",
-  ];
+  /**
+   * FOUND BY SCAN, NOT BY HAND, and that is the point.
+   *
+   * This was a list somebody typed, and it was written from the pages the
+   * MARKETING journey touches — so it covered /login, /account, /plan and the
+   * rest, and missed the three pages a CLIENT opens: /app and the two share
+   * links that render the trip app. An external audit found those still
+   * titled "White Glove Kosher Travel" on the itineraries domain, months
+   * after the ones on this list were fixed.
+   *
+   * So the list is now derived. Every page this domain serves has to settle
+   * its own brand; a guide path does not, because middleware redirects it to
+   * the kosher site before it can render, and /admin does not, because this
+   * domain sends that to the kosher host too.
+   */
+  // Read, not parsed out of middleware.ts: the list moved to
+  // lib/guide-paths.ts so the sitemap could read it too, and a regular
+  // expression over source only ever checks the copy it is pointed at.
+  const GUIDE_ONLY = [...GUIDE_ONLY_PREFIXES];
+
+  const routeOf = (file: string) =>
+    "/" + file.replace(/^app\//, "").replace(/\/page\.tsx$/, "").replace(/\/?\(.*?\)/g, "").replace(/^\/+/, "");
+
+  const pages = execSync("find app -name page.tsx", { encoding: "utf8" })
+    .trim()
+    .split("\n")
+    .filter((file) => {
+      const route = routeOf(file);
+      if (route.startsWith("/admin")) return false;
+      // The kosher city-guide catch-all (/uman, /lizensk…). Not a prefix the
+      // middleware can list, and this domain answers those with a redirect or
+      // a 404 rather than rendering them, so its title is the kosher one on
+      // purpose.
+      if (route === "/[city]") return false;
+      if (GUIDE_ONLY.some((prefix) => route === prefix || route.startsWith(`${prefix}/`))) return false;
+      // Only the ones that actually declare a title.
+      return /pageMetadata\(|generateMetadata/.test(readFileSync(file, "utf8"));
+    })
+    .sort();
 
   for (const path of pages) {
     it(`${path} reads the brand before choosing its title`, () => {
       const src = readFileSync(path, "utf8");
       assert.match(src, /export async function generateMetadata/, `${path} must compute its title, not export it statically`);
       assert.match(src, /currentBrand\(\)/, `${path} must read the real brand`);
-      assert.match(src, /White Glove Itineraries/, `${path} must have an itineraries-branded title`);
+      // Either spelling of the same thing: the literal, or BRAND_NAME keyed by
+      // the brand it just read. What matters is that the title comes FROM the
+      // brand rather than being typed once and shipped to both domains.
+      assert.ok(
+        /White Glove Itineraries/.test(src) || /BRAND_NAME[.[]/.test(src),
+        `${path} must build its title from the brand`,
+      );
     });
   }
 });
@@ -218,18 +247,32 @@ describe("the itineraries domain's own pages never title themselves 'Kosher Trav
 describe("the guide is redirected off the itineraries domain", () => {
   const MW = readFileSync("middleware.ts", "utf8");
 
-  it("redirects a guide path to the kosher origin, on the itineraries brand", () => {
-    assert.match(MW, /isGuidePath\(pathname\) && brandFromRequestHeaders\(request\.headers\) === "itineraries"/);
-    assert.match(MW, /BRAND_ORIGIN\.kosher/);
+  it("answers a guide path itself rather than handing it to the kosher site", () => {
+    /**
+     * THIS USED TO ASSERT THE OPPOSITE, and the rule it was protecting has
+     * changed on purpose. Every guide path answered 308 to
+     * whiteglovekoshertravel.com, which was right about the mechanism — a real
+     * redirect, never a soft 200 — and wrong about the destination: this
+     * product must not direct its visitors to the kosher site, and a redirect
+     * is the most direct direction there is.
+     *
+     * Now: a neutral equivalent here gets a local 308, and anything with no
+     * answer here gets 410 Gone. See lib/guide-paths.ts and
+     * tests/itineraries-obsolete-routes.test.ts.
+     */
+    assert.match(MW, /brandFromRequestHeaders\(request\.headers\) === "itineraries"/);
+    assert.match(MW, /guideAnswer\(pathname\)/);
+    const block = MW.slice(MW.indexOf("const answer = guideAnswer(pathname)"));
+    const guard = block.slice(0, block.indexOf("}\n"));
+    assert.doesNotMatch(guard, /BRAND_ORIGIN\.kosher/, "it still hands visitors to the other company");
   });
 
   it("lists the guide's sections and NOT the planner's own paths", () => {
-    const list = MW.slice(MW.indexOf("GUIDE_ONLY_PREFIXES"), MW.indexOf("function isGuidePath"));
     for (const guide of ["/kosher", "/cemeteries", "/heritage", "/destinations", "/hotels", "/things-to-do", "/directory"]) {
-      assert.ok(list.includes(`"${guide}"`), `guide prefix ${guide} should be redirected`);
+      assert.ok(isGuidePath(guide), `guide prefix ${guide} should be redirected`);
     }
     for (const planner of ["/plan", "/itinerary", "/app", "/account", "/i", "/f", "/book", "/proposal", "/p", "/library", "/forms", "/form", "/pipeline", "/t", "/payments", "/pay"]) {
-      assert.ok(!list.includes(`"${planner}"`), `planner path ${planner} must stay on the itineraries domain`);
+      assert.ok(!isGuidePath(planner), `planner path ${planner} must stay on the itineraries domain`);
     }
   });
 });

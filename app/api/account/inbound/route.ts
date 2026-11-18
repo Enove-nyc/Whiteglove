@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { inboundAddress, pendingToShow } from "@/data/inbound-import";
-import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import {
   clearPending,
   ensureInboundToken,
@@ -31,9 +31,11 @@ export const dynamic = "force-dynamic";
 async function who(): Promise<string> {
   const account = await getCurrentAccountData((await cookies()).get(accountCookieName())?.value);
   if (!account) return "";
-  // A staff login forwards into the business's queue, the same as every other
-  // trip screen resolves.
-  return (await resolveBusinessOwner(account.email).catch(() => account.email)) || account.email;
+  // No staff logins on this deployment — an account forwards into its own
+  // queue. The kosher copy resolves a business owner here; if team logins ever
+  // arrive on this side, that resolution has to arrive with them, or a team
+  // member's forwarded booking lands in a queue nobody opens.
+  return account.email;
 }
 
 export async function GET() {

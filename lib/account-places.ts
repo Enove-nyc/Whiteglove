@@ -4,12 +4,11 @@ import { mayBrandOwnItinerary, mayServeCompanionClients } from "@/lib/account-li
 /**
  * Where an account can go, as data — deliberately not in a component file.
  *
- * THIS LIVED IN components/AccountMenu.tsx AND TOOK A PAGE DOWN IN THE OTHER
- * REPOSITORY. That file is "use client", and Next turns every export of a
- * client module into a client reference: importing one on the server gives a
- * marker object, not the function. The itineraries site has a server-rendered
- * /advisor page that called `advisorPlacesFor(plan)`, so it threw on every
- * request —
+ * THIS LIVED IN components/AccountMenu.tsx AND TOOK /advisor DOWN WITH IT.
+ * That file is "use client", and Next turns every export of a client module
+ * into a client reference: importing one on the server gives you a marker
+ * object, not the function. app/advisor/page.tsx is a server component and
+ * called `advisorPlacesFor(plan)`, so the page threw on every request —
  *
  *   Attempted to call advisorPlacesFor() from the server but
  *   advisorPlacesFor is on the client.
@@ -19,11 +18,9 @@ import { mayBrandOwnItinerary, mayServeCompanionClients } from "@/lib/account-li
  * browser, just a plan and a filter. It was in that file because that is where
  * the menu using it happened to be.
  *
- * This site has no page that calls it from the server today, so nothing here
- * was broken. It is moved anyway: the two repositories share this component,
- * and leaving the trap set on one side is how it gets ported back. The build
- * does not catch it — it is a runtime error on render, on a page behind a
- * login. tests/server-client-boundary.test.ts is what catches it now.
+ * The build does not catch this. It is a runtime error on render, and the page
+ * is behind a login, so nothing that runs without an account will see it.
+ * tests/server-client-boundary.test.ts is what catches it now.
  */
 
 export const ACCOUNT_PLACES = [
@@ -41,10 +38,8 @@ export const ACCOUNT_PLACES = [
  * themselves check, so this list can never offer a door a plan doesn't open.
  */
 const ADVISOR_PLACES = [
-  /* NO "Dashboard" ROW HERE, and that is not an oversight. The itineraries
-     repository has one, pointing at its /advisor page; this site has no such
-     page, and a menu entry for it would be a link to a 404 in the one menu a
-     paying advisor uses. The two lists are otherwise the same. */
+  { label: "Dashboard", href: "/advisor", need: "clients" },
+  { label: "Messages", href: "/app?screen=messages", need: "clients" },
   { label: "Trip pipeline", href: "/pipeline", need: "clients" },
   { label: "Proposals", href: "/proposal", need: "clients" },
   { label: "Content library", href: "/library", need: "clients" },
@@ -90,6 +85,10 @@ export const TRIP_PLACES = [
   { label: "Client forms", href: "/forms", need: "clients" },
   { label: "Payments", href: "/payments", need: "clients" },
   { label: "Group trip", href: "/group", need: "clients" },
+  // What has actually happened on the trip — proposal sent, form returned,
+  // payment settled — in one place, read-only. Last, because it is the record
+  // of the work above it, not another screen to do work on.
+  { label: "History", href: "/history", need: "clients" },
 ] as const;
 
 export type TripPlace = (typeof TRIP_PLACES)[number];

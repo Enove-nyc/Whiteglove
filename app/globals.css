@@ -103,7 +103,7 @@
  * overwrite the transform Leaflet positions the marker with. */
 .wg-map-pin {
   /* Bare line art on pale tiles needs an edge of its own now the disc is gone. */
-  filter: drop-shadow(0 1px 1px rgba(23, 45, 82, 0.5));
+  filter: drop-shadow(0 1px 1px rgba(16, 47, 53, 0.5));
 }
 .wg-map-pin > span {
   transform-origin: 50% 100%;
@@ -164,6 +164,52 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Installed as an app, the document must not rubber-band. A TWA/PWA sits at
+ * the top of the screen with no browser chrome, so a vertical overscroll bounces
+ * the whole page — the fixed header visibly springs up and down. Stopping the
+ * bounce at the document only in standalone keeps the browser's normal
+ * pull-to-refresh and elastic scroll for ordinary web visitors. */
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+/* The marketing footer is website chrome — the mark, the name of the other
+ * product's brand, the sales/legal links. Inside the installed app it is a
+ * website surface bleeding into an app that has its own navigation, so hide it
+ * everywhere in the app. The media query covers the common case (every TWA and
+ * installed PWA runs standalone) with no flash; [data-app-shell] on <html>,
+ * set by AppShellFlag, covers the iOS navigator.standalone and android-app://
+ * referrer cases the media query alone misses. */
+@media (display-mode: standalone) {
+  footer#contact {
+    display: none !important;
+  }
+}
+html[data-app-shell] footer#contact {
+  display: none !important;
+}
+
+/* The site header is for the WEB: on the website every page — the app pages
+ * (/app, /advisor) included — sits inside the ordinary header and footer like
+ * any other page. Inside the installed app there is no website around it, so
+ * the header is hidden there the same way the footer is above. Navbar wraps
+ * itself in .wg-web-chrome on every page it renders (components/Navbar.tsx) —
+ * this used to be a wrapper each app page had to remember to add, and pages
+ * reached from inside the app that never got the wrapper (account, agency,
+ * payments, the pipeline, and others) kept showing the website's header
+ * inside the installed app. */
+@media (display-mode: standalone) {
+  .wg-web-chrome {
+    display: none !important;
+  }
+}
+html[data-app-shell] .wg-web-chrome {
+  display: none !important;
+}
+
 main,
 section,
 article,
@@ -214,7 +260,7 @@ summary:focus-visible,
 [tabindex]:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgba(23, 45, 82, 0.55);
+  box-shadow: 0 0 0 5px rgba(16, 47, 53, 0.55);
 }
 
 /* Skip to content. Off-screen until it is focused, which is the first Tab on
@@ -347,14 +393,14 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 
 .wg-card {
   border-radius: 0.75rem;
-  box-shadow: 0 8px 28px rgba(23, 45, 82, 0.055);
+  box-shadow: 0 8px 28px rgba(16, 47, 53, 0.055);
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 @media (hover: hover) {
   .wg-card:hover {
     border-color: var(--gold);
-    box-shadow: 0 14px 38px rgba(23, 45, 82, 0.09);
+    box-shadow: 0 14px 38px rgba(16, 47, 53, 0.09);
     transform: translateY(-2px);
   }
 }
@@ -450,7 +496,7 @@ input::placeholder, textarea::placeholder { color: #78716c; }
 .itinerary-planner > div > div,
 .itinerary-planner article {
   border-radius: 0.75rem;
-  box-shadow: 0 5px 20px rgba(23, 45, 82, 0.045);
+  box-shadow: 0 5px 20px rgba(16, 47, 53, 0.045);
 }
 
 .itinerary-planner button,

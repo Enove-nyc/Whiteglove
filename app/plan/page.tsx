@@ -12,7 +12,8 @@ import { currentBrand } from "@/lib/site-brand";
 // Brand-aware: reachable on both domains, and its own title used to say
 // "kosher trip" outright — the itineraries domain plans trips of every kind.
 export async function generateMetadata() {
-  const itineraries = (await currentBrand()) === "itineraries";
+  const brand = await currentBrand();
+  const itineraries = brand === "itineraries";
   return pageMetadata({
     title: itineraries ? "Plan a trip — start here | White Glove Itineraries" : "Plan a kosher trip — start here | White Glove Kosher Travel",
     description: "Start a trip: the kind of holiday, where and when, and who is coming.",
@@ -51,13 +52,12 @@ export default async function PlanPage({
   // field as though the visitor had typed it.
   const destination = slug ? await getVacationDestinationBySlug(slug) : undefined;
   const initialKind = (TRIP_KINDS.find((entry) => entry.value === kind)?.value ?? "") as TripKind | "";
-  // /plan is one of the itineraries domain's own pages, but /destinations and
-  // /heritage are guide-only (GUIDE_ONLY_PREFIXES in middleware.ts) and do not
-  // exist there. Offered on this brand they look like ordinary buttons and
-  // then silently land the visitor on the kosher site — a different name and
-  // a different logo — which also breaks out of an installed itineraries app.
-  // The guide is the kosher site's; this brand simply does not advertise it.
-  const itineraries = (await currentBrand()) === "itineraries";
+  // The itineraries side points NOTHING at the kosher guide. /destinations and
+  // /heritage are guide-only paths that redirect to the kosher domain, so the
+  // two CTAs below are kosher-only — on itineraries they would eject the
+  // visitor off the site entirely.
+  const brand = await currentBrand();
+  const itineraries = brand === "itineraries";
 
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -73,7 +73,7 @@ export default async function PlanPage({
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8 sm:py-16">
-        <TripStartFlow initialDestination={destination?.name ?? ""} initialKind={initialKind} />
+        <TripStartFlow initialDestination={destination?.name ?? ""} initialKind={initialKind} brand={brand} />
       </section>
 
       {/* The other three doors, for somebody who opened this one and would
@@ -83,9 +83,6 @@ export default async function PlanPage({
         <StartingPoints omit={["/plan"]} heading="Or start somewhere else" />
       </section>
 
-      {/* Both of these are guide-only paths — see the note above. The whole
-          band goes on the itineraries brand rather than the two buttons
-          inside it, since an empty bordered strip is worse than no strip. */}
       {!itineraries && (
         <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-14">
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-5">

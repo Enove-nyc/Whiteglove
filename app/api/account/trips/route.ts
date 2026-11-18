@@ -8,6 +8,7 @@ import {
   ensureTripShare,
   getCurrentAccountData,
   getTrips,
+  withLinkOpens,
   importTrip,
   renameTrip,
   resolveBusinessOwner,

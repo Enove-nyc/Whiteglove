@@ -1,4 +1,3 @@
-import { byEndingSoonest, currentUpdatesFor, UPDATE_KIND_LABEL, type CurrentUpdate } from "@/data/current-updates";
 import type { TripAlert } from "@/data/trip-alerts";
 import { toneFor, worthLeadingWith, type TripAdvisories } from "@/lib/trip-advisories";
 
@@ -6,11 +5,17 @@ import { toneFor, worthLeadingWith, type TripAdvisories } from "@/lib/trip-advis
  * WHAT CHANGED SINCE THIS TRIP WAS PLANNED — in one short list, on the page
  * where somebody's trips already are.
  *
- * Three things could already tell a traveller something had moved, and all
- * three lived somewhere else: a flight alert on the command centre, the State
- * Department's advisory on the command centre, and the owner's dated notice on
- * a destination page. Somebody with a trip in three weeks had to go and look
- * at all three, which is the same as not being told.
+ * Two things could already tell a traveller something had moved, and both
+ * lived on the command centre: a flight alert, and the State Department's
+ * advisory for the countries the trip goes to. Somebody with a trip in three
+ * weeks had to go and look, which is the same as not being told.
+ *
+ * THE KOSHER COPY HAS A THIRD SOURCE AND THIS ONE DOES NOT. There, the owner
+ * writes dated notices about places — a restaurant that moved, a minyan
+ * running only over Sukkos — and they hang off destination pages. This product
+ * has no destination pages and no such notices, so the source is absent rather
+ * than stubbed: an empty third list would be a heading with nothing behind it,
+ * which is the failure this whole file is arranged to avoid.
  *
  * NOTHING NEW IS KNOWN HERE. This file invents no source and gathers no fresh
  * information: every row is something the site already held, moved to where
@@ -35,8 +40,8 @@ import { toneFor, worthLeadingWith, type TripAdvisories } from "@/lib/trip-advis
  * tested without a store, a feed or a session.
  */
 
-/** Which of the three the row came from. Drawn differently, not ranked by it. */
-export type TripUpdateSource = "flight" | "advisory" | "place";
+/** Which of the two the row came from. Drawn differently, not ranked by it. */
+export type TripUpdateSource = "flight" | "advisory";
 
 export type TripUpdate = {
   id: string;
@@ -53,58 +58,16 @@ export type TripUpdate = {
   external?: boolean;
 };
 
-/**
- * How many of the owner's dated place notices ride along.
- *
- * Capped where the other two are not, and deliberately: a flight alert and a
- * level-4 advisory are each about whether somebody's trip happens, and there
- * are only ever a handful; place notices are "worth knowing" and a trip
- * through eight towns could carry twenty. The ones kept are the soonest to
- * lapse, and every one of them is still on its own destination page.
- */
-export const MAX_PLACE_NOTICES = 3;
-
-/** The destination pages this trip's stops link to. */
-export function destinationSlugsOnTrip(stops: readonly { href?: string }[]): string[] {
-  const out: string[] = [];
-  for (const stop of stops) {
-    const match = /^\/destinations\/([a-z0-9-]+)\/?$/i.exec(stop.href?.trim() ?? "");
-    const slug = match?.[1]?.toLowerCase();
-    if (slug && !out.includes(slug)) out.push(slug);
-  }
-  return out;
-}
-
-/** The owner's notices that are live today for the places this trip goes to. */
-export function noticesForTrip(
-  updates: readonly CurrentUpdate[],
-  slugs: readonly string[],
-  today: string,
-): CurrentUpdate[] {
-  const seen = new Set<string>();
-  const out: CurrentUpdate[] = [];
-  for (const slug of slugs) {
-    for (const update of currentUpdatesFor(updates, slug, today)) {
-      if (seen.has(update.id)) continue;
-      seen.add(update.id);
-      out.push(update);
-    }
-  }
-  return out.sort(byEndingSoonest).slice(0, MAX_PLACE_NOTICES);
-}
-
 export type TripUpdateInput = {
   /** Alerts already raised on this trip. Acknowledged ones are dropped here. */
   alerts: readonly TripAlert[];
   /** The advisory roll for the trip's countries, or null when unreadable. */
   advisories: TripAdvisories | null;
-  /** Live place notices, already narrowed to this trip by noticesForTrip. */
-  notices: readonly CurrentUpdate[];
   /** Where the fuller version of a flight or advisory row lives. */
   tripHref: string;
 };
 
-export function tripUpdates({ alerts, advisories, notices, tripHref }: TripUpdateInput): TripUpdate[] {
+export function tripUpdates({ alerts, advisories, tripHref }: TripUpdateInput): TripUpdate[] {
   const out: TripUpdate[] = [];
 
   // A change to a flight first: it is the one thing here that can move by the
@@ -135,19 +98,6 @@ export function tripUpdates({ alerts, advisories, notices, tripHref }: TripUpdat
       detail: advisory.summary?.trim() || "Published by the US State Department.",
       href: advisory.link || tripHref,
       external: Boolean(advisory.link),
-    });
-  }
-
-  // Then what the owner has recorded about the places themselves.
-  for (const notice of notices) {
-    out.push({
-      id: `notice:${notice.id}`,
-      source: "place",
-      tone: "unknown",
-      label: UPDATE_KIND_LABEL[notice.kind],
-      title: notice.title,
-      detail: notice.detail,
-      href: notice.destinationSlug ? `/destinations/${notice.destinationSlug}` : undefined,
     });
   }
 

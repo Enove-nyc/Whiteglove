@@ -2,7 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { addressedToMailbox, senderAddress, tokenFromRecipients, type MatchedBy, type PendingImport } from "@/data/inbound-import";
 import { readImportDataUrl } from "@/data/smart-import-files";
-import { isAccountVerified, resolveBusinessOwner } from "@/lib/account-store";
+import { isAccountVerified } from "@/lib/account-store";
 import { accountForToken, addPending, inboundStoreAvailable } from "@/lib/inbound-import-store";
 import { extractSmartImport } from "@/lib/smart-import";
 
@@ -175,10 +175,10 @@ export async function POST(request: NextRequest) {
     // A verified account only. Somebody who registered an address and never
     // confirmed it does not get a queue, and so cannot be used to open one.
     if (sender && (await isAccountVerified(sender).catch(() => false))) {
-      // Resolved the same way every trip screen resolves, so a staff member
-      // forwarding lands in the business's queue rather than a private one
-      // nobody ever opens.
-      account = (await resolveBusinessOwner(sender).catch(() => sender)) || sender;
+      // Resolved the same way the account screen resolves it — see who() in
+      // app/api/account/inbound/route.ts. No staff logins on this deployment,
+      // so an account is its own queue.
+      account = sender;
       matchedBy = "sender";
     }
   }

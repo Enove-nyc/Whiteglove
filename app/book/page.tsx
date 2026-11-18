@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { wordsFor } from "@/lib/site-words";
 import { readWords } from "@/lib/site-words-store";
 import { readExtras } from "@/lib/travel-extras-store";
 import { essentialIsBookable, type EssentialServiceId } from "@/lib/travel-essentials";
@@ -119,16 +120,23 @@ export default async function BookPage({
   // has to type them a second time.
   const q = await searchParams;
   // The paragraph under the heading. /admin/settings/words.
-  const words = await readWords();
+  // Through wordsFor, so the built-in booking notice — which offered to search
+  // travel that fits "your destination, dates, and kosher needs" — does not
+  // describe a kosher product on the general-travel domain. Anything the owner
+  // typed himself is kept on both sites.
+  const words = wordsFor(await currentBrand(), await readWords());
   const extras = await readExtras();
   // The not-bookable list, minus anything that has since become bookable. See
   // the comment on NOT_YET: this is the reason it cannot be left behind again.
   const essentials = await readTravelEssentials();
-  const notYet = NOT_YET.filter(([, , , needs]) => !needs || !essentialIsBookable(needs, essentials));
-  // /heritage is guide-only (GUIDE_ONLY_PREFIXES in middleware.ts) and does
-  // not exist on the itineraries domain — offered here it silently lands the
-  // visitor on the kosher site. See the same note on /plan.
   const itineraries = (await currentBrand()) === "itineraries";
+  // On itineraries, drop any card whose link is a kosher-guide path (all of
+  // them are — /directory, /things-to-do): the general-travel side points
+  // nothing at the guide, and those paths redirect off the domain. With both
+  // gone the whole "rest of the trip" section falls away on that brand.
+  const notYet = NOT_YET.filter(
+    ([, , link, needs]) => (!needs || !essentialIsBookable(needs, essentials)) && !(itineraries && link),
+  );
   const clean = (v?: string) => (typeof v === "string" ? v.slice(0, 60) : undefined);
   // Trimmed and capped rather than printed as given: it lands in a text field
   // as though the visitor had typed it, and a link is not a trustworthy author.
@@ -215,7 +223,7 @@ export default async function BookPage({
         <div className="mx-auto max-w-6xl">
         <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--navy)]">Cash or points, side by side</h2>
 
-        <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_18px_45px_rgba(23,45,82,.07)]">
+        <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-[var(--gold-light)] bg-[var(--gold-light)] shadow-[0_18px_45px_rgba(16, 47, 53,.07)]">
           <div className="hidden bg-[var(--navy)] px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-light)] sm:grid sm:grid-cols-[8rem_1fr_1fr] sm:gap-5">
             <span />
             <span>With cash</span>

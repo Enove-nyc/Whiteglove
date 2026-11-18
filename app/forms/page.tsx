@@ -3,9 +3,9 @@ import Footer from "@/components/Footer";
 import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import ClientFormBuilder from "@/components/ClientFormBuilder";
-import { PageHeader } from "@/components/ui/PageHeader";
+import AdvisorTabBar from "@/components/companion/AdvisorTabBar";
 import { requireSignedIn } from "@/lib/require-signed-in";
-import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { pageMetadata } from "@/lib/seo";
@@ -30,22 +30,23 @@ export default async function FormsPage() {
   await requireSignedIn("/forms");
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
-  // A staff login's plan gate is the business it's linked to, not its own.
-  const plan = account ? await getPlan(await resolveBusinessOwner(account.email)) : "free";
+  const plan = account ? await getPlan(account.email) : "free";
   const allowed = mayServeCompanionClients(plan);
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
-      <Navbar minimal />
-      {/* Which trip this is, and the trip's other screens. Renders nothing
-          for a plan that can only reach one of them. */}
+    <main className="flex min-h-screen flex-col bg-[var(--cream)] pb-24 sm:pb-0">
+      <Navbar minimal homeHref="/advisor" />
+      {/* Which trip this is, and the trip's other screens. */}
       <TripContextBar current="/forms" />
       <section className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-14">
-        <PageHeader
-          eyebrow="Client forms"
-          title="Client forms"
-          description="Ask for exactly what you need — legal names, passports, preferences — before the trip. Answers come back here, never onto the itinerary itself."
-        />
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Client forms</p>
+        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+          Client forms
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
+          Ask for exactly what you need — legal names, passports, preferences — before the trip. Answers come back
+          here, never onto the itinerary itself.
+        </p>
 
         {allowed ? (
           <div className="mt-8">
@@ -63,7 +64,8 @@ export default async function FormsPage() {
           />
         )}
       </section>
-      <Footer />
+      <Footer minimal />
+      {allowed && <AdvisorTabBar />}
     </main>
   );
 }

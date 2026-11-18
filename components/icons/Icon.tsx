@@ -55,7 +55,13 @@ export type IconName =
   | "trash"
   | "pin"
   | "pin-filled"
-  | "star-of-david";
+  | "star-of-david"
+  | "home"
+  | "chat"
+  | "wallet"
+  | "paperclip"
+  | "image"
+  | "send";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -311,6 +317,40 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M12 3.5 19.4 16.3H4.6Z" />
       <path d="M12 20.5 4.6 7.7H19.4Z" />
+    </>
+  ),
+  home: (
+    <>
+      <path d="M3.5 11 12 4l8.5 7" />
+      <path d="M5.5 9.6V20h13V9.6" />
+    </>
+  ),
+  chat: (
+    <>
+      <path d="M20 4H4a2 2 0 0 0-2 2v8.5a2 2 0 0 0 2 2h3.2v3.2L11.6 16.5H20a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z" />
+      <path d="M7.5 9h9M7.5 12h5.5" />
+    </>
+  ),
+  wallet: (
+    <>
+      <rect x="3.5" y="6.5" width="17" height="12" rx="2.5" />
+      <path d="M20.5 11.5h-4a1.75 1.75 0 0 0 0 3.5h4" />
+    </>
+  ),
+  paperclip: (
+    <path d="M20.4 11.5 12 19.9a5 5 0 0 1-7-7l8-8a3.3 3.3 0 1 1 4.7 4.7l-8.1 8a1.6 1.6 0 0 1-2.3-2.3l7.4-7.3" />
+  ),
+  image: (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="3" />
+      <circle cx="8.5" cy="9" r="1.7" />
+      <path d="M4 17.5 9.2 12.6a2 2 0 0 1 2.7-.1l3 2.6M14 13.5l1.8-1.7a2 2 0 0 1 2.7 0L21 14" />
+    </>
+  ),
+  send: (
+    <>
+      <path d="M21.5 3.2 2.8 10.4a.6.6 0 0 0 .05 1.13l7.3 2.35 2.35 7.3a.6.6 0 0 0 1.13.05Z" />
+      <path d="M21.5 3.2 10.15 13.88" />
     </>
   ),
 };

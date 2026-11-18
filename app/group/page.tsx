@@ -1,10 +1,11 @@
 import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
+import AdvisorTabBar from "@/components/companion/AdvisorTabBar";
 import GroupPartiesPanel from "@/components/GroupPartiesPanel";
 import LockedToolCard from "@/components/LockedToolCard";
 import Navbar from "@/components/Navbar";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { accountCookieName, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
 import { requireSignedIn } from "@/lib/require-signed-in";
@@ -30,15 +31,13 @@ export default async function GroupPage() {
   await requireSignedIn("/group");
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
-  // A staff login's plan gate is the business it is linked to, not its own.
-  const plan = account ? await getPlan(await resolveBusinessOwner(account.email)) : "free";
+  const plan = account ? await getPlan(account.email) : "free";
   const allowed = mayServeCompanionClients(plan);
 
   return (
-    <main className="min-h-screen bg-[var(--cream)]">
+    <main className="min-h-screen bg-[var(--cream)] pb-24 sm:pb-0">
       <Navbar minimal />
-      {/* Which trip this is, and the trip's other screens. Renders nothing
-          for a plan that can only reach one of them. */}
+      {/* Which trip this is, and the trip's other screens. */}
       <TripContextBar current="/group" />
       <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
         <PageHeader
@@ -64,6 +63,7 @@ export default async function GroupPage() {
         )}
       </section>
       <Footer />
+      {allowed && <AdvisorTabBar />}
     </main>
   );
 }

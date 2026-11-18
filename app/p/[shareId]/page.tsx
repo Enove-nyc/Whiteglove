@@ -1,9 +1,9 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ProposalClientView from "@/components/ProposalClientView";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { LinkButton } from "@/components/ui/Button";
-import { getSharedProposal } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountSummary, getSharedProposal, readSessionEmail } from "@/lib/account-store";
 import { PROPOSAL_STATUS_LABEL, proposalExpired } from "@/data/proposal";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
@@ -25,25 +25,28 @@ export const dynamic = "force-dynamic";
 
 export default async function ProposalPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
-  const shared = await getSharedProposal(shareId);
+  // Who is looking, if anybody is signed in. The advisor previewing their own
+  // proposal must not be recorded as the client reading it — see
+  // getSharedProposal. A client has no account and this is simply empty.
+  const cookie = (await cookies()).get(accountCookieName())?.value;
+  const viewer = (await getCurrentAccountSummary(cookie))?.email || readSessionEmail(cookie) || null;
+  const shared = await getSharedProposal(shareId, viewer);
 
   if (!shared) {
     return (
       <main className="min-h-screen bg-[var(--cream)]">
         <Navbar />
-        <section className="mx-auto max-w-2xl px-5 py-20 sm:px-8">
-          <EmptyState
-            title="This proposal isn't available"
-            description="The link may have been turned off, or the proposal hasn't been sent yet. Ask your travel adviser for a fresh link."
-            action={<LinkButton href="/">Back to White Glove</LinkButton>}
-          />
+        <section className="mx-auto max-w-2xl px-5 py-20 text-center sm:px-8">
+          <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--navy)]">This proposal isn&apos;t available</h1>
+          <p className="mt-4 text-stone-600">The link may have been turned off, or the proposal hasn&apos;t been sent yet. Ask your travel advisor for a fresh link.</p>
+          <Link href="/" className="mt-8 inline-block border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white">Back to White Glove</Link>
         </section>
         <Footer />
       </main>
     );
   }
 
-  const { proposal, tripName, ownerName, advisor, advisorWelcome } = shared;
+  const { proposal, tripName, ownerName, advisor } = shared;
   const today = new Date().toISOString().slice(0, 10);
   const expired = proposalExpired(proposal, today);
 
@@ -59,20 +62,13 @@ export default async function ProposalPage({ params }: { params: Promise<{ share
             {tripName || "Your trip"}
           </h1>
           <p className="mt-2 text-sm text-stone-600">
-            Prepared by {advisor || ownerName || "your travel adviser"}
+            Prepared by {advisor || ownerName || "your travel advisor"}
             {proposal.expiresAt && !expired ? ` · Open through ${proposal.expiresAt}` : ""}
           </p>
           <p className="mt-3 inline-block rounded-full border border-[var(--gold-light)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)]">
             {PROPOSAL_STATUS_LABEL[proposal.status]}
           </p>
         </div>
-
-        {advisorWelcome && (
-          <div className="mt-6">
-            <video src={`/api/media?id=${encodeURIComponent(advisorWelcome.mediaId)}`} controls className="w-full max-w-md rounded-xl border border-[var(--gold-light)]" />
-            {advisorWelcome.caption && <p className="mt-2 text-sm text-stone-600">{advisorWelcome.caption}</p>}
-          </div>
-        )}
 
         <ProposalClientView shareId={shareId} proposal={proposal} expired={expired} />
       </section>

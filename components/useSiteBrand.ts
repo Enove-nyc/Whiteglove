@@ -4,32 +4,40 @@ import { useSyncExternalStore } from "react";
 import { brandForHost, configuredBrand, type SiteBrand } from "@/lib/site-brand-core";
 
 /**
- * Which brand this page is being shown as, in a client component.
+ * Which of the two sites this browser is on.
  *
- * THREE SOURCES, IN ORDER. What the page was told (a prop, where a server
- * component already knew), then the deployment's own setting, then the
- * hostname in the browser.
+ * WHY A HOOK AND NOT ANOTHER EFFECT. Four components had written the same six
+ * lines by hand — a `useState(false)` and a `useEffect` that corrects it after
+ * mount — and that shape is a synchronous setState inside an effect, which
+ * React 19's lint rule refuses and is right to: it is an extra render pass on
+ * every mount to learn something that never changes.
  *
- * WHY useSyncExternalStore RATHER THAN AN EFFECT. The hostname does not exist
- * while the HTML is being made, so the value legitimately differs between
- * server and client — which is exactly what this hook is for. The Footer used
- * to do it by rendering "kosher" and correcting itself in an effect, which
- * React's own lint rule refuses (a synchronous setState in an effect is a
- * second render nobody asked for), and which left `tsc`-clean code failing
- * `eslint` on a page every visitor loads. The Navbar already did it this way;
- * this is that answer, in one place, used by both.
+ * A HOSTNAME IS AN EXTERNAL STORE THAT NEVER CHANGES, which is exactly what
+ * useSyncExternalStore is for. Subscribing is a no-op because nothing will ever
+ * fire — the address bar cannot change brand without a navigation — and the
+ * server snapshot is the build's own brand, so the first paint is already
+ * right on both deployments rather than starting kosher and correcting itself.
  *
- * NO_CHANGE because a hostname never changes under a running page: there is
- * nothing to subscribe to, so the unsubscribe is all there is.
+ * The hostname is still what the client reads, because one build can be served
+ * on a preview host or behind a proxy that rewrites the Host — see
+ * brandForHost.
  */
-const NO_CHANGE = () => () => {};
 
-export function useSiteBrand(brandProp?: SiteBrand): SiteBrand {
-  const built = configuredBrand();
-  const fromHost = useSyncExternalStore(
-    NO_CHANGE,
-    () => brandForHost(window.location.hostname),
-    () => built ?? "kosher",
-  );
-  return brandProp ?? built ?? fromHost;
+const subscribe = () => () => {};
+
+function onThisHost(): SiteBrand {
+  return brandForHost(window.location.hostname);
+}
+
+function onThisBuild(): SiteBrand {
+  return configuredBrand() ?? "kosher";
+}
+
+export function useSiteBrand(): SiteBrand {
+  return useSyncExternalStore(subscribe, onThisHost, onThisBuild);
+}
+
+/** The common question, asked the way the call sites ask it. */
+export function useIsItineraries(): boolean {
+  return useSiteBrand() === "itineraries";
 }

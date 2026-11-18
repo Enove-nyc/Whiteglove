@@ -19,12 +19,23 @@ import { useRouter } from "next/navigation";
  * one more step — so this turns into a code field instead of reading as a
  * refusal.
  */
-export default function OpenAdminButton() {
+export default function OpenAdminButton({ adminHref }: { adminHref?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [needsCode, setNeedsCode] = useState(false);
   const [code, setCode] = useState("");
+
+  if (adminHref) {
+    return (
+      <a
+        href={adminHref}
+        className="border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+      >
+        Open the admin area →
+      </a>
+    );
+  }
 
   async function open() {
     setBusy(true);

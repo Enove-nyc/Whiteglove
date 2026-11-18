@@ -115,7 +115,7 @@ export default function VacationCard({ card, compact = false }: { card: Director
   return (
     <Link
       href={href}
-      className="wg-card group flex h-full flex-col overflow-hidden border border-[var(--gold-light)] bg-[var(--surface)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
+      className="wg-card group flex h-full flex-col overflow-hidden border border-[var(--gold-light)] bg-[var(--surface)] transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(16, 47, 53,.09)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy)] focus-visible:outline-offset-2"
     >
       <span
         className="relative block overflow-hidden bg-[var(--navy)] bg-cover bg-center"
@@ -126,7 +126,7 @@ export default function VacationCard({ card, compact = false }: { card: Director
             foot to hold a real photograph too. */}
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[var(--navy)] via-[rgba(23,45,82,0.55)] to-[rgba(23,45,82,0.10)]"
+          className="absolute inset-0 bg-gradient-to-t from-[var(--navy)] via-[rgba(16, 47, 53,0.55)] to-[rgba(16, 47, 53,0.10)]"
         />
         {/* THE TYPE, NAMED ON THE CARD — so a heritage town reads as the
             heritage KIND of destination rather than as a different sort of data

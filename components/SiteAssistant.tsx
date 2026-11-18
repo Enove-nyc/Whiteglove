@@ -203,7 +203,7 @@ export default function SiteAssistant() {
   // All hooks above have already run unconditionally; bailing here, right
   // before the render, is what keeps this a normal early return rather than a
   // rules-of-hooks violation.
-  if (isClientCodeAppView(pathname)) return null;
+  if (isClientCodeAppView(pathname) || isCompanionAppView(pathname) || isAdvisorAppView(pathname)) return null;
 
   return (
     <>
@@ -358,4 +358,14 @@ export default function SiteAssistant() {
       ) : null}
     </>
   );
+}
+
+/** The traveller companion app (/app, /i/…/app, /t/…/app) brings its own help. */
+export function isCompanionAppView(pathname: string | null): boolean {
+  return /^\/(app|(i|t)\/[^/]+\/app)(\/|$)/.test(pathname ?? "");
+}
+
+/** The advisor app brings its own chrome; the assistant bubble would sit on its tabs. */
+export function isAdvisorAppView(pathname: string | null): boolean {
+  return pathname === "/advisor" || (pathname?.startsWith("/advisor/") ?? false);
 }

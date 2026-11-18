@@ -47,7 +47,7 @@ describe("the profile screen is honest about who is looking at it", () => {
   it("a client on a share code is never told they are 'signed in'", () => {
     const screen = APP.slice(APP.indexOf("const profileScreen"), APP.indexOf("let body: ReactNode"));
     assert.match(screen, /liveChat\?\.side === "client" \? "Your trip" : "Signed in as"/);
-    assert.match(screen, /You opened this with the code your adviser sent you/);
+    assert.match(screen, /You opened this with the code your advisor sent you/);
   });
 });
 
@@ -129,20 +129,38 @@ describe("a sent/read tick shows once, not on every message", () => {
   });
 });
 
-describe("the overflow menu belongs to its own bubble, and recedes until touched", () => {
-  it("is centered on the bubble rather than pinned to its bottom edge", () => {
-    const row = APP.slice(APP.indexOf('flexDirection: m.announcement ? "row" : mine ? "row-reverse" : "row"') - 150, APP.indexOf("{hasMenu &&"));
-    assert.match(row, /alignItems: "center"/);
+describe("messages open a WhatsApp-style action sheet on hold or swipe", () => {
+  it("holds a bubble to open its actions, and taps ⋯ as the fallback", () => {
+    assert.match(APP, /onPointerDown=\{hasMenu \? \(e\) => onMsgPointerDown\(e, m\.at\) : undefined\}/);
+    assert.match(APP, /onClick=\{\(\) => openMenu\(m\.at\)\}/);
   });
 
-  it("dims by default and comes to full opacity only while open", () => {
-    assert.match(APP, /opacity: menuOpen \? 1 : 0\.55/);
+  it("swipes a bubble right to reply to it", () => {
+    assert.match(APP, /if \(g\.swiping && dx > 52 && Math\.abs\(dy\) < 44\)/);
+    assert.match(APP, /startReply\(m\)/);
+  });
+
+  it("floats the six reactions as their own centred pill so they can't be clipped", () => {
+    assert.match(APP, /REACTION_EMOJIS\.map\(\(e\) => \(/);
+    assert.match(APP, /aria-label="Message options"/);
+  });
+
+  it("hides the ⋯ on a phone (hold the bubble instead), reveals it on hover for a mouse", () => {
+    // No per-message button on touch — WhatsApp/Signal show none and hold opens
+    // the actions; the ⋯ is a hover-only fallback for a desktop mouse. (This
+    // replaces the old "dims the ⋯" opacity check — the control no longer sets
+    // an inline opacity at all; its visibility is the CSS below.)
+    assert.match(APP, /className="wg-msgdots"/);
+    assert.match(APP, /@media \(hover: none\) \{ \.wg-msgdots \{ display: none; \} \}/);
+    assert.match(APP, /\.wg-msgrow:hover \.wg-msgdots \{ opacity: \.4; \}/);
   });
 });
 
 describe("an itinerary reference rides with the message it was asked from", () => {
   it("is staged like a reply — attached on send, not typed into the words", () => {
-    assert.match(APP, /const \[itineraryRef, setItineraryRef\] = useState<string \| null>\(null\)/);
+    // Seeded from the subject so a thread that MOUNTS with one (the advisor
+    // opening a client's chat straight from "Ask about this") pins it too.
+    assert.match(APP, /const \[itineraryRef, setItineraryRef\] = useState<string \| null>\(subject \?\? null\)/);
     assert.match(APP, /setItineraryRef\(subject\)/);
     assert.match(APP, /\.\.\.\(itineraryRef \? \{ itineraryRef \} : \{\}\)/);
     assert.match(APP, /setItineraryRef\(null\)/);

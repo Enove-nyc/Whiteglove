@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSiteBrand } from "@/components/useSiteBrand";
+import { useSyncExternalStore } from "react";
+import { brandForHost, configuredBrand } from "@/lib/site-brand-core";
 
 /**
  * The bottom of every page — kept extremely small at the owner's word.
@@ -24,16 +25,6 @@ import { useSiteBrand } from "@/components/useSiteBrand";
  * customer pages is furniture for one person put in front of everybody else.
  */
 const KOSHER_LINKS = [
-  // About and Verification came off the front page, where they sat in an
-  // "Explore" list whose other six links were an exact copy of the Featured
-  // cards above them. They are not front-page decisions; they are the two
-  // pages somebody looks for when deciding whether to trust what they read,
-  // which is what a footer is for.
-  { label: "About", href: "/about" },
-  { label: "Verification", href: "/verification" },
-  // Open to everybody since the starter list arrived; before that it was a
-  // signed-in page and there was nothing to link a visitor to.
-  { label: "What to pack", href: "/packing" },
   { label: "Contact", href: "/contact" },
   // A door that lands on the support form already chosen, for a customer who
   // wants help rather than the general contact page — see lib/contact-reasons.
@@ -45,13 +36,11 @@ const KOSHER_LINKS = [
 ];
 
 // The itineraries site is the planner; Advertise and Sources belong to the
-// kosher guide. Note that whitegloveitineraries.com is served by its own
-// deployment, not this one, so this list is what an itineraries-branded page
-// OF THIS APP would show — /packing is deliberately not in it, because that
-// path does not exist on the site the brand names. Pricing leads because it was the thing a visitor could not
-// reach at all: what the planner costs lived behind a sign-in, so anybody
-// weighing the tool up had to open an account to find out.
+// kosher guide, so its footer carries only the three everyone needs.
 const ITINERARIES_LINKS = [
+  // What it costs, said where somebody looks for it. The page existed only in
+  // the other repository until now, so this site answered a visitor asking the
+  // most ordinary question about a paid product with a 404.
   { label: "Pricing", href: "/pricing" },
   { label: "Contact", href: "/contact" },
   { label: "Support", href: "/contact?reason=help" },
@@ -59,16 +48,39 @@ const ITINERARIES_LINKS = [
   { label: "Privacy", href: "/privacy" },
 ];
 
-export default function Footer({ brand: brandProp }: { brand?: "kosher" | "itineraries" } = {}) {
-  // It rendered "kosher" and corrected itself in an effect, which React's lint
-  // rule refuses and which ignored the deployment's own brand setting that the
-  // Navbar has always honoured. One hook now answers this for both.
-  const brand = useSiteBrand(brandProp);
-  const isItineraries = brand === "itineraries";
-  const links = isItineraries ? ITINERARIES_LINKS : KOSHER_LINKS;
+/** The hostname never changes, so subscribing is a no-op. */
+const NO_CHANGE = () => () => {};
+
+// Footer links that are marketing, not support/legal — dropped in the app's
+// minimal footer so a sealed app surface has no tap-path out to the sales side.
+const FOOTER_MARKETING = new Set(["Pricing", "Advertise", "Sources"]);
+
+export default function Footer({ brand: brandProp, minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
+  /**
+   * The same three answers as the navigation, in the same order: what the page
+   * passed, what this deployment was BUILT as, then the hostname.
+   *
+   * The footer settled from the hostname after mount too, so it signed itself
+   * "White Glove Kosher Travel" for a frame on this site — and in the HTML,
+   * for anything that never runs the correction. Read through
+   * useSyncExternalStore rather than an effect, which is the primitive for
+   * exactly this and clears the standing set-state-in-effect violation this
+   * file carried.
+   */
+  const built = configuredBrand();
+  const fromHost = useSyncExternalStore(
+    NO_CHANGE,
+    () => brandForHost(window.location.hostname),
+    () => built ?? "kosher",
+  );
+  const isItineraries = (brandProp ?? built ?? fromHost) === "itineraries";
+  const allLinks = isItineraries ? ITINERARIES_LINKS : KOSHER_LINKS;
+  // Inside the app, keep only support/legal (Contact, Terms, Privacy) — no
+  // Pricing or other marketing. Contact/Terms/Privacy belong in an app.
+  const links = minimal ? allLinks.filter((link) => !FOOTER_MARKETING.has(link.label)) : allLinks;
 
   return (
-    <footer id="contact" className="border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#D5CEC3]">
+    <footer id="contact" className="mt-auto border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#D5CEC3]">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         {/* THE MARK, AND THE NAME AS TEXT — the same lockup as the header. */}
         <div className="flex items-center gap-3">

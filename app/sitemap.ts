@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { caseStudiesPageShouldExist } from "@/data/case-studies";
+import { isGuidePath } from "@/lib/guide-paths";
 import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { siteOrigin } from "@/lib/seo";
 import { publicPaths } from "@/lib/site-map";
@@ -43,14 +44,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Through the view, so a destination the owner added is offered to
   // crawlers rather than sitting unlisted until the next deploy.
   const { getVacationDestinations } = await import("@/lib/vacation-destinations-view");
-  const entries: MetadataRoute.Sitemap = publicPaths(await getVacationDestinations()).map(
-    ({ path, priority, changeFrequency }) => ({
+  const entries: MetadataRoute.Sitemap = publicPaths(await getVacationDestinations())
+    .filter(({ path }) => !isGuidePath(path))
+    .map(({ path, priority, changeFrequency }) => ({
       url: new URL(path, origin).toString(),
       lastModified,
       changeFrequency,
       priority,
-    }),
-  );
+    }));
 
   const studies = await readPublicCaseStudies();
   if (caseStudiesPageShouldExist(studies)) {

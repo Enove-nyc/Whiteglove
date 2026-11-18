@@ -34,8 +34,8 @@ function CountCard({
       onClick={onClick}
       aria-pressed={active}
       aria-label={`Filter the queue to ${label.toLowerCase()}.`}
-      className={`${countCardClass} flex flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)] ${
-        active ? "border-[var(--gold)] shadow-[0_8px_22px_rgba(23,45,82,.08)]" : ""
+      className={`${countCardClass} flex flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(16, 47, 53,.08)] ${
+        active ? "border-[var(--gold)] shadow-[0_8px_22px_rgba(16, 47, 53,.08)]" : ""
       }`}
     >
       {typeof value === "number" && (

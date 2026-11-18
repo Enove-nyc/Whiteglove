@@ -8,6 +8,9 @@ const KIND_ICON: Record<ActivityEntry["kind"], string> = {
   proposal_sent: "📨",
   proposal_approved: "✅",
   proposal_changes_requested: "✏️",
+  // This product has a kind the kosher copy does not: a client answering a
+  // form on their own trip. Ported code has to grow the case, not drop it.
+  form_submitted: "Form completed",
   payment_received: "💳",
   addon_accepted: "➕",
   addon_declined: "➖",

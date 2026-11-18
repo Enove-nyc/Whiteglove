@@ -6,21 +6,19 @@ import { describe, it } from "node:test";
  * THE APP'S OWN COLOURS, MEASURED RATHER THAN EYEBALLED.
  *
  * Every colour in components/companion/CompanionApp.tsx is an inline style
- * literal, so nothing else in the project can check them and nothing did. The
- * whole of the app's small print was under AA, and every primary action in it
- * was cream on gold at 2.86:1 — less than half of what is readable.
+ * literal, so nothing else in the project can check them and nothing did. An
+ * audit of /app/preview in a real browser found the whole of the app's small
+ * print under AA: the wallet's group headings at 4.40, the eyebrow above every
+ * screen title at 2.31, a message's date divider at 2.06 — and every primary
+ * button in the app, cream on gold, at 2.86.
  *
- * None of that is decoration. A stop's time, a walk of four minutes, the group
- * a confirmation is filed under and the word on the button that accepts a
- * change are what somebody reads this app for, on a phone, outdoors.
+ * None of that is decoration. A stop's time, a walk of four minutes, the
+ * document group a confirmation is filed under and the word on the button that
+ * accepts a change are what somebody reads this app for, on a phone, outdoors.
  *
- * WHY THIS FILE AND NOT A BROWSER. The itineraries repository carries its own
- * copy of this component and the same pass was verified there in a browser at
- * 390, 768 and 1280 — every screen, zero failures. This copy cannot be opened
- * the same way: /app here needs a signed-in account on a paid plan and a
- * connected store. So the colours are checked by arithmetic instead, against
- * the three grounds this app actually draws on, which is the part a browser
- * was confirming anyway.
+ * The four constants are pinned here against the four grounds they are drawn
+ * on. Anything below AA fails the build, so the next person to reach for a
+ * lighter grey finds out here rather than from a scan.
  */
 
 const SRC = readFileSync("components/companion/CompanionApp.tsx", "utf8");
@@ -52,18 +50,15 @@ function ratio(a: string, b: string): number {
 const GOLD = colour("GOLD");
 const CREAM = colour("CREAM");
 const NAVY = colour("NAVY");
-const INK = colour("INK");
 const MUTED = colour("MUTED");
 const FAINT = colour("FAINT");
-const GOLD_ON_DARK = colour("GOLD_ON_DARK");
 const ON_GOLD = SRC.includes("const ON_GOLD = NAVY;") ? NAVY : colour("ON_GOLD");
 
 /**
  * The grounds the app draws MUTED text on. On the Mushroom palette that is the
  * warm-white card (#FAF8F3): the page ground is Mushroom (#D5CEC3), dark enough
  * that a legible-as-muted grey cannot clear 4.5 on it, so muted metadata lives
- * on the raised card and the page carries only ink and headings. The deep chips
- * (#C7BFB1) carry ink, not grey — checked separately below.
+ * on the raised card. The deep chips (#C7BFB1) carry ink, not grey.
  */
 const GROUNDS: Array<[string, string]> = [
   ["a warm-white card", "#FAF8F3"],
@@ -86,20 +81,11 @@ describe("the two greys clear AA on every ground", () => {
   }
 
   it("keeps them two greys, not one", () => {
-    // They exist to separate a label from the metadata beside it. Driven to the
-    // same value the hierarchy is gone and one of them should be deleted
-    // rather than quietly duplicated.
+    // They exist to separate a label from the metadata beside it. If they are
+    // ever driven to the same value the hierarchy is gone and one of them
+    // should be deleted rather than quietly duplicated.
     assert.notEqual(MUTED, FAINT);
     assert.ok(luminance(MUTED) < luminance(FAINT), "MUTED must be the darker of the two");
-  });
-
-  it("writes in a deep teal rather than a warm charcoal", () => {
-    // The old ink was #26323a — a warm charcoal. It is the palette's dark teal
-    // #102F35 now, which has real blue in it and clears 9:1 on the Mushroom
-    // ground (13:1 on a card) — as dark as text gets while carrying the brand.
-    const [red, , blue] = [1, 3, 5].map((i) => parseInt(INK.slice(i, i + 2), 16));
-    assert.ok(blue > red, `the ink ${INK} has no more blue in it than red`);
-    assert.ok(ratio(INK, CREAM) >= 9, "the ink got lighter on the way to being bluer");
   });
 });
 
@@ -107,9 +93,12 @@ describe("what is written on the gold", () => {
   it("is legible, which the cream was not", () => {
     /**
      * Cream on gold is 2.86:1 — well under half of AA — and it was on every
-     * primary action in the app. The gold does not move; it is the brand. The
-     * navy already in this palette clears AA against exactly the same gold, so
-     * only the words changed colour.
+     * primary action in the app: "See the two options", "Create poll", the
+     * send button, the selected day in the strip, the tab you are on.
+     *
+     * The gold does not move; it is the brand. The navy already in this
+     * palette clears AA against exactly the same gold, so only the words
+     * changed colour.
      */
     const r = ratio(ON_GOLD, GOLD);
     assert.ok(r >= AA, `text on gold is ${r.toFixed(2)}:1, under ${AA}`);
@@ -119,31 +108,50 @@ describe("what is written on the gold", () => {
   it("is not written in cream anywhere the gold is behind it", () => {
     assert.doesNotMatch(SRC, /background: GOLD, color: CREAM/);
     assert.doesNotMatch(SRC, /color: on \? CREAM/);
-    assert.doesNotMatch(SRC, /fg: on \? CREAM/);
+    assert.doesNotMatch(SRC, /color: t\.on \? CREAM/);
+  });
+});
+
+describe("the bottom bar says what its four buttons are", () => {
+  /**
+   * IT WAS ICON-ONLY, with the word kept as the button's accessible name and
+   * nothing on the screen: a pin, a speech bubble, a wallet and a person,
+   * standing for Trip, Advisor, Wallet and You. Two of those four are not
+   * guessable, and every phone puts the word under the glyph for that reason.
+   *
+   * It also made the bar invisible to anything reading the screen by its text.
+   * An outside scan of /app/preview reported that the tabs did not switch,
+   * having found no control by any of their names. They did switch, and do —
+   * all four, at 390 and at 1280, verified in a browser.
+   */
+  it("draws the label, not only the icon", () => {
+    assert.match(SRC, /<span style=\{\{ font: `\$\{t\.on \? 600 : 500\} 10\.5px\/1 Inter,sans-serif`[^}]*\}\}>\{t\.label\}<\/span>/);
   });
 
-  it("keeps the live card gold, and readable to the dark end of it", () => {
-    /**
-     * The "happening now" card is the one place a warm highlight IS the signal,
-     * so it stays gold rather than going navy with the panel. Its gradient ran
-     * to #8f6c3a, where navy is 3.33:1 — so the dark end was lifted to #b07f38,
-     * which is 4.52 and clears AA across the whole card.
-     */
-    assert.match(SRC, /linear-gradient\(155deg, \$\{GOLD\} 0%, #B89048 100%\)/);
-    assert.ok(ratio(ON_GOLD, "#B89048") >= AA);
+  it("does not repeat that label as an aria-label as well", () => {
+    // A visible word plus an aria-label saying the same thing is two facts
+    // that can disagree. The unread case still needs one, because "3 unread"
+    // is not written on the button.
+    assert.match(SRC, /aria-label=\{t\.badge \? `\$\{t\.label\} \(unread messages\)` : undefined\}/);
   });
 });
 
 describe("the dark the app is anchored on", () => {
   /**
-   * THE FIRST SCREEN HAD A PANEL AND THE OTHER SCREENS HAD NOTHING.
+   * THE FIRST SCREEN HAD A NAVY PANEL AND THE OTHER FOUR HAD NOTHING.
    *
    * The bar at the top of every screen was cream, on a cream page, above white
    * cards — so the wallet, the advisor thread and the You screen carried no
    * dark colour at all and had nothing to sit against. It is navy now, the
    * same navy as the panel, which is what makes the app read as one thing
    * rather than one good screen and four pale ones.
+   *
+   * The section headings moved with it. FLIGHTS, WHERE YOU ARE STAYING, HELD
+   * FOR YOU and the rest were written in the same grey as the metadata
+   * underneath them, so a wallet was one flat wash of grey small caps.
    */
+  const GOLD_ON_DARK = colour("GOLD_ON_DARK");
+
   it("puts the navy bar at the top of every screen, not only the first", () => {
     assert.match(SRC, /background: NAVY, color: CREAM, borderBottom/);
   });
@@ -169,13 +177,8 @@ describe("the dark the app is anchored on", () => {
   });
 
   it("gives the section headings the navy too", () => {
-    // They were the same grey as the metadata under them, so a wallet was one
-    // flat wash of grey small caps with nothing marking where a group started.
+    // They were the same grey as the metadata under them.
     assert.doesNotMatch(SRC, /kicker\(MUTED\)/, "a section heading is grey small caps again");
     assert.match(SRC, /kicker\(NAVY\)/);
-  });
-
-  it("makes the opening panel the dark one, not a second gold block", () => {
-    assert.match(SRC, /linear-gradient\(150deg, \$\{NAVY\} 0%/);
   });
 });

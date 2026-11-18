@@ -5,20 +5,21 @@ import { useEffect } from "react";
 /**
  * Mark the document as running inside the installed app.
  *
- * The website footer is the marketing surface for the site — the mark, the
- * brand name, the sales/legal links — and has no place inside the app, which
- * has its own navigation. The CSS hides `footer#contact` under
- * `@media (display-mode: standalone)` on its own, with no flash, for every TWA
- * and installed PWA. This adds `data-app-shell` to <html> for the cases that
- * media query misses:
+ * The website footer, the corner launcher and other website-only chrome have no
+ * place in the app — it has its own navigation, and the footer in particular is
+ * the marketing surface for the site, not something an app should show. The
+ * CSS hides `footer#contact` under `@media (display-mode: standalone)` on its
+ * own, with no flash, for every TWA and installed PWA. This adds
+ * `data-app-shell` to <html> for the cases that media query misses:
  *
- *  - the native Capacitor shell (the traveller app, migrated off TWA), which
- *    loads the remote site and injects the `window.Capacitor` bridge but does
- *    NOT report display-mode standalone — so without this the footer would
- *    still show inside the actual app;
+ *  - the native Capacitor shells (the traveller and advisor apps, migrated off
+ *    TWA), which load the remote site through `server.url` and inject the
+ *    `window.Capacitor` bridge but do NOT report display-mode standalone — so
+ *    without this the footer would still show inside the actual app;
  *  - an iOS installed PWA, which reports `navigator.standalone`;
  *  - the android-app:// launch referrer (the remaining TWA case).
  *
+ * The last three are the same signal set as StandaloneAppRedirect, kept in step.
  * An ordinary browser tab matches none of these and the attribute is never set,
  * so the website keeps its footer.
  */
@@ -39,30 +40,20 @@ export default function AppShellFlag() {
       document.referrer.startsWith("android-app://");
     if (!inApp) return;
     document.documentElement.setAttribute("data-app-shell", "1");
-    // Existing installed builds launch at the website root. Give them the
-    // focused search entry without changing ordinary browser visits.
-    if (window.location.pathname === "/" && !window.location.hostname.includes("whitegloveitineraries")) {
-      window.location.replace("/travel");
-      return;
-    }
 
     /**
      * AND THE SAFE AREAS BECOME REAL NUMBERS.
      *
      * `env(safe-area-inset-*)` is ZERO unless the viewport is declared
-     * `viewport-fit=cover` — that is in the spec, not a browser quirk. So the
-     * site's existing insets were all writing nothing: the phone bottom bar's
-     * `pb-[env(safe-area-inset-bottom)]`, and the room reserved for it in
-     * globals.css. And with Android 15 forcing apps edge to edge, the web view
-     * now draws behind the status bar, so the header sat under the clock with
-     * no inset to push it down. That is the report: "the top header bumps into
-     * the top of the phone in the app."
+     * `viewport-fit=cover` — that is in the spec, not a browser quirk. So every
+     * inset already written into this site was writing nothing. And with
+     * Android 15 forcing apps edge to edge, the web view now draws behind the
+     * status bar, which put the header under the clock.
      *
-     * Set HERE rather than in the viewport export, so it applies inside the
-     * app and nowhere else. On the open website `cover` would also put a page
-     * under an iPhone's notch in landscape, where every gutter is 20px and the
-     * inset is 44 — a regression on the public site to fix something only the
-     * app has.
+     * Set HERE rather than in the viewport export, so it applies inside the app
+     * and nowhere else. On the open website `cover` would also put a page under
+     * an iPhone's notch in landscape, where every gutter is 20px and the inset
+     * is 44 — a regression on the website to fix something only the app has.
      */
     const meta = document.querySelector('meta[name="viewport"]');
     const content = meta?.getAttribute("content");
@@ -72,4 +63,3 @@ export default function AppShellFlag() {
   }, []);
   return null;
 }
-

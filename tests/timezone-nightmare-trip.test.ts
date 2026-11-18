@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { buildDays, emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { openStatus } from "@/lib/share-opens";
+import { tripTimeZone } from "@/lib/trip-timezone";
 
 /**
  * THE TIMEZONE NIGHTMARE TRIP — a permanent fixture, not a one-off check.
@@ -12,15 +14,9 @@ import { buildDays, emptyItinerary, type Itinerary } from "@/data/itinerary";
  * is a different way for "which day is this on?" to be answered with the
  * SERVER'S day instead of the trip's.
  *
- * The rule this exists to hold: a trip's day, arrival and departure are the
- * trip's own, never the machine's. A container in Virginia must not decide
- * that a traveller in Tokyo is a day behind.
- *
- * SMALLER THAN THE ITINERARIES COPY, on purpose. The clock a trip is READ in
- * (lib/trip-timezone.ts) and the share-open status that prints a date in it
- * (lib/share-opens.ts) belong to that deployment and are asserted there. What
- * is shared is data/itinerary.ts's buildDays, and this holds the day
- * arithmetic that both products depend on.
+ * The rule this exists to hold: a trip's day, arrival, departure and "today"
+ * are the trip's own, never the machine's. A container in Virginia must not
+ * decide that a traveller in Tokyo is a day behind.
  */
 
 const NIGHTMARE: Itinerary = {
@@ -60,7 +56,16 @@ const NIGHTMARE: Itinerary = {
   ],
 };
 
+test("the trip is read in the trip's clock, not the server's", () => {
+  // London, from the first stop that has coordinates. Never the container's.
+  assert.equal(tripTimeZone(NIGHTMARE), "Europe/London");
+});
 
+test("a trip with no coordinates yet falls back to UTC, not to the machine", () => {
+  const bare: Itinerary = { ...emptyItinerary(), startDate: "2026-10-23", endDate: "2026-10-24" };
+  assert.equal(tripTimeZone(bare), "UTC");
+  assert.equal(tripTimeZone(undefined), "UTC");
+});
 
 test("every day of the trip is built, DST day included", () => {
   const days = buildDays(NIGHTMARE);
@@ -98,5 +103,35 @@ test("an event just after midnight belongs to the day it is on", () => {
   assert.equal(evening?.activities.some((a) => a.id === "a-after-midnight"), false);
 });
 
+test("THE SAME INSTANT IS A DIFFERENT DATE IN TWO PLACES — the real failure", () => {
+  // 02:30 UTC on the 27th is 22:30 on the 26th in New York. An adviser in New
+  // York and a traveller in London are looking at one open, and the date each
+  // is shown must be their own — a server that picked one zone for everybody
+  // would tell one of them the wrong day.
+  const opened = "2026-10-27T02:30:00.000Z";
+  const now = "2026-10-27T09:00:00.000Z";
+  const opens = { firstOpenedAt: opened, lastOpenedAt: opened, opens: 1 };
 
+  assert.match(openStatus(opens, now, "Europe/London").text, /27 Oct/);
+  assert.match(openStatus(opens, now, "America/New_York").text, /26 Oct/);
+});
 
+test("and an instant that is the same day everywhere reads the same everywhere", () => {
+  // The control: without this, the test above would pass on a function that
+  // simply printed a different string per zone for any input at all.
+  const opened = "2026-10-27T07:00:00.000Z";
+  const now = "2026-10-27T09:00:00.000Z";
+  const opens = { firstOpenedAt: opened, lastOpenedAt: opened, opens: 1 };
+  assert.equal(
+    openStatus(opens, now, "Europe/London").text,
+    openStatus(opens, now, "America/New_York").text,
+  );
+});
+
+test("the status never silently uses the server's zone", () => {
+  // The default is UTC and stated, not "whatever the container is set to".
+  const opens = { firstOpenedAt: "2026-10-27T04:30:00.000Z", lastOpenedAt: "2026-10-27T04:30:00.000Z", opens: 1 };
+  const explicit = openStatus(opens, "2026-10-27T09:00:00.000Z", "UTC");
+  const defaulted = openStatus(opens, "2026-10-27T09:00:00.000Z");
+  assert.deepEqual(defaulted, explicit);
+});

@@ -84,7 +84,7 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 type Tab = "flight" | "hotel" | "activity" | "import" | null;
 type ItineraryView = "days" | "calendar";
 
-export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false }: {
+export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false, kosher = false }: {
   /** What is known about the borders this trip crosses. Read on the server. */
   crossings?: Crossing[];
   /**
@@ -108,7 +108,18 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
    * food nearby, whatever a trip's own data happens to hold.
    */
   itineraries?: boolean;
+  /**
+   * Whether this account turned the kosher & Shabbos layer on — AppPrefs
+   * .kosherFeatures, the switch on /account. On the kosher deployment every
+   * traveller wants zmanim, so `itineraries` is false there and this is not
+   * consulted; on Itineraries it is what decides, instead of the brand deciding
+   * for everybody. Off is the default and the honest one for a general product.
+   */
+  kosher?: boolean;
 }) {
+  // Zmanim are shown where the product is kosher travel, or where a general
+  // account has asked for them. Never merely because a trip holds the data.
+  const showZmanimHere = !itineraries || kosher;
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
   // Which flight the top form is editing, if any. Null means adding a new one.
@@ -338,7 +349,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     [days],
   );
   useEffect(() => {
-    if (itineraries || !itin.showZmanim || !days.length) return;
+    if (!showZmanimHere || !itin.showZmanim || !days.length) return;
     let current = true;
     fetchTripZmanim(days).then((result) => {
       if (current) setZmanim({ key: zmanimKey, days: result });
@@ -349,8 +360,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     // days is rebuilt on every keystroke; zmanimKey is what actually moves the
     // times, so the fetch follows that instead.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itin.showZmanim, zmanimKey]);
-  const zmanimForToday = !itineraries && itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
+  }, [itin.showZmanim, zmanimKey, showZmanimHere]);
+  const zmanimForToday = showZmanimHere && itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
   // Who is buried at each beis hachaim on the trip, looked up by slug. Never
   // looked up on Itineraries — that brand has no kever directory to look up.
@@ -517,6 +528,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           everything below stays usable with this ignored or collapsed. See
           lib/trip-setup.ts. */}
       <TripSetupPanel
+        itineraries={itineraries}
         itin={itin}
         onNext={(step) => {
           if (step === "dates" || step === "travelers") {
@@ -659,13 +671,16 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
               {/* Off until asked for. Somebody keeping the times wants them on
                   every day of the trip and on whichever phone they open it on,
                   so the answer is saved with the trip rather than the browser.
-                  Not offered on Itineraries — no zmanim on that brand. */}
-              {!itineraries && (
+                  On Itineraries it is not offered at all until the account
+                  turns the kosher & Shabbos layer on — a general travel agency
+                  should not be shown a zmanim button, and one that plans kosher
+                  trips flips one switch and has it. */}
+              {showZmanimHere && (
                 <button
                   type="button"
                   onClick={() => set({ showZmanim: !itin.showZmanim })}
                   aria-pressed={Boolean(itin.showZmanim)}
-                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(23,45,82,.08)] transition ${
+                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(16, 47, 53,.08)] transition ${
                     itin.showZmanim
                       ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
                       : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
@@ -674,7 +689,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
                 </button>
               )}
-              <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+              <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(16, 47, 53,.08)]">
                 <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${view === "calendar" ? "translate-x-full" : "translate-x-0"}`} />
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
                 <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "calendar" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Calendar</button>
@@ -685,7 +700,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   rounded rectangle inside the pill track. Mirroring the toggle
                   above — an absolutely-inset span under a transparent link —
                   keeps the fill immune to that rule. */}
-              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(16, 47, 53,.08)]">
                 <span aria-hidden="true" className="absolute inset-1.5 rounded-full bg-[var(--navy)] transition-colors group-hover:bg-[var(--gold)]" />
                 <Link href="/itinerary/print" target="_blank" className="relative z-10 inline-flex h-full items-center justify-center px-5 text-xs font-bold text-white">Print / PDF</Link>
               </span>
@@ -1195,7 +1210,12 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
               <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Navigate →</a>
             )}
             {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Call {a.phone}</a>}
-            {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
+            {/* An internal (/-prefixed) href on a stop only ever came from the
+                kosher "Nearby" feature (a /cemeteries/[slug] link), which
+                307-redirects to the kosher domain — so on itineraries a stale or
+                imported one is suppressed rather than rendered as a Details link
+                that would break the app. External booking links are unaffected. */}
+            {a.href && (a.href.startsWith("/") ? (!itineraries && <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link>) : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
           </p>
         )}
         {a.notes && <p className="mt-3 break-words text-sm leading-6 text-stone-500">{a.notes}</p>}
@@ -1417,7 +1437,12 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
           <span className={`text-[11px] font-bold uppercase tracking-[0.1em] ${hasFreeTime ? "text-[var(--gold-ink)]" : "text-stone-400"}`}>
             {hasFreeTime ? `Free time — about ${day.freeHours} h` : "Free time"}
           </span>
-          {canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Nearby</button>}
+          {/* "Nearby" surfaces only cemeteries/kevarim (lib/nearby.ts), and each
+              suggestion links to /cemeteries/[slug] — a guide-only path that
+              307-redirects to the kosher domain and breaks the installed
+              itineraries app. So it is a kosher-brand feature: hidden here, the
+              same as the kosher-food-near-this-day block below. */}
+          {!itineraries && canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Nearby</button>}
           <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Getting ideas…" : "Ideas for free time"}</button>
         </div>
       )}

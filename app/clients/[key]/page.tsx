@@ -10,9 +10,19 @@ import { accountCookieName, getClientTrips, getCurrentAccountSummary, readSessio
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { pageMetadata } from "@/lib/seo";
+import { currentBrand } from "@/lib/site-brand";
 
 export async function generateMetadata() {
-  return pageMetadata({ title: "Client | White Glove", description: "One client, their trips and what's noted about them.", path: "/clients", noIndex: true });
+  // Reads the brand rather than saying "White Glove" and meaning neither.
+  // tests/itineraries-brand.test.ts holds every page on this domain to it:
+  // two companies, and a title that names the wrong one is the whole failure.
+  const itineraries = (await currentBrand()) === "itineraries";
+  return pageMetadata({
+    title: itineraries ? "Client | White Glove Itineraries" : "Client | White Glove Kosher Travel",
+    description: "One client, their trips and what's noted about them.",
+    path: "/clients",
+    noIndex: true,
+  });
 }
 
 export const dynamic = "force-dynamic";

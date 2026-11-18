@@ -32,8 +32,10 @@
  * to be.
  */
 
-import { Fragment, type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useOnValueChange } from "@/components/useOnValueChange";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PersonalTravelWallet from "@/components/companion/PersonalTravelWallet";
 import TripGroupChat from "@/components/companion/TripGroupChat";
 import {
@@ -44,22 +46,34 @@ import {
   type CompanionTrip,
   type CompanionWalletRow,
 } from "@/data/companion-demo";
-import { Icon } from "@/components/icons/Icon";
+import type { TripAlert } from "@/data/trip-alerts";
+import { loadGoogleMaps, googleMaps, googleMapsAvailable, type GMap, type GPlacesApi, type GPlacePrediction } from "@/lib/google-maps-loader";
+import { Icon, type IconName } from "@/components/icons/Icon";
 import dynamic from "next/dynamic";
 const PaymentCheckout = dynamic(() => import("@/components/companion/PaymentCheckout"), { ssr: false });
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { followAlong, type FollowStop } from "@/lib/trip-progress";
+import { readDocumentOffline, saveDocumentOffline, readMessagesOffline, saveMessagesOffline } from "@/lib/offline-trip-store";
 
 /** The blue the app already uses for its own accents — map notes, the
  * initials avatar, kickers. The chat toolbar's icons match it rather than
  * showing as whatever color the device's native emoji happen to render in. */
 const ICON_BLUE = "#193F46";
 
-function subscribeOnline(callback: () => void) {
-  window.addEventListener("online", callback); window.addEventListener("offline", callback);
-  return () => { window.removeEventListener("online", callback); window.removeEventListener("offline", callback); };
+// Whether the device is offline, as a subscription rather than an effect that
+// sets state — so it is correct on the first paint and never trips the
+// set-state-in-effect rule. SSR always reports online (no navigator), and the
+// first client paint reconciles to the real value.
+function subscribeOnline(callback: () => void): () => void {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
 }
-const getIsOffline = () => typeof window !== "undefined" && !window.navigator.onLine;
+const getIsOffline = () => (typeof navigator !== "undefined" ? !navigator.onLine : false);
+const getIsOfflineServer = () => false;
 
 type Screen = "home" | "day" | "activity" | "chat" | "messages" | "alerts" | "wallet" | "profile" | "pay";
 type ChatSide = "client" | "advisor";
@@ -88,47 +102,163 @@ type State = {
   messages: { from: "them" | "me"; text: string }[];
 };
 
-const TAP_INLINE = { padding: "13px 8px", margin: "-13px -8px" };
 const GOLD = "#C6A15B";
 const CREAM = "var(--color-canvas)";
+// Your own messages sit in a navy bubble (the messenger look), the other side's
+// in white — gold stays for accents and the read tick.
+const NAVY = "#102F35";
 
 /**
- * THE SAME COLOUR PASS THE ITINERARIES COPY OF THIS COMPONENT HAD.
+ * The colour the app writes in — every heading, every line of body text.
  *
- * The two repositories carry their own copies of this app and they have
- * diverged; the work was done there first and this is it, brought across and
- * fitted to this file's structure. The reasoning, in short:
+ * IT WAS #102F35, WHICH IS A WARM CHARCOAL WITH ALMOST NO COLOUR IN IT. Forty-
+ * six uses of it, on a cream page, beside a gold: three warm neutrals and
+ * nothing to hold them together, which is what "washed out" looks like when
+ * you take it apart. The blue was in the palette all along and was only ever
+ * reaching a message bubble and two small chips.
  *
- *   THE INK HAD NO COLOUR IN IT. Every heading and every line of body text was
- *   a warm charcoal, forty uses of it, on a cream page beside a gold. Three
- *   warm neutrals and nothing holding them together, which is what washed out
- *   looks like when you take it apart.
- *
- *   THE SMALL PRINT WAS UNDER AA. The greys measured 4.40 and 2.06 against the
- *   grounds they were drawn on, and they carry the times, the walks and the
- *   group a confirmation is filed under — what somebody reads this app for.
- *
- *   CREAM ON GOLD IS 2.86, and it was on every primary action in the app.
- *
- * Every value here is measured against the three grounds this app draws on:
- * the cream page, the tab bar's band, and a white card.
+ * Same weight, blue instead of grey: 13.62:1 on the cream against the old
+ * 12.05, so nothing became harder to read on the way.
  */
-const NAVY = "#102F35";
-/** Headings and body. 13.62 on the cream, against the old charcoal's 12.05. */
 const INK = "#102F35";
-/** Labels. 6.85 / 6.11 / 7.47. */
-const MUTED = "#5a544e";
-/** The metadata a label sits above — a time, a walk. 5.48 / 4.88 / 5.97. */
-const FAINT = "#6b625a";
+
 /**
- * What is written ON the gold. The gold is the brand and does not move; the
- * navy already in this palette takes it from 2.86 to 5.13 against the same
- * gold, so only the words changed colour.
+ * The gold, lightened, for small text drawn ON the navy.
+ *
+ * The gold itself is 5.13:1 there — legible, but these are 9.5px small caps
+ * and it goes muddy at that size against a dark ground. This is the same hue
+ * carried up to 6.99:1, so the band keeps the brand colour on it and the
+ * eyebrow above every screen title stays readable.
+ */
+const GOLD_ON_DARK = "#D8BC7A";
+
+/**
+ * The small grey the app writes its labels and times in.
+ *
+ * IT WAS #78716c, AND THAT IS 4.40:1 ON THE CREAM — under the 4.5 every one of
+ * these needs, since they are all below 18px. Measured on /app/preview: the
+ * wallet's "Flights", "Where you are staying" and "Held for you" headings all
+ * came out at 4.40, and the eyebrow above every screen title was written in a
+ * lighter grey again at 2.31. Not a theoretical fail: a stop's time, a
+ * document's group and what screen you are on are what somebody reads this app
+ * for, in daylight, on a phone.
+ *
+ * Two steps darker in the same warm family, and it clears everything it is
+ * drawn on: 6.85 on the cream, 6.11 on the tab bar's band, 7.47 on white. Two
+ * rather than one, because FAINT below had to move up to 4.5 as well and the
+ * app reads by having two weights of grey, not one.
+ */
+const MUTED = "#5a544e";
+
+/**
+ * The fainter grey again: a message time, a date divider, a walk of four
+ * minutes, a vote count — the metadata that should recede behind the label.
+ *
+ * IT WAS #a8a29e, WHICH IS 2.06:1 ON THE CHAT'S OWN BAND and 2.52 on white.
+ * Measured on /app/preview: the date divider above a conversation, "Tuesday 27
+ * October", came out at 2.06. A time under a message and a walking time
+ * between two stops are not decoration; they are the two numbers somebody
+ * actually reads off this screen while walking.
+ *
+ * 5.48 on the cream, 4.88 on the band, 5.97 on white — and still visibly
+ * lighter than MUTED above it, which is what the two greys are for.
+ */
+const FAINT = "#6b625a";
+
+/**
+ * What is written ON the gold — the primary buttons, the selected day chip,
+ * the selected tab.
+ *
+ * IT WAS THE CREAM, AND CREAM ON GOLD IS 2.86:1. Every primary action in this
+ * app sat at well under half of what AA asks: "See the two options", "Create
+ * poll", the send button, the selected day in the strip, the tab you are on.
+ *
+ * The gold is the brand and does not move. The navy already in this palette
+ * takes it to 5.13:1 against exactly the same gold, so nothing on the screen
+ * changes colour except the words, which become readable. A gold pill with
+ * navy on it still reads as the selected one — the pill was always the signal,
+ * not the shade of the text.
  */
 const ON_GOLD = NAVY;
-/** Bright Gold — the palette's on-dark accent, lifted for small caps on the
- * teal bar: 7.7:1 on #102F35, against the flat brass's 5.9. */
-const GOLD_ON_DARK = "#D8BC7A";
+
+/** A message time, "8:24 AM" — shown small under each bubble, like a messenger. */
+function msgTime(at: string): string {
+  const d = new Date(at);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+// A currency code the payment carried empty or malformed used to throw a
+// RangeError out of Intl and crash the whole balance card, rather than the
+// amount simply rendering without a symbol. Falls back to USD on a bad code.
+function currencyFmt(currency: string): Intl.NumberFormat {
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD" });
+  } catch {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+  }
+}
+
+/**
+ * A voice note played the way a messenger plays one — a gold play/pause button
+ * and a progress bar — rather than the browser's default audio strip. Play and
+ * pause are drawn as CSS shapes so it stays two-colour with no icon set to
+ * depend on. The MediaRecorder webm a phone produces often reports its duration
+ * as Infinity until it is played, so the bar fills only once a finite duration
+ * is known, and the readout leans on elapsed time, which is always reliable.
+ */
+function ChatVoiceNote({ mediaId, mine }: { mediaId: string; mine: boolean }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [cur, setCur] = useState(0);
+  const [dur, setDur] = useState(0);
+  const fmt = (s: number) => {
+    if (!Number.isFinite(s) || s < 0) return "0:00";
+    return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  };
+  const track = mine ? "rgba(255,255,255,.28)" : "rgba(20,33,61,.16)";
+  const fill = mine ? CREAM : NAVY;
+  const pct = Number.isFinite(dur) && dur > 0 ? Math.min(100, (cur / dur) * 100) : 0;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 190, padding: "2px 0" }}>
+      <button
+        type="button"
+        onClick={() => { const a = ref.current; if (!a) return; if (a.paused) void a.play(); else a.pause(); }}
+        aria-label={playing ? "Pause voice note" : "Play voice note"}
+        style={{ flex: "none", width: 34, height: 34, borderRadius: "50%", border: 0, cursor: "pointer", background: GOLD, display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        {playing ? (
+          <span style={{ display: "flex", gap: 3 }}>
+            <span style={{ width: 3.5, height: 13, background: NAVY, borderRadius: 1 }} />
+            <span style={{ width: 3.5, height: 13, background: NAVY, borderRadius: 1 }} />
+          </span>
+        ) : (
+          <span style={{ width: 0, height: 0, borderTop: "7px solid transparent", borderBottom: "7px solid transparent", borderLeft: `11px solid ${NAVY}`, marginLeft: 2 }} />
+        )}
+      </button>
+      <div style={{ flex: 1, minWidth: 50, height: 4, borderRadius: 2, background: track, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: fill, transition: "width .1s linear" }} />
+      </div>
+      <span style={{ fontSize: 11, opacity: 0.8, minWidth: 30, textAlign: "right" }}>{fmt(playing || cur ? cur : dur)}</span>
+      <audio
+        ref={ref}
+        preload="metadata"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => { setPlaying(false); setCur(0); }}
+        onTimeUpdate={(e) => setCur(e.currentTarget.currentTime)}
+        onLoadedMetadata={(e) => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setDur(d); }}
+        // A MediaRecorder webm — what this app records — reports duration
+        // Infinity at loadedmetadata and only resolves it later, on
+        // durationchange. Without this the progress bar for every recorded
+        // voice note stayed frozen at zero for its whole life.
+        onDurationChange={(e) => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setDur(d); }}
+        style={{ display: "none" }}
+      >
+        <source src={`/api/media?id=${encodeURIComponent(mediaId)}`} />
+      </audio>
+    </div>
+  );
+}
 
 /** A decorated timeline item — the palette folded in, ready to render. */
 type DecItem = CompanionItem & {
@@ -169,24 +299,6 @@ const WALLET_ATTACH_KIND: Record<NonNullable<CompanionWalletRow["stopKind"]>, st
  * OFF UNTIL PRESSED. Nothing uploaded before this existed became visible; see
  * the note on ItinAttachment.shared.
  */
-/**
- * True while the viewport matches `query`. Server and first paint report false
- * (no matchMedia), then it reconciles to the real value — so a phone never
- * flashes the desktop layout, and the desktop layout only appears once the
- * width is actually known.
- */
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
-  useEffect(() => {
-    const mql = window.matchMedia(query);
-    const update = () => setMatches(mql.matches);
-    update();
-    mql.addEventListener("change", update);
-    return () => mql.removeEventListener("change", update);
-  }, [query]);
-  return matches;
-}
-
 function WalletShareToggle({
   tripId,
   row,
@@ -254,7 +366,7 @@ function WalletShareToggle({
           cursor: busy ? "default" : "pointer",
           border: "none",
           background: "none",
-          padding: 0,
+          ...TAP_INLINE,
           font: "600 11.5px/1 inherit",
           color: busy ? "#a8a29e" : shared ? "#15803d" : MUTED,
           textDecoration: "underline",
@@ -361,6 +473,11 @@ function WalletAttach({
         htmlFor={inputId}
         style={{
           cursor: busy ? "default" : "pointer",
+          // 12.5px of underlined text is a 15-pixel-tall thing to hit with a
+          // thumb. TAP_INLINE pads it to a real target and pulls the padding
+          // back out with negative margin, so nothing around it moves.
+          display: "inline-block",
+          ...TAP_INLINE,
           fontSize: 12.5,
           fontWeight: 600,
           color: busy ? "#a8a29e" : "#193F46",
@@ -441,7 +558,7 @@ function GuideNoteEdit({
           setText(note);
           setEditing(true);
         }}
-        style={{ alignSelf: "flex-start", border: 0, background: "none", cursor: "pointer", padding: 0, fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}
+        style={{ alignSelf: "flex-start", border: 0, background: "none", cursor: "pointer", ...TAP_INLINE, fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}
       >
         {note ? "Edit this note" : "+ Add a note for this day"}
       </button>
@@ -458,10 +575,10 @@ function GuideNoteEdit({
         style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", borderRadius: 10, padding: "10px 12px", fontFamily: "Inter,sans-serif", fontSize: 13.5, lineHeight: 1.5, color: INK, outline: "none", resize: "vertical" }}
       />
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={() => void save()} disabled={busy} className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, borderRadius: 10, padding: "8px 14px", fontSize: 12.5, fontWeight: 700, opacity: busy ? 0.6 : 1 }}>
+        <button onClick={() => void save()} disabled={busy} className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, borderRadius: 10, minHeight: 44, padding: "8px 16px", fontSize: 12.5, fontWeight: 700, opacity: busy ? 0.6 : 1 }}>
           {busy ? "Saving…" : "Save"}
         </button>
-        <button onClick={() => setEditing(false)} disabled={busy} style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "none", cursor: "pointer", borderRadius: 10, padding: "8px 14px", fontSize: 12.5, fontWeight: 600, color: "#57534e" }}>
+        <button onClick={() => setEditing(false)} disabled={busy} style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "none", cursor: "pointer", borderRadius: 10, minHeight: 44, padding: "8px 16px", fontSize: 12.5, fontWeight: 600, color: "#57534e" }}>
           Cancel
         </button>
       </div>
@@ -524,6 +641,269 @@ function PayScreen({ shareId }: { shareId: string }) {
   );
 }
 
+/**
+ * A wallet document — a boarding pass, a booking confirmation — that opens with
+ * no signal.
+ *
+ * Online it opens the served file exactly as a plain link would. Offline it
+ * opens the copy the background cache (lib/offline-trip-store) already put on
+ * the device when the trip was last online — the traveler never downloads
+ * anything by hand; the file is simply already in the wallet. Only the client's
+ * own files are cached (offlineCapable): the advisor opens theirs through their
+ * logged-in account, which is an online-only action anyway.
+ */
+function WalletDocLink({
+  url,
+  fileId,
+  name,
+  offlineCapable,
+}: {
+  url: string;
+  fileId: string;
+  name: string;
+  offlineCapable: boolean;
+}) {
+  const [note, setNote] = useState("");
+  // An image document (a boarding pass photographed or exported as a picture)
+  // opened in a fitted overlay, rather than a raw new tab where a phone shows it
+  // at full pixel size and you have to pinch it down.
+  const [imageView, setImageView] = useState<string | null>(null);
+
+  async function open(e: ReactMouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    setNote("");
+    // Get the bytes: the saved copy when offline, otherwise the served file.
+    let blob: Blob | null = null;
+    if (offlineCapable && typeof navigator !== "undefined" && !navigator.onLine) {
+      blob = await readDocumentOffline(fileId);
+      if (!blob) {
+        setNote("Not saved for offline yet — open it once with a connection.");
+        return;
+      }
+    } else {
+      try {
+        const r = await fetch(url, { cache: "no-store" });
+        if (r.ok) blob = await r.blob();
+      } catch {
+        /* fall through to a plain open */
+      }
+    }
+    if (!blob) {
+      window.open(url, "_blank", "noopener");
+      return;
+    }
+    if (blob.type.startsWith("image/")) {
+      // Fit it to the screen instead of opening it at native resolution.
+      setImageView(URL.createObjectURL(blob));
+      return;
+    }
+    // A PDF (or anything else) hands off to the OS viewer, which sizes it.
+    const objectUrl = URL.createObjectURL(blob);
+    window.open(objectUrl, "_blank", "noopener");
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  }
+
+  return (
+    <span style={{ display: "inline-flex", flexDirection: "column", gap: 2 }}>
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer noopener"
+        onClick={(e) => void open(e)}
+        style={{ ...TAP_INLINE, fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}
+      >
+        📎 {name}
+      </a>
+      {note && <span style={{ fontSize: 11, color: "#b42318" }}>{note}</span>}
+      {imageView && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={name}
+          onClick={() => { URL.revokeObjectURL(imageView); setImageView(null); }}
+          style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(15,20,25,.94)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); URL.revokeObjectURL(imageView); setImageView(null); }}
+            aria-label="Close"
+            style={{ position: "absolute", top: "calc(14px + env(safe-area-inset-top))", right: 14, border: 0, background: "rgba(255,255,255,.15)", color: "#fff", width: 38, height: 38, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}
+          >
+            ✕
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imageView} alt={name} onClick={(e) => e.stopPropagation()} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 6 }} />
+        </div>
+      )}
+    </span>
+  );
+}
+
+function DownloadGlyph({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3v12" />
+      <path d="m7 12 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
+
+/**
+ * The full-screen viewer for a shared photo or document, opened from a chat
+ * bubble. A picture can be zoomed — the buttons, the wheel, or a double-tap —
+ * and panned once it is bigger than the screen; a PDF opens inline in a frame.
+ * Both carry Download, and Share where the device offers it, because "see it
+ * bigger" is only half of what a client does with a boarding pass they were
+ * sent.
+ *
+ * WHY IT REPLACED A PLAIN LINK. A document bubble used to be an
+ * <a target="_blank"> — which opens nothing inside the native app's web view,
+ * so a PDF a client was sent simply never opened. Fetching the bytes and
+ * showing them here — a frame for a PDF, this same overlay for an image —
+ * opens it in place instead.
+ */
+function MediaViewer({
+  item,
+  onClose,
+}: {
+  item: { kind: "image" | "file"; mediaId: string; text?: string; name?: string };
+  onClose: () => void;
+}) {
+  const url = `/api/media?id=${encodeURIComponent(item.mediaId)}`;
+  const defaultName = item.name || item.text || (item.kind === "file" ? "document.pdf" : "photo.jpg");
+  const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const [note, setNote] = useState("");
+  const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
+
+  const zoomTo = (s: number) => {
+    const next = Math.min(5, Math.max(1, Math.round(s * 10) / 10));
+    setScale(next);
+    if (next === 1) setPan({ x: 0, y: 0 });
+  };
+
+  // Get the bytes once, then hand them off — to a download, or to the device's
+  // own share sheet. A cancelled share throws and is not worth a message; a
+  // failed fetch is.
+  async function withBlob(hand: (blob: Blob) => void | Promise<void>) {
+    setNote("");
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) throw new Error("fetch failed");
+      await hand(await r.blob());
+    } catch {
+      setNote("Couldn't fetch that just now.");
+    }
+  }
+
+  function download() {
+    void withBlob((blob) => {
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = defaultName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    });
+  }
+
+  async function share() {
+    const nav = navigator as Navigator & { canShare?: (d?: ShareData) => boolean };
+    await withBlob(async (blob) => {
+      const file = new File([blob], defaultName, { type: blob.type || "application/octet-stream" });
+      if (nav.canShare && nav.canShare({ files: [file] })) {
+        try {
+          await nav.share({ files: [file], title: defaultName });
+        } catch {
+          /* the person dismissed the share sheet — nothing went wrong */
+        }
+        return;
+      }
+      // No file share on this device — fall back to a download.
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = defaultName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    });
+  }
+
+  const controlBtn: CSSProperties = { border: 0, background: "rgba(255,255,255,.14)", color: "#fff", width: 40, height: 40, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, lineHeight: 1, padding: 0 };
+  const canShare = typeof navigator !== "undefined" && "share" in navigator;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={item.text || (item.kind === "file" ? "Document" : "Photo")}
+      onClick={onClose}
+      style={{ position: "absolute", inset: 0, zIndex: 30, background: "rgba(15,20,25,.94)", display: "flex", flexDirection: "column" }}
+    >
+      {/* top bar — close on the left, the actions on the right */}
+      <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "calc(12px + env(safe-area-inset-top)) 14px 10px" }}>
+        <button onClick={onClose} title="Close" aria-label="Close" style={controlBtn}><Icon name="close" className="h-4 w-4" /></button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {item.kind === "image" && (
+            <>
+              <button onClick={() => zoomTo(scale - 0.5)} disabled={scale <= 1} aria-label="Zoom out" title="Zoom out" style={{ ...controlBtn, opacity: scale <= 1 ? 0.4 : 1 }}>−</button>
+              <button onClick={() => zoomTo(scale + 0.5)} disabled={scale >= 5} aria-label="Zoom in" title="Zoom in" style={{ ...controlBtn, opacity: scale >= 5 ? 0.4 : 1 }}>+</button>
+            </>
+          )}
+          {canShare && (
+            <button onClick={() => void share()} aria-label="Share" title="Share" style={controlBtn}><Icon name="share" className="h-4 w-4" /></button>
+          )}
+          <button onClick={download} aria-label="Download" title="Download" style={controlBtn}><DownloadGlyph /></button>
+        </div>
+      </div>
+
+      {item.kind === "image" ? (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          onDoubleClick={() => zoomTo(scale > 1 ? 1 : 2)}
+          onWheel={(e) => zoomTo(scale + (e.deltaY < 0 ? 0.3 : -0.3))}
+          onPointerDown={(e) => {
+            if (scale > 1) {
+              drag.current = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
+              setDragging(true);
+              (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+            }
+          }}
+          onPointerMove={(e) => {
+            if (drag.current) setPan({ x: drag.current.px + (e.clientX - drag.current.x), y: drag.current.py + (e.clientY - drag.current.y) });
+          }}
+          onPointerUp={() => { drag.current = null; setDragging(false); }}
+          onPointerCancel={() => { drag.current = null; setDragging(false); }}
+          style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", touchAction: scale > 1 ? "none" : "auto", cursor: scale > 1 ? "grab" : "zoom-in" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={url}
+            alt={item.text || "Shared photo"}
+            draggable={false}
+            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`, transition: dragging ? "none" : "transform .15s ease", borderRadius: 8 }}
+          />
+        </div>
+      ) : (
+        <div onClick={(e) => e.stopPropagation()} style={{ flex: 1, minHeight: 0, margin: "0 12px 12px", borderRadius: 10, overflow: "hidden", background: "#fff" }}>
+          <iframe src={url} title={item.text || "Document"} style={{ width: "100%", height: "100%", border: 0 }} />
+        </div>
+      )}
+
+      {(item.text || note) && (
+        <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0, padding: "0 16px calc(14px + env(safe-area-inset-bottom))", textAlign: "center", color: "#fff", fontSize: 13.5, lineHeight: 1.5 }}>
+          {note ? <span style={{ color: "#ffb4a8" }}>{note}</span> : item.text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CompanionApp({
   travelerGroupCode,
   travelerPreview = false,
@@ -531,7 +911,11 @@ export default function CompanionApp({
   trip = COMPANION_DEMO_TRIP,
   chat,
   advisorInbox = false,
+  advisorShareId,
   sharedDraft,
+  initialScreen,
+  embedded = false,
+  onExit,
 }: {
   /** A traveler-owned group, with no advisor role. */
   travelerGroupCode?: string;
@@ -541,6 +925,25 @@ export default function CompanionApp({
   chat?: CompanionChat;
   /** The advisor's own side: a Messages tab that lists every client's chat. */
   advisorInbox?: boolean;
+  /**
+   * Rendered inside the advisor app (not as its own full-screen app): drop the
+   * desktop showcase frame, fill the parent, and hide THIS app's own bottom bar
+   * so the advisor app's four-tab bar is the only one. The navy header stays —
+   * it is the trip's header and its back button — and on the top screen that
+   * back calls `onExit` to leave the trip rather than going nowhere.
+   */
+  embedded?: boolean;
+  /** Called when the embedded trip is backed out of from its top screen. */
+  onExit?: () => void;
+  /** Which tab to open on — e.g. the advisor arriving from the dashboard's
+   *  "Messages" opens straight on the inbox instead of the trip. Falls back to
+   *  home (or messages when a shared place is waiting). */
+  initialScreen?: Screen;
+  /** The share token of the trip the advisor is currently viewing, when it has
+   *  a client link. Lets "Ask about this" open THAT client's thread directly
+   *  (with the attraction pinned) instead of dropping the advisor on the inbox
+   *  list. Absent when the trip has never been shared — then the inbox shows. */
+  advisorShareId?: string;
   /** A place shared in from outside the app — Google Maps' share sheet, say
    *  — arrived as the OS's Web Share Target params (app/manifest.ts). Held
    *  until the advisor picks which client's thread it goes into. */
@@ -565,7 +968,7 @@ export default function CompanionApp({
     // A shared-in place has nowhere to go but the Messages/Advisor tab, so
     // that's where a shared draft opens straight to — otherwise it would sit
     // unused on the Trip tab until noticed.
-    screen: sharedDraft && advisorInbox ? "messages" : "home",
+    screen: initialScreen ?? (sharedDraft && advisorInbox ? "messages" : "home"),
     prev: null,
     selDay: trip.todayIndex,
     actIdx: 0,
@@ -589,6 +992,37 @@ export default function CompanionApp({
   // with ?peek=1 so merely checking never marks it read, the way it would if
   // this used the same call the open thread itself polls with.
   const [unread, setUnread] = useState(false);
+  // True while the message composer holds the keyboard open. The bottom tab bar
+  // hides then rather than riding up squeezed between the composer and the
+  // keyboard — the composer stays put on top of the keyboard, the tabs come
+  // back the moment the field is dismissed (WhatsApp's own behaviour).
+  const [composerUp, setComposerUp] = useState(false);
+  // On a computer a real (non-showcase) trip is not a phone in a frame but a
+  // web app: a side rail of tabs and a wide content column. A phone, the
+  // marketing demo, and the advisor-embedded view all keep the phone layout.
+  const desktopWeb = useMediaQuery("(min-width: 768px)") && !embedded && !trip.concierge;
+  // The OS/browser Back button steps back through the app's own screens (see
+  // pushScreenHistory/go/back). A popstate restores the screen the popped entry
+  // names, or the home screen at the base entry — at which point one more Back
+  // leaves the app, which is correct.
+  useEffect(() => {
+    if (embedded || typeof window === "undefined") return;
+    const onPop = (e: PopStateEvent) => {
+      const target = ((e.state as { wgScreen?: Screen } | null)?.wgScreen) ?? "home";
+      setSt((s) => (s.screen === target ? s : { ...s, screen: target, prev: null }));
+    };
+    // An app update can reload the page after its service worker activates.
+    // Restore the tab already recorded in history instead of losing the
+    // traveler's place in their wallet or conversation.
+    const restore = window.setTimeout(() => {
+      const screen = window.history.state?.wgScreen;
+      if (["home", "day", "activity", "chat", "messages", "alerts", "wallet", "profile", "pay"].includes(screen)) {
+        setSt((state) => ({ ...state, screen, prev: null }));
+      }
+    }, 0);
+    window.addEventListener("popstate", onPop);
+    return () => { clearTimeout(restore); window.removeEventListener("popstate", onPop); };
+  }, [embedded]);
   useEffect(() => {
     if (!liveChat) return;
     let cancelled = false;
@@ -613,37 +1047,82 @@ export default function CompanionApp({
     };
   }, [liveChat]);
 
-  // Whether THIS DEVICE currently has a connection — not whether the trip
-  // shown is fresh. `navigator.onLine` starts true on the server (there is
-  // no navigator there), so the banner only ever appears client-side, after
-  // the browser actually reports a dropped connection.
-  const isOffline = useSyncExternalStore(subscribeOnline, getIsOffline, () => false);
-  // The OS/browser Back button steps back through the app's own screens (see
-  // pushScreenHistory/go/back). A popstate restores the screen the popped entry
-  // names, or the home screen at the base entry — one more Back then leaves.
+  // KEEP THE WALLET DOCUMENTS ON THE DEVICE. Whoever opens the trip with a
+  // connection — the client through their share link, the advisor through their
+  // own account — gets every boarding pass and confirmation quietly saved into
+  // the wallet, so it opens at the gate with no signal (WalletDocLink reads it
+  // back; lib/offline-trip-store holds it). Each side pulls from its own door:
+  // the client from the share-token trip-file route, the advisor from the
+  // login-gated account route (same-origin cookies ride along). Sequential and
+  // fail-soft: it stays under the rate limit, skips anything already saved, and
+  // leaves anything it can't reach for the next online open.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const onPop = (e: PopStateEvent) => {
-      const target = ((e.state as { wgScreen?: Screen } | null)?.wgScreen) ?? "home";
-      setSt((s) => (s.screen === target ? s : { ...s, screen: target, prev: null }));
-    };
-    // An app update can reload the page after its service worker activates.
-    // Restore the tab already recorded in history instead of losing the
-    // traveler's place in their wallet or conversation.
-    const restore = window.setTimeout(() => {
-      const screen = window.history.state?.wgScreen;
-      if (["home", "day", "activity", "chat", "messages", "alerts", "wallet", "profile", "pay"].includes(screen)) {
-        setSt((state) => ({ ...state, screen, prev: null }));
+    // The client needs their share token to fetch; the advisor fetches by
+    // account and needs none. Without either door, there is nothing to pull.
+    const shareId = groupCode ?? liveChat?.shareId;
+    if (isClientViewer && !shareId) return;
+    if (typeof navigator !== "undefined" && !navigator.onLine) return;
+    let cancelled = false;
+    void (async () => {
+      const files = trip.walletGroups.flatMap((g) => g.rows).flatMap((r) => r.attachments ?? []);
+      for (const file of files) {
+        if (cancelled) return;
+        try {
+          if (await readDocumentOffline(file.id)) continue;
+          const url = isClientViewer
+            ? `/api/trip-file/${encodeURIComponent(shareId!)}?id=${encodeURIComponent(file.id)}`
+            : `/api/account/attachments?id=${encodeURIComponent(file.id)}`;
+          const res = await fetch(url, { cache: "no-store" });
+          if (!res.ok) continue;
+          const blob = await res.blob();
+          if (cancelled) return;
+          await saveDocumentOffline(file.id, blob);
+        } catch {
+          /* leave it for the next online open */
+        }
       }
-    }, 0);
-    window.addEventListener("popstate", onPop);
-    return () => { clearTimeout(restore); window.removeEventListener("popstate", onPop); };
-  }, []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isClientViewer, groupCode, liveChat?.shareId, trip.walletGroups]);
 
-  // On a computer or a tablet a real (non-showcase) trip is not a phone in a
-  // frame but a web page: a side rail of tabs and a wide content column. A
-  // phone (under 768px) and the marketing demo keep the phone layout.
-  const desktopWeb = useMediaQuery("(min-width: 768px)") && !trip.concierge;
+  // How many wallet documents are ACTUALLY on this device — so the wallet badge
+  // tells the truth rather than promising "works with no signal" for a boarding
+  // pass that never finished caching (a large PDF, a short online session, or a
+  // device where IndexedDB is blocked). Re-checked whenever the connection
+  // flips or the traveller opens the wallet, by which point the background save
+  // loop above has usually caught up.
+  const walletFileIds = trip.walletGroups
+    .flatMap((g) => g.rows)
+    .flatMap((r) => r.attachments ?? [])
+    .map((a) => a.id)
+    .join("|");
+  const [offlineDocs, setOfflineDocs] = useState<{ kept: number; total: number }>({ kept: 0, total: 0 });
+  useEffect(() => {
+    const ids = walletFileIds ? walletFileIds.split("|") : [];
+    let cancelled = false;
+    void (async () => {
+      let kept = 0;
+      for (const id of ids) {
+        if (await readDocumentOffline(id)) kept += 1;
+      }
+      if (!cancelled) setOfflineDocs({ kept, total: ids.length });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [walletFileIds, st.screen]);
+
+  // Opening the thread marks it read server-side (LiveChat's own fetch), but the
+  // 15s peek poll is what clears this badge — so without clearing it here the
+  // dot flashed back onto the Advisor tab for a few seconds after reading and
+  // navigating away. Clear it the moment the messages screen is entered.
+  // During render, not after the commit: as an effect the Advisor tab painted
+  // once still carrying its dot after the screen had already opened.
+  useOnValueChange(st.screen, () => {
+    if (st.screen === "messages") setUnread(false);
+  });
 
   const advisor = trip.advisorName;
   const firstName = advisor.split(" ")[0];
@@ -661,10 +1140,11 @@ export default function CompanionApp({
 
   // Forward navigation records a browser history entry, so the phone's own Back
   // gesture (and the desktop Back button) steps back through the app's screens
-  // instead of closing the whole app — the most common way a customer would
-  // otherwise get thrown out. From the trip home, Back leaves as before.
+  // instead of closing the whole app — the single most common way a customer
+  // would otherwise get thrown out. Only the standalone client app drives
+  // history; when embedded, the advisor app owns the route and its own back.
   function pushScreenHistory(screen: Screen) {
-    if (typeof window === "undefined") return;
+    if (embedded || typeof window === "undefined") return;
     try {
       window.history.pushState({ wgScreen: screen }, "");
     } catch {
@@ -677,9 +1157,15 @@ export default function CompanionApp({
     pushScreenHistory(screen);
   }
   function back() {
-    // Unwind one history entry; the popstate handler restores the screen that
-    // entry names, so the header ← and the OS Back stay in lockstep.
-    if (typeof window !== "undefined") {
+    // Embedded in the advisor app: backing out of the top (home) screen leaves
+    // the trip entirely rather than going nowhere.
+    if (embedded && st.screen === "home") {
+      onExit?.();
+      return;
+    }
+    // Standalone: unwind one history entry; the popstate handler restores the
+    // screen that entry names, so the header ← and the OS Back stay in lockstep.
+    if (!embedded && typeof window !== "undefined") {
       window.history.back();
       return;
     }
@@ -709,6 +1195,14 @@ export default function CompanionApp({
   }
 
   const hasConcierge = trip.concierge;
+  /**
+   * The Concierge/Guide and Traveler/Advisor switches, and the "Concierge" tab
+   * name, are a demonstration of a tier that is not built — `concierge` is true
+   * for the scripted sample and nothing else. On /app/preview, which promises
+   * "this is what your client opens", they were three controls a client will
+   * never have, sitting beside the Advisor tab with nothing to tell them apart.
+   * The scripted thread survives; the switches do not.
+   */
   const showcaseSwitches = hasConcierge && !trip.previewAsClient;
   const isConcierge = hasConcierge && (trip.previewAsClient || st.tmode === "concierge");
   const isGuideMode = !isConcierge;
@@ -722,13 +1216,18 @@ export default function CompanionApp({
    * went nowhere, which read as the whole feature being broken.
    */
   const usesRealChat = hasMessages;
+  /**
+   * The traveler's clock, on their own device — used both for "where are they
+   * on today's plan right now" (nowMinutes) and for which calendar day is
+   * actually today where they are (deviceToday).
+   */
   const { nowMinutes, today: deviceToday } = useDeviceClock();
   // The traveler's real today, by the clock where THEY are — not the server's
   // UTC date. trip.todayIndex is baked on the server from UTC; for an audience
   // mostly east of UTC that points at the wrong day for the hours between local
-  // and UTC midnight. Match the device's own date to a day instead, and fall
-  // back to the server index only before the device clock resolves or when no
-  // day matches today.
+  // midnight and UTC midnight. Match the device's own date to a day instead,
+  // and fall back to the server index only before the device clock has resolved
+  // (first paint / SSR) or when no day matches today at all.
   const todayIdx = (() => {
     if (deviceToday) {
       const i = days.findIndex((d) => d.date === deviceToday);
@@ -736,25 +1235,20 @@ export default function CompanionApp({
     }
     return trip.todayIndex;
   })();
-  // The day the trip screen shows: the traveler's real today until they tap a
-  // specific day (selDay no longer the server default), then their pick. Opens
-  // the app on the right day without a state-syncing effect. Also guards a day
-  // index out of range rather than crashing on sel.items.
+  // The day the trip screen shows. Until the traveler taps a specific day it
+  // follows their real today; once they've picked another day (selDay is no
+  // longer the server default) it honours that pick. This opens the app on the
+  // right day without a state-syncing effect.
   const curDay = st.selDay === trip.todayIndex ? todayIdx : st.selDay;
+  // The CompanionTrip type permits a day index out of range (a refresh that
+  // shrank the day list), so fall back rather than crash the whole app on
+  // `sel.items` — the same guard the activity screen's actDay already carries.
   const sel = days[curDay] ?? days[trip.todayIndex] ?? days[0];
   const items = sel.items.map(decorate);
-  // Whether the day on screen is the traveler's own today (device clock).
+  // Whether the day on screen is the traveler's own today (device clock), which
+  // gates the "happening now / next up" follow-along below.
   const selIsToday = deviceToday ? sel.date === deviceToday : Boolean(sel.today);
-
-  /**
-   * Where the traveler actually is on today's plan, by the clock on their own
-   * device — not "the first thing on the list", which is only ever true
-   * before the day has started. See lib/trip-progress.ts, already used the
-   * same way for the advisor's live planner view (TripProgressStrip); this is
-   * that same real logic, reused rather than re-guessed, for the client's own
-   * app. Only computed for the day that IS today — a browsed future or past
-   * day has no "now" on it.
-   */
+  const offline = useSyncExternalStore(subscribeOnline, getIsOffline, getIsOfflineServer);
   const followStops: FollowStop[] = items.map((it, i) => ({ id: String(i), name: it.title, arrivalTime: it.time || undefined }));
   const follow = selIsToday ? followAlong({ stops: followStops, nowMinutes }) : null;
   const nowIdx = follow?.now ? Number(follow.now.id) : null;
@@ -769,9 +1263,95 @@ export default function CompanionApp({
   // trip's badge/pill lights up for these without touching any of the
   // demo-only swap logic that already reads `open`.
   const liveAlerts = trip.liveAlerts ?? [];
-  const unacknowledgedAlerts = liveAlerts.filter((a) => !a.acknowledged);
+  // READ / UNREAD on the Changes screen. The owner (a signed-in account) has
+  // the server's own `acknowledged` flag; a client on a per-trip code has no
+  // account and is never asked to manage anything server-side, so their read
+  // state lives in their own browser. `readNow` folds both together, plus
+  // whatever was marked read this session, so opening the screen clears the
+  // badge at once rather than waiting for a reload.
+  const alertKey = trip.tripId ?? liveChat?.shareId ?? null;
+  /**
+   * READ FROM STORAGE AS THE INITIAL VALUE, not in an effect afterwards.
+   *
+   * This ran as an effect, which is the setState the rule refuses — and it was
+   * also visibly wrong: the alerts list painted once with everything unread
+   * before the stored set arrived, so a client opening the screen saw their
+   * own already-read alerts flash as new. A lazy initialiser runs before the
+   * first paint instead.
+   *
+   * Storage blocked, or nothing stored, leaves the set empty — everything
+   * reads as unread, which is the safe end of the mistake.
+   */
+  const [readNow, setReadNow] = useState<Set<string>>(() => {
+    if (!isClientViewer || !alertKey || typeof window === "undefined") return new Set();
+    try {
+      const raw = localStorage.getItem(`wg-alerts-read:${alertKey}`);
+      return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  // A client's read state is theirs alone (readNow, from their browser). The
+  // server's `acknowledged` is the OWNER's own read flag — folding it into the
+  // client's view would let the advisor's reading quietly mark the client's
+  // alerts seen, which they were not.
+  const isAlertRead = useCallback(
+    (a: TripAlert) => readNow.has(a.id) || (!isClientViewer && a.acknowledged),
+    [readNow, isClientViewer],
+  );
+  const unreadAlerts = liveAlerts.filter((a) => !isAlertRead(a));
+  // Frozen the moment the Changes screen opens, so the cards being read now
+  // stay marked new even as opening the screen records them read (clearing the
+  // badge and, next time, the highlight). Opening is the read action — there is
+  // no separate dismiss to press.
+  const [seenOnOpen, setSeenOnOpen] = useState<Set<string> | null>(null);
+  /**
+   * THE SNAPSHOT DURING RENDER, THE SIDE EFFECTS AFTER IT — which used to be
+   * one effect doing all three.
+   *
+   * Taking the snapshot in an effect meant the Changes screen painted once
+   * with seenOnOpen still null, so every card was drawn without its "new"
+   * highlight for a frame and then gained it. Adjusting during render is what
+   * this reaction actually is: the screen changed, freeze what was unread at
+   * that moment.
+   *
+   * Writing to storage and telling the server are genuine side effects and
+   * stay in effects below, where they belong and where React may safely run
+   * them once.
+   */
+  useOnValueChange(st.screen, () => {
+    if (st.screen !== "alerts") {
+      setSeenOnOpen(null);
+      return;
+    }
+    const unreadIds = liveAlerts.filter((a) => !isAlertRead(a)).map((a) => a.id);
+    setSeenOnOpen(new Set(unreadIds));
+    if (unreadIds.length > 0) setReadNow((prev) => new Set([...prev, ...unreadIds]));
+  });
+
+  // A client's read set is theirs alone and lives in their browser. Written
+  // whenever it changes rather than only when the screen opens, so the two can
+  // never drift apart.
+  useEffect(() => {
+    if (!isClientViewer || !alertKey) return;
+    try {
+      localStorage.setItem(`wg-alerts-read:${alertKey}`, JSON.stringify([...readNow]));
+    } catch {
+      /* storage blocked — clears for this session only, which is fine */
+    }
+  }, [readNow, isClientViewer, alertKey]);
+
+  // The owner's own read flag, server-side. Once per opening of the screen.
+  useEffect(() => {
+    if (st.screen !== "alerts" || isClientViewer || !trip.tripId) return;
+    void fetch("/api/account/alerts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tripId: trip.tripId, all: true }),
+    });
+  }, [st.screen, isClientViewer, trip.tripId]);
   const advisorTrips = trip.advisorTrips ?? [];
-  const advisorHome = showcaseSwitches && st.role === "advisor" && st.screen === "home";
+  const advisorHome = hasConcierge && st.role === "advisor" && st.screen === "home";
 
   const titles: Record<Screen, string> = {
     home: trip.homeTitle,
@@ -790,14 +1370,19 @@ export default function CompanionApp({
     activity: sel.name,
     chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
     messages: groupMode ? "Everyone on this trip" : advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
-    alerts: open ? "One needs you" : unacknowledgedAlerts.length > 0 ? `${unacknowledgedAlerts.length} to see` : settled ? "All settled" : "Nothing right now",
+    alerts: open ? "One needs you" : unreadAlerts.length > 0 ? `${unreadAlerts.length} to see` : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
     pay: trip.payment?.label ?? "",
   };
 
-  const act = days[st.actDay].items[st.actIdx] || days[st.actDay].items[0];
-  const actKind = COMPANION_KIND[act.kind] || COMPANION_KIND.rest;
+  // This runs every render, not only on the activity screen. A real builder
+  // trip always has a placeholder item on every day, but the CompanionTrip type
+  // permits a day index out of range or a day with no items, so fall back to a
+  // real day and guard the kind lookup rather than crash the whole app on mount.
+  const actDay = days[st.actDay] ?? days[trip.todayIndex] ?? days[0];
+  const act = actDay.items[st.actIdx] || actDay.items[0];
+  const actKind = (act ? COMPANION_KIND[act.kind] : undefined) || COMPANION_KIND.rest;
 
   const seg = <T extends string>(list: [T, string][], cur: T, set: (id: T) => void) =>
     list.map(([id, label]) => ({
@@ -851,13 +1436,19 @@ export default function CompanionApp({
   // The bottom nav is capped at four on a real trip — Trip, Advisor, Wallet,
   // You — so a real trip's Guide notes live inside the You tab (see
   // guideSection below) rather than getting a tab of their own.
-  const tabDefs: [Screen, string][] = [["home", "Trip"]];
-  if (hasConcierge) tabDefs.push([conciergeTabScreen, trip.previewAsClient ? "Advisor" : isGuideMode ? "Guide" : "Concierge"]);
-  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", groupMode ? "Chat" : advisorInbox ? "Messages" : "Advisor"]);
-  tabDefs.push(["wallet", "Wallet"], ["profile", "You"]);
-  const tabs = tabDefs.map(([id, label]) => {
+  const tabDefs: [Screen, string, IconName][] = [["home", "Trip", "map-pin"]];
+  if (hasConcierge)
+    tabDefs.push(
+      trip.previewAsClient
+        ? // Where a client's advisor thread sits, under the name a client sees.
+          [conciergeTabScreen, "Advisor", "chat"]
+        : [conciergeTabScreen, isGuideMode ? "Guide" : "Concierge", "sparkle"],
+    );
+  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", groupMode ? "Chat" : advisorInbox ? "Messages" : "Advisor", "chat"]);
+  tabDefs.push(["wallet", "Wallet", "wallet"], ["profile", "You", "account"]);
+  const tabs = tabDefs.map(([id, label, icon]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
-    return { id, label, bg: on ? GOLD : "transparent", fg: on ? ON_GOLD : INK, badge: id === "messages" && unread && st.screen !== "messages" };
+    return { id, label, icon, on, badge: id === "messages" && unread && st.screen !== "messages" };
   });
 
   const quickReplies = (
@@ -887,82 +1478,16 @@ export default function CompanionApp({
   });
 
   // ── screens ─────────────────────────────────────────────────────────────
-  /**
-   * WHAT IS HAPPENING NEXT, AT THE TOP OF THE SCREEN.
-   *
-   * The planner is dense on purpose — an advisor is deciding things. The
-   * traveller's app is the opposite: somebody opens it standing on a pavement
-   * in a city they do not know, and the only question is what happens now and
-   * how do I reach it. That answer was on this screen already, but as a
-   * highlighted row part-way down a list, under a 196-pixel decorative
-   * panel — so the first thing the phone showed during a trip was a picture
-   * of a suitcase.
-   *
-   * So while a trip is actually running and there is something timed left in
-   * the day, that panel gives way to the thing itself, with the actions that
-   * belong to it — call it, walk to it, open its confirmation — on the same
-   * screen rather than one tap further in. Before the trip, after it, and on
-   * a day with no timed stops there is no "next", and the panel stays.
-   */
-  const nowOrNext = nowIdx !== null ? items[nowIdx] : nextIdx !== null ? items[nextIdx] : null;
-  const nowOrNextIsNow = nowIdx !== null;
-  const showNextCard = selIsToday && !trip.tripFinished && Boolean(nowOrNext);
-
-  const nextCard = nowOrNext && (
-    <button
-      type="button"
-      onClick={() => openActivity(curDay, nowOrNextIsNow ? nowIdx! : nextIdx!)}
-      className="wg-press"
-      style={{ display: "block", width: "calc(100% - 28px)", textAlign: "left", margin: "14px 14px 0", padding: "18px 20px", borderRadius: 20, background: `linear-gradient(155deg, ${GOLD} 0%, #B89048 100%)`, color: ON_GOLD, border: 0, cursor: "pointer" }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ width: 9, height: 9, borderRadius: 14, background: ON_GOLD, animation: nowOrNextIsNow ? "wgPulse 1.8s ease-in-out infinite" : "none" }} />
-        <span style={{ ...kicker(ON_GOLD), opacity: 0.92 }}>{nowOrNextIsNow ? "Happening now" : "Next"}</span>
-      </div>
-      <div style={{ marginTop: 10, display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
-        {nowOrNext.time && <span style={{ font: `400 30px/1 ${serif}`, letterSpacing: "-.02em" }}>{nowOrNext.time}</span>}
-        <span style={{ font: `400 21px/1.15 ${serif}` }}>{nowOrNext.title}</span>
-      </div>
-      {nowOrNext.place && <p style={{ margin: "7px 0 0", fontSize: 13.5, lineHeight: 1.5, opacity: 0.9 }}>{nowOrNext.place}</p>}
-    </button>
-  );
-
-  /* The actions for it, outside the button — a link inside a button is not a
-     thing a browser or a screen reader can make sense of. */
-  const nextActions = nowOrNext && (
-    <div style={{ margin: "10px 14px 0", display: "flex", gap: 9, flexWrap: "wrap" }}>
-      {nowOrNext.phone && (
-        <a href={`tel:${nowOrNext.phone.replace(/[^\d+]/g, "")}`} className="wg-warm" style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: INK, textDecoration: "none" }}>
-          Call
-        </a>
-      )}
-      {nowOrNext.place && nowOrNext.kind !== "travel" && (
-        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nowOrNext.place)}`} target="_blank" rel="noopener noreferrer" className="wg-warm" style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: INK, textDecoration: "none" }}>
-          Directions
-        </a>
-      )}
-      {nowOrNext.href && (
-        <a href={nowOrNext.href} target="_blank" rel="noopener noreferrer" className="wg-warm" style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: INK, textDecoration: "none" }}>
-          Confirmation
-        </a>
-      )}
-    </div>
-  );
-
   const homeScreen = (
     <div style={{ animation: "wgIn .28s ease both" }}>
-      {showNextCard ? (
-        <>
-          {nextCard}
-          {nextActions}
-        </>
-      ) : (
-        <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: `linear-gradient(150deg, ${NAVY} 0%, #193F46 55%, #193F46 100%)`, color: CREAM }}>
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.22 }}>
-            <Icon name="suitcase" className="h-20 w-20" strokeWidth={1.1} />
-          </div>
+      <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: `linear-gradient(150deg, ${NAVY} 0%, #193F46 55%, #193F46 100%)`, color: CREAM }}>
+        {/* Gold on the navy rather than cream on the gold. The panel carried
+            the only gold on the opening screen and has become the only blue;
+            the mark is what keeps both of them there. */}
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: GOLD, opacity: 0.5 }}>
+          <Icon name="suitcase" className="h-20 w-20" strokeWidth={1.1} />
         </div>
-      )}
+      </div>
       <div style={{ padding: "16px 20px 0", display: "flex", flexDirection: "column", gap: 7 }}>
         {/* Skipped when it would just repeat the header above it word for
             word — a trip with no name of its own reads as "Family trip" in
@@ -974,7 +1499,7 @@ export default function CompanionApp({
           <span>{trip.tripDates}</span>
           <span style={{ width: 4, height: 4, borderRadius: 14, background: "#a8a29e" }} />
           <span style={{ background: "#FAF8F3", color: "#193F46", fontWeight: 600, padding: "4px 10px", borderRadius: 14, fontSize: 11.5 }}>
-            {trip.tripFinished ? "Trip finished" : `Day ${todayIdx + 1} of ${trip.days.length}`}
+            {trip.tripFinished ? "Trip finished" : `Day ${trip.todayIndex + 1} of ${trip.days.length}`}
           </span>
         </div>
       </div>
@@ -998,12 +1523,14 @@ export default function CompanionApp({
       )}
 
       <div style={{ marginTop: 22, paddingLeft: 20 }}>
-        <div style={kicker(NAVY)}>{trip.days.length === 8 ? "Eight days" : `${trip.days.length} days`}</div>
+        {/* "1 days" read wrong for a one-day trip; the odd hardcoded eight-day
+            special case is gone with it. */}
+        <div style={kicker(NAVY)}>{`${trip.days.length} ${trip.days.length === 1 ? "day" : "days"}`}</div>
       </div>
       <div style={{ display: "flex", gap: 9, overflowX: "auto", padding: "12px 20px 4px", scrollbarWidth: "none" }}>
         {days.map((d, i) => {
           const on = i === curDay;
-          // "Today" by the traveler's own clock (todayIdx), not the server's.
+          // "Today" by the traveler's own clock (see todayIdx), not the server's.
           const dToday = i === todayIdx;
           return (
             <button key={i} onClick={() => { setSt((s) => ({ ...s, selDay: i, screen: "day", prev: "home" })); pushScreenHistory("day"); }} className="wg-press" style={{ flex: "none", width: 64, padding: "11px 0 12px", borderRadius: 16, border: `1px solid ${on ? GOLD : dToday ? GOLD : "rgba(16, 47, 53,.1)"}`, background: on ? GOLD : dToday ? "#FAF8F3" : "#ffffff", color: on ? ON_GOLD : INK, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
@@ -1018,7 +1545,7 @@ export default function CompanionApp({
       <div style={{ margin: "22px 14px 0", padding: "20px 18px", borderRadius: 20, background: "#ffffff", border: "1px solid rgba(16, 47, 53,.08)", display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
           <h3 style={{ margin: 0, font: `400 21px/1.1 ${serif}` }}>{sel.name}</h3>
-          <button onClick={() => go("day")} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", font: "600 12px/1 Inter,sans-serif", color: "#6B4A1C", padding: 0 }}>Full day →</button>
+          <button onClick={() => go("day")} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", font: "600 12px/1 Inter,sans-serif", color: "#6B4A1C", ...TAP_INLINE }}>Full day →</button>
         </div>
         {/* The one thing today that most needs finding fast: where the plan
             says the traveler should actually be right now, or what's next —
@@ -1069,7 +1596,7 @@ export default function CompanionApp({
         <div style={{ margin: "14px 14px 0", padding: "17px 18px", borderRadius: 20, background: "#FAF8F3", border: "1px solid rgba(198, 161, 91,.28)", display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={kicker("#6B4A1C")}>Balance due</span>
           <div style={{ font: `400 22px/1.15 ${serif}`, color: "#6B4A1C" }}>
-            {new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(
+            {currencyFmt(trip.payment.currency).format(
               (trip.payment.nextDue ? Math.min(trip.payment.nextDue.amountCents, trip.payment.remainingCents) : trip.payment.remainingCents) / 100,
             )}
             {trip.payment.nextDue?.dueDate && <span style={{ font: "600 13px/1 Inter,sans-serif", color: "#6B4A1C" }}> · Due {trip.payment.nextDue.dueDate}</span>}
@@ -1230,16 +1757,9 @@ export default function CompanionApp({
         </div>
       )}
       {railView}
-      <button
-        onClick={() => {
-          setSt((s) => ({ ...s, chatSubject: `Day ${curDay + 1} — ${sel.name}` }));
-          go(usesRealChat ? "messages" : "chat");
-        }}
-        className="wg-warm"
-        style={{ alignSelf: "flex-start", border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", cursor: "pointer", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: INK }}
-      >
-        Ask about this day
-      </button>
+      {/* No day-level "ask" here on purpose — a question belongs to a specific
+          stop, not a whole day. Tap any attraction above to open it and "Ask
+          about this", which pins that attraction to the message. */}
     </div>
   );
 
@@ -1305,7 +1825,12 @@ export default function CompanionApp({
             className="wg-warm"
             style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", cursor: "pointer", font: `400 14px/1 ${serif}`, padding: "13px 20px", borderRadius: 14, color: INK }}
           >
-            Ask to move this
+            {/* The client asks; the advisor answers. So it reads "Comment on
+                this" on the advisor's side (their own inbox view, or the trip
+                embedded in the advisor app) and "Ask about this" everywhere the
+                viewer is the traveller — a client link, a Gold member's own
+                trip, or the sample preview. */}
+            {advisorInbox || embedded ? "Comment on this" : "Ask about this"}
           </button>
         </div>
       </div>
@@ -1319,32 +1844,28 @@ export default function CompanionApp({
           savePushSubscription in lib/account-store.ts), and neither the
           advisor's own view nor the scripted demo has one. */}
       {isClientViewer && liveChat?.shareId && <NotifyControl shareId={liveChat.shareId} />}
-      {/* Real alerts only — flight-status changes and "what changed" edits to
-          the itinerary itself (data/trip-alerts.ts) — never present on the
-          demo. Newest first, each with a Dismiss control on the advisor's own
-          side only; a client sees the same alert with nothing to manage. */}
-      {[...liveAlerts].reverse().map((a) => (
-        <div key={a.id} style={{ padding: "18px 18px", borderRadius: 20, background: a.acknowledged ? "#ffffff" : "#FAF8F3", border: `1px solid ${a.acknowledged ? "rgba(16, 47, 53,.08)" : "rgba(198, 161, 91,.28)"}`, display: "flex", flexDirection: "column", gap: 8 }}>
-          <span style={kicker(a.acknowledged ? MUTED : "#6B4A1C")}>{new Date(a.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
-          <div style={{ font: `400 20px/1.15 ${serif}`, color: a.acknowledged ? INK : "#6B4A1C" }}>{a.title}</div>
-          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: a.acknowledged ? "#57534e" : "#6B4A1C", textWrap: "pretty" }}>{a.note}</p>
-          {!isClientViewer && !a.acknowledged && trip.tripId && (
-            <button
-              onClick={() => {
-                void fetch("/api/account/alerts", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ tripId: trip.tripId, alertId: a.id }),
-                }).then(() => router.refresh());
-              }}
-              className="wg-press"
-              style={{ alignSelf: "flex-start", border: "1px solid rgba(198, 161, 91,.4)", background: "none", cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "10px 16px", borderRadius: 14, color: "#6B4A1C" }}
-            >
-              Dismiss
-            </button>
-          )}
-        </div>
-      ))}
+      {/* The advisor's own side of the trip: a way to send the traveler a line
+          by hand. Shown only where the account actually serves clients
+          (advisorInbox), never on a client's own view. */}
+      {!isClientViewer && advisorInbox && trip.tripId && <AdvisorAlertComposer tripId={trip.tripId} />}
+      {/* Real flight-status alerts and hand-sent notes — never present on the
+          demo. Newest first; unread until this screen is opened. */}
+      {[...liveAlerts].reverse().map((a) => {
+        // New until this view opened, then plain — the "did I already see this?"
+        // the traveler asked for. Held to the open-time snapshot so a card does
+        // not fade out from under them while they are still reading it.
+        const unread = seenOnOpen ? seenOnOpen.has(a.id) : !isAlertRead(a);
+        return (
+          <div key={a.id} style={{ padding: "18px 18px", borderRadius: 20, background: unread ? "#FAF8F3" : "#ffffff", border: `1px solid ${unread ? "rgba(198, 161, 91,.28)" : "rgba(16, 47, 53,.08)"}`, display: "flex", flexDirection: "column", gap: 8 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={kicker(unread ? "#6B4A1C" : MUTED)}>{new Date(a.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+              {unread && <span aria-label="New" style={{ width: 7, height: 7, borderRadius: 14, background: GOLD }} />}
+            </span>
+            <div style={{ font: `400 20px/1.15 ${serif}`, color: unread ? "#6B4A1C" : INK }}>{a.title}</div>
+            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: unread ? "#6B4A1C" : "#57534e", textWrap: "pretty" }}>{a.note}</p>
+          </div>
+        );
+      })}
       {open && (
         <div style={{ padding: "20px 18px", borderRadius: 20, background: "#FAF8F3", border: "1px solid rgba(198, 161, 91,.28)", display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1418,7 +1939,16 @@ export default function CompanionApp({
         {st.messages.map((m, i) => {
           const mine = m.from === "me";
           return (
-            <div key={i} style={{ maxWidth: "80%", alignSelf: mine ? "flex-end" : "flex-start", background: mine ? GOLD : "#ffffff", color: mine ? CREAM : INK, borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "13px 15px", fontSize: 14, lineHeight: 1.5, boxShadow: "0 1px 2px rgba(23,45,82,.08)" }}>{m.text}</div>
+            /* THE SAME SHAPE AS THE REAL THREAD. The message block caps at 82%
+               of the thread and sits on its own side; the bubble inside sizes
+               to its own text against that definite width, so "yes" is a short
+               bubble rather than one letter per line. This used to be a flat
+               80% on the bubble itself, which is what LiveChat was fixed away
+               from — leaving the sample, the one public demonstration of the
+               product, showing the design the product no longer has. */
+            <div key={i} style={{ maxWidth: "82%", alignSelf: mine ? "flex-end" : "flex-start" }}>
+              <div style={{ maxWidth: "100%", width: "fit-content", marginLeft: mine ? "auto" : 0, background: mine ? NAVY : "#ffffff", color: mine ? CREAM : INK, borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "13px 15px", fontSize: 14, lineHeight: 1.5, boxShadow: "0 1px 2px rgba(16, 47, 53,.08)" }}>{m.text}</div>
+            </div>
           );
         })}
         {st.typing && (
@@ -1428,12 +1958,34 @@ export default function CompanionApp({
       <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(16, 47, 53,.08)", padding: "12px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", gap: 7, overflowX: "auto", scrollbarWidth: "none" }}>
           {quickReplies.map((q, i) => (
-            <button key={i} onClick={() => send(q)} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", cursor: "pointer", fontSize: 12.5, padding: "9px 14px", borderRadius: 14, color: INK, whiteSpace: "nowrap" }}>{q}</button>
+            <button key={i} onClick={() => send(q)} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", cursor: "pointer", fontSize: 12.5, minHeight: 44, padding: "9px 16px", borderRadius: 14, color: INK, whiteSpace: "nowrap" }}>{q}</button>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
-          <input value={st.draft} onChange={(e) => setSt((s) => ({ ...s, draft: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") send(); }} placeholder={st.role === "advisor" ? "Reply to the Cohens…" : `Ask ${firstName} anything…`} style={{ flex: 1, minWidth: 0, border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, color: INK, outline: "none" }} />
-          <button onClick={() => send()} className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0 }}>↑</button>
+        {/* ONE ROUNDED BAR, the shape the real thread was redesigned into —
+            paperclip on the left, the field, a camera on the right, the round
+            send button beside it. The sample kept a plain box and a square
+            gold arrow, so the app a buyer was shown did not look like the app
+            their client would open. The controls here are the demonstration
+            and do nothing: this trip has no upload behind it. */}
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "flex-end", gap: 1, background: "#ffffff", border: "1px solid rgba(16, 47, 53,.16)", borderRadius: 23, padding: "2px 4px 2px 3px" }}>
+            <span aria-hidden="true" style={{ color: ICON_BLUE, opacity: 0.55, width: 38, height: 42, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="paperclip" className="h-[21px] w-[21px]" />
+            </span>
+            <input
+              value={st.draft}
+              onChange={(e) => setSt((s) => ({ ...s, draft: e.target.value }))}
+              onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+              placeholder={st.role === "advisor" ? "Reply to the Cohens…" : `Message ${firstName}…`}
+              /* 16px, not 14: iOS Safari zooms the whole page into any input
+                 under 16px the moment it is focused. */
+              style={{ flex: 1, minWidth: 0, border: 0, background: "none", padding: "11px 6px 11px 8px", fontFamily: "Inter,sans-serif", fontSize: 16, lineHeight: 1.4, color: INK, outline: "none" }}
+            />
+            <span aria-hidden="true" style={{ color: ICON_BLUE, opacity: 0.55, width: 38, height: 42, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="camera" className="h-[21px] w-[21px]" />
+            </span>
+          </div>
+          <button onClick={() => send()} aria-label="Send" className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, width: 46, height: 46, borderRadius: 23, fontSize: 17, padding: 0 }}>↑</button>
         </div>
       </div>
     </div>
@@ -1460,12 +2012,29 @@ export default function CompanionApp({
     </div>
   );
 
+  /** True when this row's documents are the shipped samples, which need no
+   *  account and no share token to open. */
+  const att0Sample = (r: { attachments?: Array<{ sampleUrl?: string }> }) =>
+    Boolean(r.attachments?.some((a) => a.sampleUrl));
+
   const walletScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
       {personalWalletKey ? <PersonalTravelWallet key={personalWalletKey} tripKey={personalWalletKey} /> : null}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: "#193F46", background: "#FAF8F3", padding: "10px 14px", borderRadius: 14, alignSelf: "flex-start" }}>
-        <span style={{ width: 7, height: 7, borderRadius: 14, background: "#193F46" }} />Kept on the phone — works with no signal
-      </div>
+      {(() => {
+        // Only promise "works with no signal" when every document is actually
+        // on the device. Until then, say plainly how many are kept and what to
+        // do — never let a traveller reach the gate trusting a pass that was
+        // never saved.
+        const allKept = offlineDocs.total === 0 || offlineDocs.kept >= offlineDocs.total;
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: allKept ? "#193F46" : "#6B4A1C", background: allKept ? "#FAF8F3" : "#FAF8F3", padding: "10px 14px", borderRadius: 14, alignSelf: "flex-start" }}>
+            <span style={{ width: 7, height: 7, borderRadius: 14, background: allKept ? "#193F46" : GOLD }} />
+            {allKept
+              ? "Kept on the phone — works with no signal"
+              : `${offlineDocs.kept} of ${offlineDocs.total} kept on the phone — open the rest with a connection`}
+          </div>
+        );
+      })()}
       {trip.payment && (
         <button
           onClick={() => go("pay")}
@@ -1474,12 +2043,12 @@ export default function CompanionApp({
         >
           <span style={kicker(NAVY)}>Trip balance</span>
           <span style={{ font: `400 19px/1.2 ${serif}`, color: "#102F35" }}>
-            {new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(trip.payment.remainingCents / 100)}
+            {currencyFmt(trip.payment.currency).format(trip.payment.remainingCents / 100)}
             {trip.payment.remainingCents > 0 ? " remaining" : " — paid in full"}
           </span>
           <span style={{ fontSize: 12.5, color: MUTED }}>
-            {new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(trip.payment.paidCents / 100)} paid so far
-            {trip.payment.totalCents ? ` of ${new Intl.NumberFormat("en-US", { style: "currency", currency: trip.payment.currency }).format(trip.payment.totalCents / 100)} total` : ""}
+            {currencyFmt(trip.payment.currency).format(trip.payment.paidCents / 100)} paid so far
+            {trip.payment.totalCents ? ` of ${currencyFmt(trip.payment.currency).format(trip.payment.totalCents / 100)} total` : ""}
           </span>
         </button>
       )}
@@ -1497,9 +2066,18 @@ export default function CompanionApp({
               </div>
               {r.sub && <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{r.sub}</span>}
               {(r.phone || r.address) && (
-                <div style={{ display: "flex", gap: 14, marginTop: 2 }}>
+                /* CALL AND DIRECTIONS ARE THE TWO THINGS SOMEBODY TAPS WHILE
+                   STANDING IN A STREET, and they were 12.5px of underlined
+                   text with no padding at all. TAP_INLINE gives each a real
+                   target; the gap goes to 36 so that after the negative
+                   margins the two zones still do not touch — a thumb that
+                   misses Directions must not place a phone call. */
+                <div style={{ display: "flex", gap: 36, marginTop: 2 }}>
                   {r.phone && (
-                    <a href={`tel:${r.phone.replace(/[^\d+]/g, "")}`} style={{ fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}>
+                    <a
+                      href={`tel:${r.phone.replace(/[^\d+]/g, "")}`}
+                      style={{ ...TAP_INLINE, fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}
+                    >
                       Call
                     </a>
                   )}
@@ -1508,7 +2086,7 @@ export default function CompanionApp({
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}
+                      style={{ ...TAP_INLINE, fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}
                     >
                       Directions
                     </a>
@@ -1519,23 +2097,26 @@ export default function CompanionApp({
                   file through their own account; the client opens it through
                   this trip's code, and only the files the adviser marked for
                   them are in the payload at all. See app/api/trip-file. */}
-              {r.attachments && r.attachments.length > 0 && (!isClientViewer || groupCode || liveChat?.shareId) && (
+              {r.attachments && r.attachments.length > 0 && (att0Sample(r) || !isClientViewer || groupCode || liveChat?.shareId) && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 2 }}>
                   {r.attachments.map((att) => (
                     <span key={att.id} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
-                      <a
-                        href={
-                          isClientViewer
-                            ? `/api/trip-file/${encodeURIComponent(groupCode ?? liveChat!.shareId)}?id=${encodeURIComponent(att.id)}`
-                            : `/api/account/attachments?id=${encodeURIComponent(att.id)}`
+                      {/* A shipped sample is a static file and needs neither of
+                          the two doors below — it has no owner to check and no
+                          share token to check it against. */}
+                      <WalletDocLink
+                        url={
+                          att.sampleUrl
+                            ? att.sampleUrl
+                            : isClientViewer
+                              ? `/api/trip-file/${encodeURIComponent(groupCode ?? liveChat!.shareId)}?id=${encodeURIComponent(att.id)}`
+                              : `/api/account/attachments?id=${encodeURIComponent(att.id)}`
                         }
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        style={{ fontSize: 12.5, fontWeight: 600, color: "#193F46", textDecoration: "underline" }}
-                      >
-                        📎 {att.name}
-                      </a>
-                      {!isClientViewer && trip.tripId && r.id && r.stopKind && (
+                        fileId={att.id}
+                        name={att.name}
+                        offlineCapable={!att.sampleUrl}
+                      />
+                      {!att.sampleUrl && !isClientViewer && trip.tripId && r.id && r.stopKind && (
                         <WalletShareToggle
                           tripId={trip.tripId}
                           row={r}
@@ -1636,7 +2217,7 @@ export default function CompanionApp({
         </div>
       )}
       <div style={{ padding: 20, borderRadius: 20, background: "#FAF8F3", border: "1px solid rgba(198, 161, 91,.25)", display: "flex", flexDirection: "column", gap: 11 }}>
-        {/* A client on a code from their adviser has no account — "signed in"
+        {/* A client on a code from their advisor has no account — "signed in"
             would simply be false for them, so this reads differently for the
             two people who can land on this screen. */}
         <span style={kicker("#6B4A1C")}>{groupMode || liveChat?.side === "client" ? "Your trip" : "Signed in as"}</span>
@@ -1646,12 +2227,12 @@ export default function CompanionApp({
             : groupCode
             ? "You opened this trip with its code. Your group shares the itinerary and chat; personal wallet files stay on each person’s device."
             : liveChat?.side === "client"
-            ? "You opened this with the code your adviser sent you — no account needed."
+            ? "You opened this with the code your advisor sent you — no account needed."
             : st.role === "advisor"
               ? "The advisor side: the trips you are holding today, and the one that needs a decision from you."
               : "The trip is in your name. Two others can look at it; nobody but you can change it."}
         </p>
-        {groupCode ? <a href="/app?enter=1" style={{ ...TAP_INLINE, color: INK, textDecoration: "underline" }}>Open a different trip code</a> : null}
+        {groupCode ? <Link href="/app?enter=1" style={{ ...TAP_INLINE, color: INK, textDecoration: "underline" }}>Open a different trip code</Link> : null}
         {showcaseSwitches && (
           <div style={{ display: "flex", gap: 6, padding: 5, background: "rgba(255,255,255,.8)", borderRadius: 14, alignSelf: "flex-start" }}>
             {roleOpts.map((r) => (
@@ -1689,9 +2270,17 @@ export default function CompanionApp({
     body = groupMode ? (
       <TripGroupChat key={groupCode} code={groupCode} preview={travelerPreview} />
     ) : advisorInbox ? (
-      <AdvisorInbox pendingShare={pendingShare} onPendingShareUsed={() => setPendingShare(null)} />
+      <AdvisorInbox
+        pendingShare={pendingShare}
+        onPendingShareUsed={() => setPendingShare(null)}
+        onComposerFocus={setComposerUp}
+        openShareId={advisorShareId}
+        subject={st.chatSubject}
+        onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))}
+        places={shareablePlaces}
+      />
     ) : liveChat ? (
-      <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} places={shareablePlaces} />
+      <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} places={shareablePlaces} onComposerFocus={setComposerUp} />
     ) : (
       guideChat
     );
@@ -1699,72 +2288,132 @@ export default function CompanionApp({
   else if (st.screen === "profile") body = profileScreen;
   else if (st.screen === "pay") body = payScreen;
 
-  const canBack = st.screen !== "home";
+  // The advisor's Messages tab is a root tab, reached from the bottom pill, and
+  // its inbox carries its own back arrow (an open thread → the conversation
+  // list). So the app header shows NO back of its own there — two back arrows
+  // stacked in one conversation was the confusion. To leave Messages for the
+  // trip, the bottom pill does it, the same as any other tab.
+  // Embedded, the header always carries a back — on the home screen it exits the
+  // trip (back to the advisor app), elsewhere it steps back a screen.
+  const canBack = embedded ? true : st.screen !== "home" && !(advisorInbox && st.screen === "messages");
 
   // ── the phone itself ────────────────────────────────────────────────────
   const phone = (
-    <div className="wg-phone" style={{ display: "flex", flexDirection: "column", background: CREAM, fontFamily: "Inter,system-ui,sans-serif", overflow: "hidden" }}>
+    <div className="wg-phone" style={{ display: "flex", flexDirection: "column", background: CREAM, fontFamily: "Inter,system-ui,sans-serif", overflow: "hidden", ...(embedded ? { height: "100%", flex: 1, minHeight: 0 } : {}) }}>
       {/* header */}
-      {/* THE BAR AT THE TOP IS THE DARK ONE. It was cream, on a cream page,
-          above white cards, so every screen but the first had no dark colour
-          on it at all. Navy here gives all of them the anchor the panel gives
-          the first one, and it is the same navy, so the app reads as one thing
-          rather than one good screen and four pale ones. */}
-      <div style={{ flexShrink: 0, padding: "18px 18px 12px", display: "flex", alignItems: "center", gap: 10, background: NAVY, color: CREAM, borderBottom: "1px solid rgba(255,255,255,.08)" }}>
+      {/* THE BAR AT THE TOP IS THE DARK ONE NOW.
+          It was cream, on a cream page, above white cards — so every screen
+          but the first had no dark colour on it at all and nothing to sit
+          against. Navy here gives all of them the anchor the trip screen got
+          from its panel, and it is the same navy, so the app reads as one
+          thing rather than one good screen and four pale ones.
+          Everything on it moved with it: the title and the two round buttons
+          are cream, the eyebrow is the gold lightened for a dark ground, and
+          the bell's badge is ringed in navy rather than cream so it still
+          reads as a dot rather than a smudge. */}
+      <div style={{ flexShrink: 0, padding: "calc(20px + env(safe-area-inset-top)) 18px 12px", display: "flex", alignItems: "center", gap: 10, background: NAVY, color: CREAM, borderBottom: "1px solid rgba(255,255,255,.08)" }}>
         {canBack && (
-          <button onClick={back} className="wg-fade" style={{ border: "1px solid rgba(255,255,255,.22)", background: "rgba(255,255,255,.08)", width: 34, height: 34, borderRadius: 14, cursor: "pointer", fontSize: 15, color: CREAM, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>←</button>
+          <button onClick={back} aria-label="Back" className="wg-fade" style={{ border: "1px solid rgba(255,255,255,.22)", background: "rgba(255,255,255,.08)", width: 34, height: 34, borderRadius: 14, cursor: "pointer", fontSize: 15, color: CREAM, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>←</button>
         )}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
           <div style={{ font: "600 9.5px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: GOLD_ON_DARK }}>{kickers[st.screen]}</div>
           <div style={{ font: `400 19px/1.15 ${serif}`, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titles[st.screen]}</div>
         </div>
-        <button onClick={() => go("alerts")} className="wg-fade" style={{ position: "relative", border: "1px solid rgba(255,255,255,.22)", background: "rgba(255,255,255,.08)", height: 34, padding: "0 13px", borderRadius: 14, cursor: "pointer", font: "600 11.5px/1 Inter,sans-serif", color: CREAM }}>
-          Changes
-          {/* Ringed in the colour actually behind it now. On navy, a cream ring
-              reads as a smudge rather than a dot. */}
-          {(open || unacknowledgedAlerts.length > 0) && <span style={{ position: "absolute", top: -3, right: -3, width: 11, height: 11, borderRadius: 14, background: GOLD, border: `2px solid ${NAVY}` }} />}
+        <button onClick={() => go("alerts")} aria-label="Changes" title="Changes" className="wg-fade" style={{ position: "relative", border: "1px solid rgba(255,255,255,.22)", background: "rgba(255,255,255,.08)", width: 34, height: 34, borderRadius: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, color: CREAM }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+          </svg>
+          {(open || unreadAlerts.length > 0) && <span style={{ position: "absolute", top: -3, right: -3, width: 11, height: 11, borderRadius: 14, background: GOLD, border: `2px solid ${NAVY}` }} />}
         </button>
       </div>
-      {/* Only ever says the DEVICE has no connection right now — never a
-          verdict on whether what's on screen is stale, which nothing here
-          actually knows. Everything shown was loaded from the network at
-          some point; this just says a fresh copy can't be fetched right
-          now, so anything requiring one (Changes, Messages, marking a
-          payment) won't update until the connection is back. */}
-      {isOffline && (
-        <div style={{ flexShrink: 0, padding: "9px 18px", background: "#FAF8F3", borderBottom: "1px solid rgba(198, 161, 91,.28)", display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ width: 7, height: 7, borderRadius: 14, background: GOLD, flexShrink: 0 }} />
-          <span style={{ font: "600 11.5px/1.3 Inter,sans-serif", color: "#6B4A1C" }}>No connection — showing what was last loaded</span>
+      {/* Offline, and working from the saved copy — say so plainly, so a blank
+          messages thread or a slow document reads as "no signal", not "broken".
+          The itinerary and wallet are all here; anything that needs the network
+          waits for it. */}
+      {offline && (
+        <div style={{ flexShrink: 0, padding: "7px 18px", background: "#FAF8F3", borderBottom: "1px solid rgba(16, 47, 53,.08)", display: "flex", alignItems: "center", gap: 7, font: "600 11.5px/1.3 Inter,sans-serif", color: "#6B4A1C" }}>
+          <span aria-hidden="true">✈️</span>
+          No connection — showing what was last loaded
         </div>
       )}
       {/* content */}
-      <div className="wg-scroll" style={{ flex: 1, overflow: "auto", WebkitOverflowScrolling: "touch" }}>{body}</div>
-      {/* tabs */}
-      <div style={{ flexShrink: 0, padding: "9px 12px", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(16, 47, 53,.08)", display: "flex", gap: 5 }}>
+      <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{body}</div>
+      {/* tabs — an icon over a label per tab, with one gold pill that slides to
+          the active one (the messenger/travel-app bottom bar). Hidden while the
+          message composer holds the keyboard, so it never rides up wedged
+          between the input and the keyboard. */}
+      {!embedded && !(composerUp && st.screen === "messages") && (
+      <div style={{ flexShrink: 0, position: "relative", padding: "8px 10px", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(16, 47, 53,.08)", display: "flex" }}>
+        {(() => {
+          const idx = tabs.findIndex((t) => t.on);
+          if (idx < 0) return null; // a screen with no tab of its own (pay) — no pill
+          return (
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                top: 8,
+                bottom: 8,
+                left: `calc(10px + ${idx} * (100% - 20px) / ${tabs.length})`,
+                width: `calc((100% - 20px) / ${tabs.length})`,
+                background: GOLD,
+                borderRadius: 16,
+                boxShadow: "0 3px 10px rgba(198, 161, 91,.34)",
+                transition: "left .28s cubic-bezier(.4,0,.2,1)",
+              }}
+            />
+          );
+        })()}
         {tabs.map((t) => (
-          <button key={t.id} onClick={() => go(t.id)} style={{ position: "relative", flex: 1, border: 0, cursor: "pointer", background: t.bg, color: t.fg, font: `400 13px/1 ${serif}`, padding: "12px 6px", borderRadius: 14 }}>
-            {t.label}
-            {t.badge && <span style={{ position: "absolute", top: 5, right: "22%", width: 8, height: 8, borderRadius: 14, background: GOLD, border: "2px solid #C7BFB1" }} />}
+          <button
+            key={t.id}
+            onClick={() => go(t.id)}
+            aria-current={t.on ? "page" : undefined}
+            aria-label={t.badge ? `${t.label} (unread messages)` : undefined}
+            style={{ position: "relative", zIndex: 1, flex: 1, border: 0, cursor: "pointer", background: "transparent", color: t.on ? ON_GOLD : MUTED, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "9px 3px", transition: "color .2s ease" }}
+          >
+            {/* THE WORD UNDER THE ICON, WHICH WAS NOT THERE.
+                The bar was icon-only, with the label kept as the button's
+                accessible name and nothing on the screen — a map pin, a speech
+                bubble, a wallet and a person, standing for Trip, Advisor,
+                Wallet and You. Two of those four are not guessable: a person
+                glyph reads as a profile rather than "You", and a pin reads as
+                the map rather than the trip. Every phone puts the word under
+                the glyph for that reason.
+                It also made the bar invisible to anything reading the screen
+                by its text: an outside scan of this page reported that the
+                tabs did not switch, having found no control by any of their
+                names. They did switch, and do — all four, at 390 and at 1280.
+                The name is one element now instead of two facts that could
+                disagree, so the label and the accessible name cannot drift. */}
+            <span style={{ position: "relative", display: "inline-flex" }}>
+              <Icon name={t.icon} className="h-5 w-5" strokeWidth={t.on ? 2.1 : 1.7} />
+              {t.badge && <span aria-hidden="true" style={{ position: "absolute", top: -3, right: -5, width: 8, height: 8, borderRadius: 14, background: t.on ? CREAM : GOLD, border: `2px solid ${t.on ? GOLD : "#C7BFB1"}` }} />}
+            </span>
+            <span style={{ font: `${t.on ? 600 : 500} 10.5px/1 Inter,sans-serif`, letterSpacing: ".01em" }}>{t.label}</span>
           </button>
         ))}
       </div>
+      )}
     </div>
   );
 
-  // ── the same app, as a web page on a computer or a tablet ───────────────
-  // Not the phone stretched wide and not a phone in a frame, but the app
-  // re-laid as software you sit at: a navy side rail with the trip and its tabs
-  // down the left, and the chosen screen in a wide content column. Chat and the
-  // inbox fill that column; reading screens sit in a comfortable measure and
-  // scroll. Same screens, same tabs, same actions.
+  // ── the same app, as a web page on a computer ───────────────────────────
+  // Not the phone stretched wide (its screens are a column) and not a phone in
+  // a frame, but the app re-laid as software you sit at: a navy side rail with
+  // the trip and its tabs down the left, and the chosen screen in a wide
+  // content column. Chat and the inbox fill that column; reading screens sit in
+  // a comfortable measure and scroll. Same screens, same tabs, same actions.
   const chatty = st.screen === "messages" || st.screen === "chat";
-  const railBtn = (on: boolean): CSSProperties => ({
-    display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 14,
+  const railBtn = (on: boolean): React.CSSProperties => ({
+    display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 14,
     border: 0, cursor: "pointer", background: on ? GOLD : "transparent", color: on ? ON_GOLD : CREAM,
     font: `${on ? 600 : 500} 14px/1 Inter,sans-serif`, textAlign: "left", width: "100%", transition: "background .18s ease",
   });
   const webShell = (
     <div style={{ display: "flex", height: "100dvh", background: "#FAF8F3", fontFamily: "Inter,system-ui,sans-serif", color: INK }}>
+      {/* side rail — the trip, its tabs, and Changes at the foot */}
       <aside style={{ width: 268, flexShrink: 0, background: NAVY, color: CREAM, display: "flex", flexDirection: "column", padding: "26px 16px 18px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 5, padding: "0 8px 22px" }}>
           <div style={{ font: "600 10px/1 Inter,sans-serif", letterSpacing: ".16em", textTransform: "uppercase", color: GOLD_ON_DARK }}>{kickers.home}</div>
@@ -1772,20 +2421,31 @@ export default function CompanionApp({
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {tabs.map((t) => {
-            const on = t.bg === GOLD && !(t.id === "home" && st.screen === "alerts");
+            // Changes has its own rail item at the foot, so the Trip tab must
+            // not also light up while it is open (the phone reaches Changes
+            // from the bell, not a tab, so there the Trip tab staying lit is
+            // right — here it would be two gold pills for one screen).
+            const on = t.on && !(t.id === "home" && st.screen === "alerts");
             return (
-              <button key={t.id} onClick={() => go(t.id)} aria-current={on ? "page" : undefined} style={railBtn(on)}>
-                <span style={{ flex: 1 }}>{t.label}</span>
-                {t.badge && <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 14, background: GOLD }} />}
-              </button>
+            <button key={t.id} onClick={() => go(t.id)} aria-current={on ? "page" : undefined} aria-label={t.badge ? `${t.label} (unread messages)` : undefined} style={railBtn(on)}>
+              <span style={{ position: "relative", display: "inline-flex" }}>
+                <Icon name={t.icon} className="h-5 w-5" strokeWidth={on ? 2.1 : 1.7} />
+                {t.badge && <span aria-hidden="true" style={{ position: "absolute", top: -3, right: -4, width: 8, height: 8, borderRadius: 14, background: GOLD, border: `2px solid ${NAVY}` }} />}
+              </span>
+              {t.label}
+            </button>
             );
           })}
         </nav>
         <button onClick={() => go("alerts")} aria-current={st.screen === "alerts" ? "page" : undefined} style={{ ...railBtn(st.screen === "alerts"), marginTop: "auto" }}>
-          <span style={{ flex: 1 }}>Changes</span>
-          {(open || unacknowledgedAlerts.length > 0) && <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: 14, background: GOLD }} />}
+          <span style={{ position: "relative", display: "inline-flex" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+            {(open || unreadAlerts.length > 0) && <span aria-hidden="true" style={{ position: "absolute", top: -2, right: -3, width: 9, height: 9, borderRadius: 14, background: GOLD, border: `2px solid ${NAVY}` }} />}
+          </span>
+          Changes
         </button>
       </aside>
+      {/* content — a slim per-screen bar over the screen itself */}
       <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "17px 30px", borderBottom: "1px solid rgba(16, 47, 53,.09)", background: "#FAF8F3" }}>
           {canBack && <button onClick={back} aria-label="Back" className="wg-fade" style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#fff", width: 34, height: 34, borderRadius: 12, cursor: "pointer", fontSize: 15, color: INK, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>←</button>}
@@ -1794,10 +2454,9 @@ export default function CompanionApp({
             <div style={{ font: `400 20px/1.1 ${serif}`, letterSpacing: "-.01em" }}>{titles[st.screen]}</div>
           </div>
         </div>
-        {isOffline && (
-          <div style={{ flexShrink: 0, padding: "9px 30px", background: "#FAF8F3", borderBottom: "1px solid rgba(198, 161, 91,.28)", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 7, height: 7, borderRadius: 14, background: GOLD, flexShrink: 0 }} />
-            <span style={{ font: "600 11.5px/1.3 Inter,sans-serif", color: "#6B4A1C" }}>No connection — showing what was last loaded</span>
+        {offline && (
+          <div style={{ flexShrink: 0, padding: "7px 30px", background: "#FAF8F3", borderBottom: "1px solid rgba(16, 47, 53,.08)", display: "flex", alignItems: "center", gap: 7, font: "600 11.5px/1.3 Inter,sans-serif", color: "#6B4A1C" }}>
+            <span aria-hidden="true">✈️</span>Offline — showing your saved trip.
           </div>
         )}
         <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
@@ -1810,40 +2469,59 @@ export default function CompanionApp({
   if (desktopWeb) {
     return (
       <>
-        <style>{CSS}</style>
+        <style>{COMPANION_CSS}</style>
         {webShell}
       </>
     );
   }
 
-  return (
-    <div className="wg-app-root">
-      <style>{CSS}</style>
-      {/* Desktop showcase chrome — the intro and the two toolbars, shown in the
-          browser and hidden once the app is installed to the home screen. */}
-      <div className="wg-chrome">
-        <div className="wg-chrome-head">
-          <div className="wg-chrome-intro">
-            <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#C6A15B" }}>White Glove · app</div>
-          </div>
-          {showcaseSwitches && (
-            <div className="wg-toolbar-group">
-              <div className="wg-toolbar-label">Trip kind</div>
-              <div className="wg-toolbar">
-                {tmodeOpts.map((o) => (
-                  <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "9px 15px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+  // Embedded in the advisor app: no desktop showcase frame, no second app root
+  // — just the phone, filling the advisor app's content area, with the advisor
+  // app's own four-tab bar below it.
+  if (embedded) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <style>{COMPANION_CSS}</style>
+        {phone}
       </div>
+    );
+  }
+
+  return (
+    // "showcase" is the marketing demo (concierge): a phone stood in a device
+    // frame on navy. "web" is a real, opened trip: on a computer it becomes a
+    // clean, full-height web-app panel on a light page — a genuine web version,
+    // not a toy phone — while a phone still shows it full-screen either way.
+    <div className="wg-app-root" data-mode={hasConcierge ? "showcase" : "web"}>
+      <style>{COMPANION_CSS}</style>
+      {/* Desktop showcase chrome — the intro and the two toolbars, shown in the
+          browser and hidden once the app is installed to the home screen. Only
+          the demo carries it; a real app is just the app. */}
+      {hasConcierge && (
+        <div className="wg-chrome">
+          <div className="wg-chrome-head">
+            <div className="wg-chrome-intro">
+              <div style={{ font: "600 11px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#C6A15B" }}>White Glove · app</div>
+            </div>
+            {showcaseSwitches && (
+              <div className="wg-toolbar-group">
+                <div className="wg-toolbar-label">Trip kind</div>
+                <div className="wg-toolbar">
+                  {tmodeOpts.map((o) => (
+                    <button key={o.id} onClick={o.pick} style={{ border: 0, cursor: "pointer", font: `400 13px/1 ${serif}`, padding: "9px 15px", borderRadius: 14, background: o.bg, color: o.fg }}>{o.label}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="wg-stage">
         <div className="wg-frame">{phone}</div>
       </div>
 
-      {showcaseSwitches && (
+      {hasConcierge && (
         <p className="wg-hint">Try it: open the rain notice, pick one of the two afternoons, then look at Tuesday again. The day, the chat and the notice all move together. Switch to the advisor side under <strong style={{ fontWeight: 600, color: "#D8BC7A" }}>You</strong>.</p>
       )}
     </div>
@@ -1860,7 +2538,7 @@ export default function CompanionApp({
 /** A live message — text, a picture, a video, a voice note, or a place. */
 type LiveMsg = {
   from: ChatSide;
-  kind?: "text" | "image" | "video" | "audio" | "location";
+  kind?: "text" | "image" | "video" | "audio" | "file" | "location" | "poll";
   text: string;
   mediaId?: string;
   lat?: number;
@@ -1872,12 +2550,46 @@ type LiveMsg = {
   deletedAt?: string;
   replyTo?: { at: string; from: ChatSide; kind?: string; text: string };
   itineraryRef?: string;
-  /** Kept easy to find again — either side can pin a message. */
-  pinned?: boolean;
-  /** Sent by the advisor as a broadcast to the whole trip, not a private
-   *  reply — rendered as a banner rather than an ordinary bubble. */
-  announcement?: boolean;
+  /** One emoji per side — both people see both. */
+  reactions?: Partial<Record<ChatSide, string>>;
+  /** kind "poll": the question, its options, votes keyed by voter id, the names
+   *  to show beside them on a public poll, and whether it is private. */
+  poll?: { question: string; options: string[]; votes?: Record<string, number>; voterNames?: Record<string, string>; secret?: boolean };
+  /** Who on the client side sent this, when they came in by their own
+   *  per-traveler link — so the advisor and the family can see who said what.
+   *  Absent on the advisor's messages and on a whole-trip link. */
+  senderId?: string;
+  senderName?: string;
 };
+
+/** The reactions the chat offers — kept in step with lib/companion-chat-store's
+ *  REACTION_EMOJIS, defined here too so this client file pulls no server code. */
+const REACTION_EMOJIS = ["❤️", "👍", "😂", "😮", "😢", "🙏"] as const;
+
+/** A poll asks between this many and this many options — mirrors the server. */
+const MIN_POLL_OPTIONS = 2;
+const MAX_POLL_OPTIONS = 5;
+
+/**
+ * A stable, anonymous id for THIS device, so several travellers on the one
+ * shared trip link can each vote in a poll and be counted once. It says nothing
+ * about who they are — it only separates one browser from another — and lives
+ * only in this browser. The advisor never uses it (the server votes them as
+ * "advisor"); it is the client side's way of not being one lumped-together vote.
+ */
+function deviceVoterId(): string {
+  try {
+    const key = "wg-companion-voter";
+    let id = localStorage.getItem(key);
+    if (!id) {
+      id = (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40);
+      localStorage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return "anon";
+  }
+}
 
 /** The floor a picture may weigh before the server even has a disk to hold it
  * on — used until the server's own GET reports its real, deploy-specific
@@ -2028,6 +2740,76 @@ function NotifyControl({ shareId }: { shareId: string }) {
     </div>
   );
 }
+
+/**
+ * The advisor's own control on the Changes screen: send the traveler a line by
+ * hand — "your driver is running twenty minutes late" — that lands on their
+ * Changes feed and is pushed to their phone. Shown only on the advisor's side,
+ * never a client's; the server checks the plan again (see the send route).
+ */
+function AdvisorAlertComposer({ tripId }: { tripId: string }) {
+  const router = useRouter();
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const serif = "Georgia,'Times New Roman',serif";
+  const clean = text.trim();
+
+  async function send() {
+    if (!clean || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const r = await fetch("/api/account/alerts/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, text: clean }),
+      });
+      if (r.ok) {
+        setText("");
+        setSent(true);
+        setTimeout(() => setSent(false), 2500);
+        router.refresh();
+      } else {
+        const d = (await r.json().catch(() => null)) as { error?: string } | null;
+        setError(d?.error ?? "Could not send that.");
+      }
+    } catch {
+      setError("Could not send that. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div style={{ padding: "16px 18px", borderRadius: 20, background: "#ffffff", border: "1px solid rgba(16, 47, 53,.08)", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <span style={{ fontSize: 14.5, fontWeight: 600 }}>Send the traveler an alert</span>
+        <span style={{ fontSize: 12, color: "#57534e" }}>A driver running late, a change of plan — it lands on their Changes and is pushed to their phone.</span>
+      </div>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value.slice(0, 280))}
+        placeholder="Your driver is running about 20 minutes late."
+        rows={2}
+        style={{ resize: "none", border: "1px solid rgba(16, 47, 53,.16)", borderRadius: 14, padding: "11px 13px", font: `400 14px/1.4 ${serif}`, color: INK, outline: "none" }}
+      />
+      {error && <span style={{ fontSize: 12, color: "#b42318" }}>{error}</span>}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <span style={{ fontSize: 11.5, color: sent ? "#1f7a4d" : FAINT }}>{sent ? "Sent." : `${text.length}/280`}</span>
+        <button
+          onClick={() => void send()}
+          disabled={busy || !clean}
+          className="wg-press"
+          style={{ flex: "none", border: 0, background: GOLD, color: ON_GOLD, cursor: clean && !busy ? "pointer" : "default", font: `400 13px/1 ${serif}`, padding: "11px 18px", borderRadius: 14, opacity: busy || !clean ? 0.5 : 1 }}
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
 /** The most a video may weigh — a short clip, not a film. Matches
  * MAX_CHAT_VIDEO_BYTES in lib/media.ts; kept as its own number here because a
  * client-side check exists to save the phone an upload the server would only
@@ -2035,15 +2817,42 @@ function NotifyControl({ shareId }: { shareId: string }) {
 const MAX_CHAT_VIDEO_BYTES = 15 * 1024 * 1024;
 /** The most a voice note may weigh. Matches MAX_CHAT_AUDIO_BYTES server-side. */
 const MAX_CHAT_AUDIO_BYTES = 8 * 1024 * 1024;
+// A document's cap is not a fixed constant here: it is read from the server
+// (docLimit) because it depends on whether the disk volume is mounted.
 
-/** A picture, video or voice note picked but not yet sent. */
-type StagedMedia = { kind: "image" | "video" | "audio"; file: File | Blob; previewUrl: string; noun: string };
+/** A picture, video, voice note or document picked but not yet sent.
+ *  `fileName` is carried for a document, whose card shows its name. */
+type StagedMedia = { kind: "image" | "video" | "audio" | "file"; file: File | Blob; previewUrl: string; noun: string; fileName?: string };
+
+/** A small document glyph — the media Icon set has no file icon, and a chat
+ *  document should read as a document at a glance, in the composer and in the
+ *  thread. Inline so it carries its own colour from the surrounding text. */
+function DocGlyph({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+    </svg>
+  );
+}
+
+/** A poll's little bar-chart glyph for the attach menu. */
+function PollGlyph({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M7 20V10M12 20V4M17 20v-6" />
+    </svg>
+  );
+}
 
 /** "Today" / "Yesterday" / a short date — the divider between a run of
  *  messages sent on different days, the way any messaging app breaks up
  *  scrollback. */
 function dayLabel(iso: string): string {
   const d = new Date(iso);
+  // A message with an unparseable timestamp would otherwise render an "Invalid
+  // Date" divider; drop the divider instead, the same way msgTime guards.
+  if (Number.isNaN(d.getTime())) return "";
   const now = new Date();
   const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
@@ -2057,6 +2866,297 @@ function dayLabel(iso: string): string {
   });
 }
 
+/**
+ * The location picker — a map you move under a fixed pin and send that exact
+ * spot, the way a phone messenger does it, in place of typing an address into a
+ * box. Opens on the device's own position when it can, and still offers "my
+ * current location" and the trip's own stops for the times a pin on a map is
+ * not what you want. When Maps can't load (no key, or offline) it falls back to
+ * just those two, so Location is never a dead button.
+ */
+function LocationPicker({
+  onPickPin,
+  onUseCurrent,
+  onPickPlace,
+  onClose,
+  places,
+}: {
+  onPickPin: (loc: { lat: number; lng: number }) => void;
+  onUseCurrent: () => void;
+  onPickPlace: (place: { label: string; address: string }) => void;
+  onClose: () => void;
+  places: { label: string; address: string }[];
+}) {
+  const mapDivRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<GMap | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "unavailable">(googleMapsAvailable() ? "loading" : "unavailable");
+  const [locating, setLocating] = useState(false);
+  // Address search: the typed query, the dropdown of matches, and the Places
+  // services that produce them (created once the map is ready).
+  const [query, setQuery] = useState("");
+  const [predictions, setPredictions] = useState<GPlacePrediction[]>([]);
+  // Set once the Places autocomplete service is wired — a ref alone would not
+  // re-render the search bar into view when it becomes ready.
+  const [searchReady, setSearchReady] = useState(false);
+  const autoRef = useRef<InstanceType<GPlacesApi["AutocompleteService"]> | null>(null);
+  const placesRef = useRef<InstanceType<GPlacesApi["PlacesService"]> | null>(null);
+  const tokenRef = useRef<unknown>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  // Ask for address matches as you type, lightly debounced, once there is
+  // enough to search on. Fails quiet — no suggestions rather than an error — if
+  // the Places API isn't enabled on the key.
+  useEffect(() => {
+    const svc = autoRef.current;
+    if (!svc || query.trim().length < 3) { setPredictions([]); return; }
+    const t = window.setTimeout(() => {
+      try {
+        svc.getPlacePredictions({ input: query, sessionToken: tokenRef.current ?? undefined }, (preds) => setPredictions(preds ?? []));
+      } catch { setPredictions([]); }
+    }, 250);
+    return () => window.clearTimeout(t);
+  }, [query]);
+
+  function chooseAddress(p: GPlacePrediction) {
+    setQuery(p.description);
+    setPredictions([]);
+    const svc = placesRef.current;
+    if (!svc) return;
+    svc.getDetails({ placeId: p.place_id, fields: ["geometry"], sessionToken: tokenRef.current ?? undefined }, (place) => {
+      const loc = place?.geometry?.location;
+      if (loc && mapRef.current) {
+        mapRef.current.setCenter({ lat: loc.lat(), lng: loc.lng() });
+        mapRef.current.setZoom(17);
+      }
+      // A details call closes the billing session; start a fresh token.
+      const pl = googleMaps()?.places;
+      if (pl) tokenRef.current = new pl.AutocompleteSessionToken();
+    });
+  }
+
+  const centreOnDevice = useCallback((first: boolean) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const map = mapRef.current;
+        if (map) { map.setCenter(p); map.setZoom(16); }
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: first ? 8000 : 10000 },
+    );
+  }, []);
+
+  useEffect(() => {
+    if (status === "unavailable") return;
+    let cancelled = false;
+    void (async () => {
+      const ok = await loadGoogleMaps();
+      if (cancelled) return;
+      const maps = googleMaps();
+      if (!ok || !maps || !mapDivRef.current) { setStatus("unavailable"); return; }
+      mapRef.current = new maps.Map(mapDivRef.current, {
+        center: { lat: 40.7128, lng: -74.006 },
+        zoom: 15,
+        disableDefaultUI: true,
+        clickableIcons: false,
+        gestureHandling: "greedy",
+      });
+      setStatus("ready");
+      centreOnDevice(true);
+      // Wire address search, if the Places library is there. Best-effort: the
+      // map still works if the key has no Places access.
+      try {
+        if (maps.importLibrary) await maps.importLibrary("places");
+        const p = googleMaps()?.places;
+        if (p && mapDivRef.current) {
+          autoRef.current = new p.AutocompleteService();
+          placesRef.current = new p.PlacesService(mapDivRef.current);
+          tokenRef.current = new p.AutocompleteSessionToken();
+          if (!cancelled) setSearchReady(true);
+        }
+      } catch {
+        /* no autocomplete — the pin and current-location still work */
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function sendPin() {
+    const c = mapRef.current?.getCenter?.();
+    if (!c) return;
+    onPickPin({ lat: c.lat(), lng: c.lng() });
+  }
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Share a location" style={{ position: "absolute", inset: 0, zIndex: 32, background: CREAM, display: "flex", flexDirection: "column" }}>
+      <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: "1px solid rgba(16, 47, 53,.08)" }}>
+        <button onClick={onClose} aria-label="Close" className="wg-fade" style={{ border: "1px solid rgba(16, 47, 53,.14)", background: "#fff", width: 34, height: 34, borderRadius: 12, cursor: "pointer", fontSize: 15, color: "#57534e", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>←</button>
+        <span style={{ font: "600 16px/1.1 Inter,sans-serif", color: INK }}>Share a location</span>
+      </div>
+
+      {status === "unavailable" ? (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 8, padding: 24, textAlign: "center", color: MUTED }}>
+          <Icon name="map-pin" className="h-8 w-8" strokeWidth={1.2} />
+          <span style={{ fontSize: 13.5, lineHeight: 1.5, maxWidth: 260 }}>A map isn’t available here right now — you can still send where you are, or a stop from the trip below.</span>
+        </div>
+      ) : (
+        <div style={{ flex: 1, position: "relative", minHeight: 0 }}>
+          <div ref={mapDivRef} style={{ position: "absolute", inset: 0, background: "#FAF8F3" }} />
+          {/* The fixed pin — the map moves under it, so its tip always marks the
+              point that Send will use. pointer-events off so it never eats a drag. */}
+          <div aria-hidden="true" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-100%)", pointerEvents: "none", color: GOLD, filter: "drop-shadow(0 3px 4px rgba(15,20,25,.35))" }}>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 4.6 6 12 6.4 12.5a.8.8 0 0 0 1.2 0C13 21 19 13.6 19 9a7 7 0 0 0-7-7Z" /><circle cx="12" cy="9" r="2.6" fill="#fff" /></svg>
+          </div>
+          {status === "loading" && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", font: "500 13px/1 Inter,sans-serif", color: MUTED }}>Loading map…</div>
+          )}
+          {/* Address search — type a street, pick from the dropdown, the map
+              jumps there and drops the pin; then nudge it to the exact door.
+              Floats over the map, top; the suggestions hang below it. Only
+              shown once the Places service is wired (autoRef set on ready). */}
+          {status === "ready" && searchReady && (
+            <div style={{ position: "absolute", top: 10, left: 10, right: 10, zIndex: 2 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", borderRadius: 12, boxShadow: "0 4px 14px rgba(15,20,25,.18)", padding: "0 12px", height: 44 }}>
+                <Icon name="search" className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search an address"
+                  aria-label="Search an address"
+                  autoComplete="off"
+                  style={{ flex: 1, border: 0, outline: "none", background: "transparent", font: "500 15px/1 Inter,sans-serif", color: INK, minWidth: 0 }}
+                />
+                {query && (
+                  <button onClick={() => { setQuery(""); setPredictions([]); }} aria-label="Clear" className="wg-fade" style={{ flex: "none", border: 0, background: "none", cursor: "pointer", color: FAINT, display: "flex", padding: 0 }}>
+                    <Icon name="close" className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              {predictions.length > 0 && (
+                <div style={{ marginTop: 6, background: "#fff", borderRadius: 12, boxShadow: "0 6px 18px rgba(15,20,25,.2)", overflow: "hidden" }}>
+                  {predictions.map((p) => (
+                    <button key={p.place_id} onClick={() => chooseAddress(p)} className="wg-warm" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, borderTop: "1px solid rgba(16, 47, 53,.06)", background: "#fff", cursor: "pointer", padding: "10px 12px" }}>
+                      <Icon name="map-pin" className="h-4 w-4" strokeWidth={1.6} />
+                      <span style={{ fontSize: 13, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.description}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <button
+            onClick={() => centreOnDevice(false)}
+            title="My location"
+            aria-label="Centre on my location"
+            className="wg-press"
+            style={{ position: "absolute", right: 14, bottom: 16, width: 44, height: 44, borderRadius: "50%", border: 0, background: "#fff", color: ICON_BLUE, cursor: "pointer", boxShadow: "0 4px 14px rgba(15,20,25,.22)", display: "flex", alignItems: "center", justifyContent: "center", opacity: locating ? 0.6 : 1 }}
+          >
+            <Icon name="map-pin" className="h-5 w-5" strokeWidth={1.8} />
+          </button>
+        </div>
+      )}
+
+      <div style={{ flexShrink: 0, borderTop: "1px solid rgba(16, 47, 53,.08)", background: CREAM, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, maxHeight: "42%", overflowY: "auto" }}>
+        {status === "ready" && (
+          <button onClick={sendPin} className="wg-press" style={{ border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, borderRadius: 14, minHeight: 48, fontSize: 14.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <Icon name="map-pin" className="h-[18px] w-[18px]" /> Send this location
+          </button>
+        )}
+        <button onClick={onUseCurrent} className="wg-warm" style={{ border: "1px solid rgba(16, 47, 53,.14)", cursor: "pointer", background: "#fff", color: INK, borderRadius: 14, minHeight: 46, fontSize: 13.5, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <Icon name="map-pin" className="h-[17px] w-[17px]" /> Send my current location
+        </button>
+        {places.length > 0 && (
+          <>
+            <div style={{ padding: "4px 4px 0", font: "600 10px/1 Inter,sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: FAINT }}>From this trip</div>
+            {places.map((p, i) => (
+              <button key={i} onClick={() => onPickPlace(p)} className="wg-warm" style={{ display: "flex", flexDirection: "column", width: "100%", textAlign: "left", border: "1px solid rgba(16, 47, 53,.1)", borderRadius: 12, background: "#fff", cursor: "pointer", padding: "10px 13px" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: INK }}>{p.label}</span>
+                <span style={{ fontSize: 11.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.address}</span>
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Compose a poll — a question and two to five options — over the thread. A small
+ * sheet rather than an inline row, so a half-typed poll never sits in the
+ * message box. Nothing is sent until Create; the options grow up to the cap.
+ */
+function PollComposer({ onSend, onClose }: { onSend: (question: string, options: string[], secret: boolean) => Promise<boolean>; onClose: () => void }) {
+  const [question, setQuestion] = useState("");
+  const [options, setOptions] = useState<string[]>(["", ""]);
+  const [secret, setSecret] = useState(false);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const filled = options.filter((o) => o.trim()).length;
+  const canSend = question.trim().length > 0 && filled >= MIN_POLL_OPTIONS;
+  const field: CSSProperties = { width: "100%", border: "1px solid rgba(16, 47, 53,.16)", borderRadius: 10, padding: "11px 12px", fontFamily: "Inter,sans-serif", fontSize: 16, color: INK, outline: "none", background: "#fff" };
+  const choice = (on: boolean): CSSProperties => ({ flex: 1, border: `1px solid ${on ? GOLD : "rgba(16, 47, 53,.16)"}`, background: on ? "rgba(198, 161, 91,.12)" : "#fff", color: INK, borderRadius: 10, cursor: "pointer", padding: "9px 8px", display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-start", textAlign: "left" });
+
+  async function submit() {
+    if (!canSend || busy) return;
+    setBusy(true);
+    const ok = await onSend(question, options, secret);
+    setBusy(false);
+    if (ok) onClose();
+  }
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Create a poll" onClick={onClose} style={{ position: "absolute", inset: 0, zIndex: 33, background: "rgba(15,20,25,.4)", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: CREAM, borderRadius: "20px 20px 0 0", padding: "16px 16px calc(16px + env(safe-area-inset-bottom))", display: "flex", flexDirection: "column", gap: 12, maxHeight: "88%", overflowY: "auto", animation: "wgIn .2s ease both" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ font: "600 16px/1 Inter,sans-serif", color: INK }}>New poll</span>
+          <button onClick={onClose} aria-label="Close" className="wg-fade" style={{ border: 0, background: "none", cursor: "pointer", color: FAINT, display: "flex" }}><Icon name="close" className="h-5 w-5" /></button>
+        </div>
+        <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask a question…" aria-label="Poll question" maxLength={140} style={field} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {options.map((opt, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input value={opt} onChange={(e) => setOptions((prev) => prev.map((o, idx) => (idx === i ? e.target.value : o)))} placeholder={`Option ${i + 1}`} aria-label={`Option ${i + 1}`} maxLength={80} style={field} />
+              {options.length > MIN_POLL_OPTIONS && (
+                <button onClick={() => setOptions((prev) => prev.filter((_, idx) => idx !== i))} aria-label={`Remove option ${i + 1}`} className="wg-fade" style={{ flex: "none", border: 0, background: "none", cursor: "pointer", color: FAINT, display: "flex" }}><Icon name="close" className="h-4 w-4" /></button>
+              )}
+            </div>
+          ))}
+        </div>
+        {options.length < MAX_POLL_OPTIONS && (
+          <button onClick={() => setOptions((prev) => [...prev, ""])} className="wg-link" style={{ alignSelf: "flex-start", border: 0, background: "none", cursor: "pointer", color: ICON_BLUE, fontSize: 13.5, fontWeight: 600, padding: "2px 0" }}>+ Add option</button>
+        )}
+        {/* Whether everyone sees who voted for what, or only the totals. Chosen
+            here, once — it can't be flipped after the poll is out. */}
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" onClick={() => setSecret(false)} aria-pressed={!secret} style={choice(!secret)}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Show who voted</span>
+            <span style={{ fontSize: 11.5, color: MUTED }}>Everyone sees each other&rsquo;s votes</span>
+          </button>
+          <button type="button" onClick={() => setSecret(true)} aria-pressed={secret} style={choice(secret)}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Private</span>
+            <span style={{ fontSize: 11.5, color: MUTED }}>Only the totals are shown</span>
+          </button>
+        </div>
+        <button onClick={() => void submit()} disabled={!canSend || busy} className="wg-press" style={{ border: 0, cursor: canSend && !busy ? "pointer" : "default", background: GOLD, color: ON_GOLD, borderRadius: 14, minHeight: 50, fontSize: 15, fontWeight: 700, opacity: canSend && !busy ? 1 : 0.5 }}>Create poll</button>
+      </div>
+    </div>
+  );
+}
+
 function LiveChat({
   chat,
   subject,
@@ -2064,6 +3164,7 @@ function LiveChat({
   places = [],
   initialDraft,
   onInitialDraftUsed,
+  onComposerFocus,
 }: {
   chat: CompanionChat;
   /** A day or activity tapped through "Ask about this" — folded into the
@@ -2081,12 +3182,28 @@ function LiveChat({
    *  straight into the composer, ready to send as an ordinary message. */
   initialDraft?: string | null;
   onInitialDraftUsed?: () => void;
+  /** Told when the composer takes or loses the keyboard, so the shell can pull
+   *  the bottom tab bar out of the way while typing and bring it back after. */
+  onComposerFocus?: (focused: boolean) => void;
 }) {
   const { shareId, side, advisorName } = chat;
   const [messages, setMessages] = useState<LiveMsg[]>([]);
+  // This viewer's own poll-vote key, told to us by the server (the advisor's is
+  // fixed; a named traveller's is their traveller id). A whole-trip client is
+  // not given one and falls back to its device id below.
+  const [voterKey, setVoterKey] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [available, setAvailable] = useState(true);
   const [loaded, setLoaded] = useState(false);
+  // The channels a trip's conversation is split into — General always, plus any
+  // the advisor made. `channel` is the one being read; every read and write
+  // below is scoped to it. Starts and stays General until the advisor adds more.
+  const [channels, setChannels] = useState<{ id: string; name: string }[]>([{ id: "general", name: "General" }]);
+  const [channel, setChannel] = useState("general");
+  // The advisor's "new channel" box — its name while being typed, and whether
+  // the box is open. Client never sees this; only the advisor may create one.
+  const [newChannelOpen, setNewChannelOpen] = useState(false);
+  const [newChannelName, setNewChannelName] = useState("");
   const [sending, setSending] = useState(false);
   const [note, setNote] = useState("");
   const [reported, setReported] = useState<Record<string, boolean>>({});
@@ -2106,28 +3223,83 @@ function LiveChat({
   >(null);
   // Whether the "⋯" attach menu (photo / video / location) is open.
   const [attachOpen, setAttachOpen] = useState(false);
-  // The location choice — "my current location" or a stop from this trip —
-  // shown in place of the attach menu once Location is tapped, since a
-  // device fix alone can never be where the hotel or the restaurant is.
-  const [locationChoiceOpen, setLocationChoiceOpen] = useState(false);
+  // The full-panel map picker — opened from Location, a pin you move over a map
+  // (plus "my current location" and the trip's own stops).
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  // The compose-a-poll sheet, opened from the paperclip.
+  const [pollComposeOpen, setPollComposeOpen] = useState(false);
+  // True while the message composer (or a caption box) holds focus. Drives, with
+  // the overlays below, whether the shell hides its bottom tab bar.
+  const [composerFocused, setComposerFocused] = useState(false);
   // The `at` of a message being changed — while set, the composer holds that
   // message's words rather than a new message, and Send saves the change
   // instead of posting another one.
   const [editingAt, setEditingAt] = useState<string | null>(null);
-  // The advisor's own choice, per message — never carried over from the last
-  // send, so a reminder sent to everyone doesn't quietly turn the next
-  // ordinary reply into one too.
-  const [asAnnouncement, setAsAnnouncement] = useState(false);
-  const [showPinned, setShowPinned] = useState(false);
   const [readAt, setReadAt] = useState<Partial<Record<ChatSide, string>>>({});
   // The `at` of the one message whose "⋯" menu (Report / Edit / Delete) is
   // open. Only ever one at a time, so a single value does the job of a map.
   const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
-  // Which side the open menu should grow toward — measured against the real
-  // screen at the moment it opens, not assumed from mine/theirs, since a
-  // wide bubble can push its own "⋯" close to either edge and a menu that
-  // always opens the same direction ends up rendered off the visible screen.
-  const [menuOpenLeft, setMenuOpenLeft] = useState(false);
+  // Long-press and swipe-to-reply, the two gestures a phone messenger runs on:
+  // hold a bubble to open its actions, drag it right to reply to it. Tracked in
+  // refs so a drag doesn't re-render the whole thread on every pointer move —
+  // the bubble is nudged by writing transform straight onto its element.
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gestureRef = useRef<{ x: number; y: number; at: string; el: HTMLElement; moved: boolean; swiping: boolean } | null>(null);
+  // When a long-press opens the sheet, the finger is still down; lifting it
+  // fires a synthesized click on whatever is now under it — the freshly-opened
+  // dim overlay — which would slam the sheet shut again. This eats that one tap.
+  const swallowNextOverlayTapRef = useRef(false);
+  function openMenu(at: string) {
+    if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; }
+    setMenuOpenAt(at);
+  }
+  function onMsgPointerDown(e: ReactPointerEvent<HTMLDivElement>, at: string) {
+    // The mouse keeps the visible "⋯" button; touch gets hold-and-swipe.
+    if (e.pointerType === "mouse") return;
+    const el = e.currentTarget;
+    gestureRef.current = { x: e.clientX, y: e.clientY, at, el, moved: false, swiping: false };
+    if (longPressRef.current) clearTimeout(longPressRef.current);
+    longPressRef.current = setTimeout(() => {
+      const g = gestureRef.current;
+      if (g && !g.moved) {
+        gestureRef.current = null;
+        swallowNextOverlayTapRef.current = true;
+        setTimeout(() => { swallowNextOverlayTapRef.current = false; }, 600);
+        openMenu(at);
+      }
+    }, 420);
+  }
+  function onMsgPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    const g = gestureRef.current;
+    if (!g) return;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    if (!g.moved && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+      g.moved = true;
+      if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; }
+    }
+    // A mostly-horizontal drag to the right is a reply gesture; follow the
+    // finger up to a cap and leave vertical scrolling alone.
+    if (g.moved && Math.abs(dx) > Math.abs(dy) && dx > 0) {
+      g.swiping = true;
+      g.el.style.transition = "none";
+      g.el.style.transform = `translateX(${Math.min(dx, 72)}px)`;
+    }
+  }
+  function endMsgGesture(e: ReactPointerEvent<HTMLDivElement>) {
+    const g = gestureRef.current;
+    if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; }
+    if (!g) return;
+    gestureRef.current = null;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    g.el.style.transition = "transform .18s ease";
+    g.el.style.transform = "";
+    if (g.swiping && dx > 52 && Math.abs(dy) < 44) {
+      const m = messages.find((x) => x.at === g.at);
+      if (m && !m.deletedAt) startReply(m);
+    }
+  }
   // Whether the other side has typed within the last few seconds — read off
   // the poll, exactly like the messages themselves.
   const [otherTyping, setOtherTyping] = useState(false);
@@ -2138,18 +3310,24 @@ function LiveChat({
   // A day or activity carried in from "Ask about this" — staged the same
   // way a reply is, and attached to the next message sent rather than
   // mixed into its words, so it shows in the thread as its own small tag.
-  const [itineraryRef, setItineraryRef] = useState<string | null>(null);
+  // Initialised from `subject` so a chat that MOUNTS with one already set — the
+  // advisor opening a client's thread straight from "Ask about this" — pins it
+  // from the first paint. The change-watcher below covers the other case, where
+  // the chat is already open and the subject arrives after (the client tapping
+  // "Ask about this" without leaving the thread).
+  const [itineraryRef, setItineraryRef] = useState<string | null>(subject ?? null);
   // A picture or video opened full-size, over the whole chat panel.
-  const [viewerMedia, setViewerMedia] = useState<{ kind: "image" | "video"; mediaId: string; text: string } | null>(null);
+  const [viewerMedia, setViewerMedia] = useState<{ kind: "image" | "file"; mediaId: string; text: string } | null>(null);
   // Briefly highlighted after tapping a quote to jump to the message it
   // quotes — long enough to catch the eye, not so long it feels stuck.
   const [jumpFlashAt, setJumpFlashAt] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
+  const docRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const menuRef = useRef<HTMLDivElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
   // Whether the scroller was already near its bottom the last time it was
@@ -2164,14 +3342,26 @@ function LiveChat({
   // before the first load completes is never bigger than the server could
   // reject anyway.
   const [imageLimit, setImageLimit] = useState(MAX_CHAT_IMAGE_BYTES_FLOOR);
+  // The server's real document cap, read the same way as the image one. Starts
+  // at the small floor so an early pick can never exceed what the server takes.
+  const [docLimit, setDocLimit] = useState(MAX_CHAT_IMAGE_BYTES_FLOOR);
 
   useEffect(() => {
-    if (!menuOpenAt) return;
+    if (!menuOpenAt && !viewerMedia) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setMenuOpenAt(null); setViewerMedia(null); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpenAt, viewerMedia]);
+
+  useEffect(() => {
+    if (!attachOpen) return;
     const onDocClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpenAt(null);
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) setAttachOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpenAt(null);
+      if (e.key === "Escape") setAttachOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onKey);
@@ -2179,29 +3369,7 @@ function LiveChat({
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onKey);
     };
-  }, [menuOpenAt]);
-
-  useEffect(() => {
-    if (!attachOpen && !locationChoiceOpen) return;
-    const onDocClick = (e: MouseEvent) => {
-      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) {
-        setAttachOpen(false);
-        setLocationChoiceOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setAttachOpen(false);
-        setLocationChoiceOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [attachOpen, locationChoiceOpen]);
+  }, [attachOpen]);
 
   // Grows the composer with what is actually typed, up to a cap beyond which
   // it scrolls internally rather than eating the whole screen.
@@ -2213,84 +3381,95 @@ function LiveChat({
     el.style.height = `${Math.min(el.scrollHeight, MAX_COMPOSER_PX)}px`;
   }, [draft]);
 
-  // Picked up once per "Ask about this" tap, then handed back so the parent
-  // clears it — otherwise navigating away and back would restage it over
-  // whatever the traveler had already set up to send.
   /**
-   * NOT useOnValueChange, THOUGH IT LOOKS LIKE ITS SHAPE. That hook adjusts
-   * state during render, which is only ever safe for a component's OWN state.
-   * This hands a callback back to the PARENT, and the parent's callback sets
-   * the parent's state — updating one component while rendering another is the
-   * thing React refuses outright, so a version of this that satisfied the lint
-   * rule would have been a worse bug than the one it fixed.
+   * Picked up once per "Ask about this" tap, then handed back so the parent
+   * clears it — otherwise navigating away and back would restage it over
+   * whatever the traveler had already set up to send.
    *
-   * So the effect stays and the two errors are fixed separately: the ref is
-   * written in an effect rather than during render, and the staging is
-   * deferred by a microtask so nothing sets state synchronously inside the
-   * effect. The dependency list is unchanged, which keeps the "picked up once"
-   * behaviour the comment above describes — a callback rebuilt by the parent
-   * on every render must not restage the subject over what is already typed.
+   * THE REF IS GONE, AND IT WAS DOING TWO JOBS. It held the newest callback so
+   * the effect would not re-run when the parent re-rendered with a fresh
+   * function, and it was written during render, which React forbids: a render
+   * that gets thrown away would have left the ref pointing at a callback from
+   * a tree that never existed. Staging the subject is a value-change reaction,
+   * so it happens during render where it belongs — and the field is no longer
+   * painted empty for a frame after the tap. Telling the parent is a genuine
+   * side effect and stays in an effect, keyed on the subject alone, which is
+   * what the ref was really buying.
    */
-  const onSubjectUsedRef = useRef(onSubjectUsed);
-  useEffect(() => {
-    onSubjectUsedRef.current = onSubjectUsed;
+  useOnValueChange(subject, () => {
+    if (subject) setItineraryRef(subject);
   });
   useEffect(() => {
-    if (!subject) return;
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (!active) return;
-      setItineraryRef(subject);
-      onSubjectUsedRef.current?.();
-    });
-    return () => {
-      active = false;
-    };
+    if (subject) onSubjectUsed?.();
+    // The callback is deliberately not a dependency: this fires once per
+    // subject, not again because the parent re-rendered.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subject]);
 
-  // A place shared in from outside, put straight into the composer —
-  // picked up once, then handed back so the parent clears it, the same way
-  // "Ask about this" is.
-  // The same shape, and the same reason it is not useOnValueChange — see the
-  // note above.
-  const onInitialDraftUsedRef = useRef(onInitialDraftUsed);
-  useEffect(() => {
-    onInitialDraftUsedRef.current = onInitialDraftUsed;
+  // A place shared in from outside, put straight into the composer — picked up
+  // once, then handed back so the parent clears it, the same way "Ask about
+  // this" is, and split for the same reason.
+  useOnValueChange(initialDraft, () => {
+    if (initialDraft) setDraft(initialDraft);
   });
   useEffect(() => {
-    if (!initialDraft) return;
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (!active) return;
-      setDraft(initialDraft);
-      onInitialDraftUsedRef.current?.();
-    });
-    return () => {
-      active = false;
-    };
+    if (initialDraft) onInitialDraftUsed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialDraft]);
+
+  // Where this channel's messages are kept on the device for offline reading —
+  // General under the bare share id (what it always was), others suffixed, so
+  // one channel's cache never overwrites another's.
+  const offlineKey = channel === "general" ? shareId : `${shareId}::${channel}`;
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch(`/api/companion/chat?share=${encodeURIComponent(shareId)}`, { cache: "no-store" });
-      if (!r.ok) return;
+      const r = await fetch(`/api/companion/chat?share=${encodeURIComponent(shareId)}&channel=${encodeURIComponent(channel)}`, { cache: "no-store" });
+      if (!r.ok) {
+        // Say why, and stop rendering a blank panel. A non-2xx here used to
+        // leave `loaded` false with no note, so the whole thread showed as an
+        // empty screen — which reads as broken and hides the real reason (a 404
+        // is the plan gate: the trip's owner is not on a plan that carries
+        // client messaging, or the link is stale). Surface it instead.
+        const d = await r.json().catch(() => null);
+        setNote((d && typeof d.error === "string" && d.error) || "Messages aren’t available on this trip right now.");
+        setLoaded(true);
+        return;
+      }
       const d = await r.json();
-      setMessages(Array.isArray(d.messages) ? d.messages : []);
+      const msgs: LiveMsg[] = Array.isArray(d.messages) ? d.messages : [];
+      setMessages(msgs);
+      setVoterKey(typeof d.voterKey === "string" ? d.voterKey : null);
       setAvailable(d.available !== false);
       setReadAt(d.readMarkers && typeof d.readMarkers === "object" ? d.readMarkers : {});
       setOtherTyping(Boolean(d.typing));
       if (typeof d.imageLimit === "number" && d.imageLimit > 0) setImageLimit(d.imageLimit);
+      if (typeof d.docLimit === "number" && d.docLimit > 0) setDocLimit(d.docLimit);
+      setNote("");
       setLoaded(true);
+      // Keep the thread on the device so it still READS with no signal.
+      void saveMessagesOffline(offlineKey, msgs);
     } catch {
-      /* keep what we have; the next poll may reach it */
+      // No signal: messaging needs the network to SEND, but the conversation
+      // itself was saved on the last online open — show it (read-only) rather
+      // than a blank panel, and say sending waits for the network.
+      const cached = await readMessagesOffline<LiveMsg>(offlineKey).catch(() => null);
+      if (cached && cached.length) setMessages(cached);
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        setNote(cached && cached.length
+          ? "You’re offline — showing saved messages. New messages send when you’re back online."
+          : "You’re offline — your messages will load when you’re back online.");
+      }
+      setLoaded(true);
     }
-  }, [shareId]);
+  }, [shareId, channel, offlineKey]);
 
+  // Async wrapper rather than a bare call from the effect body: a bare call
+  // enters it synchronously, which the rule counts as a setState during the
+  // effect.
   useEffect(() => {
-    // The first load ran synchronously inside the effect; the interval's never
-    // did. Only the first one needed moving.
     let active = true;
-    (async () => {
+    void (async () => {
       if (active) await load();
     })();
     const t = setInterval(() => void load(), 5000);
@@ -2299,6 +3478,80 @@ function LiveChat({
       clearInterval(t);
     };
   }, [load]);
+
+  // The trip's channels, refreshed on a slow beat — both sides read the same
+  // list. If the channel being viewed is removed (the advisor deleted it),
+  // fall back to General rather than keep asking for a thread that's gone.
+  const loadChannels = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/companion/channels?share=${encodeURIComponent(shareId)}`, { cache: "no-store" });
+      if (!r.ok) return;
+      const d = await r.json().catch(() => null);
+      const list: { id: string; name: string }[] = Array.isArray(d?.channels)
+        ? d.channels.filter((c: unknown): c is { id: string; name: string } =>
+            Boolean(c) && typeof (c as { id?: unknown }).id === "string" && typeof (c as { name?: unknown }).name === "string",
+          )
+        : [];
+      if (list.length) {
+        setChannels(list);
+        setChannel((cur) => (list.some((c) => c.id === cur) ? cur : "general"));
+      }
+    } catch {
+      /* keep whatever channels we last knew */
+    }
+  }, [shareId]);
+  useEffect(() => {
+    // Async wrapper, same as the message loader — a bare call enters
+    // loadChannels synchronously, which the lint rule counts as a setState in
+    // the effect body.
+    let active = true;
+    void (async () => {
+      if (active) await loadChannels();
+    })();
+    const t = setInterval(() => void loadChannels(), 20000);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
+  }, [loadChannels]);
+
+  // Switching channel is a fresh thread: clear what's shown and re-load, so one
+  // channel's messages never flash under another's header.
+  function switchChannel(id: string) {
+    if (id === channel) return;
+    setMenuOpenAt(null);
+    setReplyingTo(null);
+    setEditingAt(null);
+    setDraft("");
+    setMessages([]);
+    setLoaded(false);
+    setChannel(id);
+  }
+
+  // Make a channel — advisor only, enforced on the server too. On success the
+  // new channel opens straight away.
+  async function createChannel() {
+    const name = newChannelName.trim();
+    if (!name) return;
+    try {
+      const r = await fetch("/api/companion/channels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId, name }),
+      });
+      const d = await r.json().catch(() => null);
+      if (r.ok && d && Array.isArray(d.channels)) {
+        setChannels(d.channels);
+        setNewChannelName("");
+        setNewChannelOpen(false);
+        if (d.created?.id) switchChannel(d.created.id);
+      } else {
+        setNote((d && d.error) || "That channel couldn’t be added.");
+      }
+    } catch {
+      setNote("That channel couldn’t be added.");
+    }
+  }
 
   // Only follows new messages down when the reader was already at the
   // bottom — the way every real messaging app behaves. Scrolled up reading
@@ -2310,16 +3563,50 @@ function LiveChat({
     if (!el) return;
     nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_PX;
   }
+  // Also called when a chat image/video finishes loading and grows — a thread
+  // ending in media used to open scrolled ABOVE the newest item because this
+  // ran on message change, before the media had its real height. Only re-pins
+  // when the reader was already near the bottom.
+  function pinToBottomIfNear() {
+    const el = scrollerRef.current;
+    if (el && nearBottomRef.current) el.scrollTop = el.scrollHeight;
+  }
   useEffect(() => {
     const el = scrollerRef.current;
     if (el && nearBottomRef.current) el.scrollTop = el.scrollHeight;
   }, [messages.length, otherTyping]);
 
+  // The keyboard opening shrinks the visual viewport, which shrinks the whole
+  // phone (height:100dvh) and with it the message list — the newest message
+  // would otherwise end up hidden under the composer. Re-pin to the bottom
+  // whenever the viewport resizes, so the last message stays in view above the
+  // keyboard the way it does in a real messaging app.
+  useEffect(() => {
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    if (!vv) return;
+    const onResize = () => pinToBottomIfNear();
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, []);
+
+  // Hide the shell's bottom tab bar whenever the keyboard is up OR a full-screen
+  // overlay is open — otherwise the tabs sit wedged over the keyboard, or poke
+  // out from under the map picker / poll sheet, and a stray tap on one would
+  // navigate away mid-task.
+  const chromeHidden = composerFocused || menuOpenAt !== null || locationPickerOpen || pollComposeOpen || viewerMedia !== null || staged !== null;
+  useEffect(() => {
+    onComposerFocus?.(chromeHidden);
+  }, [chromeHidden, onComposerFocus]);
+  // Leaving the thread must always hand the tab bar back.
+  useEffect(() => () => onComposerFocus?.(false), [onComposerFocus]);
+
   // One place to POST from — text, a picture, a place, or a voice note all
   // land here; the reply carries the whole thread back, so the send is also
   // the refresh. Whatever is staged in `replyingTo` rides along automatically
   // — a caller sends its own payload without having to remember the quote.
-  async function post(payload: Record<string, unknown>) {
+  // Resolves true only when the send was confirmed OK, so callers can hold on
+  // to what they typed or staged and restore it when it did not go through.
+  async function post(payload: Record<string, unknown>): Promise<boolean> {
     setSending(true);
     setNote("");
     // Sending is the one moment the screen must follow the new message down
@@ -2331,6 +3618,7 @@ function LiveChat({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           share: shareId,
+          channel,
           ...(replyingTo ? { replyToAt: replyingTo.at } : {}),
           ...(itineraryRef ? { itineraryRef } : {}),
           ...payload,
@@ -2341,12 +3629,15 @@ function LiveChat({
         setMessages(Array.isArray(d.messages) ? d.messages : []);
         setReplyingTo(null);
         setItineraryRef(null);
+        return true;
       } else {
         setNote((d && d.error) || "That didn't send. Try again.");
         void load();
+        return false;
       }
     } catch {
       setNote("That didn't send. Try again.");
+      return false;
     } finally {
       setSending(false);
     }
@@ -2359,26 +3650,10 @@ function LiveChat({
       void saveEdit(editingAt, t);
       return;
     }
+    // Clear optimistically, but put the text back if the send failed — a failed
+    // send used to wipe the message with nothing left to resend.
     setDraft("");
-    // Only the advisor's side may broadcast one — a client's toggle, if it
-    // somehow reached the request, would be dropped server-side anyway.
-    const announce = side === "advisor" && asAnnouncement;
-    setAsAnnouncement(false);
-    void post({ text: t, ...(announce ? { announcement: true } : {}) });
-  }
-
-  /** Kept easy to find again. Either side may pin or unpin any live
-   *  message — this is "remember this", not an edit of whose words they
-   *  are, so it isn't limited to your own messages the way Edit is. */
-  async function togglePin(m: LiveMsg) {
-    if (m.deletedAt) return;
-    const r = await fetch("/api/companion/chat", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ share: shareId, at: m.at, pinned: !m.pinned }),
-    }).catch(() => null);
-    const d = await r?.json().catch(() => null);
-    if (r?.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
+    void post({ text: t }).then((ok) => { if (!ok) setDraft(t); });
   }
 
   /** A message either side can reply to — anything still standing. Staged
@@ -2386,6 +3661,9 @@ function LiveChat({
    *  or Cancel. */
   function startReply(m: LiveMsg) {
     if (sending) return;
+    // Dropping out of an edit to reply must not leave the half-edited words in
+    // the box, where they would post as a brand-new message.
+    if (editingAt) setDraft("");
     setEditingAt(null);
     setReplyingTo(m);
   }
@@ -2401,7 +3679,7 @@ function LiveChat({
     void fetch("/api/companion/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ share: shareId, typing: true }),
+      body: JSON.stringify({ share: shareId, channel, typing: true }),
     }).catch(() => undefined);
   }
 
@@ -2426,18 +3704,66 @@ function LiveChat({
       const r = await fetch("/api/companion/chat", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ share: shareId, at, text }),
+        body: JSON.stringify({ share: shareId, channel, at, text }),
       });
       const d = await r.json().catch(() => null);
-      if (r.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
-      else setNote((d && d.error) || "That couldn't be changed.");
+      if (r.ok && d) {
+        setMessages(Array.isArray(d.messages) ? d.messages : []);
+        // Leave edit mode only when the change actually saved. It used to run
+        // in `finally`, so a failed edit was discarded and dropped out of
+        // editing — the change is now kept staged for a retry on failure.
+        setEditingAt(null);
+        setDraft("");
+      } else {
+        setNote((d && d.error) || "That couldn't be changed.");
+      }
     } catch {
       setNote("That couldn't be changed.");
     } finally {
       setSending(false);
-      setEditingAt(null);
-      setDraft("");
     }
+  }
+
+  // Toggle my reaction on a message. Post and take the fresh thread back, like
+  // every other write here; the 15s poll reconciles the other side's.
+  async function react(at: string, emoji: string) {
+    setMenuOpenAt(null);
+    try {
+      const r = await fetch("/api/companion/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId, channel, reactAt: at, reaction: emoji }),
+      });
+      const d = await r.json().catch(() => null);
+      if (r.ok && d && Array.isArray(d.messages)) setMessages(d.messages);
+    } catch {
+      /* leave the thread as it was; the next poll will reconcile */
+    }
+  }
+
+  // Cast (or clear) this device's vote on a poll. Optimistic like a reaction —
+  // post and take the fresh tally back; the poll reconciles others' votes.
+  async function castVote(at: string, option: number) {
+    try {
+      const r = await fetch("/api/companion/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share: shareId, channel, pollVoteAt: at, pollOption: option, voterId: deviceVoterId() }),
+      });
+      const d = await r.json().catch(() => null);
+      if (r.ok && d && Array.isArray(d.messages)) setMessages(d.messages);
+      else if (d?.error) setNote(d.error);
+    } catch {
+      /* the next poll reconciles */
+    }
+  }
+
+  // Send a new poll. Clears and closes the composer only once it lands.
+  async function sendPoll(question: string, options: string[], secret: boolean): Promise<boolean> {
+    const q = question.trim();
+    const opts = options.map((o) => o.trim()).filter(Boolean).slice(0, MAX_POLL_OPTIONS);
+    if (!q || opts.length < MIN_POLL_OPTIONS) return false;
+    return post({ poll: { question: q, options: opts, secret } });
   }
 
   async function deleteMine(at: string) {
@@ -2446,7 +3772,7 @@ function LiveChat({
       const r = await fetch("/api/companion/chat", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ share: shareId, at }),
+        body: JSON.stringify({ share: shareId, channel, at }),
       });
       const d = await r.json().catch(() => null);
       if (r.ok && d) setMessages(Array.isArray(d.messages) ? d.messages : []);
@@ -2470,7 +3796,7 @@ function LiveChat({
       return;
     }
     setNote("");
-    setStaged({ kind: opts.kind, file, previewUrl: URL.createObjectURL(file), noun: opts.noun });
+    setStaged({ kind: opts.kind, file, previewUrl: URL.createObjectURL(file), noun: opts.noun, fileName: file instanceof File ? file.name : undefined });
   }
 
   function clearStaged() {
@@ -2490,12 +3816,19 @@ function LiveChat({
   // route expects, with whatever caption was typed while it sat in preview.
   function sendStaged() {
     if (!staged || sending) return;
-    const { file, noun } = staged;
+    const { file, noun, kind, fileName } = staged;
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = typeof reader.result === "string" ? reader.result : "";
-      if (dataUrl) void post({ dataUrl, text: caption.trim() });
-      clearStaged();
+      // A document rides with its filename as the label, so the card in the
+      // thread reads "boarding-pass.pdf" rather than an opaque id — a typed
+      // caption, if there is one, wins.
+      const text = caption.trim() || (kind === "file" ? fileName ?? "Document" : "");
+      if (!dataUrl) { setNote(`Could not read that ${noun}.`); return; }
+      // Clear the staged pick only once the send is confirmed. clearStaged()
+      // used to run synchronously while post was still in flight, so a failed
+      // media/voice-note send lost the file and caption with nothing to retry.
+      void post({ dataUrl, text }).then((ok) => { if (ok) clearStaged(); });
     };
     reader.onerror = () => setNote(`Could not read that ${noun}.`);
     reader.readAsDataURL(file);
@@ -2538,14 +3871,24 @@ function LiveChat({
       return;
     }
     setNote("");
+    // The server only stores JPG, PNG and WEBP. Compress (which transcodes to
+    // JPEG) when the file is too large OR when it is a format the server won't
+    // take — an iPhone HEIC under the size cap would otherwise be staged as-is
+    // and then rejected on send. compressImage decodes HEIC on the very
+    // browsers that produce it (Safari), so this is where it turns into a JPEG.
+    const accepted = /^image\/(jpeg|png|webp)$/i;
     let toStage: File | Blob = file;
-    if (file.size > imageLimit) {
+    if (file.size > imageLimit || !accepted.test(file.type)) {
       try {
         toStage = await compressImage(file, imageLimit);
       } catch {
         // Compression failed (an unusual format, a very old browser) — fall
-        // through to the plain size check below rather than losing the pick.
+        // through to the checks below rather than losing the pick.
       }
+    }
+    if (!accepted.test(toStage.type)) {
+      setNote("That image format isn't supported here — try a JPG or PNG.");
+      return;
     }
     if (toStage.size > imageLimit) {
       setNote(`That picture is too large (max ${formatBytes(imageLimit)}).`);
@@ -2557,6 +3900,15 @@ function LiveChat({
   function pickVideo(file: File | null | undefined) {
     if (!file) return;
     stageFile(file, { accept: /^video\//, kind: "video", noun: "video", max: MAX_CHAT_VIDEO_BYTES, maxLabel: "15 MB" });
+  }
+
+  // A PDF — a booking confirmation or a ticket the advisor hands the client in
+  // the thread. A document is not a portrait, so it gets its own, roomier cap
+  // (docLimit, from the server); a large scan fits once the disk volume is
+  // mounted, and stays within the small Redis ceiling until then.
+  function pickDocument(file: File | null | undefined) {
+    if (!file) return;
+    stageFile(file, { accept: /^application\/pdf$/, kind: "file", noun: "document", max: docLimit, maxLabel: formatBytes(docLimit) });
   }
 
   // A voice note recorded right here, rather than picked from the gallery —
@@ -2589,8 +3941,20 @@ function LiveChat({
       recorderRef.current = recorder;
       recorder.start();
       setRecording(true);
-    } catch {
-      setNote("Couldn't reach the microphone. Check the app's microphone permission.");
+    } catch (err) {
+      // Say which wall we hit, so "the mic doesn't work" becomes something a
+      // person can act on. A denied permission, a mic another app is holding,
+      // and a device with no mic each need a different move.
+      const name = err instanceof DOMException ? err.name : "";
+      if (name === "NotAllowedError" || name === "SecurityError") {
+        setNote("Microphone access is off. Open Settings → Apps → this app → Permissions and allow the microphone, then try again.");
+      } else if (name === "NotReadableError" || name === "AbortError") {
+        setNote("The microphone is busy in another app. Close anything using it (a call, a recorder) and try again.");
+      } else if (name === "NotFoundError") {
+        setNote("No microphone was found on this device.");
+      } else {
+        setNote("Couldn't reach the microphone. Check the app's microphone permission.");
+      }
     }
   }
 
@@ -2643,12 +4007,15 @@ function LiveChat({
 
   function sendStagedLocation() {
     if (!stagedLocation || sending) return;
+    // Cleared only once the send lands, like every other send path here — a
+    // failed post keeps the staged place so "try again" has something to send.
     void post(
       "address" in stagedLocation
         ? { address: stagedLocation.address, label: stagedLocation.label }
         : { lat: stagedLocation.lat, lng: stagedLocation.lng, label: stagedLocation.label },
-    );
-    setStagedLocation(null);
+    ).then((ok) => {
+      if (ok) setStagedLocation(null);
+    });
   }
 
   async function report(at: string) {
@@ -2657,7 +4024,7 @@ function LiveChat({
       await fetch("/api/companion/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ share: shareId, at }),
+        body: JSON.stringify({ share: shareId, channel, at }),
       });
     } catch {
       /* the flag stands locally; the operator store is best-effort */
@@ -2677,6 +4044,12 @@ function LiveChat({
     window.setTimeout(() => setJumpFlashAt((cur) => (cur === at ? null : cur)), 1200);
   }
 
+  // No mutable accumulator for the date dividers: whether one belongs above a
+  // message is a fact about that message and the one before it, so it is
+  // derived per row below. The variable this replaced was declared here and
+  // reassigned inside the map during render, which React forbids — a render
+  // that gets discarded would have left it holding a day from a tree that
+  // never reached the screen.
 
   // The one message a sent/read mark can attach to — the most recent one I
   // sent that is still standing. A tick under every message I have ever sent
@@ -2691,45 +4064,89 @@ function LiveChat({
     }
   }
 
-  const pinnedMessages = messages.filter((m) => m.pinned && !m.deletedAt);
+  // The advisor always sees the channel bar (they can add one); the client
+  // sees it only once there is more than the one General channel to choose
+  // between, so a trip that never grew channels shows the client no new chrome.
+  const showChannelBar = channels.length > 1 || side === "advisor";
 
   return (
-    <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", position: "relative", animation: "wgIn .28s ease both" }}>
-      {pinnedMessages.length > 0 && (
-        <div style={{ flexShrink: 0, borderBottom: "1px solid rgba(16, 47, 53,.08)" }}>
-          <button
-            onClick={() => setShowPinned((v) => !v)}
-            style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: 0, background: "none", cursor: "pointer", padding: "10px 16px", font: "600 12px/1 Inter,sans-serif", color: "#6B4A1C" }}
-          >
-            <Icon name="pin-filled" className="h-3.5 w-3.5" />
-            {pinnedMessages.length} pinned {pinnedMessages.length === 1 ? "message" : "messages"}
-            <span style={{ marginLeft: "auto", fontSize: 11, color: FAINT }}>{showPinned ? "Hide" : "Show"}</span>
-          </button>
-          {showPinned && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 16px 12px" }}>
-              {pinnedMessages.map((m) => (
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", position: "relative", animation: "wgIn .28s ease both" }}>
+      {showChannelBar && (
+        <div style={{ flexShrink: 0, borderBottom: "1px solid rgba(16, 47, 53,.08)", background: "rgba(213, 206, 195,.9)" }}>
+          <div className="wg-scroll" style={{ display: "flex", alignItems: "center", gap: 6, overflowX: "auto", padding: "7px 10px" }}>
+            {channels.map((c) => {
+              const on = c.id === channel;
+              // Active chip is the app's standard navy pill with cream on it
+              // (legible — cream on navy, never on gold); inactive is ink on
+              // white. Held in a variable so it reads as one choice, not a
+              // colour-on-background pattern.
+              const chipInk = on ? CREAM : INK;
+              return (
                 <button
-                  key={m.at}
-                  onClick={() => { jumpTo(m.at); setShowPinned(false); }}
-                  style={{ display: "block", textAlign: "left", width: "100%", border: "1px solid rgba(198, 161, 91,.3)", background: "#FAF8F3", borderRadius: 10, padding: "8px 12px", cursor: "pointer" }}
+                  key={c.id}
+                  onClick={() => switchChannel(c.id)}
+                  aria-current={on ? "page" : undefined}
+                  style={{
+                    flexShrink: 0,
+                    border: on ? `1px solid ${NAVY}` : "1px solid rgba(16, 47, 53,.14)",
+                    background: on ? NAVY : "#ffffff",
+                    color: chipInk,
+                    borderRadius: 999,
+                    padding: "5px 13px",
+                    font: `${on ? 700 : 500} 12.5px/1 Inter,sans-serif`,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
                 >
-                  <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#6B4A1C" }}>{m.from === side ? "You" : otherName}</span>
-                  <span style={{ display: "block", fontSize: 12.5, color: "#6B4A1C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {m.kind && m.kind !== "text" ? (m.kind === "image" ? "Photo" : m.kind === "video" ? "Video" : m.kind === "audio" ? "Voice note" : "Location") : m.text}
-                  </span>
+                  {c.name}
                 </button>
-              ))}
+              );
+            })}
+            {side === "advisor" && (
+              <button
+                onClick={() => setNewChannelOpen(true)}
+                aria-label="New channel"
+                style={{ flexShrink: 0, border: "1px dashed rgba(16, 47, 53,.28)", background: "transparent", color: NAVY, borderRadius: 999, padding: "5px 11px", font: "600 12.5px/1 Inter,sans-serif", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
+              >
+                <span aria-hidden style={{ fontSize: 14, lineHeight: 1, marginTop: -1 }}>+</span> Channel
+              </button>
+            )}
+          </div>
+          {newChannelOpen && side === "advisor" && (
+            <div style={{ display: "flex", gap: 6, alignItems: "center", padding: "0 10px 9px" }}>
+              <input
+                value={newChannelName}
+                onChange={(e) => setNewChannelName(e.target.value.slice(0, 40))}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void createChannel(); } if (e.key === "Escape") { setNewChannelOpen(false); setNewChannelName(""); } }}
+                autoFocus
+                placeholder="Channel name — Hotel, Flights…"
+                style={{ flex: 1, minWidth: 0, border: "1px solid rgba(16, 47, 53,.18)", borderRadius: 10, padding: "8px 11px", font: "400 13px/1.2 Inter,sans-serif", color: INK, background: "#fff" }}
+              />
+              <button
+                onClick={() => void createChannel()}
+                disabled={!newChannelName.trim()}
+                style={{ flexShrink: 0, border: 0, background: NAVY, color: CREAM, borderRadius: 10, padding: "8px 14px", font: "600 13px/1 Inter,sans-serif", cursor: newChannelName.trim() ? "pointer" : "default", opacity: newChannelName.trim() ? 1 : 0.5 }}
+              >
+                Add
+              </button>
+              <button
+                onClick={() => { setNewChannelOpen(false); setNewChannelName(""); }}
+                aria-label="Cancel"
+                style={{ flexShrink: 0, border: "1px solid rgba(16, 47, 53,.14)", background: "#fff", color: MUTED, borderRadius: 10, padding: "8px 11px", font: "500 13px/1 Inter,sans-serif", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
             </div>
           )}
         </div>
       )}
-      <div ref={scrollerRef} onScroll={noteScrollPosition} className="wg-scroll" style={{ flex: 1, overflow: "auto", padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div ref={scrollerRef} onScroll={noteScrollPosition} className="wg-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "14px 14px 12px", display: "flex", flexDirection: "column", gap: 3 }}>
         {!available && (
           <div style={{ alignSelf: "center", textAlign: "center", font: "400 12px/1.5 Inter,sans-serif", color: "#6B4A1C", background: "#FAF8F3", padding: "10px 14px", borderRadius: 14 }}>
             Messaging isn&apos;t connected yet.
           </div>
         )}
-        {available && loaded && messages.length === 0 && (
+        {available && loaded && messages.length === 0 && !note && (
           <div style={{ alignSelf: "center", maxWidth: "80%", textAlign: "center", font: "400 13px/1.6 Inter,sans-serif", color: MUTED }}>
             {side === "advisor" ? "No messages yet. Anything you send reaches your client on their app." : `No messages yet. Send a message, a photo, a video, a voice note or your location to ${advisorName}.`}
           </div>
@@ -2737,26 +4154,25 @@ function LiveChat({
         {messages.map((m, i) => {
           const mine = m.from === side;
           const day = new Date(m.at).toDateString();
-          // Read off the previous message rather than carried in a variable
-          // that the render mutates as it goes. Same answer, and it survives
-          // React rendering this list more than once — which the accumulator
-          // did not, because the second pass started where the first left off.
-          const previousDay = i > 0 ? new Date(messages[i - 1].at).toDateString() : "";
-          const showDivider = day !== previousDay;
+          const showDivider = i === 0 || new Date(messages[i - 1].at).toDateString() !== day;
           const seenRead = Boolean(readAt[otherSide] && readAt[otherSide]! >= m.at);
           const bubble: CSSProperties = {
-            maxWidth: "80%",
+            // Width comes from the message row's own cap (below), not a percentage
+            // of this shrink-to-fit column — a percentage here collapsed a short
+            // message like "hi" to one letter per line.
+            maxWidth: "100%",
+            width: "fit-content",
             alignSelf: mine ? "flex-end" : "flex-start",
-            background: mine ? GOLD : "#ffffff",
+            background: mine ? NAVY : "#ffffff",
             color: mine ? CREAM : INK,
             borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-            boxShadow: "0 1px 2px rgba(23,45,82,.08)",
+            boxShadow: "0 1px 2px rgba(16, 47, 53,.08)",
             overflow: "hidden",
           };
           let content: ReactNode;
           if (m.deletedAt) {
             content = (
-              <div style={{ maxWidth: "80%", alignSelf: mine ? "flex-end" : "flex-start", padding: "10px 15px", borderRadius: 14, background: "rgba(16, 47, 53,.06)", fontSize: 13, fontStyle: "italic", color: MUTED }}>
+              <div style={{ maxWidth: "100%", width: "fit-content", alignSelf: mine ? "flex-end" : "flex-start", padding: "10px 15px", borderRadius: 14, background: "rgba(16, 47, 53,.06)", fontSize: 13, fontStyle: "italic", color: MUTED }}>
                 {mine ? "You deleted this message" : "This message was deleted"}
               </div>
             );
@@ -2767,7 +4183,15 @@ function LiveChat({
                 <img
                   src={`/api/media?id=${encodeURIComponent(m.mediaId)}`}
                   alt={m.text || "Shared photo"}
+                  // Keyboard-operable, not mouse-only: opens the viewer on
+                  // Enter/Space as well as click.
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setViewerMedia({ kind: "image", mediaId: m.mediaId!, text: m.text })}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewerMedia({ kind: "image", mediaId: m.mediaId!, text: m.text }); } }}
+                  // Once the photo has its real height, re-pin to the bottom if
+                  // the reader was already there — the thread opened above it.
+                  onLoad={pinToBottomIfNear}
                   style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280, objectFit: "cover", cursor: "pointer" }}
                 />
                 {m.text && <div style={{ padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45 }}>{m.text}</div>}
@@ -2776,7 +4200,7 @@ function LiveChat({
           } else if (m.kind === "video" && m.mediaId) {
             content = (
               <div style={bubble}>
-                <video controls preload="metadata" style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280 }}>
+                <video controls preload="metadata" onLoadedMetadata={pinToBottomIfNear} style={{ display: "block", width: "100%", maxWidth: 240, maxHeight: 280 }}>
                   <source src={`/api/media?id=${encodeURIComponent(m.mediaId)}`} />
                 </video>
                 {m.text && <div style={{ padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45 }}>{m.text}</div>}
@@ -2784,14 +4208,28 @@ function LiveChat({
             );
           } else if (m.kind === "audio" && m.mediaId) {
             content = (
-              <div style={{ ...bubble, padding: "10px 13px", display: "flex", flexDirection: "column", gap: 6 }}>
-                <span style={{ fontSize: 12.5, opacity: 0.85, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                  <Icon name="microphone" className="h-[13px] w-[13px]" /> Voice note
-                </span>
-                <audio controls preload="metadata" style={{ width: 220, maxWidth: "100%", height: 32 }}>
-                  <source src={`/api/media?id=${encodeURIComponent(m.mediaId)}`} />
-                </audio>
+              <div style={{ ...bubble, padding: "8px 12px" }}>
+                <ChatVoiceNote mediaId={m.mediaId} mine={mine} />
               </div>
+            );
+          } else if (m.kind === "file" && m.mediaId) {
+            // A button, not a target="_blank" link: that link opens nothing in
+            // the native web view, which is why documents "wouldn't open". This
+            // opens the PDF in the in-app viewer (a frame, with download/share).
+            const fileMediaId = m.mediaId;
+            const fileName = m.text || "Document";
+            content = (
+              <button
+                type="button"
+                onClick={() => setViewerMedia({ kind: "file", mediaId: fileMediaId, text: fileName })}
+                style={{ ...bubble, display: "flex", alignItems: "center", gap: 9, padding: "11px 13px", textAlign: "left", cursor: "pointer", font: "inherit", color: "inherit" }}
+              >
+                <DocGlyph size={20} />
+                <span style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 190 }}>{fileName}</span>
+                  <span style={{ fontSize: 11.5, opacity: 0.75 }}>PDF · tap to open</span>
+                </span>
+              </button>
             );
           } else if (m.kind === "location" && ((typeof m.lat === "number" && typeof m.lng === "number") || m.address)) {
             const href =
@@ -2807,18 +4245,60 @@ function LiveChat({
                 <span style={{ fontSize: 12.5, opacity: 0.85 }}>Open in maps →</span>
               </a>
             );
-          } else if (m.announcement) {
-            // A broadcast to everyone on the trip, not a reply aimed at
-            // whoever is reading — centered and bannered rather than a
-            // left/right bubble, so it never reads as one side of a
-            // back-and-forth.
+          } else if (m.kind === "poll" && m.poll) {
+            const poll = m.poll;
+            const votes = poll.votes ?? {};
+            const voterNames = poll.voterNames ?? {};
+            const total = Object.keys(votes).length;
+            // My own vote key: the server tells us (advisor, or a named traveller's
+            // id); a whole-trip client falls back to its device id, which is how it
+            // votes too.
+            const myKey = voterKey ?? (side === "advisor" ? "advisor" : `c:${deviceVoterId()}`);
+            const myVote = votes[myKey];
+            const secret = poll.secret === true;
             content = (
-              <div style={{ alignSelf: "center", maxWidth: "92%", width: "100%", padding: "12px 16px", borderRadius: 14, background: "#FAF8F3", border: "1px solid rgba(198, 161, 91,.35)" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, fontSize: 11, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "#6B4A1C" }}>
-                  <Icon name="sparkle" className="h-3.5 w-3.5" /> Trip update
+              <div style={{ maxWidth: "100%", width: 268, alignSelf: mine ? "flex-end" : "flex-start", background: "#ffffff", color: INK, border: "1px solid rgba(16, 47, 53,.1)", borderRadius: 16, boxShadow: "0 1px 2px rgba(16, 47, 53,.08)", overflow: "hidden", padding: "13px 14px 11px", display: "flex", flexDirection: "column", gap: 9 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <span style={{ color: GOLD, display: "flex" }}><PollGlyph size={15} /></span>
+                  <span style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.35 }}>{poll.question}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {poll.options.map((opt, oi) => {
+                    const voterIds = Object.keys(votes).filter((k) => votes[k] === oi);
+                    const count = voterIds.length;
+                    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                    const chosen = myVote === oi;
+                    // On a PUBLIC poll, the names of who chose this option (my own
+                    // shown as "You"); a private poll shows only the running count.
+                    const names = secret
+                      ? []
+                      : voterIds.map((k) => (k === myKey ? "You" : voterNames[k])).filter((n): n is string => Boolean(n));
+                    return (
+                      <button
+                        key={oi}
+                        onClick={() => void castVote(m.at, oi)}
+                        aria-label={chosen ? `Remove your vote for ${opt}` : `Vote for ${opt}`}
+                        style={{ position: "relative", border: `1px solid ${chosen ? GOLD : "rgba(16, 47, 53,.14)"}`, background: "#fff", borderRadius: 10, cursor: "pointer", padding: "9px 11px", textAlign: "left", overflow: "hidden", display: "flex", flexDirection: "column", gap: 3 }}
+                      >
+                        <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pct}%`, background: chosen ? "rgba(198, 161, 91,.20)" : "rgba(16, 47, 53,.06)", transition: "width .3s ease" }} />
+                        <span style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: chosen ? 700 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{opt}</span>
+                          {chosen && <span style={{ color: GOLD, display: "flex" }}><Icon name="check" className="h-4 w-4" strokeWidth={2.4} /></span>}
+                          <span style={{ fontSize: 12, fontWeight: 600, color: MUTED, minWidth: 16, textAlign: "right" }}>{count}</span>
+                        </span>
+                        {names.length > 0 && (
+                          <span style={{ position: "relative", fontSize: 11, lineHeight: 1.35, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+                            {names.join(", ")}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span style={{ fontSize: 11, color: FAINT }}>
+                  {secret ? "Private poll · " : ""}
+                  {total === 0 ? "No votes yet — tap to vote" : `${total} vote${total === 1 ? "" : "s"} · tap to change`}
                 </span>
-                <span style={{ fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", color: "#6B4A1C" }}>{m.text}</span>
-                {m.editedAt && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.7, fontStyle: "italic", color: "#6B4A1C" }}>(edited)</span>}
               </div>
             );
           } else {
@@ -2829,12 +4309,13 @@ function LiveChat({
               </div>
             );
           }
-          const isTextEditable = mine && !m.deletedAt && (m.kind ?? "text") === "text";
           // A live message always has at least one action — Reply on any
           // live one, Report on theirs, Delete (and often Edit) on your own.
           // A deleted one has none, so its "⋯" is dropped rather than
           // opening onto nothing.
           const hasMenu = !m.deletedAt;
+          // Its own menu, not any menu: the dot beside every other message
+          // stays receded while this one is open.
           const menuOpen = menuOpenAt === m.at;
           const quote = m.replyTo && (
             <button
@@ -2879,18 +4360,38 @@ function LiveChat({
               )}
               <div
                 data-msg-at={m.at}
+                onPointerDown={hasMenu ? (e) => onMsgPointerDown(e, m.at) : undefined}
+                onPointerMove={hasMenu ? onMsgPointerMove : undefined}
+                onPointerUp={hasMenu ? endMsgGesture : undefined}
+                onPointerCancel={hasMenu ? endMsgGesture : undefined}
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: m.announcement ? "center" : mine ? "flex-end" : "flex-start",
+                  // The message block caps at ~82% of the thread width and sits on
+                  // its own side; the bubble inside sizes to its text against this
+                  // definite width, so short and long messages both look right.
+                  maxWidth: "82%",
+                  alignSelf: mine ? "flex-end" : "flex-start",
+                  alignItems: mine ? "flex-end" : "flex-start",
                   gap: 2,
                   background: jumpFlashAt === m.at ? "rgba(198, 161, 91,.18)" : "transparent",
                   borderRadius: 10,
                   transition: "background .5s ease",
+                  // Hold to open actions, drag right to reply — let the browser
+                  // keep vertical scrolling, we handle the horizontal drag.
+                  touchAction: "pan-y",
                 }}
               >
               {itineraryTag}
-              <div style={{ display: "flex", alignItems: "center", gap: 1, width: m.announcement ? "100%" : undefined, flexDirection: m.announcement ? "row" : mine ? "row-reverse" : "row", maxWidth: "100%" }}>
+              {/* Who sent it — shown above the bubble for a named traveller's
+                  message that isn't mine, so the advisor (and the rest of the
+                  family) can tell one person's messages from another's. Your
+                  own carry no label; an unnamed whole-trip client has none to
+                  show. */}
+              {!mine && m.senderName && (
+                <span style={{ alignSelf: "flex-start", margin: "0 3px 1px", font: "700 11px/1 Inter,sans-serif", color: "#C6A15B" }}>{m.senderName}</span>
+              )}
+              <div className="wg-msgrow" style={{ display: "flex", alignItems: "center", gap: 1, flexDirection: mine ? "row-reverse" : "row", maxWidth: "100%" }}>
                 <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                   {quote}
                   {content}
@@ -2905,97 +4406,60 @@ function LiveChat({
                     sits below it; dimmed until touched so a long thread of
                     bubbles doesn't read as a column of dots. */}
                 {hasMenu && (
-                  <div ref={menuOpen ? menuRef : undefined} style={{ position: "relative", flex: "none" }}>
-                    <button
-                      onClick={(e) => {
-                        if (!menuOpen) {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          // Not enough room for a ~150px menu on the right —
-                          // grow it left instead, whichever side "mine" would
-                          // otherwise have picked.
-                          setMenuOpenLeft(window.innerWidth - rect.left < 155);
-                        }
-                        setMenuOpenAt(menuOpen ? null : m.at);
-                      }}
-                      title="Message options"
-                      aria-label="Message options"
-                      aria-expanded={menuOpen}
-                      style={{ border: 0, background: "none", cursor: "pointer", padding: 10, margin: -6, color: FAINT, opacity: menuOpen ? 1 : 0.55, display: "flex", alignItems: "center" }}
-                    >
-                      <Icon name="more" className="h-4 w-4" />
-                    </button>
-                    {menuOpen && (
-                      <div
-                        role="menu"
-                        style={{
-                          position: "absolute",
-                          top: "100%",
-                          [menuOpenLeft ? "right" : "left"]: 0,
-                          zIndex: 5,
-                          marginTop: 2,
-                          minWidth: 148,
-                          borderRadius: 12,
-                          border: "1px solid rgba(16, 47, 53,.12)",
-                          background: "#ffffff",
-                          boxShadow: "0 10px 26px rgba(23,45,82,.16)",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <button
-                          role="menuitem"
-                          onClick={() => { startReply(m); setMenuOpenAt(null); }}
-                          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: INK }}
-                        >
-                          <Icon name="reply" className="h-4 w-4" /> Reply
-                        </button>
-                        <button
-                          role="menuitem"
-                          onClick={() => { setMenuOpenAt(null); void togglePin(m); }}
-                          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: INK }}
-                        >
-                          <Icon name={m.pinned ? "pin-filled" : "pin"} className="h-4 w-4" /> {m.pinned ? "Unpin" : "Pin"}
-                        </button>
-                        {!mine && (
-                          reported[m.at] ? (
-                            <span style={{ display: "block", padding: "10px 14px", fontSize: 13, color: FAINT }}>Reported</span>
-                          ) : (
-                            <button
-                              role="menuitem"
-                              onClick={() => { void report(m.at); setMenuOpenAt(null); }}
-                              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: INK }}
-                            >
-                              <Icon name="flag" className="h-4 w-4" /> Report
-                            </button>
-                          )
-                        )}
-                        {isTextEditable && (
-                          <button
-                            role="menuitem"
-                            onClick={() => { startEdit(m); setMenuOpenAt(null); }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: INK }}
-                          >
-                            <Icon name="pencil" className="h-4 w-4" /> Edit
-                          </button>
-                        )}
-                        {mine && (
-                          <button
-                            role="menuitem"
-                            onClick={() => { setMenuOpenAt(null); void deleteMine(m.at); }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "10px 14px", fontSize: 13, color: "#b5442e" }}
-                          >
-                            <Icon name="trash" className="h-4 w-4" /> Delete
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => openMenu(m.at)}
+                    title="Message options"
+                    aria-label="Message options"
+                    aria-expanded={menuOpen}
+                    aria-haspopup="menu"
+                    /* GONE ON A PHONE, where holding the bubble opens the same
+                       actions — WhatsApp and Signal show no per-message button
+                       and neither do we there. Kept only on a hover device (a
+                       desktop mouse), where it fades in on hover of its own row,
+                       since there is no press-and-hold with a mouse. The CSS for
+                       both is wg-msgdots / wg-msgrow in the style block below. */
+                    className="wg-msgdots"
+                    style={{ flex: "none", border: 0, background: "none", cursor: "pointer", padding: 8, margin: -6, color: FAINT, display: "flex", alignItems: "center" }}
+                  >
+                    <Icon name="more" className="h-3 w-3" />
+                  </button>
                 )}
               </div>
-              {/* A sent/read tick once, under the last message I sent — not
-                  repeated down the thread. */}
-              {mine && m.at === lastMineAt && (
-                <span style={{ display: "inline-flex", alignItems: "center", padding: "0 4px", color: seenRead ? GOLD : FAINT }}>
-                  <Icon name={seenRead ? "check-check" : "check"} className="h-3 w-3" />
+              {/* Reactions hang under the bubble, on the message's own side,
+                  both people's showing. Tapping mine again removes it. */}
+              {(m.reactions?.advisor || m.reactions?.client) && (
+                <div style={{ display: "flex", gap: 4, marginTop: 1, flexDirection: mine ? "row-reverse" : "row" }}>
+                  {(() => {
+                    const counts = new Map<string, number>();
+                    for (const e of [m.reactions?.advisor, m.reactions?.client]) if (e) counts.set(e, (counts.get(e) ?? 0) + 1);
+                    return [...counts.entries()].map(([e, c]) => {
+                      const isMine = m.reactions?.[side] === e;
+                      return (
+                        <button
+                          key={e}
+                          onClick={() => void react(m.at, e)}
+                          aria-label={`${e} reaction${c > 1 ? `, ${c}` : ""}${isMine ? " — yours, tap to remove" : ""}`}
+                          style={{ display: "inline-flex", alignItems: "center", gap: 3, cursor: "pointer", border: `1px solid ${isMine ? GOLD : "rgba(16, 47, 53,.12)"}`, background: isMine ? "rgba(198, 161, 91,.14)" : "#ffffff", borderRadius: 999, padding: "1px 6px 1px 5px", boxShadow: "0 1px 2px rgba(16, 47, 53,.08)" }}
+                        >
+                          <span style={{ fontSize: 13, lineHeight: 1.4 }}>{e}</span>
+                          {c > 1 && <span style={{ fontSize: 11, fontWeight: 600, color: MUTED }}>{c}</span>}
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+              {/* Time under every message, the way a messenger shows it — with
+                  the sent/read tick on the last one I sent (gold once it's been
+                  read), not repeated down the thread. */}
+              {!m.deletedAt && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 5px 0", fontSize: 10.5, color: FAINT }}>
+                  {msgTime(m.at)}
+                  {mine && m.at === lastMineAt && (
+                    <span style={{ display: "inline-flex", color: seenRead ? GOLD : FAINT }}>
+                      <Icon name={seenRead ? "check-check" : "check"} className="h-3 w-3" />
+                    </span>
+                  )}
                 </span>
               )}
               </div>
@@ -3003,7 +4467,7 @@ function LiveChat({
           );
         })}
         {otherTyping && (
-          <div style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 4, background: "#ffffff", borderRadius: "14px 14px 14px 4px", padding: "12px 16px", boxShadow: "0 1px 2px rgba(23,45,82,.08)" }}>
+          <div style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 4, background: "#ffffff", borderRadius: "14px 14px 14px 4px", padding: "12px 16px", boxShadow: "0 1px 2px rgba(16, 47, 53,.08)" }}>
             {[0, 1, 2].map((n) => (
               <span
                 key={n}
@@ -3037,10 +4501,18 @@ function LiveChat({
                   <Icon name="microphone" className="h-6 w-6" strokeWidth={1.4} />
                 </span>
               )}
+              {staged.kind === "file" && (
+                <span style={{ color: ICON_BLUE }}>
+                  <DocGlyph size={26} />
+                </span>
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: INK, textTransform: "capitalize" }}>{staged.noun} ready to send</span>
               {staged.kind === "audio" && <audio src={staged.previewUrl} controls style={{ height: 30, width: 200, maxWidth: "100%" }} />}
+              {staged.kind === "file" && staged.fileName && (
+                <span style={{ fontSize: 11.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{staged.fileName}</span>
+              )}
             </div>
             <button onClick={clearStaged} disabled={sending} title="Discard" aria-label="Discard" className="wg-warm" style={{ flex: "none", border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 36, height: 36, borderRadius: 12, padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Icon name="close" className="h-4 w-4" />
@@ -3060,8 +4532,8 @@ function LiveChat({
                 style={{ flex: 1, minWidth: 0, border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", borderRadius: 14, padding: "14px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, color: INK, outline: "none" }}
               />
             )}
-            <button onClick={() => sendStaged()} disabled={sending} className="wg-press" style={{ flex: staged.kind === "audio" ? 1 : "none", border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, height: 46, minWidth: 46, borderRadius: 14, fontSize: staged.kind === "audio" ? 14 : 17, fontWeight: staged.kind === "audio" ? 700 : 400, padding: staged.kind === "audio" ? "0 20px" : 0, opacity: sending ? 0.6 : 1 }}>
-              {staged.kind === "audio" ? "Send voice note" : "↑"}
+            <button onClick={() => sendStaged()} disabled={sending} aria-label="Send" className="wg-press" style={{ flex: staged.kind === "audio" ? 1 : "none", border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, height: 46, minWidth: 46, borderRadius: staged.kind === "audio" ? 14 : "50%", fontSize: 14, fontWeight: 700, padding: staged.kind === "audio" ? "0 20px" : 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: sending ? 0.6 : 1 }}>
+              {staged.kind === "audio" ? "Send voice note" : <Icon name="send" className="h-[20px] w-[20px]" strokeWidth={1.9} />}
             </button>
           </div>
         </div>
@@ -3091,11 +4563,11 @@ function LiveChat({
           </button>
         </div>
       ) : (
-        <div style={{ flexShrink: 0, position: "sticky", bottom: 0, background: CREAM, borderTop: "1px solid rgba(16, 47, 53,.08)", padding: "12px 14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ flexShrink: 0, background: "rgba(213, 206, 195,.82)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderTop: "1px solid rgba(16, 47, 53,.06)", padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
           {editingAt && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, color: MUTED, padding: "0 2px" }}>
               <span>Editing your message</span>
-              <button onClick={cancelEdit} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 11.5, color: FAINT }}>Cancel</button>
+              <button onClick={cancelEdit} className="wg-link" style={{ border: 0, background: "none", cursor: "pointer", ...TAP_INLINE, fontSize: 11.5, color: FAINT }}>Cancel</button>
             </div>
           )}
           {replyingTo && !editingAt && (
@@ -3124,36 +4596,29 @@ function LiveChat({
               </button>
             </div>
           )}
-          {/* Group announcement — advisor only. A reply to one person and a
-              note to everyone on the trip are different things, and this is
-              the one moment the advisor says which this is, before it's
-              sent rather than after. */}
-          {side === "advisor" && !editingAt && (
-            <label style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 2px", fontSize: 12, color: "#57534e", cursor: "pointer" }}>
-              <input type="checkbox" checked={asAnnouncement} onChange={(e) => setAsAnnouncement(e.target.checked)} style={{ margin: 0 }} />
-              Send to everyone on the trip, not just one reply
-            </label>
-          )}
-          <div style={{ display: "flex", gap: 7, alignItems: "flex-end" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
             <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { void pickImage(e.target.files?.[0]); e.target.value = ""; }} />
+            {/* The one input that asks for the camera itself (capture), so the
+                menu's "Camera" takes a fresh photo while the bar's Photos button
+                and the menu's "Photo" open the gallery. */}
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={(e) => { void pickImage(e.target.files?.[0]); e.target.value = ""; }} />
             <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm" style={{ display: "none" }} onChange={(e) => { pickVideo(e.target.files?.[0]); e.target.value = ""; }} />
-            {!editingAt && (
-              <>
-                {/* One "attach" button for photo, video and location, instead
-                    of four buttons crowding the row and squeezing the text
-                    field down to a sliver. Opens upward, since the composer
-                    sits at the very bottom of the screen. */}
+            <input ref={docRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={(e) => { pickDocument(e.target.files?.[0]); e.target.value = ""; }} />
+            {/* One rounded input bar — attach on the left, the growing field, a
+                camera on the right — with the round voice/send button beside it,
+                the WhatsApp / Signal shape. */}
+            <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "flex-end", gap: 1, background: "#ffffff", border: "1px solid rgba(16, 47, 53,.08)", borderRadius: 24, boxShadow: "0 1px 3px rgba(16, 47, 53,.05)", padding: "2px 4px 2px 3px" }}>
+              {!editingAt && (
                 <div ref={attachMenuRef} style={{ position: "relative", flex: "none" }}>
                   <button
                     onClick={() => setAttachOpen((o) => !o)}
                     disabled={sending || recording}
                     title="Attach"
-                    aria-label="Attach a photo, video or location"
+                    aria-label="Attach a photo, video, document or location"
                     aria-expanded={attachOpen}
-                    className="wg-warm"
-                    style={{ border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", color: ICON_BLUE, cursor: "pointer", width: 40, height: 46, borderRadius: 14, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}
+                    style={{ border: 0, background: "none", color: ICON_BLUE, cursor: "pointer", width: 38, height: 42, borderRadius: 12, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}
                   >
-                    <Icon name="more" className="h-[19px] w-[19px]" />
+                    <Icon name="paperclip" className="h-[21px] w-[21px]" />
                   </button>
                   {attachOpen && (
                     <div
@@ -3168,143 +4633,153 @@ function LiveChat({
                         borderRadius: 12,
                         border: "1px solid rgba(16, 47, 53,.12)",
                         background: "#ffffff",
-                        boxShadow: "0 10px 26px rgba(23,45,82,.16)",
+                        boxShadow: "0 10px 26px rgba(16, 47, 53,.16)",
                         overflow: "hidden",
                       }}
                     >
                       <button role="menuitem" onClick={() => { setAttachOpen(false); fileRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: INK }}>
-                        <Icon name="camera" className="h-4 w-4" /> Photo
+                        <Icon name="image" className="h-4 w-4" /> Photo library
                       </button>
                       <button role="menuitem" onClick={() => { setAttachOpen(false); videoRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: INK }}>
                         <Icon name="video" className="h-4 w-4" /> Video
                       </button>
-                      <button role="menuitem" onClick={() => { setAttachOpen(false); setLocationChoiceOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: INK }}>
+                      <button role="menuitem" onClick={() => { setAttachOpen(false); docRef.current?.click(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: INK }}>
+                        <DocGlyph /> Document
+                      </button>
+                      <button role="menuitem" onClick={() => { setAttachOpen(false); setLocationPickerOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: INK }}>
                         <Icon name="map-pin" className="h-4 w-4" /> Location
                       </button>
-                    </div>
-                  )}
-                  {locationChoiceOpen && (
-                    // A device fix is only ever "where I am standing" — the
-                    // one thing it can never say is where the hotel or the
-                    // restaurant is, so this offers the trip's own stops too.
-                    <div
-                      role="menu"
-                      style={{
-                        position: "absolute",
-                        bottom: "100%",
-                        left: 0,
-                        marginBottom: 6,
-                        zIndex: 5,
-                        minWidth: 220,
-                        maxWidth: 280,
-                        maxHeight: 260,
-                        overflowY: "auto",
-                        borderRadius: 12,
-                        border: "1px solid rgba(16, 47, 53,.12)",
-                        background: "#ffffff",
-                        boxShadow: "0 10px 26px rgba(23,45,82,.16)",
-                      }}
-                    >
-                      <button role="menuitem" onClick={() => { setLocationChoiceOpen(false); pickLocation(); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, borderBottom: places.length ? "1px solid rgba(16, 47, 53,.08)" : 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: INK }}>
-                        <Icon name="map-pin" className="h-4 w-4" /> My current location
+                      <button role="menuitem" onClick={() => { setAttachOpen(false); setPollComposeOpen(true); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "11px 14px", fontSize: 13.5, color: INK }}>
+                        <PollGlyph /> Poll
                       </button>
-                      {places.length > 0 && (
-                        <div style={{ padding: "8px 14px 2px", font: "600 10px/1 Inter,sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: FAINT }}>
-                          From this trip
-                        </div>
-                      )}
-                      {places.map((p, i) => (
-                        <button
-                          key={i}
-                          role="menuitem"
-                          onClick={() => { setLocationChoiceOpen(false); pickPlaceLocation(p); }}
-                          style={{ display: "flex", flexDirection: "column", width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "8px 14px", fontSize: 13, color: INK }}
-                        >
-                          <span style={{ fontWeight: 600 }}>{p.label}</span>
-                          <span style={{ fontSize: 11.5, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.address}</span>
-                        </button>
-                      ))}
                     </div>
                   )}
                 </div>
+              )}
+              <textarea
+                ref={draftRef}
+                rows={1}
+                value={draft}
+                onChange={(e) => { setDraft(e.target.value); noteTyping(); }}
+                onFocus={() => { setComposerFocused(true); requestAnimationFrame(() => pinToBottomIfNear()); }}
+                onBlur={() => setComposerFocused(false)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+                placeholder={editingAt ? "Edit your message…" : side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
+                // 16px, not 14: iOS Safari auto-zooms the whole page into any
+                // text input under 16px the moment it is focused, which is
+                // exactly what reads as the screen "jumping" when the keyboard
+                // opens. Grows with what is typed (see the effect above),
+                // rather than staying squashed to one line.
+                style={{ flex: 1, minWidth: 0, resize: "none", overflow: "auto", border: 0, background: "none", borderRadius: 0, padding: "11px 6px 11px 8px", fontFamily: "Inter,sans-serif", fontSize: 16, lineHeight: 1.4, color: INK, outline: "none", boxShadow: "none", WebkitAppearance: "none", WebkitTapHighlightColor: "transparent" }}
+              />
+              {!editingAt && (
                 <button
-                  onClick={() => (recording ? stopRecording() : void startRecording())}
-                  disabled={sending}
-                  title={recording ? "Stop recording" : "Record a voice note"}
-                  aria-label={recording ? "Stop recording" : "Record a voice note"}
-                  className={recording ? "" : "wg-warm"}
-                  style={{
-                    flex: "none",
-                    border: recording ? "1px solid transparent" : "1px solid rgba(16, 47, 53,.16)",
-                    background: recording ? "#b5442e" : "#ffffff",
-                    color: recording ? "#fff" : ICON_BLUE,
-                    cursor: "pointer",
-                    width: 40,
-                    height: 46,
-                    borderRadius: 14,
-                    padding: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    opacity: sending ? 0.6 : 1,
-                    animation: recording ? "wgPulse 1.1s ease-in-out infinite" : undefined,
-                  }}
+                  onClick={() => cameraRef.current?.click()}
+                  disabled={sending || recording}
+                  title="Camera"
+                  aria-label="Take a photo with the camera"
+                  style={{ flex: "none", border: 0, background: "none", color: ICON_BLUE, cursor: "pointer", width: 38, height: 42, borderRadius: 12, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending || recording ? 0.6 : 1 }}
                 >
-                  <Icon name={recording ? "stop" : "microphone"} className="h-[19px] w-[19px]" />
+                  <Icon name="camera" className="h-[20px] w-[20px]" />
                 </button>
-              </>
+              )}
+            </div>
+            {/* One round button that morphs — the voice-note mic while the field
+                is empty, a red stop while recording, the send arrow the moment
+                there is something to send (or an edit to save). */}
+            {recording ? (
+              <button onClick={() => stopRecording()} title="Stop recording" aria-label="Stop recording" style={{ flex: "none", border: 0, cursor: "pointer", background: "#b5442e", color: "#fff", width: 46, height: 46, borderRadius: "50%", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", animation: "wgPulse 1.1s ease-in-out infinite" }}>
+                <Icon name="stop" className="h-[19px] w-[19px]" />
+              </button>
+            ) : draft.trim() || editingAt ? (
+              <button onClick={() => send()} disabled={sending} title="Send" aria-label="Send" className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, width: 46, height: 46, borderRadius: "50%", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending ? 0.6 : 1 }}>
+                {editingAt ? <Icon name="check" className="h-[21px] w-[21px]" strokeWidth={2.4} /> : <Icon name="send" className="h-[20px] w-[20px]" strokeWidth={1.9} />}
+              </button>
+            ) : (
+              <button onClick={() => void startRecording()} disabled={sending} title="Record a voice note" aria-label="Record a voice note" className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, width: 46, height: 46, borderRadius: "50%", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: sending ? 0.6 : 1 }}>
+                <Icon name="microphone" className="h-[20px] w-[20px]" />
+              </button>
             )}
-            <textarea
-              ref={draftRef}
-              rows={1}
-              value={draft}
-              onChange={(e) => { setDraft(e.target.value); noteTyping(); }}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder={editingAt ? "Edit your message…" : side === "advisor" ? "Reply to your client…" : `Message ${otherName}…`}
-              // 16px, not 14: iOS Safari auto-zooms the whole page into any
-              // text input under 16px the moment it is focused, which is
-              // exactly what reads as the screen "jumping" when the keyboard
-              // opens. Grows with what is typed (see the effect above),
-              // rather than staying squashed to one line.
-              style={{ flex: 1, minWidth: 0, resize: "none", overflow: "auto", border: "1px solid rgba(16, 47, 53,.16)", background: "#ffffff", borderRadius: 14, padding: "13px 17px", fontFamily: "Inter,sans-serif", fontSize: 16, lineHeight: 1.4, color: INK, outline: "none" }}
-            />
-            <button onClick={() => send()} disabled={sending || recording} title="Send" aria-label="Send" className="wg-press" style={{ flex: "none", border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, width: 46, height: 46, borderRadius: 14, fontSize: 17, padding: 0, opacity: sending || recording ? 0.6 : 1 }}>{editingAt ? "✓" : "↑"}</button>
           </div>
         </div>
       )}
+      {/* Message actions — the WhatsApp long-press sheet: a full-width dim over
+          the thread, the reaction row floating as its own pill (so the six
+          emoji can never be clipped by a bubble's edge the way an anchored
+          dropdown was), and the actions listed below it. Opened by holding a
+          bubble or tapping its "⋯". Scoped to the phone frame, like the photo
+          viewer. */}
+      {menuOpenAt && (() => {
+        const m = messages.find((x) => x.at === menuOpenAt);
+        if (!m || m.deletedAt) return null;
+        const mine = m.from === side;
+        const canEdit = mine && (m.kind ?? "text") === "text";
+        const item: CSSProperties = { display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "13px 18px", fontSize: 14.5, color: INK };
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Message options"
+            onClick={() => { if (swallowNextOverlayTapRef.current) { swallowNextOverlayTapRef.current = false; return; } setMenuOpenAt(null); }}
+            style={{ position: "absolute", inset: 0, zIndex: 28, background: "rgba(15,20,25,.34)", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: mine ? "flex-end" : "flex-start", gap: 12, padding: "0 16px" }}
+          >
+            <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: 2, background: "#ffffff", borderRadius: 999, padding: "7px 9px", boxShadow: "0 14px 38px rgba(15,20,25,.3)", animation: "wgIn .16s ease both" }}>
+              {REACTION_EMOJIS.map((e) => (
+                <button
+                  key={e}
+                  onClick={() => { void react(m.at, e); setMenuOpenAt(null); }}
+                  aria-label={m.reactions?.[side] === e ? `Remove ${e} reaction` : `React ${e}`}
+                  className="wg-fade"
+                  style={{ border: 0, cursor: "pointer", background: m.reactions?.[side] === e ? "rgba(198, 161, 91,.18)" : "none", borderRadius: 999, fontSize: 25, lineHeight: 1, padding: "6px 7px" }}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+            <div onClick={(e) => e.stopPropagation()} role="menu" style={{ minWidth: 210, maxWidth: "86%", borderRadius: 16, background: "#ffffff", boxShadow: "0 14px 38px rgba(15,20,25,.3)", overflow: "hidden", animation: "wgIn .18s ease both" }}>
+              <button role="menuitem" className="wg-warm" onClick={() => { startReply(m); setMenuOpenAt(null); }} style={item}>
+                <Icon name="reply" className="h-[18px] w-[18px]" /> Reply
+              </button>
+              {canEdit && (
+                <button role="menuitem" className="wg-warm" onClick={() => { startEdit(m); setMenuOpenAt(null); }} style={item}>
+                  <Icon name="pencil" className="h-[18px] w-[18px]" /> Edit
+                </button>
+              )}
+              {!mine && (
+                reported[m.at] ? (
+                  <span style={{ ...item, color: FAINT, cursor: "default" }}><Icon name="flag" className="h-[18px] w-[18px]" /> Reported</span>
+                ) : (
+                  <button role="menuitem" className="wg-warm" onClick={() => { void report(m.at); setMenuOpenAt(null); }} style={item}>
+                    <Icon name="flag" className="h-[18px] w-[18px]" /> Report
+                  </button>
+                )
+              )}
+              {mine && (
+                <button role="menuitem" className="wg-warm" onClick={() => { setMenuOpenAt(null); void deleteMine(m.at); }} style={{ ...item, color: "#b5442e" }}>
+                  <Icon name="trash" className="h-[18px] w-[18px]" /> Delete
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+      {/* The map location picker — a full-panel overlay over the thread, like
+          WhatsApp's own location screen. Staging (not sending) on pick, so the
+          same confirm-before-send bar every attachment gets still applies. */}
+      {locationPickerOpen && (
+        <LocationPicker
+          places={places}
+          onClose={() => setLocationPickerOpen(false)}
+          onPickPin={(loc) => { setLocationPickerOpen(false); setStagedLocation({ lat: loc.lat, lng: loc.lng, label: "Pinned location" }); }}
+          onUseCurrent={() => { setLocationPickerOpen(false); pickLocation(); }}
+          onPickPlace={(p) => { setLocationPickerOpen(false); pickPlaceLocation(p); }}
+        />
+      )}
+      {pollComposeOpen && <PollComposer onSend={sendPoll} onClose={() => setPollComposeOpen(false)} />}
       {/* A photo opened full-size, over the whole chat panel — scoped to the
           phone frame (position: absolute against the relatively-positioned
           root above), not the whole browser viewport. */}
-      {viewerMedia && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={viewerMedia.text || "Photo"}
-          onClick={() => setViewerMedia(null)}
-          style={{ position: "absolute", inset: 0, zIndex: 30, background: "rgba(15,20,25,.94)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20 }}
-        >
-          <button
-            onClick={(e) => { e.stopPropagation(); setViewerMedia(null); }}
-            title="Close"
-            aria-label="Close"
-            style={{ position: "absolute", top: 14, right: 14, border: 0, background: "rgba(255,255,255,.14)", color: "#fff", width: 36, height: 36, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            <Icon name="close" className="h-4 w-4" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/api/media?id=${encodeURIComponent(viewerMedia.mediaId)}`}
-            alt={viewerMedia.text || "Shared photo"}
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: "100%", maxHeight: "78%", objectFit: "contain", borderRadius: 8, cursor: "default" }}
-          />
-          {viewerMedia.text && (
-            <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 14, maxWidth: "90%", textAlign: "center", color: "#fff", fontSize: 14, lineHeight: 1.5 }}>
-              {viewerMedia.text}
-            </div>
-          )}
-        </div>
-      )}
+      {viewerMedia && <MediaViewer item={viewerMedia} onClose={() => setViewerMedia(null)} />}
     </div>
   );
 }
@@ -3315,8 +4790,22 @@ type InboxConvo = {
   client: string;
   count: number;
   lastText: string;
+  lastKind: "text" | "image" | "video" | "audio" | "file" | "location" | "poll" | null;
   lastFrom: ChatSide | null;
   lastAt: string;
+};
+
+// What the list shows when the last message carries no text of its own — a
+// photo, a voice note, a location. The glyph is the SAME one the paperclip
+// menu uses for that kind (Icon / DocGlyph / PollGlyph), never a coloured
+// emoji, so the two read as one app.
+const INBOX_KIND_META: Record<string, { glyph: ReactNode; label: string }> = {
+  image: { glyph: <Icon name="image" className="h-3.5 w-3.5" />, label: "Photo" },
+  video: { glyph: <Icon name="video" className="h-3.5 w-3.5" />, label: "Video" },
+  audio: { glyph: <Icon name="microphone" className="h-3.5 w-3.5" />, label: "Voice message" },
+  file: { glyph: <DocGlyph size={13} />, label: "Document" },
+  location: { glyph: <Icon name="map-pin" className="h-3.5 w-3.5" />, label: "Location" },
+  poll: { glyph: <PollGlyph size={13} />, label: "Poll" },
 };
 
 /**
@@ -3324,19 +4813,122 @@ type InboxConvo = {
  * with. Tap one to open that thread; every client is its own chat, and this is
  * the one place they all live.
  */
-function AdvisorInbox({
+/**
+ * True when the viewport matches `query` — the one bit of "am I on a desktop"
+ * the app reads, so a screen can lay itself out as a real web page on a computer
+ * and a phone screen on a phone. SSR and the first paint report false (the phone
+ * layout), then it corrects on the client; a layout that flips once on load is
+ * fine, a hydration mismatch is not.
+ */
+export function useMediaQuery(query: string): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      if (typeof window === "undefined" || !window.matchMedia) return () => {};
+      const mql = window.matchMedia(query);
+      mql.addEventListener("change", onChange);
+      return () => mql.removeEventListener("change", onChange);
+    },
+    () => (typeof window !== "undefined" && window.matchMedia ? window.matchMedia(query).matches : false),
+    () => false,
+  );
+}
+
+export function AdvisorInbox({
   pendingShare,
   onPendingShareUsed,
+  onComposerFocus,
+  openShareId,
+  subject,
+  onSubjectUsed,
+  places = [],
 }: {
   /** A place shared in from outside, waiting for the advisor to pick which
    *  client's thread it belongs in. */
   pendingShare?: string | null;
   onPendingShareUsed?: () => void;
+  /** Bubbled up from the open thread's composer so the shell can pull the
+   *  bottom tab bar out of the way while the advisor is typing. */
+  onComposerFocus?: (focused: boolean) => void;
+  /** The share token of the trip the advisor is viewing. When the advisor taps
+   *  "Ask about this" on that trip, we open THIS conversation straight away
+   *  rather than making them find it in the list. */
+  openShareId?: string;
+  /** The attraction tapped through "Ask about this", to pin to the message and
+   *  hand to the opened thread. */
+  subject?: string | null;
+  onSubjectUsed?: () => void;
+  /** Stops from the viewed trip that can be shared by address, for the open
+   *  thread's Location button. */
+  places?: { label: string; address: string }[];
 }) {
   const serif = "Georgia,'Times New Roman',serif";
   const [convos, setConvos] = useState<InboxConvo[] | null>(null);
   const [open, setOpen] = useState<InboxConvo | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  // Which conversation's "⋯" menu is open, and which are pinned to the top —
+  // pinning is a per-device convenience, kept in the browser like a read
+  // marker, not a shared setting.
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("wg-inbox-pinned") || "[]") as string[]); } catch { return new Set(); }
+  });
+  function togglePin(shareId: string) {
+    setPinned((prev) => {
+      const next = new Set(prev);
+      if (next.has(shareId)) next.delete(shareId); else next.add(shareId);
+      try { localStorage.setItem("wg-inbox-pinned", JSON.stringify([...next])); } catch { /* private mode */ }
+      return next;
+    });
+    setMenuFor(null);
+  }
+
+  // The advisor's OWN name for a conversation. Kept on the device, like the pin
+  // — it is the advisor's private label ("The Cohens — honeymoon"), never sent
+  // anywhere, so the client always sees the advisor's own name on their side,
+  // never whatever the advisor filed them under. Empty falls back to the
+  // client's name, then the trip name.
+  const [names, setNames] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("wg-inbox-names") || "{}") as Record<string, string>; } catch { return {}; }
+  });
+  const nameOf = (c: InboxConvo) => names[c.shareId] || c.client || c.name;
+  // The conversation whose rename box is open.
+  const [renaming, setRenaming] = useState<InboxConvo | null>(null);
+  function saveName(shareId: string, raw: string) {
+    setNames((prev) => {
+      const next = { ...prev };
+      const t = raw.trim();
+      if (t) next[shareId] = t; else delete next[shareId];
+      try { localStorage.setItem("wg-inbox-names", JSON.stringify(next)); } catch { /* private mode */ }
+      return next;
+    });
+  }
+
+  // Long-press a conversation to open its actions — no per-row button, the way
+  // WhatsApp's list reads. A press that turns into the menu swallows the tap
+  // that would otherwise open the thread on finger-up.
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressFired = useRef(false);
+  // Lifting the finger after a long-press fires a click on whatever is now
+  // under it — the sheet's own dim backdrop — which would slam it shut again.
+  // This eats that one tap.
+  const swallowTap = useRef(false);
+  function onRowDown(c: InboxConvo) {
+    pressFired.current = false;
+    if (pressTimer.current) clearTimeout(pressTimer.current);
+    pressTimer.current = setTimeout(() => {
+      pressFired.current = true;
+      swallowTap.current = true;
+      setTimeout(() => { swallowTap.current = false; }, 600);
+      setMenuFor(c.shareId);
+    }, 450);
+  }
+  function endPress() {
+    if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
+  }
+  function onRowClick(c: InboxConvo) {
+    if (pressFired.current) { pressFired.current = false; return; }
+    setOpen(c);
+  }
 
   const load = useCallback(async () => {
     try {
@@ -3371,11 +4963,12 @@ function AdvisorInbox({
     }
   }
 
+  // Async wrapper rather than a bare call from the effect body: a bare call
+  // enters it synchronously, which the rule counts as a setState during the
+  // effect.
   useEffect(() => {
-    // The first load ran synchronously inside the effect; the interval's never
-    // did. Only the first one needed moving.
     let active = true;
-    (async () => {
+    void (async () => {
       if (active) await load();
     })();
     const t = setInterval(() => void load(), 8000);
@@ -3385,26 +4978,102 @@ function AdvisorInbox({
     };
   }, [load]);
 
-  if (open) {
-    return (
-      <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
-        <button onClick={() => setOpen(null)} className="wg-warm" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, border: 0, borderBottom: "1px solid rgba(16, 47, 53,.08)", background: "var(--color-surface-muted)", cursor: "pointer", padding: "12px 16px", textAlign: "left" }}>
-          <span style={{ fontSize: 15, color: "#57534e" }}>←</span>
-          <span style={{ font: `400 17px/1.1 ${serif}` }}>{open.client || open.name}</span>
-        </button>
+  // "Ask about this" on the viewed trip: jump straight into that client's
+  // thread rather than dropping the advisor on the list to hunt for it. Only
+  // when a subject is actually pending (the advisor tapped it) and a matching
+  // conversation exists — otherwise the inbox shows as normal. Once opened, the
+  // thread's own subject wiring pins the attraction and clears it.
+  //
+  // Done as a render-phase value-change (not an effect) so it lands in the same
+  // paint the list arrives in — the advisor never sees the inbox flash before
+  // the thread opens. The key is null until the list is here with a pending
+  // subject, so it fires the once, when the list loads.
+  const autoOpenKey = !open && subject && openShareId && convos ? openShareId : null;
+  useOnValueChange(autoOpenKey, () => {
+    if (!autoOpenKey || !convos) return;
+    const match = convos.find((c) => c.shareId === autoOpenKey);
+    if (match) setOpen(match);
+  });
+
+  // A computer gets a two-pane inbox — the conversation list beside the open
+  // thread — so an advisor at their office desk reads and replies on the whole
+  // screen; a phone keeps the one-at-a-time swap. Same data, same actions, laid
+  // out for the screen it is on.
+  const isWide = useMediaQuery("(min-width: 900px)");
+
+  // The open thread, with or without the phone's back button (a computer shows
+  // both panes, so there is nothing to go "back" to).
+  const threadPanel = (withBack: boolean) =>
+    open ? (
+      <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", animation: "wgIn .28s ease both" }}>
+        <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(16, 47, 53,.08)", background: "var(--color-surface-muted)", padding: "12px 16px" }}>
+          {withBack && (
+            <button onClick={() => setOpen(null)} aria-label="Back to conversations" className="wg-fade" style={{ border: 0, background: "none", cursor: "pointer", fontSize: 15, color: "#57534e", padding: 0, display: "flex" }}>←</button>
+          )}
+          <span style={{ font: `400 17px/1.1 ${serif}` }}>{nameOf(open)}</span>
+        </div>
         <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
           <LiveChat
-            chat={{ shareId: open.shareId, side: "advisor", advisorName: open.client || open.name }}
+            chat={{ shareId: open.shareId, side: "advisor", advisorName: nameOf(open) }}
             initialDraft={pendingShare}
             onInitialDraftUsed={onPendingShareUsed}
+            onComposerFocus={onComposerFocus}
+            subject={open.shareId === openShareId ? subject : null}
+            onSubjectUsed={onSubjectUsed}
+            places={open.shareId === openShareId ? places : []}
           />
         </div>
       </div>
-    );
-  }
+    ) : null;
 
-  return (
-    <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 10, animation: "wgIn .28s ease both" }}>
+  const overlays = (
+    <>
+      {/* Long-press actions — a sheet, since there is no per-row button to hang
+          a menu off any more. Pin, Rename (the advisor's own private label) and
+          Delete. */}
+      {menuFor && (() => {
+        const c = (convos ?? []).find((x) => x.shareId === menuFor);
+        if (!c) return null;
+        const isPinned = pinned.has(c.shareId);
+        const item: CSSProperties = { display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", border: 0, background: "none", cursor: "pointer", padding: "14px 18px", fontSize: 14.5, color: INK };
+        return (
+          <div
+            onPointerDown={() => { swallowTap.current = false; }}
+            onClick={() => { if (swallowTap.current) { swallowTap.current = false; return; } setMenuFor(null); }}
+            style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(15,20,25,.4)", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}
+          >
+            <div onClick={(e) => e.stopPropagation()} style={{ background: CREAM, borderRadius: "20px 20px 0 0", padding: "8px 8px calc(8px + env(safe-area-inset-bottom))", animation: "wgIn .2s ease both" }}>
+              <div style={{ padding: "10px 18px 8px", font: `400 15px/1.1 ${serif}`, color: "#57534e", borderBottom: "1px solid rgba(16, 47, 53,.08)" }}>{nameOf(c)}</div>
+              <button role="menuitem" className="wg-warm" onClick={() => togglePin(c.shareId)} style={item}>
+                <Icon name="map-pin" className="h-[18px] w-[18px]" /> {isPinned ? "Unpin" : "Pin to top"}
+              </button>
+              <button role="menuitem" className="wg-warm" onClick={() => { setMenuFor(null); setRenaming(c); }} style={item}>
+                <Icon name="pencil" className="h-[18px] w-[18px]" /> Rename
+              </button>
+              <button role="menuitem" className="wg-warm" onClick={() => { setMenuFor(null); void deleteConvo(c.shareId); }} disabled={deleting === c.shareId} style={{ ...item, color: "#b5442e", opacity: deleting === c.shareId ? 0.5 : 1 }}>
+                <Icon name="trash" className="h-[18px] w-[18px]" /> Delete conversation
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Rename — the advisor's own name for this conversation, kept on the
+          device. The client never sees it; on their side the chat stays the
+          advisor's own name. */}
+      {renaming && (
+        <RenameConversation
+          initial={nameOf(renaming)}
+          fallback={renaming.client || renaming.name}
+          onSave={(v) => { saveName(renaming.shareId, v); setRenaming(null); }}
+          onClose={() => setRenaming(null)}
+        />
+      )}
+    </>
+  );
+
+  const listBody = (
+    <>
       {pendingShare && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 11.5px/1 ui-monospace,Menlo,monospace", color: "#193F46", background: "#FAF8F3", padding: "10px 14px", borderRadius: 14 }}>
           <Icon name="map-pin" className="h-3.5 w-3.5" /> Shared in — tap a client below to send it
@@ -3417,41 +5086,187 @@ function AdvisorInbox({
           <span style={{ fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>Create a client app link on a trip in the planner and share it. When the client opens it, your chat with them appears here.</span>
         </div>
       )}
-      {convos?.map((c) => {
-        const preview = c.lastText ? `${c.lastFrom === "advisor" ? "You: " : ""}${c.lastText}` : "No messages yet";
+      {[...(convos ?? [])]
+        .sort((a, b) => {
+          const pa = pinned.has(a.shareId) ? 1 : 0;
+          const pb = pinned.has(b.shareId) ? 1 : 0;
+          if (pa !== pb) return pb - pa;
+          return (b.lastAt || "").localeCompare(a.lastAt || "");
+        })
+        .map((c) => {
+        // The last line, the way a messenger's list reads it: the text if there
+        // is any, else what the last message WAS — a small glyph and a word for
+        // a photo / voice note / location, drawn from the SAME icon set as the
+        // paperclip menu (not a coloured emoji), in the muted preview tone. Only
+        // a truly empty thread says "No messages yet". "You: " when the advisor
+        // sent it.
+        const you = c.lastFrom === "advisor" ? "You: " : "";
+        const kp = !c.lastText && c.lastKind ? INBOX_KIND_META[c.lastKind] : null;
+        const isPinned = pinned.has(c.shareId);
+        // One row, no side button — hold it for actions, tap it to open. The
+        // whole row is the target, the way a messenger's list works.
         return (
-          <div key={c.shareId} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button onClick={() => setOpen(c)} className="wg-warm" style={{ flex: 1, minWidth: 0, textAlign: "left", cursor: "pointer", border: "1px solid rgba(16, 47, 53,.08)", background: "#ffffff", borderRadius: 16, padding: "15px 16px", display: "flex", alignItems: "center", gap: 13 }}>
-              <span style={{ flex: "none", width: 42, height: 42, borderRadius: 12, background: "#FAF8F3", display: "flex", alignItems: "center", justifyContent: "center", font: `400 18px/1 ${serif}`, color: "#193F46" }}>{(c.client || c.name || "?").charAt(0).toUpperCase()}</span>
-              <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-                <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.client || c.name}</span>
-                <span style={{ fontSize: 12.5, color: MUTED, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{preview}</span>
+          <button
+            key={c.shareId}
+            onClick={() => onRowClick(c)}
+            onPointerDown={() => onRowDown(c)}
+            onPointerUp={endPress}
+            onPointerLeave={endPress}
+            onPointerCancel={endPress}
+            onContextMenu={(e) => { e.preventDefault(); setMenuFor(c.shareId); }}
+            className="wg-warm"
+            style={{ width: "100%", textAlign: "left", cursor: "pointer", border: "1px solid rgba(16, 47, 53,.08)", background: "#ffffff", borderRadius: 16, padding: "15px 16px", display: "flex", alignItems: "center", gap: 13, touchAction: "pan-y" }}
+          >
+            <span style={{ flex: "none", width: 42, height: 42, borderRadius: 12, background: "#FAF8F3", display: "flex", alignItems: "center", justifyContent: "center", font: `400 18px/1 ${serif}`, color: "#193F46" }}>{(nameOf(c) || "?").charAt(0).toUpperCase()}</span>
+            <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontSize: 15.5, fontWeight: 600, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 6 }}>
+                {isPinned && <Icon name="map-pin" className="h-3.5 w-3.5" aria-label="Pinned" />}
+                {nameOf(c)}
               </span>
-            </button>
-            {c.count > 0 && (
-              <button
-                onClick={() => void deleteConvo(c.shareId)}
-                disabled={deleting === c.shareId}
-                title="Delete this conversation"
-                aria-label={`Delete conversation with ${c.client || c.name}`}
-                className="wg-warm"
-                style={{ flex: "none", border: "1px solid rgba(16, 47, 53,.12)", background: "#ffffff", cursor: "pointer", width: 42, height: 42, borderRadius: 12, fontSize: 15, color: "#a8544a", padding: 0, opacity: deleting === c.shareId ? 0.5 : 1 }}
-              >
-                🗑
-              </button>
-            )}
-          </div>
+              <span style={{ fontSize: 12.5, color: MUTED, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 4 }}>
+                {!c.lastAt ? (
+                  "No messages yet"
+                ) : c.lastText ? (
+                  `${you}${c.lastText}`
+                ) : kp ? (
+                  <>
+                    {you}
+                    <span style={{ flexShrink: 0, display: "inline-flex", color: FAINT }}>{kp.glyph}</span>
+                    {kp.label}
+                  </>
+                ) : (
+                  `${you}Message`
+                )}
+              </span>
+            </span>
+            {c.count > 0 && <span aria-label={`${c.count} unread`} style={{ flex: "none", minWidth: 20, height: 20, padding: "0 6px", borderRadius: 999, background: GOLD, color: ON_GOLD, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{c.count}</span>}
+          </button>
         );
       })}
+
+    </>
+  );
+
+  if (isWide) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "flex", position: "relative", animation: "wgIn .28s ease both" }}>
+        <div className="wg-scroll" style={{ width: 340, flex: "none", minHeight: 0, overflowY: "auto", borderRight: "1px solid rgba(16, 47, 53,.1)", background: "var(--color-canvas)" }}>
+          <div style={{ padding: "16px 14px 28px", display: "flex", flexDirection: "column", gap: 10 }}>{listBody}</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column", background: CREAM }}>
+          {open ? (
+            threadPanel(false)
+          ) : (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center", color: FAINT, fontSize: 14 }}>
+              Select a conversation to read and reply.
+            </div>
+          )}
+        </div>
+        {overlays}
+      </div>
+    );
+  }
+
+  if (open) {
+    return (
+      <>
+        {threadPanel(true)}
+        {overlays}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 10, animation: "wgIn .28s ease both" }}>
+        {listBody}
+      </div>
+      {overlays}
+    </>
+  );
+}
+
+/**
+ * A small sheet to rename a conversation to whatever the advisor wants. Empty
+ * (or "Reset") clears it back to the client's own name.
+ */
+function RenameConversation({ initial, fallback, onSave, onClose }: { initial: string; fallback: string; onSave: (v: string) => void; onClose: () => void }) {
+  const [v, setV] = useState(initial);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 41, background: "rgba(15,20,25,.4)", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: CREAM, borderRadius: "20px 20px 0 0", padding: "16px 16px calc(16px + env(safe-area-inset-bottom))", display: "flex", flexDirection: "column", gap: 12, animation: "wgIn .2s ease both" }}>
+        <span style={{ font: "600 16px/1 Inter,sans-serif", color: INK }}>Rename conversation</span>
+        <input
+          autoFocus
+          value={v}
+          onChange={(e) => setV(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onSave(v); } }}
+          placeholder={fallback}
+          aria-label="Conversation name"
+          maxLength={60}
+          style={{ width: "100%", border: "1px solid rgba(16, 47, 53,.16)", borderRadius: 10, padding: "12px 13px", fontFamily: "Inter,sans-serif", fontSize: 16, color: INK, outline: "none", background: "#fff" }}
+        />
+        <span style={{ fontSize: 12, color: FAINT, lineHeight: 1.4 }}>Only you see this name. Your client always sees the chat as your name.</span>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => onSave("")} className="wg-warm" style={{ flex: "none", border: "1px solid rgba(16, 47, 53,.16)", background: "#fff", cursor: "pointer", borderRadius: 12, minHeight: 46, padding: "0 16px", fontSize: 13.5, fontWeight: 600, color: "#57534e" }}>Reset</button>
+          <button onClick={() => onSave(v)} className="wg-press" style={{ flex: 1, border: 0, cursor: "pointer", background: GOLD, color: ON_GOLD, borderRadius: 12, minHeight: 46, fontSize: 14.5, fontWeight: 700 }}>Save</button>
+        </div>
+      </div>
     </div>
   );
 }
 
-const CSS = `
+/**
+ * A 44-pixel hit area on a control that has to look like inline text.
+ *
+ * An outside audit measured the small controls in here — the document-sharing
+ * toggle, the day-note action, "Full day →", the chat's Cancel — as inline
+ * underlined buttons with no padding and 11.5 to 12.5 pixel text. On a phone
+ * those are roughly fifteen pixels tall. They are also some of the ones a
+ * traveller uses most, and one of them decides whether a document is visible
+ * to a client.
+ *
+ * Making them physically bigger was the wrong answer: they sit inline beside a
+ * heading or in a row of running text, and a 44px button there pushes the line
+ * apart. So the padding grows and an equal negative margin takes the space
+ * back — the control looks exactly as it did and the finger has 44 pixels to
+ * land on. That is the standard trick and it is worth naming once rather than
+ * writing out at six call sites.
+ *
+ * Where a control is already a block with its own padding, give it minHeight
+ * instead; this is only for the ones pretending to be text.
+ */
+const TAP_INLINE = { padding: "13px 8px", margin: "-13px -8px" } as const;
+
+export const COMPANION_CSS = `
 @keyframes wgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes wgPulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 .wg-app-root { min-height: 100dvh; background: #193F46; color: #102F35; }
+/* The app's own scroll region owns its overscroll: a pull past the top or
+ * bottom stays inside it and never chains to the document, so the fixed header
+ * and tab bar do not bounce. */
+.wg-scroll { overscroll-behavior: contain; }
 .wg-scroll::-webkit-scrollbar, .wg-toolbar::-webkit-scrollbar { display: none; }
+/* The per-message "⋯": nothing to see on a phone, where holding the bubble
+ * opens the same actions — that is how WhatsApp and Signal read. On a hover
+ * device (a desktop mouse) there is no press-and-hold, so it fades in on hover
+ * of its own message row and on keyboard focus. */
+.wg-msgdots { opacity: 0; transition: opacity .14s ease; }
+@media (hover: none) { .wg-msgdots { display: none; } }
+@media (hover: hover) {
+  .wg-msgrow:hover .wg-msgdots { opacity: .4; }
+  .wg-msgdots:focus-visible { opacity: .7; }
+}
+/* No blue focus box on the message field — some Android WebViews draw one over
+ * a focused textarea regardless of inline styles, which read as a sloppy square
+ * around the composer. Kill the outline, the tap highlight and any focus ring. */
+.wg-phone textarea, .wg-phone input, .wg-phone button { -webkit-tap-highlight-color: transparent; }
+.wg-phone textarea:focus, .wg-phone textarea:focus-visible, .wg-phone input:focus, .wg-phone input:focus-visible { outline: none; box-shadow: none; }
 .wg-press:hover { filter: brightness(.95); }
 .wg-fade:hover { opacity: .72; }
 .wg-warm:hover { background: #FAF8F3; }
@@ -3484,6 +5299,15 @@ const CSS = `
   .wg-frame { width: 402px; height: 812px; border-radius: 44px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.28), 0 0 0 10px #102F35, 0 0 0 11px rgba(255,255,255,.06); }
   .wg-phone { height: 812px; }
   .wg-hint { display: block; max-width: 620px; margin: 0; text-align: center; font-size: 13px; line-height: 1.6; color: #cdd6dd; text-wrap: pretty; }
+
+  /* A real, opened trip on a computer: not a phone posed in a device frame on
+   * navy, but a proper web page — a clean, full-height app panel centred on a
+   * soft neutral ground. It uses the height of the screen and reads as software
+   * you sit down to, not a picture of a phone. The phone-width column is kept
+   * (the client screens are laid out for it) but framed as a web app card. */
+  .wg-app-root[data-mode="web"] { padding: 24px; background: #FAF8F3; justify-content: center; }
+  .wg-app-root[data-mode="web"] .wg-frame { width: min(460px, 100%); height: min(880px, calc(100dvh - 48px)); border-radius: 24px; box-shadow: 0 14px 44px rgba(16,32,48,.16), 0 0 0 1px rgba(16, 47, 53,.08); }
+  .wg-app-root[data-mode="web"] .wg-phone { height: min(880px, calc(100dvh - 48px)); }
 }
 `;
 

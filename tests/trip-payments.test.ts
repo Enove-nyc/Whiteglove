@@ -230,9 +230,15 @@ describe("the payment routes and webhook keep the same fences everything else do
     assert.match(body, /received: true/);
   });
 
-  it("recordPayment is idempotent by the PaymentIntent id, not by trusting the caller", () => {
-    const fn = STORE.slice(STORE.indexOf("export async function recordPayment"), STORE.indexOf("export async function recordPayment") + 900);
+  it("recordPayment is idempotent by the PaymentIntent id AND its outcome, not by trusting the caller", () => {
+    // The dedup decision lives in mergePaymentRecord (behaviour pinned in
+    // tests/payment-dedup.test.ts). It must key on both the intent id and the
+    // outcome: a single PaymentIntent keeps its id across a declined attempt
+    // and the successful retry, so id alone would let the earlier failure
+    // swallow the later success — the trip would read as still owing.
+    const fn = STORE.slice(STORE.indexOf("export function mergePaymentRecord"), STORE.indexOf("export function mergePaymentRecord") + 900);
     assert.match(fn, /stripePaymentIntentId === record\.stripePaymentIntentId/);
+    assert.match(fn, /p\.status === record\.status/);
   });
 
   it("never stores a card, and never charges to White Glove's own account — every charge names a destination", () => {
@@ -240,7 +246,13 @@ describe("the payment routes and webhook keep the same fences everything else do
     assert.match(CONNECT, /transfer_data/);
   });
 
-  it("no application fee is charged today — nobody asked White Glove to take a cut", () => {
-    assert.doesNotMatch(CONNECT, /application_fee/);
+  it("takes White Glove's platform fee, and makes the advisor bear Stripe's own fee", () => {
+    // The take rate itself (0.1% by default) is pure math in lib/platform-fee.ts,
+    // pinned by tests/stripe-platform-fee.test.ts. Here we just hold the charge
+    // shape: an application fee is set, and on_behalf_of makes the advisor the
+    // merchant of record so Stripe's processing fee comes off THEIR settlement.
+    assert.match(CONNECT, /application_fee_amount/);
+    assert.match(CONNECT, /on_behalf_of/);
+    assert.match(CONNECT, /platformFeeCents/);
   });
 });

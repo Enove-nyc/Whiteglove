@@ -68,9 +68,12 @@ export default function TripSetupPanel({
   signedIn,
   onApply,
   onNext,
+  itineraries = false,
 }: {
   itin: Itinerary;
   onNext: (step: "dates" | "travelers" | "stay" | "stops" | "flights") => void;
+  /** True on White Glove Itineraries, which has no destination pages. */
+  itineraries?: boolean;
   /** Built on the server from the destinations that have an outline. */
   templates: TripTemplate[];
   /** Null while the answer is still being fetched. */
@@ -266,7 +269,12 @@ export default function TripSetupPanel({
           )}
 
           {/* ---- what we hold for where this trip is going ------------------ */}
-          {suggested && (
+          {/* NOT ON ITINERARIES, for two reasons that point the same way. It
+              offers "kosher food and Shabbos", which is not this product's
+              subject; and the page it offers is one of the destination pages
+              retired on that brand, so the link answers 410. An invitation to
+              a page that no longer exists is worse than no invitation. */}
+          {suggested && !itineraries && (
             <div className="rounded-xl border border-[var(--gold-light)] bg-white p-5">
               <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">
                 We hold a page for {suggested.name}
