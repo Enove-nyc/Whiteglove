@@ -56,7 +56,7 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           # Overridable so this keeps working if the site ever moves; the
           # default is the live production host.
-          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whiteglovekoshertravel.com' }}
+          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whitegloveitineraries.com' }}
         run: |
           if [ -z "$CRON_SECRET" ]; then
             echo "CRON_SECRET is not set on this repository — nothing can be sent."
@@ -88,7 +88,7 @@ jobs:
       - name: Call the trip-alerts endpoint
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whiteglovekoshertravel.com' }}
+          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whitegloveitineraries.com' }}
         run: |
           if [ -z "$CRON_SECRET" ]; then
             echo "CRON_SECRET is not set on this repository — nothing can be sent."
@@ -119,7 +119,7 @@ jobs:
       - name: Call the health endpoint
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whiteglovekoshertravel.com' }}
+          SITE_URL: ${{ vars.REMINDERS_SITE_URL || 'https://www.whitegloveitineraries.com' }}
         run: |
           if [ -z "$CRON_SECRET" ]; then
             echo "CRON_SECRET is not set on this repository — nothing can be checked."

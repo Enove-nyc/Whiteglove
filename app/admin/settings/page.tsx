@@ -179,6 +179,11 @@ export default async function AdminSettingsPage() {
             state="On"
           />
           <Card
+            href="/admin/settings/move-files"
+            title="Move uploaded files"
+            detail="Copy photos, documents, voice notes and videos from the two old Railway hosts into this site's file store. Once, after the move."
+          />
+          <Card
             href="/admin/settings/trello"
             title="Trello"
             detail="Pictures, listings and reports."

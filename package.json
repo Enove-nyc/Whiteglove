@@ -26,6 +26,7 @@
   "dependencies": {
     "@duffel/components": "^3.17.0",
     "@neondatabase/serverless": "^1.1.0",
+    "@netlify/blobs": "^11.1.9",
     "@prisma/adapter-neon": "^7.9.0",
     "@prisma/client": "^7.9.0",
     "@stripe/react-stripe-js": "^6.8.2",
