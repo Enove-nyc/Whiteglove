@@ -17,21 +17,22 @@ describe("what the account icon offers", () => {
   it("NAMES THE FOUR, WITH MY INFO LAST", () => {
     assert.deepEqual(
       ACCOUNT_PLACES.map((place) => place.label),
-      ["Itineraries", "Routes", "Favorites", "My info"],
+      ["Itineraries", "Favorites", "My info"],
     );
   });
 
   it("sends each one somewhere that exists", () => {
     assert.equal(ACCOUNT_PLACES[0].href, "/itinerary");
-    assert.equal(ACCOUNT_PLACES[1].href, "/my-route");
-    assert.equal(ACCOUNT_PLACES[3].href, "/account");
+    // No Routes: it came off the site at the owner's word, 18 November 2026.
+    assert.ok(!ACCOUNT_PLACES.some((place) => (place.href as string) === "/my-route"));
+    assert.equal(ACCOUNT_PLACES[2].href, "/account");
   });
 
   it("REACHES FAVORITES BY ITS ANCHOR, BECAUSE IT HAS NO PAGE", () => {
     // Favorites is a section of the account page and is deliberately kept off
     // the header icons and the mobile bar. The anchor must be the one the
     // account page actually renders, or this scrolls nowhere.
-    const anchor = ACCOUNT_PLACES[2].href;
+    const anchor = ACCOUNT_PLACES[1].href;
     assert.equal(anchor, "/account#account-favorites");
     const panel = readFileSync("components/AccountRoutePanel.tsx", "utf8");
     assert.match(panel, /id="account-favorites"/, "the anchor this menu points at does not exist");

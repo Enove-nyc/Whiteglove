@@ -206,13 +206,20 @@ export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
     label: "My itineraries",
     links: [
       { label: "Build a trip", href: "/itinerary" },
-      { label: "Your route", href: "/my-route" },
+      // "Your route" came off the menu at the owner's word (18 November 2026).
       // Get recommendations, the app pages, pricing and the adviser screens
       // came off the public site at the owner's word (18 November 2026). The
       // trip app still opens from a trip code; it is just not advertised.
     ],
   },
 ] as const;
+
+/** eSIM, insurance and transfers — the old Travel menu's partner pages. */
+export const ITINERARIES_TRAVEL_EXTRAS: readonly NavLink[] = [
+  { label: "Transfers", href: "/transfers" },
+  { label: "eSIM", href: "/esim" },
+  { label: "Travel insurance", href: "/travel-insurance" },
+];
 
 /** Book, resolved to the Flights/Hotels/Cars searches through the booking lock
  *  — the itineraries mirror of travelCategoryFor. Search only, never a browse. */
@@ -227,7 +234,9 @@ export function itinerariesBookingCategoryFor(booking: BookingLink): NavCategory
         { label: "Things to do", href: "/go?product=activity&page=%2F&placement=nav" },
       ]
     : [{ label: booking.label, href: booking.href, description: booking.description }];
-  return { ...book, links: bookingLinks };
+  // The partner pages from the old Travel menu, back at the owner's word
+  // (18 November 2026). Partner pages, not the directory.
+  return { ...book, links: [...bookingLinks, ...ITINERARIES_TRAVEL_EXTRAS] };
 }
 
 /** The bar for a brand: the kosher four, or the itineraries four. */

@@ -6,13 +6,24 @@ import SectionHeading from "@/components/SectionHeading";
 import TransferBooking from "@/components/TransferBooking";
 import { pageMetadata } from "@/lib/seo";
 import { resolvePage } from "@/lib/pages";
+import { currentBrand } from "@/lib/site-brand";
 
-export const metadata = pageMetadata({
+export async function generateMetadata() {
+  // White Glove Itineraries is general travel; the original wording stays on the Kosher Travel view.
+  if ((await currentBrand()) === "itineraries") {
+    return pageMetadata({
+      title: "Airport transfers | White Glove Itineraries",
+      description: "When a booked airport transfer is the better answer than a hire car, and what to settle before you book one.",
+      path: "/transfers",
+    });
+  }
+  return pageMetadata({
   title: "Airport transfers for a kosher trip | White Glove Kosher Travel",
   description:
     "When a booked airport transfer is the better answer than a hire car, what to settle before you book one, and where to find a driver who knows a heritage route.",
   path: "/transfers",
 });
+}
 
 /**
  * Airport transfers.
@@ -41,6 +52,12 @@ export const metadata = pageMetadata({
  */
 
 /** When a booked transfer is the better answer. Each one is a real situation. */
+/** The first reason, as White Glove Itineraries says it — general travel, no Shabbos. */
+const LATE_ARRIVAL: [string, string] = [
+  "Landing late, or with little time to spare",
+  "A driver who is already booked, already has the flight number and is already waiting is one less thing to arrange in the hours you have least of. Confirm how the company takes payment before you book — that part is theirs, not ours.",
+];
+
 const WHEN_TRANSFER: Array<[string, string]> = [
   [
     "Landing close to Shabbos or Yom Tov",
@@ -57,6 +74,8 @@ const WHEN_TRANSFER: Array<[string, string]> = [
 ];
 
 export default async function TransfersPage() {
+  const itineraries = (await currentBrand()) === "itineraries";
+  const reasons = itineraries ? [LATE_ARRIVAL, ...WHEN_TRANSFER.slice(1)] : WHEN_TRANSFER;
   const page = await resolvePage("transfers");
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
@@ -72,7 +91,9 @@ export default async function TransfersPage() {
               Airport transfers
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              Booked in advance, waiting at arrivals. Often the better answer around Shabbos.
+              {itineraries
+                ? "Booked in advance, waiting at arrivals."
+                : "Booked in advance, waiting at arrivals. Often the better answer around Shabbos."}
             </p>
           </div>
         </section>
@@ -91,7 +112,7 @@ export default async function TransfersPage() {
           description="Most trips want one or the other, not both. This is how the choice usually falls."
         />
         <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {WHEN_TRANSFER.map(([heading, body]) => (
+          {reasons.map(([heading, body]) => (
             <article key={heading} className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
               <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 {heading}
@@ -104,7 +125,7 @@ export default async function TransfersPage() {
 
       <section className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
-          <SectionHeading eyebrow="The other two answers" title="When a transfer is not what you want" />
+          <SectionHeading eyebrow={itineraries ? "The other answer" : "The other two answers"} title="When a transfer is not what you want" />
           <div className="mt-10 grid gap-5 md:grid-cols-2">
             <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
               <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
@@ -112,7 +133,7 @@ export default async function TransfersPage() {
               </h2>
               <p className="mt-3 leading-7 text-stone-600">
                 An alpine valley, a route between towns, anywhere the days are spent somewhere other than where you
-                sleep. Each destination page says which of the two it is before you book either.
+                sleep.{itineraries ? "" : " Each destination page says which of the two it is before you book either."}
               </p>
               {/* The car search is the Cars tab on the booking page — /cars
                   folded into it and is a redirect now, so linking the real
@@ -124,6 +145,8 @@ export default async function TransfersPage() {
                 Search car hire
               </Link>
             </article>
+            {/* The provider directory is not on White Glove Itineraries. */}
+            {!itineraries && (
             <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
               <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 Drivers on a heritage route
@@ -139,6 +162,7 @@ export default async function TransfersPage() {
                 Open the provider directory
               </Link>
             </article>
+            )}
           </div>
         </div>
       </section>

@@ -414,7 +414,8 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
                   onClick={() => setSearchOpen((v) => !v)}
                 />
               )}
-              <IconLink icon="route" label="Route" href="/my-route" />
+              {/* No Route on Itineraries: it came off at the owner's word (18 November 2026). */}
+              {!isItineraries && <IconLink icon="route" label="Route" href="/my-route" />}
               <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
               {/* Signed in, the icon opens the four places an account has —
                   /account is a page holding all four, and somebody who wanted

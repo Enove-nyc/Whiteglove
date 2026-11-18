@@ -6,13 +6,24 @@ import PageBlocks from "@/components/PageBlocks";
 import SectionHeading from "@/components/SectionHeading";
 import { pageMetadata } from "@/lib/seo";
 import { resolvePage } from "@/lib/pages";
+import { currentBrand } from "@/lib/site-brand";
 
-export const metadata = pageMetadata({
+export async function generateMetadata() {
+  // White Glove Itineraries is general travel; the original wording stays on the Kosher Travel view.
+  if ((await currentBrand()) === "itineraries") {
+    return pageMetadata({
+      title: "eSIMs and data abroad | White Glove Itineraries",
+      description: "What an eSIM is, what to check before you buy one, and where to get a data plan for the country you are going to.",
+      path: "/esim",
+    });
+  }
+  return pageMetadata({
   title: "eSIMs and data abroad for a kosher trip | White Glove Kosher Travel",
   description:
     "What an eSIM is, what to check before you buy one, and where to get a data plan for the country you are going to.",
   path: "/esim",
 });
+}
 
 /**
  * Data abroad.
@@ -55,6 +66,7 @@ const BEFORE_YOU_BUY: Array<[string, string]> = [
 ];
 
 export default async function EsimPage() {
+  const itineraries = (await currentBrand()) === "itineraries";
   // The heading and intro are editable in /admin/pages; the offers and the
   // "before you buy" cards below are a live component and stay in code.
   const page = (await resolvePage("esim"))!;
@@ -93,8 +105,9 @@ export default async function EsimPage() {
                 Getting from the airport
               </h2>
               <p className="mt-3 leading-7 text-stone-600">
-                A transfer booked in advance meets you at arrivals, which matters most on the days either side of
-                Shabbos.
+                {itineraries
+                  ? "A transfer booked in advance meets you at arrivals, so there is one less thing to sort out after a long flight."
+                  : "A transfer booked in advance meets you at arrivals, which matters most on the days either side of Shabbos."}
               </p>
               <Link
                 href="/transfers"
@@ -103,6 +116,8 @@ export default async function EsimPage() {
                 Airport transfers
               </Link>
             </article>
+            {/* The travel guide is not on White Glove Itineraries. */}
+            {!itineraries && (
             <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
               <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
                 Documents and entry rules
@@ -118,6 +133,7 @@ export default async function EsimPage() {
                 Open the travel guide
               </Link>
             </article>
+            )}
           </div>
         </div>
       </section>

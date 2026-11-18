@@ -21,11 +21,14 @@ export const PUBLIC_PAGE_PREFIXES = [
   "/itinerary",
   "/book",
   "/go", // partner hand-off links
+  // The old Travel menu's partner pages, back at the owner's word (18 November 2026).
+  "/transfers",
+  "/esim",
+  "/travel-insurance",
   "/sample-itinerary",
   "/packing",
   "/optimize",
   "/translate",
-  "/my-route",
   "/command-center",
   // Accounts and access.
   "/login",
@@ -92,6 +95,14 @@ export const DIRECTORY_SEARCH_IS_PUBLIC = false;
  * also needs their prefixes returned to PUBLIC_PAGE_PREFIXES.
  */
 export const ADVISER_SCREENS_ARE_PUBLIC = false;
+
+/**
+ * Whether the saved-route screen (/my-route) is offered. Off at the owner's
+ * word, 18 November 2026 ("remove route"): no menu, header icon, bottom bar or
+ * account panel points at it, and the page answers "not available" to the
+ * public. Saved routes stay in each account.
+ */
+export const ROUTE_IS_PUBLIC = false;
 
 function under(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);

@@ -1,5 +1,6 @@
 "use client";
 
+import { ROUTE_IS_PUBLIC } from "@/lib/public-access";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -173,6 +174,8 @@ export default function AccountRoutePanel() {
         </Link>
       </Section>
 
+      {/* Route came off the site at the owner's word (18 November 2026). */}
+      {ROUTE_IS_PUBLIC && (
       <Section
         id="account-route"
         title="Route"
@@ -193,6 +196,7 @@ export default function AccountRoutePanel() {
           onOpen={(id) => openTrip(id, "/my-route")}
         />
       </Section>
+      )}
 
       <Section id="account-favorites" title="Favorites">
         {favorites !== null &&

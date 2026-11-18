@@ -4,9 +4,19 @@ import InsurancePanel from "@/components/InsurancePanel";
 import Navbar from "@/components/Navbar";
 import PageBlocks from "@/components/PageBlocks";
 import { resolvePage } from "@/lib/pages";
+import { currentBrand } from "@/lib/site-brand";
 
 export async function generateMetadata() {
   const page = await resolvePage("travel-insurance");
+  // On White Glove Itineraries the page has its own neutral title: the saved
+  // one was written for Kosher Travel.
+  if ((await currentBrand()) === "itineraries") {
+    return pageMetadata({
+      title: "Travel insurance | White Glove Itineraries",
+      description: "What a travel insurance policy usually covers, and what to read before you buy one.",
+      path: "/travel-insurance",
+    });
+  }
   // The owner writes the title and description in the admin; the
   // canonical URL and the share card come from the page it is.
   return pageMetadata({

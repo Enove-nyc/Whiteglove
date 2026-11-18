@@ -26,7 +26,6 @@ import { ADVISER_SCREENS_ARE_PUBLIC } from "@/lib/public-access";
 
 export const ACCOUNT_PLACES = [
   { label: "Itineraries", href: "/itinerary" },
-  { label: "Routes", href: "/my-route" },
   { label: "Favorites", href: "/account#account-favorites" },
   { label: "My info", href: "/account" },
 ] as const;

@@ -30,7 +30,8 @@ export default function MobileBottomBar({ signedIn, brand }: { signedIn: boolean
     // The itineraries brand omits Search (the desktop header does too): every
     // result bounces to the kosher domain, so a "search here" door that always
     // leads away is dropped rather than kept.
-    ...ITEMS.filter((item) => !(item.key === "search" && brand === "itineraries")),
+    // No search and no Route on Itineraries (Route came off at the owner's word, 18 November 2026).
+    ...ITEMS.filter((item) => !((item.key === "search" || item.key === "route") && brand === "itineraries")),
     {
       key: "account",
       icon: "account" as IconName,
