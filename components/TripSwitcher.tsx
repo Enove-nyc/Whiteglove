@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useDeviceClock } from "@/components/TripProgressStrip";
-import { useFocusTrap } from "@/components/useFocusTrap";
 import { countdownPhrase, tripProgress } from "@/lib/trip-progress";
 import { tripRowMeta } from "@/lib/trip-bar";
 import { isAccountPlan } from "@/lib/account-plans";
 import { mayServeCompanionClients, mayUseTripTemplates } from "@/lib/account-limits";
+import { ShareOpenStatus } from "@/components/ShareOpenStatus";
+import type { TripLinkStatus } from "@/lib/account-store";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 // The traveler's trips, and a way to move between them.
 //
@@ -37,6 +39,12 @@ type Trip = {
   updatedAt: string;
   /** Whether this trip's client gets automatic reminders — see lib/trip-reminders.ts. */
   autoReminders: boolean;
+  /**
+   * Every link on this trip and whether it has been opened, worked out by the
+   * server (the trip's own timezone comes from coordinates that never leave
+   * it). Optional because an older cached response will not carry it.
+   */
+  links?: TripLinkStatus[];
 };
 
 /** An advisor's own saved trip shape — see lib/trip-templates.ts. */
@@ -44,51 +52,6 @@ type Template = { id: string; name: string; createdAt: string };
 
 const smallButton =
   "min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:opacity-50";
-
-/** A heading inside the manage pop-up, so its parts are findable at a glance. */
-function ManageSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="border-t border-[var(--gold-light)] pt-4">
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">{title}</p>
-      <div className="mt-2">{children}</div>
-    </div>
-  );
-}
-
-/**
- * One trip's settings, over the list rather than inside every row.
- *
- * Each row used to carry the lot: Open, Rename, Who it is for, Advisor, Make a
- * copy, Save as template, Delete, the client's code with its link and its Stop
- * button, and the reminders toggle — repeated for every trip. A list of five
- * itineraries was five control panels, and the code an advisor actually needed
- * was somewhere in the middle of one of them.
- */
-function ManageModal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose);
-  return (
-    <div
-      className="fixed inset-0 z-[var(--wg-z-modal,200)] flex items-end justify-center bg-[var(--navy)]/50 p-4 backdrop-blur-[2px] sm:items-center"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Manage ${title}`}
-        className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-7"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="min-w-0 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">{title}</h3>
-          <button type="button" onClick={onClose} className="shrink-0 text-[11px] font-bold uppercase tracking-[0.12em] text-stone-500 transition hover:text-[var(--navy)]">
-            Close
-          </button>
-        </div>
-        <div className="mt-5 space-y-4">{children}</div>
-      </div>
-    </div>
-  );
-}
 
 export default function TripSwitcher({
   onSwitched,
@@ -106,8 +69,6 @@ export default function TripSwitcher({
   const [trips, setTrips] = useState<Trip[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  // Whose settings are open. One trip at a time, over the list.
-  const [manageFor, setManageFor] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
   // Naming the client is part of a Business account. Asked once, from the same
@@ -219,6 +180,15 @@ export default function TripSwitcher({
     [loadTemplates, onSwitched],
   );
 
+  /**
+   * "Are you sure" is asked in the page, not by the browser — see
+   * components/ui/ConfirmDialog.tsx. window.confirm can be switched off by the
+   * person's own browser, and when it is it returns false with nothing drawn,
+   * so Delete reads as declined and does nothing at all. That was reported as
+   * "no dialog, no deletion".
+   */
+  const { dialog: confirmDialog, ask } = useConfirm();
+
   const act = useCallback(
     async (
       action: string,
@@ -312,6 +282,102 @@ export default function TripSwitcher({
         {trips.map((trip) => (
           <li key={trip.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div className="min-w-0">
+              {renaming === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void act("rename", { id: trip.id, name: draftName }, trip.active);
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={draftName}
+                    onChange={(e) => setDraftName(e.target.value)}
+                    aria-label="Trip name"
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setRenaming(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
+              ) : clientFor === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void act("client", { id: trip.id, client: draftClient });
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={draftClient}
+                    onChange={(e) => setDraftClient(e.target.value)}
+                    aria-label="Who this trip is for"
+                    placeholder="The Friedman family"
+                    maxLength={60}
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setClientFor(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
+              ) : advisorFor === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void act("advisor", { id: trip.id, advisor: draftAdvisor });
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={draftAdvisor}
+                    onChange={(e) => setDraftAdvisor(e.target.value)}
+                    aria-label="The advisor on this trip"
+                    placeholder="Sarah Klein"
+                    maxLength={60}
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setAdvisorFor(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
+              ) : savingTemplateFor === trip.id ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void templateAct("save", { tripId: trip.id, name: templateDraftName });
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <input
+                    value={templateDraftName}
+                    onChange={(e) => setTemplateDraftName(e.target.value)}
+                    aria-label="Template name"
+                    placeholder="Rome, four days, family of five"
+                    maxLength={80}
+                    autoFocus
+                    className="min-h-[36px] rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
+                  />
+                  <button type="submit" disabled={busy} className={smallButton}>
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setSavingTemplateFor(null)} className={smallButton}>
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <>
               {/* THE NAME IS A HEADING THAT HAPPENS TO BE PRESSABLE, not a
                   link among links. Underlined in gold at rest, beside an
                   underlined client line and an underlined meta line, every
@@ -326,19 +392,23 @@ export default function TripSwitcher({
                     type="button"
                     disabled={busy}
                     onClick={() => void openTrip(trip.id)}
-                    className="text-left text-[var(--navy)] underline decoration-transparent decoration-2 underline-offset-4 transition hover:decoration-[var(--gold)] disabled:opacity-50"
-                  >
-                    {trip.name}
-                  </button>
-                ) : (
-                  trip.name
-                )}
-                {trip.active && !onOpen && (
-                  <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Open</span>
-                )}
-              </p>
-              {trip.client && <p className="text-xs font-semibold text-[var(--gold-ink)]">For {trip.client}</p>}
-              {trip.advisor && <p className="text-xs text-stone-500">Advisor: {trip.advisor}</p>}
+                        className="text-left text-[var(--navy)] underline decoration-transparent decoration-2 underline-offset-4 transition hover:decoration-[var(--gold)] disabled:opacity-50"
+                      >
+                        {trip.name}
+                      </button>
+                    ) : (
+                      trip.name
+                    )}
+                    {trip.active && !onOpen && (
+                      <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">Open</span>
+                    )}
+                  </p>
+                  {trip.client && (
+                    <p className="text-xs font-semibold text-[var(--gold-ink)]">For {trip.client}</p>
+                  )}
+                  {trip.advisor && (
+                    <p className="text-xs text-stone-500">Advisor: {trip.advisor}</p>
+                  )}
               {/* THE DATES LEAD, AND USED NOT TO BE HERE AT ALL. The line
                   read "3 stops · 8 days · in 2 months · 5 saved · client code
                   created" — five facts, and the one an advisor picks a trip
@@ -346,280 +416,186 @@ export default function TripSwitcher({
               <p className="text-xs text-stone-500">
                 {tripRowMeta(trip, countdownPhrase(tripProgress({ startDate: trip.startDate, endDate: trip.endDate, today })))}
               </p>
+                </>
+              )}
             </div>
 
-            {/* Two buttons, not eight. Everything else about this trip is
-                behind Manage, where each part has a heading. */}
-            <div className="flex flex-wrap gap-2">
-              {(onOpen || !trip.active) && (
+            {renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && savingTemplateFor !== trip.id && (
+              <div className="flex flex-wrap gap-2">
+                {(onOpen || !trip.active) && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void openTrip(trip.id)}
+                    className={
+                      onOpen
+                        ? "min-h-[36px] border border-[var(--navy)] bg-[var(--navy)] px-4 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-50"
+                        : smallButton
+                    }
+                  >
+                    Open
+                  </button>
+                )}
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => void openTrip(trip.id)}
-                  className={
-                    onOpen
-                      ? "min-h-[36px] border border-[var(--navy)] bg-[var(--navy)] px-4 text-[11px] font-bold uppercase tracking-[0.1em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-50"
-                      : smallButton
-                  }
+                  onClick={() => {
+                    setRenaming(trip.id);
+                    setDraftName(trip.name);
+                  }}
+                  className={smallButton}
                 >
-                  Open
+                  Rename
                 </button>
-              )}
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => {
-                  setManageFor(trip.id);
-                  setRenaming(null);
-                  setClientFor(null);
-                  setAdvisorFor(null);
-                  setSavingTemplateFor(null);
-                }}
-                className={smallButton}
-              >
-                Manage
-              </button>
-            </div>
-
-            {manageFor === trip.id && (
-              <ManageModal title={trip.name} onClose={() => setManageFor(null)}>
-                <ManageSection title="Name">
-                  {renaming === trip.id ? (
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        void act("rename", { id: trip.id, name: draftName }, trip.active);
-                      }}
-                      className="flex flex-wrap gap-2"
-                    >
-                      <input
-                        value={draftName}
-                        onChange={(e) => setDraftName(e.target.value)}
-                        aria-label="Trip name"
-                        autoFocus
-                        className="min-h-[36px] min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
-                      />
-                      <button type="submit" disabled={busy} className={smallButton}>Save</button>
-                      <button type="button" onClick={() => setRenaming(null)} className={smallButton}>Cancel</button>
-                    </form>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="text-sm text-[var(--navy)]">{trip.name}</span>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => { setRenaming(trip.id); setDraftName(trip.name); }}
-                        className={smallButton}
-                      >
-                        Rename
-                      </button>
-                    </div>
-                  )}
-                </ManageSection>
-
                 {mayServeClients && (
-                  <ManageSection title="Who it is for">
-                    {clientFor === trip.id ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          void act("client", { id: trip.id, client: draftClient });
-                        }}
-                        className="flex flex-wrap gap-2"
-                      >
-                        <input
-                          value={draftClient}
-                          onChange={(e) => setDraftClient(e.target.value)}
-                          aria-label="Who this trip is for"
-                          placeholder="The Friedman family"
-                          maxLength={60}
-                          autoFocus
-                          className="min-h-[36px] min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
-                        />
-                        <button type="submit" disabled={busy} className={smallButton}>Save</button>
-                        <button type="button" onClick={() => setClientFor(null)} className={smallButton}>Cancel</button>
-                      </form>
-                    ) : advisorFor === trip.id ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          void act("advisor", { id: trip.id, advisor: draftAdvisor });
-                        }}
-                        className="flex flex-wrap gap-2"
-                      >
-                        <input
-                          value={draftAdvisor}
-                          onChange={(e) => setDraftAdvisor(e.target.value)}
-                          aria-label="The advisor on this trip"
-                          placeholder="Sarah Klein"
-                          maxLength={60}
-                          autoFocus
-                          className="min-h-[36px] min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
-                        />
-                        <button type="submit" disabled={busy} className={smallButton}>Save</button>
-                        <button type="button" onClick={() => setAdvisorFor(null)} className={smallButton}>Cancel</button>
-                      </form>
-                    ) : (
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-sm text-stone-600">
-                          {trip.client ? `For ${trip.client}` : "Nobody named yet"}
-                          {trip.advisor ? ` · advisor ${trip.advisor}` : ""}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => { setClientFor(trip.id); setDraftClient(trip.client); }}
-                          className={smallButton}
-                        >
-                          {trip.client ? "Change who it is for" : "Who it is for"}
-                        </button>
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => { setAdvisorFor(trip.id); setDraftAdvisor(trip.advisor); }}
-                          className={smallButton}
-                        >
-                          {trip.advisor ? "Change advisor" : "Advisor"}
-                        </button>
-                      </div>
-                    )}
-                  </ManageSection>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setClientFor(trip.id);
+                      setDraftClient(trip.client);
+                    }}
+                    className={smallButton}
+                  >
+                    {trip.client ? "Change who it is for" : "Who it is for"}
+                  </button>
                 )}
-
-                {/* The client's per-trip code — Advisor Starter and up, one code
-                    per trip. Send the client the code and they enter it on the
-                    app's front page; the link is the same thing pre-opened.
-                    Either opens THIS trip as the app on the client's phone, no
-                    account needed. Other trips are never reachable from it. */}
                 {mayServeClients && (
-                  <ManageSection title="The client's code">
-                    {trip.shareId ? (
-                      <div className="flex flex-col gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <input
-                            readOnly
-                            aria-label="Client code"
-                            value={trip.shareId}
-                            onFocus={(e) => e.currentTarget.select()}
-                            className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs font-semibold tracking-[0.14em] text-[var(--navy)]"
-                          />
-                          <button type="button" onClick={() => copy(`${trip.id}-code`, trip.shareId!)} className={smallButton}>
-                            {copied === `${trip.id}-code` ? "Copied!" : "Copy code"}
-                          </button>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">or link</span>
-                          <input
-                            readOnly
-                            aria-label="Client link"
-                            value={`${origin}/i/${trip.shareId}/app`}
-                            onFocus={(e) => e.currentTarget.select()}
-                            className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs text-[var(--navy)]"
-                          />
-                          <button type="button" onClick={() => copy(`${trip.id}-link`, `${origin}/i/${trip.shareId}/app`)} className={smallButton}>
-                            {copied === `${trip.id}-link` ? "Copied!" : "Copy link"}
-                          </button>
-                        </div>
-                        <p className="text-[11px] leading-4 text-stone-500">
-                          Send your client the code — they enter it on the app&rsquo;s front page — or the link, which opens their trip directly.
-                        </p>
-                        <div>
-                          <button type="button" disabled={busy} onClick={() => void act("unshare", { id: trip.id })} className={smallButton}>
-                            Stop this code working
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button type="button" disabled={busy} onClick={() => void act("share", { id: trip.id })} className={smallButton}>
-                        Create a client code
-                      </button>
-                    )}
-                  </ManageSection>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setAdvisorFor(trip.id);
+                      setDraftAdvisor(trip.advisor);
+                    }}
+                    className={smallButton}
+                  >
+                    {trip.advisor ? "Change advisor" : "Advisor"}
+                  </button>
                 )}
-
-                {/* Automatic reminders into the same chat thread the client code
-                    opens — off by default, and only offered once there is
-                    somewhere to send one. See lib/trip-reminders.ts for what
-                    these actually say and when they fire. */}
-                {mayServeClients && trip.shareId && (
-                  <ManageSection title="Automatic reminders">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => void act("auto-reminders", { id: trip.id, autoReminders: !trip.autoReminders })}
-                        className={smallButton}
-                      >
-                        {trip.autoReminders ? "Automatic reminders: on" : "Turn on automatic reminders"}
-                      </button>
-                      {trip.autoReminders && (
-                        <span className="text-[11px] leading-4 text-stone-500">
-                          Sends &ldquo;leaving soon&rdquo; and &ldquo;balance due&rdquo; messages to the client on their own, each once.
-                        </span>
-                      )}
-                    </div>
-                  </ManageSection>
+                <button type="button" disabled={busy} onClick={() => void act("duplicate", { id: trip.id })} className={smallButton}>
+                  Make a copy
+                </button>
+                {mayUseTemplates && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      setSavingTemplateFor(trip.id);
+                      setTemplateDraftName(trip.name);
+                    }}
+                    className={smallButton}
+                  >
+                    Save as template
+                  </button>
                 )}
-
-                <ManageSection title="Copy it">
-                  {savingTemplateFor === trip.id ? (
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        void templateAct("save", { tripId: trip.id, name: templateDraftName });
-                      }}
-                      className="flex flex-wrap gap-2"
-                    >
-                      <input
-                        value={templateDraftName}
-                        onChange={(e) => setTemplateDraftName(e.target.value)}
-                        aria-label="Template name"
-                        placeholder="Rome, four days, family of five"
-                        maxLength={80}
-                        autoFocus
-                        className="min-h-[36px] min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 text-sm text-[var(--navy)] focus:border-[var(--gold)] focus:outline-none"
-                      />
-                      <button type="submit" disabled={busy} className={smallButton}>Save</button>
-                      <button type="button" onClick={() => setSavingTemplateFor(null)} className={smallButton}>Cancel</button>
-                    </form>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      <button type="button" disabled={busy} onClick={() => void act("duplicate", { id: trip.id })} className={smallButton}>
-                        Make a copy
-                      </button>
-                      {mayUseTemplates && (
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => { setSavingTemplateFor(trip.id); setTemplateDraftName(trip.name); }}
-                          className={smallButton}
-                        >
-                          Save as template
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </ManageSection>
-
                 {trips.length > 1 && (
-                  <ManageSection title="Delete">
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => {
-                        if (confirm(`Delete “${trip.name}”? Everything planned in it goes with it.`)) {
-                          void act("delete", { id: trip.id }, trip.active);
-                        }
-                      }}
-                      className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700 disabled:opacity-50"
-                    >
-                      Delete this itinerary
-                    </button>
-                  </ManageSection>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() =>
+                      ask({
+                        title: `Delete “${trip.name}”?`,
+                        body: "Everything planned in it goes with it.",
+                        onConfirm: () => void act("delete", { id: trip.id }, trip.active),
+                      })
+                    }
+                    className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700 disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
                 )}
+              </div>
+            )}
 
-                {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
-              </ManageModal>
+            {/* The client's per-trip code — Advisor Starter and up, one code
+                per trip. Send the client the code and they enter it on the
+                app's front page; the link is the same thing pre-opened.
+                Either opens THIS trip as the app on the client's phone, no
+                account needed. Other trips are never reachable from it. */}
+            {mayServeClients && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+              <div className="mt-1 w-full">
+                {trip.shareId ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">Client code</span>
+                      <input
+                        readOnly
+                        value={trip.shareId}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs font-semibold tracking-[0.14em] text-[var(--navy)]"
+                      />
+                      <button type="button" onClick={() => copy(`${trip.id}-code`, trip.shareId!)} className={smallButton}>
+                        {copied === `${trip.id}-code` ? "Copied!" : "Copy code"}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500">or link</span>
+                      <input
+                        readOnly
+                        value={`${origin}/i/${trip.shareId}/app`}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-xs text-[var(--navy)]"
+                      />
+                      <button type="button" onClick={() => copy(`${trip.id}-link`, `${origin}/i/${trip.shareId}/app`)} className={smallButton}>
+                        {copied === `${trip.id}-link` ? "Copied!" : "Copy link"}
+                      </button>
+                      <button type="button" disabled={busy} onClick={() => void act("unshare", { id: trip.id })} className={smallButton}>
+                        Stop
+                      </button>
+                    </div>
+                    {/* WHETHER THEY HAVE OPENED IT — the question every advisor
+                        asks after sending a trip, and the one the panel could
+                        not answer. One line per link: this trip's own, plus a
+                        traveller's own door where one was created, plus any
+                        link that has been stopped, because "they opened it
+                        twice before I turned it off" is still the answer. */}
+                    {trip.links?.map((link) => (
+                      <ShareOpenStatus
+                        key={link.shareId}
+                        status={link.status}
+                        className={(trip.links?.length ?? 0) > 1 ? "" : "mt-0.5"}
+                      />
+                    ))}
+                    <p className="text-[11px] leading-4 text-stone-500">
+                      Send your client the code — they enter it on the app&rsquo;s front page — or the link, which opens their trip directly.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <button type="button" disabled={busy} onClick={() => void act("share", { id: trip.id })} className={smallButton}>
+                      Create a client code
+                    </button>
+                    {/* A trip with no live link may still have a stopped one,
+                        and what happened on it is worth keeping in view. */}
+                    {trip.links?.map((link) => (
+                      <ShareOpenStatus key={link.shareId} status={link.status} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Automatic reminders into the same chat thread the client code
+                opens — off by default, and only offered once there is
+                somewhere to send one. See lib/trip-reminders.ts for what
+                these actually say and when they fire. */}
+            {mayServeClients && trip.shareId && renaming !== trip.id && clientFor !== trip.id && advisorFor !== trip.id && (
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void act("auto-reminders", { id: trip.id, autoReminders: !trip.autoReminders })}
+                  className={smallButton}
+                >
+                  {trip.autoReminders ? "Automatic reminders: on" : "Turn on automatic reminders"}
+                </button>
+                {trip.autoReminders && (
+                  <span className="text-[11px] leading-4 text-stone-500">
+                    Sends &ldquo;leaving soon&rdquo; and &ldquo;balance due&rdquo; messages to the client on their own, each once.
+                  </span>
+                )}
+              </div>
             )}
           </li>
         ))}
@@ -723,11 +699,13 @@ export default function TripSwitcher({
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={() => {
-                        if (confirm(`Delete the template “${tpl.name}”? This does not touch any trip already started from it.`)) {
-                          void templateAct("delete", { id: tpl.id });
-                        }
-                      }}
+                      onClick={() =>
+                        ask({
+                          title: `Delete the template “${tpl.name}”?`,
+                          body: "This does not touch any trip already started from it.",
+                          onConfirm: () => void templateAct("delete", { id: tpl.id }),
+                        })
+                      }
                       className="min-h-[36px] border border-[var(--gold-light)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-stone-500 transition hover:border-red-400 hover:text-red-700 disabled:opacity-50"
                     >
                       Delete
@@ -741,6 +719,7 @@ export default function TripSwitcher({
       )}
 
       {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
+      {confirmDialog}
     </section>
   );
 }

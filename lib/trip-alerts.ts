@@ -47,18 +47,25 @@ export type TripAlert = {
 };
 
 /**
- * The alerts worth waking a phone for.
+ * Which readiness alerts are worth a notification on somebody's phone.
  *
- * "No dates on the trip yet" is not one of them, and that is the only kind
- * excluded. It is a nudge to go and fill something in — true for weeks on end,
- * urgent on none of them, and the one thing here that would arrive as a
- * notification saying, in effect, "you have not finished typing". A page can
- * afford to say that quietly. A notification cannot say it at all without
- * teaching somebody to turn notifications off, and the two alerts that matter
- * go with them when they do.
+ * "No dates on the trip yet" is not one: it is a nudge to go and fill
+ * something in — true for weeks on end, urgent on none of them, and the one
+ * thing here that would arrive as a notification saying, in effect, "you have
+ * not finished typing". A page can afford to say that quietly. A notification
+ * cannot say it at all without teaching somebody to turn notifications off,
+ * and the alerts that matter go with them when they do.
+ *
+ * NEITHER IS "shabbos", AND THAT IS THIS PRODUCT'S OWN RULE — the one thing in
+ * this file that differs from the kosher copy. White Glove Itineraries is a
+ * general travel product. The command centre has long shown these clashes on a
+ * page somebody chose to open, which is one thing; pushing "your stop is
+ * planned for Shabbos" to a phone unbidden is another, and not something a
+ * neutral travel product should begin doing on its own. The kosher deployment,
+ * whose travellers asked for exactly that, pushes them.
  */
 export function pushableAlerts(alerts: readonly TripAlert[]): TripAlert[] {
-  return alerts.filter((alert) => alert.kind !== "no-dates");
+  return alerts.filter((alert) => alert.kind !== "no-dates" && alert.kind !== "shabbos");
 }
 
 export type AlertInput = {

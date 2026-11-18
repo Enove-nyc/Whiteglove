@@ -6,8 +6,9 @@ import { useDebouncedSearch } from "@/components/useDebouncedSearch";
 import { useOnValueChange } from "@/components/useOnValueChange";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 import { bookingHref } from "@/lib/booking-access";
-import { Children, isValidElement, useEffect, useMemo, useRef, useState } from "react";
+import { Children, createContext, isValidElement, useContext, useEffect, useMemo, useRef, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import AssistantAnswer from "@/components/AssistantAnswer";
 import { useRequireSignIn } from "@/components/SignInGate";
@@ -43,7 +44,7 @@ import StopAttachments from "@/components/StopAttachments";
 import { PreviewDialog } from "@/components/PreviewDialog";
 import PrintableItinerary from "@/components/PrintableItinerary";
 import { useViewer } from "@/lib/use-signed-in";
-import { fetchRoadTimes } from "@/lib/road-times";
+import { fetchRoadTimes, type RoadTimeResult } from "@/lib/road-times";
 import { burialSummary, useKeverBurials } from "@/lib/use-kever-burials";
 import {
   buildDays,
@@ -82,9 +83,20 @@ const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-50
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}`);
 
 type Tab = "flight" | "hotel" | "activity" | "import" | null;
+
+/**
+ * A visitor who is not signed in (AGENTS.md, 18 November 2026). They build a
+ * trip that lives only in their own browser: nothing is written on our side,
+ * and nothing that runs on our server or a paid service is offered — no AI
+ * ideas, flight-number lookup, server hotel search, uploads, sharing, smart
+ * import or measured road times. Address autocomplete runs in their browser.
+ */
+const GuestContext = createContext(false);
+/** Where a guest's trip is kept, on their own device. */
+export const GUEST_TRIP_KEY = "wg-guest-itinerary";
 type ItineraryView = "days" | "calendar";
 
-export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false }: {
+export default function ItineraryBuilder({ crossings = [], today: serverToday = "", assume = BUILT_IN_ASSUMPTIONS, templates = [], itineraries = false, kosher = false, guest = false }: {
   /** What is known about the borders this trip crosses. Read on the server. */
   crossings?: Crossing[];
   /**
@@ -108,7 +120,20 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
    * food nearby, whatever a trip's own data happens to hold.
    */
   itineraries?: boolean;
+  /**
+   * Whether this account turned the kosher & Shabbos layer on — AppPrefs
+   * .kosherFeatures, the switch on /account. On the kosher deployment every
+   * traveller wants zmanim, so `itineraries` is false there and this is not
+   * consulted; on Itineraries it is what decides, instead of the brand deciding
+   * for everybody. Off is the default and the honest one for a general product.
+   */
+  kosher?: boolean;
+  /** Not signed in: the trip lives in this browser only. See GuestContext. */
+  guest?: boolean;
 }) {
+  // Zmanim are shown where the product is kosher travel, or where a general
+  // account has asked for them. Never merely because a trip holds the data.
+  const showZmanimHere = !itineraries || kosher;
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
   // Which flight the top form is editing, if any. Null means adding a new one.
@@ -174,8 +199,9 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // and opening their only itinerary's editor instead would ignore what they
   // pressed.
   const askedForList = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("list");
-  const [mode, setMode] = useState<"list" | "edit" | null>(null);
+  const [mode, setMode] = useState<"list" | "edit" | null>(guest ? "edit" : null);
   useEffect(() => {
+    if (guest) return;
     let active = true;
     fetch("/api/account/trips", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
@@ -194,19 +220,30 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     return () => {
       active = false;
     };
-  }, [reloadKey, askedForList]);
+  }, [reloadKey, askedForList, guest]);
 
-  // Load: the account, and nothing else.
-  //
-  // THERE IS NO BROWSER COPY TO FALL BACK TO. A trip used to be kept in
-  // localStorage as well, which meant a signed-out visitor could build a real
-  // itinerary that existed on one device, in one browser, and was gone the
-  // moment they cleared their history or picked up their phone — and they
-  // were told so in the smallest print on the page. A trip is somebody's
-  // travel plans; the only honest place for it is their account.
+  // Load. A signed-in traveller's trip comes from their account and nowhere
+  // else. A guest's comes from their own browser (GUEST_TRIP_KEY) — the owner's
+  // choice for a site that stores nothing for visitors (AGENTS.md, 18 November
+  // 2026); the page says plainly that it is kept on this device only.
   useEffect(() => {
     let active = true;
     (async () => {
+      if (guest) {
+        // The guest's own browser, and nowhere else. Storage can be missing or
+        // refused (private windows); then the trip simply starts blank.
+        let saved: Itinerary | null = null;
+        try {
+          const raw = window.localStorage.getItem(GUEST_TRIP_KEY);
+          if (raw) saved = JSON.parse(raw) as Itinerary;
+        } catch {
+          /* no storage — start blank */
+        }
+        setItin(saved ? { ...emptyItinerary(), ...saved } : emptyItinerary());
+        setLoaded(true);
+        setLoadedKey(reloadKey);
+        return;
+      }
       try {
         const res = await fetch("/api/account/itinerary", { cache: "no-store" });
         if (res.ok) {
@@ -229,7 +266,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     return () => {
       active = false;
     };
-  }, [reloadKey]);
+  }, [reloadKey, guest]);
 
   // The one chokepoint every add, edit and reorder in this builder funnels
   // through. Gated here rather than at each of the dozens of buttons that
@@ -238,6 +275,16 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // from; once signed in, this and every later call go straight through.
   function persist(next: Itinerary): Promise<boolean> {
     if (loadedKey !== reloadKey) return Promise.resolve(false);
+    if (guest) {
+      setItin(next);
+      try {
+        window.localStorage.setItem(GUEST_TRIP_KEY, JSON.stringify(next));
+        setSaveState("saved");
+      } catch {
+        /* storage refused — the trip still works for this visit */
+      }
+      return Promise.resolve(true);
+    }
     let completion = Promise.resolve(false);
     requireSignIn(() => {
       setItin(next);
@@ -338,7 +385,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     [days],
   );
   useEffect(() => {
-    if (itineraries || !itin.showZmanim || !days.length) return;
+    if (!showZmanimHere || !itin.showZmanim || !days.length) return;
     let current = true;
     fetchTripZmanim(days).then((result) => {
       if (current) setZmanim({ key: zmanimKey, days: result });
@@ -349,8 +396,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     // days is rebuilt on every keystroke; zmanimKey is what actually moves the
     // times, so the fetch follows that instead.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itin.showZmanim, zmanimKey]);
-  const zmanimForToday = !itineraries && itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
+  }, [itin.showZmanim, zmanimKey, showZmanimHere]);
+  const zmanimForToday = showZmanimHere && itin.showZmanim && zmanim.key === zmanimKey ? zmanim.days : null;
   const unscheduled = useMemo(() => unscheduledActivities(itin), [itin]);
   // Who is buried at each beis hachaim on the trip, looked up by slug. Never
   // looked up on Itineraries — that brand has no kever directory to look up.
@@ -408,7 +455,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         return [legs[0].fromCoordinates ?? "", ...legs.map((l) => l.toCoordinates ?? "")];
       })
       .filter((chain) => chain.length > 1 && chain.every(Boolean));
-    const measured = await fetchRoadTimes(chains, planned.roadTimes ?? {}, planned.startDate);
+    const measured: RoadTimeResult = guest ? { times: {}, sources: {}, engine: null, partial: false } : await fetchRoadTimes(chains, planned.roadTimes ?? {}, planned.startDate);
     const measuredCount = Object.keys(measured.times).length;
     if (measuredCount) {
       planned = {
@@ -476,22 +523,23 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   }
 
   return (
+    <GuestContext.Provider value={guest}>
     <div className="space-y-5">
       {/* Back to the index — the planner is a CRM now, one itinerary at a time.
           Always here in edit mode: even with a single itinerary it is the way
           to the list, where a new one is started and the others are managed. */}
-      <button
+      {!guest && <button
         type="button"
         disabled={saveState === "saving" || saveState === "error"}
         onClick={() => setMode("list")}
         className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
       >
         ← Back to all itineraries
-      </button>
+      </button>}
       <div id="itinerary-save-status" role="status" aria-live="polite" className="sticky top-16 z-30 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm">
         <span className="mr-auto font-semibold text-[var(--navy)]">{itin.title?.trim() || "Your trip"}{itin.startDate ? " · " + tripBarDates({ startDate: itin.startDate, endDate: itin.endDate }) : ""} · Editing</span>
         {saveState === "saving" && <span>Saving…</span>}
-        {saveState === "saved" && <span className="text-emerald-800">Saved to your account</span>}
+        {saveState === "saved" && <span className="text-emerald-800">{guest ? "Saved in this browser" : "Saved to your account"}</span>}
         {saveState === "error" && <><span className="text-red-800">Could not save. Your changes are still here.</span><button type="button" onClick={() => saveQueue.retry()} className="min-h-11 rounded-md border border-red-800 px-3 font-semibold text-red-800">Try again</button></>}
         <PreviewDialog showLabel label="Preview the whole itinerary" title={itin.title?.trim() || "This trip"}>
           <PrintableItinerary itin={itin} burials={burials} siteBrand={itineraries ? "itineraries" : "kosher"} embedded />
@@ -517,6 +565,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           everything below stays usable with this ignored or collapsed. See
           lib/trip-setup.ts. */}
       <TripSetupPanel
+        itineraries={itineraries}
         itin={itin}
         onNext={(step) => {
           if (step === "dates" || step === "travelers") {
@@ -604,7 +653,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <button type="button" onClick={() => { setEditingLodgingId(null); setTab(tab === "hotel" ? null : "hotel"); }} className={toolbarButton(nextSetup === "stay")}>Hotel</button>
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className={toolbarButton(nextSetup === "stops")}>Stop</button>
           <button type="button" onClick={importSavedRoute} className={toolbarButton(false)}>Saved route</button>
-          <button type="button" onClick={() => setTab(tab === "import" ? null : "import")} className={toolbarButton(false)}>Smart Import</button>
+          {!guest && <button type="button" onClick={() => setTab(tab === "import" ? null : "import")} className={toolbarButton(false)}>Smart Import</button>}
           <button type="button" onClick={planMyRoute} disabled={planning} className={`ml-auto ${toolbarButton(unscheduled.length > 0)} disabled:opacity-60`}>{planning ? "Planning…" : "Plan my route"}</button>
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
         </div>
@@ -641,7 +690,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           />
         )}
         {tab === "activity" && <ActivityForm startDate={itin.startDate} units={units} onAdd={async (a) => { if (!await addActivity(a)) return false; setTab(null); }} itineraries={itineraries} />}
-        {tab === "import" && <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />}
+        {!guest && tab === "import" && <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />}
         </div>
       </section>
       )}
@@ -659,13 +708,16 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
               {/* Off until asked for. Somebody keeping the times wants them on
                   every day of the trip and on whichever phone they open it on,
                   so the answer is saved with the trip rather than the browser.
-                  Not offered on Itineraries — no zmanim on that brand. */}
-              {!itineraries && (
+                  On Itineraries it is not offered at all until the account
+                  turns the kosher & Shabbos layer on — a general travel agency
+                  should not be shown a zmanim button, and one that plans kosher
+                  trips flips one switch and has it. */}
+              {showZmanimHere && (
                 <button
                   type="button"
                   onClick={() => set({ showZmanim: !itin.showZmanim })}
                   aria-pressed={Boolean(itin.showZmanim)}
-                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(23,45,82,.08)] transition ${
+                  className={`inline-flex h-14 items-center rounded-full border px-5 text-xs font-bold shadow-[0_4px_14px_rgba(16, 47, 53,.08)] transition ${
                     itin.showZmanim
                       ? "border-[var(--navy)] bg-[var(--navy)] text-white hover:bg-[var(--gold)]"
                       : "border-[var(--gold-light)] bg-white text-stone-500 hover:text-[var(--navy)]"
@@ -674,7 +726,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   {itin.showZmanim ? "Zmanim on" : "Show zmanim"}
                 </button>
               )}
-              <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+              <span className="relative grid h-14 w-[14rem] grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(16, 47, 53,.08)]">
                 <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${view === "calendar" ? "translate-x-full" : "translate-x-0"}`} />
                 <button type="button" onClick={() => setView("days")} aria-pressed={view === "days"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "days" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Day view</button>
                 <button type="button" onClick={() => setView("calendar")} aria-pressed={view === "calendar"} className={`relative z-10 flex min-h-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors duration-300 ${view === "calendar" ? "text-white" : "text-stone-500 hover:text-[var(--navy)]"}`}>Calendar</button>
@@ -685,7 +737,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   rounded rectangle inside the pill track. Mirroring the toggle
                   above — an absolutely-inset span under a transparent link —
                   keeps the fill immune to that rule. */}
-              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
+              <span className="group relative inline-flex h-14 items-center overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(16, 47, 53,.08)]">
                 <span aria-hidden="true" className="absolute inset-1.5 rounded-full bg-[var(--navy)] transition-colors group-hover:bg-[var(--gold)]" />
                 <Link href="/itinerary/print" target="_blank" className="relative z-10 inline-flex h-full items-center justify-center px-5 text-xs font-bold text-white">Print / PDF</Link>
               </span>
@@ -788,7 +840,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             />
           </div>
         </details>
-        <details className="group rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3]">
+        {!guest && <details className="group rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3]">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none">
             <span className="text-sm font-semibold text-[var(--navy)]">Share this itinerary</span>
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
@@ -798,7 +850,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             {/* Renders nothing at all unless this is a Business account. */}
             <SendToClientPanel />
           </div>
-        </details>
+        </details>}
         <details className="group rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3]">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:content-none">
             <span className="text-sm font-semibold text-[var(--navy)]">Rooms for this trip</span>
@@ -856,6 +908,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         />
       )}
     </div>
+    </GuestContext.Provider>
   );
 }
 
@@ -950,6 +1003,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
   /** Every distinct unit on the trip — see ItineraryBuilder's own comment. */
   units: Array<{ unitKey: string; label: string }>;
 }) {
+  const guest = useContext(GuestContext);
   const [adding, setAdding] = useState<"stop" | "hotel" | "flight" | null>(null);
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
   const [editingLodging, setEditingLodging] = useState(false);
@@ -1195,7 +1249,12 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
               <a href={placeDirectionsUrl(a.address, a.coordinates)} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Navigate →</a>
             )}
             {a.phone && <a href={`tel:${a.phone.replace(/[^\d+]/g, "")}`} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Call {a.phone}</a>}
-            {a.href && (a.href.startsWith("/") ? <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link> : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
+            {/* An internal (/-prefixed) href on a stop only ever came from the
+                kosher "Nearby" feature (a /cemeteries/[slug] link), which
+                307-redirects to the kosher domain — so on itineraries a stale or
+                imported one is suppressed rather than rendered as a Details link
+                that would break the app. External booking links are unaffected. */}
+            {a.href && (a.href.startsWith("/") ? (!itineraries && <Link href={a.href} className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Details →</Link>) : <a href={a.href} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--gold-light)] px-3 py-1.5 font-semibold text-[var(--navy)]">Open link →</a>)}
           </p>
         )}
         {a.notes && <p className="mt-3 break-words text-sm leading-6 text-stone-500">{a.notes}</p>}
@@ -1417,8 +1476,13 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
           <span className={`text-[11px] font-bold uppercase tracking-[0.1em] ${hasFreeTime ? "text-[var(--gold-ink)]" : "text-stone-400"}`}>
             {hasFreeTime ? `Free time — about ${day.freeHours} h` : "Free time"}
           </span>
-          {canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Nearby</button>}
-          <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Getting ideas…" : "Ideas for free time"}</button>
+          {/* "Nearby" surfaces only cemeteries/kevarim (lib/nearby.ts), and each
+              suggestion links to /cemeteries/[slug] — a guide-only path that
+              307-redirects to the kosher domain and breaks the installed
+              itineraries app. So it is a kosher-brand feature: hidden here, the
+              same as the kosher-food-near-this-day block below. */}
+          {DIRECTORY_SEARCH_IS_PUBLIC && !itineraries && canSuggest && <button type="button" onClick={showNearby} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]">Nearby</button>}
+          {!guest && <button type="button" onClick={askAi} disabled={loadingAi} className="border border-[var(--gold-light)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)] disabled:opacity-60">{loadingAi ? "Getting ideas…" : "Ideas for free time"}</button>}
         </div>
       )}
       {nearby && (
@@ -1477,7 +1541,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
           </div>
         </div>
       )}
-      {!itineraries && anchor?.coordinates && (
+      {DIRECTORY_SEARCH_IS_PUBLIC && !itineraries && anchor?.coordinates && (
         <details className="group/food mt-4 rounded-xl border border-[var(--gold-light)] bg-white">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-[var(--navy)] marker:content-none">
             Kosher food near this day
@@ -1605,6 +1669,7 @@ function FlightForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
   onRemove?: () => void;
   onCancel?: () => void;
 }) {
+  const guest = useContext(GuestContext);
   const [draftId] = useState(uid);
   const [f, setF] = useState<Partial<ItinFlight>>(initial ?? { date: startDate });
   const [lookupNo, setLookupNo] = useState("");
@@ -1785,6 +1850,7 @@ function FlightForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
       onCancel={onCancel}
       onSubmit={submitFlight}
     >
+      {!guest && (
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#FAF8F3] p-3">
         <span className={caption}>Auto-fill from a flight number</span>
         <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -1794,6 +1860,7 @@ function FlightForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
         </div>
         {status && <p className="mt-2 text-xs text-[var(--navy)]">{status}</p>}
       </div>
+      )}
       {/* allowGroups={false} — a booked flight lands at one specific airport,
           never "all airports in the city", which is a search-time idea. */}
       <Field label="From *"><AirportAutocomplete required allowGroups={false} value={f.from ?? ""} onChange={(v) => updateFlight({ from: v })} className={inputClass} placeholder="City or airport — e.g. New York, JFK" /></Field>
@@ -1935,6 +2002,7 @@ function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
   onRemove?: () => void;
   onCancel?: () => void;
 }) {
+  const guest = useContext(GuestContext);
   const [draftId] = useState(uid);
   const [l, setL] = useState<Partial<ItinLodging>>(initial ?? { type: "hotel", checkIn: startDate });
   const overnight = l.type === "overnight-transit";
@@ -1985,11 +2053,17 @@ function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
         }
       }}
     >
-      {!overnight && (
+      {!overnight && !guest && (
         <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#FAF8F3] p-3">
-          <span className={caption}>Pick from our listed lodging</span>
-          <LodgingPicker onPick={pickLodging} />
-          <span className={`${caption} mt-3 block`}>…or search any hotel</span>
+          {/* Our own listed lodging is private to the owner now (lib/public-access.ts);
+              the Google hotel search below is open to everyone. */}
+          {DIRECTORY_SEARCH_IS_PUBLIC && (
+            <>
+              <span className={caption}>Pick from our listed lodging</span>
+              <LodgingPicker onPick={pickLodging} />
+            </>
+          )}
+          <span className={`${caption} ${DIRECTORY_SEARCH_IS_PUBLIC ? "mt-3 " : ""}block`}>{DIRECTORY_SEARCH_IS_PUBLIC ? "…or search any hotel" : "Search any hotel"}</span>
           <HotelPlacePicker onPick={pickPlace} />
           <p className="mt-2 text-[11px] text-stone-500">Confirm rates and availability directly, or type your own below.</p>
         </div>
@@ -2180,6 +2254,10 @@ function ActivityForm({ startDate, units, onAdd, itineraries = false }: {
 
   return (
     <FormShell title="Add an activity / stop" onSubmit={() => { if (a.name) return onAdd({ id: draftId, name: a.name, yiddishName: a.yiddishName, address: a.address, coordinates: a.coordinates, date: a.date ?? "", startTime: a.startTime, durationMins: a.durationMins, href: a.href, phone: a.phone, keverSlug: a.keverSlug, country: a.country, notes: a.notes, bookedOnSite: false, unitKey: a.unitKey || undefined }); }}>
+      {/* Searching our own listings is private to the owner now
+          (lib/public-access.ts). A traveller types the name and picks the
+          address from Google's suggestions below. */}
+      {DIRECTORY_SEARCH_IS_PUBLIC && (
       <div className="sm:col-span-2 lg:col-span-3 rounded-md border border-[var(--gold-light)] bg-[#FAF8F3] p-3">
         {!itineraries && (
           <>
@@ -2193,6 +2271,7 @@ function ActivityForm({ startDate, units, onAdd, itineraries = false }: {
         <AttractionPicker onPick={pickAttraction} itineraries={itineraries} />
         {a.keverSlug && <p className="mt-2 text-xs font-semibold text-emerald-700">Filled from our directory: {a.name}.</p>}
       </div>
+      )}
       <Field label="Name *"><input required className={inputClass} value={a.name ?? ""} onChange={(e) => setA({ ...a, name: e.target.value })} placeholder={itineraries ? "Museum, meal, activity…" : "Kever, museum, meal…"} /></Field>
       <Field label="Address"><AddressAutocomplete value={a.address ?? ""} onChange={(address, coords) => setA({ ...a, address, coordinates: coords || a.coordinates })} className={inputClass} placeholder="Start typing the address…" /></Field>
       <Field label="Coordinates"><input className={inputClass} value={a.coordinates ?? ""} placeholder="Auto-filled from the address" onChange={(e) => setA({ ...a, coordinates: e.target.value })} /></Field>

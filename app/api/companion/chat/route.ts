@@ -1,6 +1,14 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData, resolveCompanionShare } from "@/lib/account-store";
+import {
+  accountCookieName,
+  getCurrentAccountData,
+  getSharedTraveler,
+  readAccountPushSubscriptions,
+  removeAccountPushSubscription,
+  resolveCompanionShare,
+} from "@/lib/account-store";
+import { sendPushToSubscriptions } from "@/lib/push-notify";
 import {
   MAX_CHAT_LABEL,
   MAX_CHAT_TEXT,
@@ -8,17 +16,24 @@ import {
   chatStoreAvailable,
   deleteMessage,
   editMessageText,
+  isKnownChannel,
   isTyping,
   markRead,
+  normalizeChannelId,
   quoteFor,
+  reactMessage,
   readChat,
   readMarkers,
-  setPinned,
   setTyping,
+  votePoll,
+  MIN_POLL_OPTIONS,
+  MAX_POLL_OPTIONS,
+  MAX_POLL_OPTION,
   type CompanionChatSide,
 } from "@/lib/companion-chat-store";
 import {
   audioUploadsAvailable,
+  docUploadLimit,
   effectiveMediaLimit,
   MAX_CHAT_AUDIO_BYTES,
   MAX_CHAT_VIDEO_BYTES,
@@ -28,23 +43,28 @@ import {
 } from "@/lib/media";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { getPlan } from "@/lib/account-plan-store";
+import { parseChatDataUrl } from "@/lib/chat-media";
 import { identityKey } from "@/lib/identity";
 import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 
-// A picture in a chat is a photograph, not a document — the three the phone's
-// camera and gallery produce, and nothing else the media store also happens to
-// accept (PDFs, GIFs).
+// A picture in a chat is a photograph — the three the phone's camera and
+// gallery produce.
 const CHAT_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 // A video is a short clip, not any container a phone might produce.
 const CHAT_VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm"]);
 // A voice note, recorded in the browser — the two containers MediaRecorder
 // actually produces across Safari and everywhere else.
 const CHAT_AUDIO_TYPES = new Set(["audio/webm", "audio/mp4", "audio/mpeg", "audio/ogg"]);
+// A document, so an advisor can hand a client the one file the wallet cannot
+// reach them with — a booking confirmation, a ticket. PDF only: it is the one
+// format that opens the same on every phone, and the media store already
+// accepts it (lib/media.ts ALLOWED_TYPES).
+const CHAT_DOC_TYPES = new Set(["application/pdf"]);
 
-type ChatMediaKind = "image" | "video" | "audio";
+type ChatMediaKind = "image" | "video" | "audio" | "file";
 
 /** What a content type is, its limit, its rate key, and whether the store can
  * take it — one table instead of three parallel if/else ladders. */
@@ -52,11 +72,16 @@ function mediaKindFor(contentType: string): { kind: ChatMediaKind; limit: number
   if (CHAT_IMAGE_TYPES.has(contentType)) return { kind: "image", limit: effectiveMediaLimit(), available: mediaStoreAvailable };
   if (CHAT_VIDEO_TYPES.has(contentType)) return { kind: "video", limit: MAX_CHAT_VIDEO_BYTES, available: videoUploadsAvailable };
   if (CHAT_AUDIO_TYPES.has(contentType)) return { kind: "audio", limit: MAX_CHAT_AUDIO_BYTES, available: audioUploadsAvailable };
+  // A PDF stores like a picture — base64 in the same store — but a document is
+  // not a portrait: it gets its own, roomier cap (docUploadLimit), honoured
+  // where the disk is and falling back to the small Redis ceiling where it is
+  // not. This is what lets a real booking confirmation through.
+  if (CHAT_DOC_TYPES.has(contentType)) return { kind: "file", limit: docUploadLimit(), available: mediaStoreAvailable };
   return null;
 }
 
-const RATE_LIMIT_FOR: Record<ChatMediaKind, number> = { image: 20, video: 8, audio: 15 };
-const NOUN_FOR: Record<ChatMediaKind, string> = { image: "picture", video: "video", audio: "voice note" };
+const RATE_LIMIT_FOR: Record<ChatMediaKind, number> = { image: 20, video: 8, audio: 15, file: 20 };
+const NOUN_FOR: Record<ChatMediaKind, string> = { image: "picture", video: "video", audio: "voice note", file: "document" };
 
 /**
  * The chat on one trip, between the client on the app link and the advisor.
@@ -73,7 +98,9 @@ const NOUN_FOR: Record<ChatMediaKind, string> = { image: "picture", video: "vide
  * `shareId` the caller sent stays exactly what it was, never upgraded or
  * echoed back as something more powerful than it is.
  */
-async function sideFor(shareId: string): Promise<{ owner: string; side: CompanionChatSide; chatKey: string } | null> {
+async function sideFor(
+  shareId: string,
+): Promise<{ owner: string; side: CompanionChatSide; chatKey: string; traveler?: { id: string; name?: string } } | null> {
   const resolved = await resolveCompanionShare(shareId);
   if (!resolved) return null;
   const { ownerEmail: owner, chatKey } = resolved;
@@ -87,7 +114,17 @@ async function sideFor(shareId: string): Promise<{ owner: string; side: Companio
   const account = await getCurrentAccountData(cookie);
   const side: CompanionChatSide =
     account?.email && identityKey(account.email) === identityKey(owner) ? "advisor" : "client";
-  return { owner, side, chatKey };
+  // WHICH traveller, when the client came in by their own per-traveler link.
+  // Detected without a second read for the common cases: a whole-trip token has
+  // chatKey === shareId, and the advisor never has a traveller identity — only a
+  // client on a /t/ token (chatKey differs) does, and only then is the traveller
+  // record read. This is what lets messages and votes carry a name.
+  let traveler: { id: string; name?: string } | undefined;
+  if (side === "client" && chatKey !== shareId) {
+    const t = await getSharedTraveler(shareId).catch(() => null);
+    if (t?.traveler) traveler = { id: t.traveler.id, name: t.traveler.name?.trim() || undefined };
+  }
+  return { owner, side, chatKey, traveler };
 }
 
 const otherSideOf = (side: CompanionChatSide): CompanionChatSide => (side === "advisor" ? "client" : "advisor");
@@ -97,7 +134,13 @@ export async function GET(request: NextRequest) {
   if (!shareId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
-  const messages = await readChat(who.chatKey);
+  // Which channel of this trip's conversation — General unless a real one is
+  // asked for. A made-up id is never addressed: it must be one this trip has.
+  const channel = normalizeChannelId(request.nextUrl.searchParams.get("channel"));
+  if (!(await isKnownChannel(who.chatKey, channel))) {
+    return NextResponse.json({ error: "That channel doesn't exist on this trip." }, { status: 404 });
+  }
+  const messages = await readChat(who.chatKey, channel);
   // Loading the thread IS reading it — there is no separate "mark as read"
   // action, the same as a phone's messaging app. The other side sees this as
   // soon as their own next poll picks the marker up. The one exception is a
@@ -107,20 +150,26 @@ export async function GET(request: NextRequest) {
   const peek = request.nextUrl.searchParams.get("peek") === "1";
   if (!peek) {
     const latest = messages[messages.length - 1];
-    if (latest) await markRead(who.chatKey, who.side, latest.at);
+    if (latest) await markRead(who.chatKey, who.side, latest.at, channel);
   }
   return NextResponse.json({
     messages,
     side: who.side,
+    // The caller's own poll-vote key, so the app can mark which option is theirs
+    // — the advisor's is fixed, a named traveller's is their traveller id, and a
+    // whole-trip client has none here and falls back to its own device id.
+    voterKey: who.side === "advisor" ? "advisor" : who.traveler ? `t:${who.traveler.id}` : undefined,
     available: chatStoreAvailable(),
-    readMarkers: await readMarkers(who.chatKey),
+    readMarkers: await readMarkers(who.chatKey, channel),
     // Whether the OTHER side has typed within the last few seconds — never
     // my own, which the composer already knows without asking the server.
-    typing: await isTyping(who.chatKey, otherSideOf(who.side)),
+    typing: await isTyping(who.chatKey, otherSideOf(who.side), channel),
     // The server's real, deploy-specific picture size limit — see
     // effectiveMediaLimit() in lib/media.ts. Read fresh so the composer's
     // own cap never drifts from what the server will actually accept.
     imageLimit: effectiveMediaLimit(),
+    // And the document cap, which is roomier than a picture where the disk is.
+    docLimit: docUploadLimit(),
   });
 }
 
@@ -128,27 +177,20 @@ export async function PATCH(request: NextRequest) {
   if (!sameOrigin(request)) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
-  const body = (await request.json().catch(() => null)) as { share?: string; at?: string; text?: string; pinned?: boolean } | null;
+  const body = (await request.json().catch(() => null)) as { share?: string; at?: string; text?: string; channel?: string } | null;
   const shareId = body?.share?.trim();
   const at = body?.at?.trim();
-  if (!shareId || !at) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
+  const text = body?.text?.trim();
+  if (!shareId || !at || !text) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
   if (!chatStoreAvailable()) {
     return NextResponse.json({ error: "Messaging needs the private store connected." }, { status: 503 });
   }
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
-
-  // Pinning, not editing — a message worth keeping easy to find, marked by
-  // either side, not only whoever sent it. Kept out of the edit path (and
-  // its rate limit) below: pinning changes nothing about the words.
-  if (typeof body?.pinned === "boolean") {
-    const messages = await setPinned(who.chatKey, at, body.pinned);
-    if (!messages) return NextResponse.json({ error: "That message can't be pinned." }, { status: 404 });
-    return NextResponse.json({ messages, side: who.side });
+  const channel = normalizeChannelId(body?.channel);
+  if (!(await isKnownChannel(who.chatKey, channel))) {
+    return NextResponse.json({ error: "That channel doesn't exist on this trip." }, { status: 404 });
   }
-
-  const text = body?.text?.trim();
-  if (!text) return NextResponse.json({ error: "Nothing to change." }, { status: 400 });
 
   const limited = await rateLimit(`companion-edit:${who.chatKey}`, { limit: 30, windowSeconds: 3600 });
   if (!limited.ok) {
@@ -157,7 +199,7 @@ export async function PATCH(request: NextRequest) {
 
   // editMessageText itself re-checks who sent the original — `by` here is
   // only ever this request's own verified side, never anything the body says.
-  const messages = await editMessageText(who.chatKey, at, who.side, text.slice(0, MAX_CHAT_TEXT));
+  const messages = await editMessageText(who.chatKey, at, who.side, text.slice(0, MAX_CHAT_TEXT), channel);
   if (!messages) return NextResponse.json({ error: "That message can't be changed." }, { status: 404 });
   return NextResponse.json({ messages, side: who.side });
 }
@@ -166,7 +208,7 @@ export async function DELETE(request: NextRequest) {
   if (!sameOrigin(request)) {
     return NextResponse.json({ error: "That request did not come from this site." }, { status: 403 });
   }
-  const body = (await request.json().catch(() => null)) as { share?: string; at?: string } | null;
+  const body = (await request.json().catch(() => null)) as { share?: string; at?: string; channel?: string } | null;
   const shareId = body?.share?.trim();
   const at = body?.at?.trim();
   if (!shareId || !at) return NextResponse.json({ error: "Which message?" }, { status: 400 });
@@ -175,8 +217,12 @@ export async function DELETE(request: NextRequest) {
   }
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+  const channel = normalizeChannelId(body?.channel);
+  if (!(await isKnownChannel(who.chatKey, channel))) {
+    return NextResponse.json({ error: "That channel doesn't exist on this trip." }, { status: 404 });
+  }
 
-  const messages = await deleteMessage(who.chatKey, at, who.side);
+  const messages = await deleteMessage(who.chatKey, at, who.side, channel);
   if (!messages) return NextResponse.json({ error: "That message can't be deleted." }, { status: 404 });
   return NextResponse.json({ messages, side: who.side });
 }
@@ -188,6 +234,7 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as
     | {
         share?: string;
+        channel?: string;
         text?: string;
         dataUrl?: string;
         lat?: number;
@@ -197,7 +244,12 @@ export async function POST(request: NextRequest) {
         replyToAt?: string;
         typing?: boolean;
         itineraryRef?: string;
-        announcement?: boolean;
+        reactAt?: string;
+        reaction?: string;
+        poll?: { question?: string; options?: string[]; secret?: boolean };
+        pollVoteAt?: string;
+        pollOption?: number;
+        voterId?: string;
       }
     | null;
   const shareId = body?.share?.trim();
@@ -210,20 +262,122 @@ export async function POST(request: NextRequest) {
   // only be added to a thread by somebody who genuinely holds that trip's link.
   const who = await sideFor(shareId);
   if (!who) return NextResponse.json({ error: "That link is not active." }, { status: 404 });
+  // Which channel this message lands in — General unless a real one is named.
+  // Both sides may write to any channel the trip has; only creating channels is
+  // advisor-only (that is the channels route). A made-up id is refused here.
+  const channel = normalizeChannelId(body?.channel);
+  if (!(await isKnownChannel(who.chatKey, channel))) {
+    return NextResponse.json({ error: "That channel doesn't exist on this trip." }, { status: 404 });
+  }
+
+  // WHO, by name, is writing — resolved from the LINK (in sideFor), never the
+  // body. Only a client on their own per-traveler link (/t/…) has a name; a
+  // whole-trip link and the advisor do not. This is what the advisor (and the
+  // family) read to tell one traveller's messages from another's.
+  const sender = who.traveler ?? null;
+  const senderFields = sender ? { senderId: sender.id, senderName: sender.name } : {};
+
+  // When the CLIENT writes, tell the advisor on their phone — best-effort, and
+  // only if they turned notifications on (their devices live on the account,
+  // /api/account/push). Never the other way: the client's own alerts are the
+  // per-trip subscription. Fire-and-forget so it never holds up the reply.
+  const notifyAdvisor = (summary: string) => {
+    if (who.side !== "client") return;
+    void (async () => {
+      try {
+        const subs = await readAccountPushSubscriptions(who.owner);
+        if (!subs.length) return;
+        const result = await sendPushToSubscriptions(subs, {
+          title: sender?.name ? `New message from ${sender.name}` : "New message from a client",
+          body: summary.slice(0, 140) || "You have a new message.",
+          url: "/advisor",
+        });
+        for (const endpoint of result.expired) await removeAccountPushSubscription(who.owner, endpoint);
+      } catch {
+        /* a failed push is never a failed send */
+      }
+    })();
+  };
 
   // "I am typing" — a courtesy signal, not a message. No rate limit: it is
   // one cheap Redis SET, the composer already throttles how often it sends
   // one, and the same-origin and plan checks above are the fence that matters.
   if (body?.typing === true) {
-    await setTyping(who.chatKey, who.side);
+    await setTyping(who.chatKey, who.side, channel);
     return NextResponse.json({ ok: true });
+  }
+
+  // A reaction toggles this side's emoji on one existing message — its own
+  // quick action, handled before the message-building below since it changes a
+  // message rather than adding one. reactMessage rejects anything but a known
+  // emoji, so a made-up body can never store arbitrary text as a "reaction".
+  if (typeof body?.reactAt === "string" && body.reactAt && typeof body?.reaction === "string") {
+    const limited = await rateLimit(`companion-react:${who.chatKey}`, { limit: 90, windowSeconds: 3600 });
+    if (!limited.ok) {
+      return NextResponse.json({ error: "That is a lot of reactions at once — try again shortly." }, { status: 429 });
+    }
+    const messages = await reactMessage(who.chatKey, body.reactAt, who.side, body.reaction, channel);
+    if (!messages) return NextResponse.json({ error: "That reaction couldn’t be saved." }, { status: 400 });
+    return NextResponse.json({ messages });
+  }
+
+  // A vote on a poll. The advisor votes as the fixed id "advisor"; a traveller
+  // votes under their own device id (prefixed so it can never collide with the
+  // advisor's), so several family members on the one link each count once.
+  if (typeof body?.pollVoteAt === "string" && body.pollVoteAt && typeof body?.pollOption === "number") {
+    const limited = await rateLimit(`companion-vote:${who.chatKey}`, { limit: 120, windowSeconds: 3600 });
+    if (!limited.ok) {
+      return NextResponse.json({ error: "That is a lot of votes at once — try again shortly." }, { status: 429 });
+    }
+    // A voter's id: the advisor is the fixed "advisor"; a traveller on their
+    // own link votes under their traveller id (so they count once across
+    // devices and their name can be shown), and a whole-trip link holder falls
+    // back to their device id, prefixed so it can never collide with either.
+    const voterId =
+      who.side === "advisor"
+        ? "advisor"
+        : sender
+          ? `t:${sender.id}`
+          : `c:${(typeof body.voterId === "string" ? body.voterId : "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40) || "anon"}`;
+    const messages = await votePoll(who.chatKey, body.pollVoteAt, voterId, body.pollOption, channel, sender?.name);
+    if (!messages) return NextResponse.json({ error: "That vote couldn’t be saved." }, { status: 400 });
+    return NextResponse.json({ messages });
+  }
+
+  // A new poll — a question and its options, asked of everyone in the thread.
+  if (body?.poll && typeof body.poll === "object") {
+    const question = typeof body.poll.question === "string" ? body.poll.question.trim() : "";
+    const options = Array.isArray(body.poll.options)
+      ? body.poll.options
+          .filter((o): o is string => typeof o === "string" && o.trim().length > 0)
+          .map((o) => o.trim().slice(0, MAX_POLL_OPTION))
+          .slice(0, MAX_POLL_OPTIONS)
+      : [];
+    if (!question || options.length < MIN_POLL_OPTIONS) {
+      return NextResponse.json({ error: `A poll needs a question and at least ${MIN_POLL_OPTIONS} options.` }, { status: 400 });
+    }
+    const limited = await rateLimit(`companion-poll:${who.chatKey}`, { limit: 20, windowSeconds: 3600 });
+    if (!limited.ok) {
+      return NextResponse.json({ error: "That is a lot of polls at once — try again shortly." }, { status: 429 });
+    }
+    const secret = body.poll.secret === true;
+    const messages = await appendChat(who.chatKey, {
+      from: who.side,
+      kind: "poll",
+      text: question.slice(0, MAX_CHAT_LABEL),
+      poll: { question: question.slice(0, MAX_CHAT_LABEL), options, secret: secret || undefined },
+      at: new Date().toISOString(),
+      ...senderFields,
+    }, channel);
+    notifyAdvisor(`Poll: ${question}`);
+    return NextResponse.json({ messages, side: who.side });
   }
 
   // A reply quotes a real message in THIS thread — looked up and re-built
   // server-side (quoteFor), never taken as whatever text the client sent
   // alongside replyToAt. A stale or made-up `at` just means the message goes
   // out as an ordinary one rather than failing the whole send over it.
-  const replyTo = typeof body?.replyToAt === "string" && body.replyToAt ? await quoteFor(who.chatKey, body.replyToAt) : undefined;
+  const replyTo = typeof body?.replyToAt === "string" && body.replyToAt ? await quoteFor(who.chatKey, body.replyToAt, channel) : undefined;
 
   // "Ask about this day" / "Ask to move this" — a short label naming the
   // itinerary item the thread was opened from, carried on the one message it
@@ -239,14 +393,15 @@ export async function POST(request: NextRequest) {
   // data URL's own declared type, never from a separate field the caller
   // could mismatch.
   if (typeof body?.dataUrl === "string" && body.dataUrl) {
-    const match = /^data:([\w/+.-]+);base64,([A-Za-z0-9+/=]+)$/.exec(body.dataUrl);
-    if (!match) return NextResponse.json({ error: "Share a photo, a video or a voice note." }, { status: 400 });
-    const contentType = match[1];
-    const base64 = match[2];
+    // parseChatDataUrl tolerates a codec parameter (audio/webm;codecs=opus) and
+    // returns the base content type — see lib/chat-media.ts, tested there.
+    const parsed = parseChatDataUrl(body.dataUrl);
+    if (!parsed) return NextResponse.json({ error: "Share a photo, a video, a voice note or a PDF." }, { status: 400 });
+    const { contentType, base64 } = parsed;
     const media = mediaKindFor(contentType);
     if (!media) {
       return NextResponse.json(
-        { error: "Use a JPG, PNG or WEBP picture, an MP4, MOV or WEBM video, or a recorded voice note." },
+        { error: "Use a JPG, PNG or WEBP picture, an MP4, MOV or WEBM video, a recorded voice note, or a PDF document." },
         { status: 400 },
       );
     }
@@ -279,7 +434,9 @@ export async function POST(request: NextRequest) {
       at: new Date().toISOString(),
       replyTo,
       itineraryRef,
-    });
+      ...senderFields,
+    }, channel);
+    notifyAdvisor(`Sent a ${NOUN_FOR[media.kind]}`);
     return NextResponse.json({ messages, side: who.side });
   }
 
@@ -297,7 +454,9 @@ export async function POST(request: NextRequest) {
       at: new Date().toISOString(),
       replyTo,
       itineraryRef,
-    });
+      ...senderFields,
+    }, channel);
+    notifyAdvisor("Shared a location");
     return NextResponse.json({ messages, side: who.side });
   }
 
@@ -313,7 +472,9 @@ export async function POST(request: NextRequest) {
       at: new Date().toISOString(),
       replyTo,
       itineraryRef,
-    });
+      ...senderFields,
+    }, channel);
+    notifyAdvisor("Shared a location");
     return NextResponse.json({ messages, side: who.side });
   }
 
@@ -327,11 +488,8 @@ export async function POST(request: NextRequest) {
     at: new Date().toISOString(),
     replyTo,
     itineraryRef,
-    // A broadcast to the trip, never a client's — read from the request,
-    // this is the one field decided by who is actually sending, not by
-    // what the body claims, the same fence every other side check here
-    // already keeps.
-    ...(body?.announcement === true && who.side === "advisor" ? { announcement: true } : {}),
-  });
+    ...senderFields,
+  }, channel);
+  notifyAdvisor(text);
   return NextResponse.json({ messages, side: who.side });
 }

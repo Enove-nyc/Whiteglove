@@ -59,7 +59,7 @@ export default function TravelExtras({
               href={extra.url}
               target="_blank"
               rel="noreferrer sponsored"
-              className="flex flex-col justify-between rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_8px_24px_rgba(23,45,82,.05)] transition hover:border-[var(--gold)] hover:shadow-[0_14px_34px_rgba(23,45,82,.09)]"
+              className="flex flex-col justify-between rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_8px_24px_rgba(16, 47, 53,.05)] transition hover:border-[var(--gold)] hover:shadow-[0_14px_34px_rgba(16, 47, 53,.09)]"
             >
               <div>
                 <h3 className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--navy)]">{extra.name}</h3>

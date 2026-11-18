@@ -1,18 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { forgetOfflineDocuments } from "@/lib/offline-documents";
 import { forgetSignedIn } from "@/lib/use-signed-in";
+import { forgetOfflineData } from "@/lib/offline-forget";
 
 export default function LogoutButton() {
   const router = useRouter();
 
   async function logout() {
     await fetch("/api/account/logout", { method: "POST" });
-    // Any boarding pass saved onto this device goes with the session.
-    await forgetOfflineDocuments();
     // The route buttons cache the answer for the life of the page.
     forgetSignedIn();
+    // Take the trip off this device with the session — the offline itinerary and
+    // the wallet's boarding passes must not outlive a sign-out on a shared or
+    // borrowed computer. See lib/offline-forget.ts.
+    await forgetOfflineData();
     router.push("/login");
     router.refresh();
   }

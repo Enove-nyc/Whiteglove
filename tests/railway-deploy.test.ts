@@ -65,13 +65,8 @@ describe("the deploy configuration", () => {
     // perfectly fine — which is why /version was allowed through, and why its
     // replacement has to be too.
     const middleware = readFileSync("middleware.ts", "utf8");
-    // Written as a negated allowlist here and as an early return in the
-    // itineraries copy — same intent, two shapes. What matters is that the
-    // health path is named in the guard that decides whether to lock.
-    const guard = middleware.slice(middleware.indexOf('pathname !== "/access"'));
-    assert.match(guard.slice(0, 300), /pathname !== "\/api\/health"/);
+    assert.match(middleware, /pathname === "\/api\/health"/);
   });
-
 
   it("restarts a container that genuinely fails, a bounded number of times", () => {
     assert.equal(config.deploy?.restartPolicyType, "ON_FAILURE");

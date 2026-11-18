@@ -13,6 +13,7 @@ import { LinkButton } from "@/components/ui/Button";
 import { Icon } from "@/components/icons/Icon";
 import { buildDays, emptyItinerary, formatKm, travelerSummary } from "@/data/itinerary";
 import { getSharedItineraryByShareId } from "@/lib/account-store";
+import { noteShareOpened } from "@/lib/share-open-recorder";
 import { allCrossings } from "@/lib/border-store";
 import { borderCostForLegs } from "@/lib/border-legs";
 import { readCollaborationSettings } from "@/lib/growth-settings-store";
@@ -57,6 +58,10 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
       </main>
     );
   }
+
+  // Somebody has opened the link. Recorded only when it is NOT the advisor
+  // (or their colleague) checking their own work — see noteShareOpened.
+  await noteShareOpened(shareId, shared.ownerEmail);
 
   const itin = { ...emptyItinerary(), ...shared.itinerary };
   // The same two things the planner reads. This page was reading neither, so

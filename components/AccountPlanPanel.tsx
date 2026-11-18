@@ -156,26 +156,33 @@ export default function AccountPlanPanel({
     if (!asking) return;
     setSending(true);
     setMessage(null);
-    const response = await fetch("/api/account/plan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wanted: asking, note }),
-    });
-    const data = await response.json().catch(() => null);
-    setSending(false);
-    if (!response.ok) {
-      setMessage({ ok: false, text: data?.error || "That could not be sent." });
-      return;
+    try {
+      const response = await fetch("/api/account/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wanted: asking, note }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        setMessage({ ok: false, text: data?.error || "That could not be sent." });
+        return;
+      }
+      setAsking(null);
+      setNote("");
+      setMessage({
+        ok: true,
+        text: notOpenYet
+          ? "Thank you — we have your name, and we will write to you the day it opens."
+          : "Thanks — your request has been sent. We will be in touch.",
+      });
+      router.refresh();
+    } catch {
+      // A dropped network never resolved response, so without this the button
+      // stayed stuck on "Sending…" forever — matching subscribe()/manage().
+      setMessage({ ok: false, text: "That could not be sent just now — check your connection and try again." });
+    } finally {
+      setSending(false);
     }
-    setAsking(null);
-    setNote("");
-    setMessage({
-      ok: true,
-      text: notOpenYet
-        ? "Thank you — we have your name, and we will write to you the day it opens."
-        : "Thanks — your request has been sent. We will be in touch.",
-    });
-    router.refresh();
   }
 
   return (
@@ -373,7 +380,7 @@ export default function AccountPlanPanel({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="plan-soon-title"
-                className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+                className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(16, 47, 53,.20)] sm:p-8"
               >
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">
                   {PLAN_LABELS[asking]}

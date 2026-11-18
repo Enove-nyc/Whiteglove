@@ -8,7 +8,6 @@ import SitePromotions from "@/components/SitePromotions";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
-import { forgetOfflineDocuments } from "@/lib/offline-documents";
 import { categoriesForBrand, categoryIsCurrent, isCurrent, itinerariesBookingCategoryFor, SIGN_IN, travelCategoryFor, type NavCategory } from "@/lib/navigation";
 import { useSiteBrand } from "@/components/useSiteBrand";
 import AccountMenu from "@/components/AccountMenu";
@@ -16,6 +15,7 @@ import { ACCOUNT_PLACES, advisorPlacesFor } from "@/lib/account-places";
 import type { AccountPlan } from "@/lib/account-plans";
 import { useOpenSignIn } from "@/components/SignInGate";
 import { signInHref, useViewer } from "@/lib/use-signed-in";
+import { forgetOfflineData } from "@/lib/offline-forget";
 import { useBookingLink } from "@/components/BookingLinkProvider";
 
 /**
@@ -36,7 +36,7 @@ import { useBookingLink } from "@/components/BookingLinkProvider";
  * tools) and sign-out in place and drops only the four public categories.
  */
 
-export default function Navbar({ brand: brandProp, minimal = false, bottomBar = true }: { brand?: "kosher" | "itineraries"; minimal?: boolean; bottomBar?: boolean } = {}) {
+export default function Navbar({ brand: brandProp, minimal = false, homeHref, bottomBar = true }: { brand?: "kosher" | "itineraries"; minimal?: boolean; homeHref?: string; /** Off on an app page: the app has its own bottom tabs, and a second fixed bar would sit on top of them. */ bottomBar?: boolean } = {}) {
   /**
    * WHICH BRAND THIS IS, DECIDED AS EARLY AS IT CAN BE.
    *
@@ -44,19 +44,29 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
    *
    *   1. What the page passed. A page that resolved the brand on the server
    *      knows better than anything here.
-   *   2. What this deployment was BUILT as — NEXT_PUBLIC_SITE_BRAND. The
-   *      itineraries domain has its own service, so it can be told once and be
-   *      right in the markup it sends.
+   *   2. What this deployment was BUILT as — NEXT_PUBLIC_SITE_BRAND. This
+   *      service answers one domain, so it can be told once and be right in
+   *      the markup it sends.
    *   3. The hostname, in the browser.
    *
-   * It used to be (3) alone, corrected after mount: the itineraries domain was
-   * served kosher branding and shown it changing, and anything reading the HTML
-   * — a search engine, a link preview — never saw it change at all. Setting the
-   * variable on that service removes the correction entirely; leaving it unset
-   * leaves the old behaviour exactly as it was.
+   * It used to be (3) alone, corrected after mount: a visitor here was served
+   * White Glove Kosher Travel and shown it change, and anything reading the
+   * HTML never saw it change at all. Setting the variable removes the
+   * correction; leaving it unset leaves the old behaviour exactly as it was.
+   *
+   * All of it lives in components/useSiteBrand.ts now, shared with the
+   * footer, together with the owner's Kosher Travel view (/site).
    */
   const brand = useSiteBrand(brandProp);
   const isItineraries = brand === "itineraries";
+  // Where the logo goes. On the marketing site it is the home page. Inside the
+  // itineraries app (minimal chrome) the home page is a marketing page the app
+  // must not reach, so the logo points back into the app instead — /app by
+  // default, or whatever home the page passes (an advisor page passes
+  // /advisor). Kosher's app is the whole site, so its logo stays the home page
+  // even in minimal chrome. The app has no address bar, so a logo that never
+  // links out to marketing is what keeps marketing unreachable.
+  const logoHref = homeHref ?? (minimal && isItineraries ? "/app" : "/");
   const openSignIn = useOpenSignIn();
   const [searchOpen, setSearchOpen] = useState(false);
   useEffect(() => {
@@ -153,6 +163,8 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
   // set only while Navbar is mounted, so /admin — which never renders this
   // component — is never affected.
   useEffect(() => {
+    // No bar, no room reserved for it — or an app page would carry a band of
+    // dead space under its own tabs.
     if (!bottomBar) return;
     document.body.classList.add("wg-has-mobile-bar");
     return () => document.body.classList.remove("wg-has-mobile-bar");
@@ -236,24 +248,41 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
 
   async function signOut() {
     await fetch("/api/account/logout", { method: "POST" }).catch(() => undefined);
-    // Any boarding pass saved onto this device goes with the session.
-    await forgetOfflineDocuments();
     setSignedIn(false);
+    // Take the trip off this device with the session — see lib/offline-forget.ts.
+    await forgetOfflineData().catch(() => undefined);
     router.push("/");
     router.refresh();
   }
 
   return (
     <>
+      {/* HIDDEN INSIDE THE INSTALLED APP, ON EVERY PAGE — baked in here rather
+          than left for each page to wrap in .wg-web-chrome itself. That was
+          the rule from 7 September (app/page.tsx, app/advisor/page.tsx) and it
+          only covered those two: every other page that renders this Navbar —
+          the account pages, the agency screen, payments, the pipeline, forms,
+          the plain website's own /itinerary and /login — still showed the
+          website's own header inside the app, because hiding it was an
+          opt-in a page had to remember. It is not optional any more: nobody
+          running the installed app should ever see this site's own header,
+          on any page, so the component hides itself rather than asking to be
+          asked. See the in-app rules in globals.css (.wg-web-chrome). */}
+      <div className="wg-web-chrome">
       <nav
         ref={navRef}
         aria-label="Main"
-        className={`wg-site-header relative sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[var(--header-background)] shadow-[0_1px_12px_rgba(23,45,82,.05)] backdrop-blur-md transition-[min-height] ${
+        className={`wg-site-header relative sticky top-0 z-[var(--wg-z-header)] border-b border-[var(--gold-light)] bg-[var(--header-background)] shadow-[0_1px_12px_rgba(16, 47, 53,.05)] backdrop-blur-md transition-[min-height] ${
           scrolled ? "min-h-16" : "min-h-20"
         }`}
       >
         <div className={`mx-auto flex max-w-7xl items-center gap-2 px-5 transition-[min-height] sm:px-8 ${scrolled ? "min-h-16" : "min-h-20"}`}>
-          <Link href="/" className="relative z-10 mr-2 flex min-h-11 shrink-0 items-center gap-2.5 sm:mr-4" aria-label={isItineraries ? "White Glove Itineraries home" : "White Glove Kosher Travel home"}>
+          {/* min-h-11 because it is a link, and the site's own name in the
+              header is one of the most-pressed things on any page. Without it
+              this measured 40px at every phone width and 36 at 320 — the
+              kosher repository has carried the minimum since its own tap-target
+              sweep and this copy never received it. */}
+          <Link href={logoHref} className="relative z-10 mr-2 flex min-h-11 shrink-0 items-center gap-2.5 sm:mr-4" aria-label={isItineraries ? "White Glove Itineraries home" : "White Glove Kosher Travel home"}>
             {/* The hand, drawn from the logo's alpha so its colour is CSS: navy
                 for everyone, gold for a paid member (see .header-glove). */}
             <span
@@ -267,7 +296,6 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
               <span className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-ink)]">{isItineraries ? "Itineraries" : "Kosher Travel"}</span>
             </span>
           </Link>
-
 
           {/* The four dropdowns. Hidden below lg (~1024px), where the hamburger
               carries the same categories as an accordion. */}
@@ -314,7 +342,7 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
                       role="menu"
                       onMouseEnter={stayOpen}
                       onMouseLeave={closeOnHoverOut}
-                      className={`absolute left-0 top-full z-20 mt-1 rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(23,45,82,.15)] ${
+                      className={`absolute left-0 top-full z-20 mt-1 rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(16, 47, 53,.15)] ${
                         category.groups ? "grid w-[26rem] grid-cols-2 gap-x-6 p-4" : "min-w-48 py-2"
                       }`}
                     >
@@ -442,7 +470,7 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
         )}
 
         {mobileOpen && (
-          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-20 max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(23,45,82,.15)] lg:hidden">
+          <div id="mobile-menu" className="absolute left-0 right-0 top-full z-20 max-h-[calc(100vh-4rem)] w-full overflow-y-auto border-b border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_18px_40px_rgba(16, 47, 53,.15)] lg:hidden">
             <ul className="divide-y divide-[var(--gold-light)]/60 px-5 sm:px-8">
               {categories.map((category) => {
                 const key = category.label;
@@ -506,10 +534,8 @@ export default function Navbar({ brand: brandProp, minimal = false, bottomBar = 
         )}
       </nav>
       <SitePromotions />
-      {bottomBar && <MobileBottomBar signedIn={signedIn} />}
+      </div>
+      {bottomBar && <MobileBottomBar signedIn={signedIn} brand={brand} />}
     </>
   );
 }
-
-
-

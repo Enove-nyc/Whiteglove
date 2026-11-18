@@ -7,6 +7,7 @@ import { useState } from "react";
 import AdminSearch from "@/components/AdminSearch";
 import AdminTrail from "@/components/AdminTrail";
 import { ADMIN_SECTIONS, activeSection, adminHref, toAdminPath } from "@/lib/admin-nav";
+import { KOSHER_SITE_PREFIX } from "@/lib/kosher-site-archive";
 import { type AdminArea, canOpen } from "@/lib/admin-permissions";
 
 /**
@@ -143,6 +144,15 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
 
           <AdminSearch areas={areas} pathname={pathname} />
 
+          {/* The whole closed Kosher Travel site, for the owner only — served
+              under /site on this host (lib/kosher-site-archive.ts). A plain
+              link, not next/link, so the middleware serves it as Kosher Travel. */}
+          <a
+            href={KOSHER_SITE_PREFIX}
+            className="inline-flex min-h-11 items-center whitespace-nowrap rounded-md border border-[var(--navy)] px-3 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--gold)] hover:text-white"
+          >
+            Kosher Travel site
+          </a>
           <a
             href={CANONICAL_ORIGIN}
             className="hidden text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4 sm:inline"
@@ -181,6 +191,12 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
       >
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-stone-500 sm:px-6">
           <span className="font-semibold uppercase tracking-[0.12em] text-[var(--gold-ink)]">White Glove admin</span>
+          <a
+            href={KOSHER_SITE_PREFIX}
+            className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+          >
+            Kosher Travel site
+          </a>
           <a
             href={CANONICAL_ORIGIN}
             className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"

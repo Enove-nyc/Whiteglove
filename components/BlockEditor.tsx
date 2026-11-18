@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { resetPageAction, savePageAction, type ActionResult } from "@/app/admin/pages/actions";
 import { useOnActionSuccess } from "@/components/useOnActionSuccess";
+import { resetPageAction, savePageAction, type ActionResult } from "@/app/admin/pages/actions";
 import PageBlocks from "@/components/PageBlocks";
 import {
   BLOCK_LABELS,

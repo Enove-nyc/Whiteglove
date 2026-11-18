@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { pipelineStats, TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
-import { formatCents } from "@/data/trip-payments";
-import { clientKey } from "@/data/clients";
 import { actionForReminder, GROUP_LABEL, GROUP_ORDER, groupForReminder, type AttentionGroup } from "@/lib/needs-attention";
 import type { TripReminder } from "@/data/trip-reminders";
+import { useRouter } from "next/navigation";
+import { pipelineStats, TRIP_STAGE_LABEL, TRIP_STAGE_ORDER, type TripStage } from "@/data/trip-pipeline";
+import { ShareOpenStatus } from "@/components/ShareOpenStatus";
+import InquiriesPanel from "@/components/InquiriesPanel";
+import type { OpenStatus } from "@/lib/share-opens";
+import { formatCents } from "@/data/trip-payments";
 import { useDeviceClock } from "@/components/TripProgressStrip";
 import { followAlong, tripProgress, type FollowStop } from "@/lib/trip-progress";
 
@@ -22,13 +24,15 @@ type Row = {
   endDate: string;
   stage: TripStage;
   needsAttention: boolean;
+  reminders: TripReminder[];
   shareId?: string;
   unread: boolean;
+  /** Whether the client has opened the trip link, and when. Only when shared. */
+  openStatus?: OpenStatus;
+  updatedAt: string;
   /** What this trip still owes, when a balance has actually been set up. */
   outstandingCents?: number;
   currency?: string;
-  reminders: TripReminder[];
-  updatedAt: string;
   /** Only present for a trip in the "traveling" stage — see travelDaysFor server-side. */
   travelDays?: TravelDay[];
   /** What the advisor recorded earning on this trip — Advisor Pro only. */
@@ -36,16 +40,16 @@ type Row = {
   commissionCurrency?: string;
 };
 
-type View = "needs_attention" | "board" | "upcoming" | "traveling";
+type View = "needs_attention" | "inquiries" | "board" | "upcoming" | "traveling";
 
 /**
- * FOUR OF THE OLD EIGHT MEANT THE SAME THING.
+ * FOUR OF THE OLD SIX MEANT THE SAME THING.
  *
- * "Changes requiring attention", "Unread messages", "Payment due" and "Needs a
- * nudge" are four ways of asking what needs the advisor, and the screen led
- * with none of them — it opened on Board, every trip they have. So the first
- * question anybody opens this with was answered in four places, and being sure
- * meant checking all four.
+ * "Changes requiring attention" and "Unread messages" are two ways of asking
+ * what needs the advisor, the reminders on every card are a third, and money
+ * outstanding a fourth — and the screen led with none of them: it opened on
+ * Board, every trip they have. So the first question anybody opens this with
+ * was answered in four places, and being sure meant checking all four.
  *
  * One view answers it now, and it opens on it. The three that remain are for
  * browsing rather than working: the whole board, what is coming, who is away
@@ -54,6 +58,10 @@ type View = "needs_attention" | "board" | "upcoming" | "traveling";
  */
 const VIEWS: Array<{ id: View; label: string }> = [
   { id: "needs_attention", label: "Needs attention" },
+  // The calls that are not trips yet — see components/InquiriesPanel.tsx.
+  // A view here rather than a page of its own, so the pipeline stays the one
+  // place an advisor checks.
+  { id: "inquiries", label: "Enquiries" },
   { id: "board", label: "Board" },
   { id: "upcoming", label: "Upcoming" },
   { id: "traveling", label: "Currently traveling" },
@@ -78,7 +86,7 @@ function rowGroups(row: Row, today: string): Set<AttentionGroup> {
   return groups;
 }
 
-/** Whether `to` is within `days` of `to`'s own start, on YYYY-MM-DD strings. */
+/** Whether `to` is within `days` of `from`, on YYYY-MM-DD strings. */
 function withinDays(from: string, to: string, days: number): boolean {
   const a = new Date(`${from}T00:00:00Z`).getTime();
   const b = new Date(`${to}T00:00:00Z`).getTime();
@@ -96,8 +104,12 @@ const cardBase = "rounded-xl border border-[var(--gold-light)] bg-white p-4 text
 function rowsFor(view: View, rows: Row[], today: string): Row[] {
   switch (view) {
     case "needs_attention":
-      // The union of what the four old views each showed a slice of.
+      // The union of what the four old signals each showed a slice of.
       return rows.filter((r) => rowGroups(r, today).size > 0);
+    case "inquiries":
+      // Not trips at all — the panel loads its own list, and a count of trips
+      // on this tab would be a number about the wrong thing.
+      return [];
     case "upcoming":
       return rows.filter((r) => r.stage === "confirmed" && r.startDate > today);
     case "traveling":
@@ -105,65 +117,6 @@ function rowsFor(view: View, rows: Row[], today: string): Row[] {
     default:
       return rows;
   }
-}
-
-/**
- * Post-trip automation's action: the pipeline flags a completed trip with
- * no rating request sent yet (data/trip-reminders.ts); this is how the
- * planner actually sends one. The client's email isn't kept on the trip
- * (nothing else stores it either — see SavedTrip.client, a display name,
- * not an address), so it's asked for here, once, at the moment it's used.
- */
-function RatingRequestAction({ tripId }: { tripId: string }) {
-  const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
-
-  if (sent) return <p className="mt-1 text-xs font-semibold text-emerald-700">Rating request sent.</p>;
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-        Send rating request
-      </button>
-    );
-  }
-  return (
-    <div className="mt-1 flex flex-wrap items-center gap-2">
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="client@email.com"
-        className="min-h-8 w-48 rounded-lg border border-[var(--gold-light)] px-2 text-xs"
-      />
-      <button
-        type="button"
-        disabled={sending || !email.trim()}
-        onClick={async () => {
-          setSending(true);
-          setError("");
-          try {
-            const res = await fetch("/api/account/rating-request", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ tripId, clientEmail: email }),
-            });
-            const data = await res.json().catch(() => null);
-            if (res.ok) setSent(true);
-            else setError(data?.error || "Could not send that.");
-          } finally {
-            setSending(false);
-          }
-        }}
-        className="rounded-full border border-[var(--navy)] bg-[var(--navy)] px-3 py-1 text-[11px] font-bold text-white disabled:opacity-60"
-      >
-        {sending ? "Sending…" : "Send"}
-      </button>
-      {error && <span className="text-xs font-semibold text-red-700">{error}</span>}
-    </div>
-  );
 }
 
 /**
@@ -263,11 +216,6 @@ function RowCard({
               Unread
             </span>
           )}
-          {(row.outstandingCents ?? 0) > 0 && (
-            <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-800">
-              {formatCents(row.outstandingCents!, row.currency)} due
-            </span>
-          )}
         </div>
       </div>
       {(row.startDate || row.endDate) && (
@@ -278,26 +226,28 @@ function RowCard({
       {row.reminders.length > 0 && (
         <ul className="mt-2 flex flex-col gap-1">
           {row.reminders.map((r) => {
-            // EVERY REASON GETS ITS ONE ACTION. Five of the six used to be a
-            // sentence with a flag in front of it: "2 add-ons still waiting on
-            // an answer", agreed, and then work out for yourself which screen
+            // EVERY REASON GETS ITS ONE ACTION. Otherwise a nudge is a sentence
+            // with a flag in front of it — "2 add-ons still waiting on an
+            // answer", agreed, and then work out for yourself which screen
             // answers add-ons. See lib/needs-attention.ts.
             const action = actionForReminder(r.reason);
+            // The kosher copy has a second branch here for sending a rating
+            // request. There are no rating requests on this product, and that
+            // reason is filtered out server-side in the pipeline route, so this
+            // renders the flag alone rather than a button to nowhere.
             return (
-            <li key={r.reason} className="text-xs font-semibold text-[var(--gold-ink)]">
-              ⚑ {r.message}
-              {action.kind === "open" ? (
-                <button
-                  type="button"
-                  onClick={() => onOpen(action.path)}
-                  className="ml-2 inline-flex min-h-11 items-center text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 sm:min-h-0"
-                >
-                  {action.label}
-                </button>
-              ) : (
-                <RatingRequestAction tripId={row.id} />
-              )}
-            </li>
+              <li key={r.reason} className="text-xs font-semibold text-[var(--gold-ink)]">
+                ⚑ {r.message}
+                {action.kind === "open" && (
+                  <button
+                    type="button"
+                    onClick={() => onOpen(action.path)}
+                    className="ml-2 inline-flex min-h-11 items-center text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 sm:min-h-0"
+                  >
+                    {action.label}
+                  </button>
+                )}
+              </li>
             );
           })}
         </ul>
@@ -306,23 +256,27 @@ function RowCard({
         <button type="button" onClick={() => onOpen("/itinerary")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Open itinerary
         </button>
-        <button type="button" onClick={() => onOpen("/proposal")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+        {/* Carry the trip in the address so the proposal and form screens build
+            and read THIS trip's, not whichever one is otherwise "open". */}
+        <button type="button" onClick={() => onOpen(`/proposal?trip=${row.id}`)} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
           Proposal
         </button>
-        {row.client && (
-          <a href={`/clients/${encodeURIComponent(clientKey(row.client))}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-            Client
-          </a>
-        )}
-        <button type="button" onClick={() => onOpen("/payments")} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-          Payments
+        <button type="button" onClick={() => onOpen(`/forms?trip=${row.id}`)} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          Forms
+        </button>
+        <button type="button" onClick={() => onOpen(`/history?trip=${row.id}`)} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          History
         </button>
         {row.shareId && (
-          <a href={`/app?trip=${row.id}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          <a href={`/advisor?trip=${row.id}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
             Open in the app
           </a>
         )}
       </div>
+      {/* Whether the client has opened what was sent. Scanning the board for
+          the trips nobody has looked at is the reason this is here and not
+          only on the sharing panel. */}
+      {row.openStatus && <ShareOpenStatus status={row.openStatus} className="mt-2" />}
       {showAnalytics && <CommissionField cents={row.commissionCents} currency={row.commissionCurrency} onSave={onCommission} />}
       {onStage && (row.stage === "inquiry" || row.stage === "planning") && (
         <div className="mt-3 flex gap-2 border-t border-[var(--gold-light)] pt-3">
@@ -391,7 +345,7 @@ function TravelingRowCard({ row, onOpen }: { row: Row; onOpen: (path: string) =>
           Open itinerary
         </button>
         {row.shareId && (
-          <a href={`/app?trip=${row.id}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          <a href={`/advisor?trip=${row.id}`} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
             Open in the app
           </a>
         )}
@@ -595,6 +549,8 @@ export default function PipelineDashboard() {
             );
           })}
         </div>
+      ) : view === "inquiries" ? (
+        <InquiriesPanel />
       ) : view === "needs_attention" ? (
         /* THREE PILES, IN THE ORDER THEY MATTER, and a trip can be in more
            than one — a client who asked for changes and also owes money is

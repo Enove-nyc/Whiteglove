@@ -132,7 +132,8 @@ describe("every screen reads the same list", () => {
     ["the sitemap", "app/sitemap.ts"],
     ["site search", "lib/site-search-index.ts"],
     ["the front page's featured list", "lib/featured-destinations.ts"],
-    ["the planner's starting points", "app/itinerary/page.tsx"],
+    // The planner's starting templates were removed with the public directory
+    // (AGENTS.md, 18 November 2026), so /itinerary reads no destinations.
     ["where to stay", "app/hotels/page.tsx"],
   ];
 

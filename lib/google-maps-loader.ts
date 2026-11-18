@@ -48,6 +48,10 @@ export type GMap = {
   addListener?(event: string, handler: () => void): void;
   /** Frame a box. Used when the map opens on everything rather than a search. */
   fitBounds(bounds: GLatLngBounds, padding?: number): void;
+  /** Read the point the map is centred on — the pin the location picker sends. */
+  getCenter?(): { lat(): number; lng(): number } | null;
+  /** Slide the map to a point (used to jump to the device's own position). */
+  panTo?(position: LatLng): void;
 };
 
 export type GMarker = {
@@ -103,6 +107,7 @@ export type GoogleMapsApi = {
   Size: new (width: number, height: number) => object;
   Point: new (x: number, y: number) => object;
   LatLngBounds: new () => GLatLngBounds;
+  places?: GPlacesApi;
   importLibrary?: (name: string) => Promise<unknown>;
 };
 
@@ -223,7 +228,7 @@ function ensureMapsScript(key: string): Promise<void> {
     // new marker" and "silently draw nothing".
     script.src =
       `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}` +
-      `&libraries=marker&loading=async&v=weekly`;
+      `&libraries=marker,places&loading=async&v=weekly`;
     script.addEventListener("load", () => resolve(), { once: true });
     script.addEventListener("error", () => reject(new Error("maps script failed")), { once: true });
     document.head.appendChild(script);
@@ -387,3 +392,27 @@ export async function probeGoogleMaps(): Promise<GoogleMapsProbeResult> {
     host.remove();
   }
 }
+
+
+
+/** A single address suggestion from the autocomplete service. */
+export type GPlacePrediction = { place_id: string; description: string };
+
+
+/** The slice of google.maps.places the location picker's search box uses. */
+export type GPlacesApi = {
+  AutocompleteService: new () => {
+    getPlacePredictions(
+      request: { input: string; sessionToken?: unknown },
+      callback: (predictions: GPlacePrediction[] | null, status: string) => void,
+    ): void;
+  };
+  PlacesService: new (attrContainer: HTMLElement) => {
+    getDetails(
+      request: { placeId: string; fields: string[]; sessionToken?: unknown },
+      callback: (place: { geometry?: { location?: { lat(): number; lng(): number } } } | null, status: string) => void,
+    ): void;
+  };
+  AutocompleteSessionToken: new () => unknown;
+  PlacesServiceStatus: { OK: string };
+};

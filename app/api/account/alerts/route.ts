@@ -1,16 +1,19 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, acknowledgeAlert, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
+import { accountCookieName, acknowledgeAlert, acknowledgeAllAlerts, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { sameOrigin } from "@/lib/secure-access";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Dismissing a live-travel alert (data/trip-alerts.ts) — the trip owner's own
- * side only. A client viewing the trip sees the same alert but has no
- * control to dismiss it, the same way they have no control over anything
- * else on the Changes screen; keeping the client app simple means it only
- * ever shows information, never asks it to manage state.
+ * Marking a Changes-screen alert read — the trip owner's own side only (an
+ * account cookie). One alert with `alertId`, or every alert on the trip at
+ * once with `all: true`, which is what opening the Changes screen does.
+ *
+ * A client viewing the trip on a per-trip code has no account and so never
+ * reaches here; their read state is their own, kept in their browser (see
+ * CompanionApp.tsx). The client app still only ever shows information — it
+ * asks the server to manage nothing.
  */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) {
@@ -20,13 +23,21 @@ export async function POST(request: NextRequest) {
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
 
-  const body = (await request.json().catch(() => null)) as { tripId?: string; alertId?: string } | null;
+  const body = (await request.json().catch(() => null)) as { tripId?: string; alertId?: string; all?: boolean } | null;
   const tripId = body?.tripId?.trim();
-  const alertId = body?.alertId?.trim();
-  if (!tripId || !alertId) return NextResponse.json({ error: "Which trip, and which alert?" }, { status: 400 });
+  if (!tripId) return NextResponse.json({ error: "Which trip?" }, { status: 400 });
 
-  const owner = await resolveBusinessOwner(account.email);
-  const ok = await acknowledgeAlert(owner, tripId, alertId);
+  if (body?.all) {
+    const ok = await acknowledgeAllAlerts(await resolveBusinessOwner(account.email), tripId);
+    if (!ok) return NextResponse.json({ error: "Could not update those." }, { status: 503 });
+    return NextResponse.json({ ok: true });
+  }
+
+  const alertId = body?.alertId?.trim();
+  if (!alertId) return NextResponse.json({ error: "Which alert?" }, { status: 400 });
+
+  // A staff login dismisses alerts on the business it works for (data/team.ts).
+  const ok = await acknowledgeAlert(await resolveBusinessOwner(account.email), tripId, alertId);
   if (!ok) return NextResponse.json({ error: "Could not dismiss that." }, { status: 503 });
   return NextResponse.json({ ok: true });
 }

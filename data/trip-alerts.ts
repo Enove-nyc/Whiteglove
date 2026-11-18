@@ -7,8 +7,6 @@
 // about — a flight going from "scheduled" to "on-time" is not news; a 30+
 // minute delay, a cancellation, or an actual gate/terminal change is.
 
-import { flightRouteLabel, type Itinerary } from "@/data/itinerary";
-
 export type FlightStatusValue = "scheduled" | "on-time" | "delayed" | "cancelled" | "diverted" | "departed" | "landed" | "unknown";
 
 /** What was last read from the flight-status provider for one flight. */
@@ -30,18 +28,19 @@ export type TripAlertKind =
   | "flight_diverted"
   | "gate_change"
   | "terminal_change"
-  | "flight_time_changed"
-  | "flight_removed"
-  | "lodging_changed"
-  | "lodging_removed"
-  | "activity_time_changed"
-  | "activity_removed";
+  /** The advisor changed the plan itself — a flight, a stay, a day. Not a
+   *  live-status reading like the others; see data/trip-changes.ts. */
+  | "itinerary_update"
+  /** Something the advisor sent the traveler by hand — "your driver is running
+   *  twenty minutes late" — that no data feed would ever produce on its own. */
+  | "advisor_alert";
 
 export type TripAlert = {
   id: string;
   kind: TripAlertKind;
-  /** The flight, lodging or activity this is about — whichever the kind names. */
-  flightId: string;
+  /** The flight a live-status alert is about. Absent on itinerary_update,
+   *  which is about the plan rather than any one flight. */
+  flightId?: string;
   title: string;
   note: string;
   createdAt: string; // ISO timestamp
@@ -50,6 +49,25 @@ export type TripAlert = {
 
 /** Below this, a delay is not worth an alert — see the file note above. */
 const SIGNIFICANT_DELAY_MINUTES = 30;
+
+const RECHECK_RELAXED_MS = 3 * 60 * 60 * 1000;
+const RECHECK_IMMINENT_MS = 20 * 60 * 1000;
+/** Within a day of departure, a flight earns the tighter cadence. */
+const IMMINENT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * How long to leave a flight's status alone before reading it again, given how
+ * close it is to departure. A flight leaving within a day is worth a fresh look
+ * every twenty minutes — that is the window an airline actually moves a gate or
+ * calls a delay in. One still days out does not need more than a few times a
+ * day, which keeps the paid status lookups down to what matters. `flightDate`
+ * is a YYYY-MM-DD departure date; `now` is epoch ms.
+ */
+export function flightRecheckMs(flightDate: string, now: number): number {
+  const depart = Date.parse(`${flightDate}T00:00:00Z`);
+  if (Number.isNaN(depart)) return RECHECK_RELAXED_MS;
+  return depart - now <= IMMINENT_WINDOW_MS ? RECHECK_IMMINENT_MS : RECHECK_RELAXED_MS;
+}
 
 /**
  * What changed between two readings of the same flight's status, worth
@@ -87,80 +105,6 @@ export function alertsFromStatusChange(
   }
   if (next.departureTerminal && previous?.departureTerminal && next.departureTerminal !== previous.departureTerminal) {
     out.push({ id: idFor(), kind: "terminal_change", flightId: next.flightId, title: `${flightLabel} terminal changed`, note: `Now departing from terminal ${next.departureTerminal}.`, createdAt: now, acknowledged: false });
-  }
-
-  return out;
-}
-
-/**
- * "What Changed?" — the same discipline as alertsFromStatusChange, applied
- * to an advisor's own edits instead of a live flight-status reading.
- *
- * ONLY A CHANGE TO SOMETHING ALREADY SCHEDULED IS NEWS. A stop matched by id
- * between the two itineraries whose date/time moved, or that disappeared
- * outright, is worth telling a traveler about. A brand-new stop being added,
- * or a stop that had no date yet gaining one, is ordinary trip-building —
- * not a change to something the traveler already knew about — so neither is
- * reported here. That is what keeps this from firing on every autosave
- * while a trip is still being put together, long before anyone has seen it.
- */
-export function alertsFromItineraryDiff(previous: Itinerary, next: Itinerary, idFor: () => string): TripAlert[] {
-  const out: TripAlert[] = [];
-  const now = new Date().toISOString();
-  const nextFlights = new Map(next.flights.map((f) => [f.id, f]));
-  const nextLodging = new Map(next.lodging.map((l) => [l.id, l]));
-  const nextActivities = new Map(next.activities.map((a) => [a.id, a]));
-
-  for (const before of previous.flights) {
-    const label = flightRouteLabel(before);
-    const after = nextFlights.get(before.id);
-    if (!after) {
-      if (before.date || before.departTime) {
-        out.push({ id: idFor(), kind: "flight_removed", flightId: before.id, title: `${label} removed`, note: "This flight is no longer on the itinerary.", createdAt: now, acknowledged: false });
-      }
-      continue;
-    }
-    if ((before.date || before.departTime) && (before.date !== after.date || before.departTime !== after.departTime)) {
-      const when = [after.date, after.departTime].filter(Boolean).join(" at ");
-      out.push({ id: idFor(), kind: "flight_time_changed", flightId: before.id, title: `${label} changed`, note: when ? `Now ${when}.` : "The date or time has changed.", createdAt: now, acknowledged: false });
-    }
-  }
-
-  for (const before of previous.lodging) {
-    const after = nextLodging.get(before.id);
-    const label = before.name || "Lodging";
-    if (!after) {
-      if (before.checkIn) {
-        out.push({ id: idFor(), kind: "lodging_removed", flightId: before.id, title: `${label} removed`, note: "This stay is no longer on the itinerary.", createdAt: now, acknowledged: false });
-      }
-      continue;
-    }
-    if (before.checkIn && (before.checkIn !== after.checkIn || before.checkOut !== after.checkOut || before.name !== after.name)) {
-      out.push({
-        id: idFor(),
-        kind: "lodging_changed",
-        flightId: before.id,
-        title: `${after.name || label} updated`,
-        note: `Now ${after.checkIn} → ${after.checkOut}.`,
-        createdAt: now,
-        acknowledged: false,
-      });
-    }
-  }
-
-  for (const before of previous.activities) {
-    const after = nextActivities.get(before.id);
-    const label = before.name || "Stop";
-    if (!after) {
-      if (before.date) {
-        out.push({ id: idFor(), kind: "activity_removed", flightId: before.id, title: `${label} removed`, note: "This stop is no longer on the itinerary.", createdAt: now, acknowledged: false });
-      }
-      continue;
-    }
-    if (before.date && (before.date !== after.date || before.startTime !== after.startTime)) {
-      const when = [after.date, after.startTime].filter(Boolean).join(" at ");
-      out.push({ id: idFor(), kind: "activity_time_changed", flightId: before.id, title: `${after.name || label} moved`, note: when ? `Now ${when}.` : "The date or time has changed.", createdAt: now, acknowledged: false });
-    }
   }
 
   return out;

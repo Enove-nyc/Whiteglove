@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { hasAnything, type TravelPreferences } from "@/data/travel-preferences";
 import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
-import { BRAND_ORIGIN } from "@/lib/site-brand-core";
+import { BRAND_ORIGIN, type SiteBrand } from "@/lib/site-brand-core";
 import { useSiteBrand } from "@/components/useSiteBrand";
 import {
   ACCESSIBILITY_NEEDS,
@@ -121,10 +121,24 @@ function Toggles({
 export default function TripStartFlow({
   initialDestination = "",
   initialKind = "",
+  brand,
 }: {
   /** Arrived from a destination card: "Add Rome to a trip". */
   initialDestination?: string;
   initialKind?: TripKind | "";
+  /**
+   * Which site this is, settled on the server.
+   *
+   * WHY IT IS A PROP AND NOT THE HOOK ANY MORE. useIsItineraries falls back on
+   * the server to the build's configured brand, and that variable is not set
+   * on the itineraries deployment — so the HTML this page was SERVED with said
+   * kosher, and only corrected itself after hydration. Which meant the markup
+   * a crawler and a first paint actually got offered a group trip as "several
+   * families, a school, a shul or a simcha" and a Heritage category of kevarim
+   * and batei hachaim, on the general-travel domain. The server knows the
+   * brand for certain, from the request; Navbar has always taken it this way.
+   */
+  brand?: SiteBrand;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -142,7 +156,7 @@ export default function TripStartFlow({
   // Through the shared hook rather than an effect: this rendered "kosher" and
   // corrected itself after mount, which React's lint rule refuses and which
   // ignored the deployment's own NEXT_PUBLIC_SITE_BRAND. See useSiteBrand.
-  const itineraries = useSiteBrand() === "itineraries";
+  const itineraries = useSiteBrand(brand) === "itineraries";
   const headingRef = useRef<HTMLHeadingElement>(null);
   /**
    * WHAT THE ACCOUNT ALREADY KNOWS, filled in rather than asked again.
@@ -218,7 +232,13 @@ export default function TripStartFlow({
 
   function choose(method: PlanningMethod) {
     update({ method });
-    if (method === "myself") router.push("/itinerary?from=plan");
+    // /destinations is a guide path and does not exist on the itineraries
+    // domain — reached there it bounces to the kosher site, which inside an
+    // installed app means the Trusted Web Activity losing its verified domain
+    // and dropping to an ordinary browser tab. The card that offers it is not
+    // rendered on this brand; this is the second lock on the same door, so a
+    // future caller cannot reopen it by accident.
+    if (method === "myself" || itineraries) router.push("/itinerary?from=plan");
     else router.push("/destinations");
   }
 
@@ -322,7 +342,7 @@ export default function TripStartFlow({
                     <span className={`font-[family-name:var(--font-display)] text-2xl leading-tight ${on ? "text-white" : "text-[var(--navy)]"}`}>
                       {kind.label}
                     </span>
-                    <span className={`mt-2 text-sm leading-6 ${on ? "text-slate-200" : "text-stone-600"}`}>{kind.blurb}</span>
+                    <span className={`mt-2 text-sm leading-6 ${on ? "text-slate-200" : "text-stone-600"}`}>{(itineraries && kind.itinerariesBlurb) || kind.blurb}</span>
                     {/* No sr-only "Selected" here: aria-pressed already says
                         so, and both together read as "Rome, selected, pressed". */}
                   </button>

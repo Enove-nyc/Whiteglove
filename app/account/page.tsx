@@ -33,6 +33,7 @@ import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
+import { BRAND_ORIGIN } from "@/lib/site-brand-core";
 
 // Private to one person. Nothing here belongs in a search result. Brand-aware
 // for the same reason /login is: an itineraries visitor landing here right
@@ -160,6 +161,12 @@ export default async function AccountPage() {
         <TripUpdates email={who} today={new Date().toISOString().slice(0, 10)} />
 
         {/* Itineraries, Route, Favorites. */}
+        {/* WHAT HAS CHANGED SINCE THEY PLANNED IT — above the trips rather
+            than below, because a delayed flight or a level-4 advisory is the
+            one thing on this page that will not wait. Draws nothing at all
+            when nothing has changed, which is most visits. */}
+        <TripUpdates email={who} today={new Date().toISOString().slice(0, 10)} />
+
         <AccountRoutePanel />
 
         {/* The address to forward a booking to. In the planner it sits inside
@@ -309,7 +316,7 @@ export default async function AccountPage() {
           </div>
         </section>
       </section>
-      <Footer />
+      <Footer minimal={siteBrand === "itineraries"} />
     </main>
   );
 }

@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot } from "@/data/trip-alerts";
-import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { alertsFromStatusChange, type FlightStatusSnapshot } from "@/data/trip-alerts";
 
 let seq = 0;
 const idFor = () => `alert-${++seq}`;
@@ -104,7 +103,7 @@ describe("the live-travel-information wiring keeps the same fences everything el
 
   it("a flight check is throttled — it does not re-query a flight checked recently", () => {
     const fn = STORE.slice(STORE.indexOf("export async function checkTripFlightStatus"), STORE.indexOf("export async function getTripAlerts"));
-    assert.match(fn, /FLIGHT_RECHECK_MS/);
+    assert.match(fn, /flightRecheckMs/);
   });
 
   it("only checks flights departing soon, not the whole itinerary regardless of date", () => {
@@ -127,74 +126,31 @@ describe("the live-travel-information wiring keeps the same fences everything el
     assert.ok(ALERTS_ROUTE.indexOf("sameOrigin") < ALERTS_ROUTE.indexOf("Please log in first"));
   });
 
-  it("a client viewer never gets the Dismiss control — only the trip's own side does", () => {
-    const marker = APP.indexOf("[...liveAlerts].reverse()");
-    const block = APP.slice(marker, marker + 1500);
-    assert.match(block, /!isClientViewer && !a\.acknowledged/);
+  it("a client's read state never touches the server — only their own browser does", () => {
+    // Opening the Changes screen marks its alerts read. The owner (an account)
+    // records that on the server; a client on a per-trip code keeps it in their
+    // own browser, so the client app still asks the server to manage nothing.
+    /**
+     * READ AS TWO SEPARATE PIECES, because the mark-read work is now three:
+     * the snapshot happens during render, the browser write and the server
+     * post are their own effects. It used to be one effect and this read one
+     * window of it. The property being kept is unchanged — the server hears
+     * only from the owner, the client's read state stays in their browser.
+     */
+    const post = APP.indexOf('"/api/account/alerts"');
+    assert.ok(post > 0, "expected the server-side mark-read post");
+    const postGuard = APP.slice(post - 400, post);
+    assert.match(postGuard, /isClientViewer/, "the client's app posts read state to the server");
+    assert.match(postGuard, /trip\.tripId/);
+
+    const store = APP.indexOf("localStorage.setItem(`wg-alerts-read:");
+    assert.ok(store > 0, "expected the client's own read state in localStorage");
+    const storeGuard = APP.slice(store - 400, store);
+    assert.match(storeGuard, /!isClientViewer \|\| !alertKey/, "the owner's read state is being written to the client's browser");
   });
 
   it("still does not add a sixth tab for live alerts — they live on the existing Changes screen", () => {
     const tabsBlock = APP.slice(APP.indexOf("const tabs ="), APP.indexOf("const tabs =") + 600);
     assert.doesNotMatch(tabsBlock, /"alertsLive"|"liveAlerts"/);
-  });
-});
-
-describe("\"What Changed?\" — diffing an advisor's own edit", () => {
-  let seq2 = 0;
-  const idFor2 = () => `change-${++seq2}`;
-
-  function itin(over: Partial<Itinerary> = {}): Itinerary {
-    return { ...emptyItinerary(), ...over };
-  }
-
-  it("says nothing the first time a flight is entered — there is nothing to change from", () => {
-    const next = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }] });
-    assert.deepEqual(alertsFromItineraryDiff(itin(), next, idFor2), []);
-  });
-
-  it("a flight's date or time moving, once it already had one, is an alert", () => {
-    const previous = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }] });
-    const next = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "14:30" }] });
-    const alerts = alertsFromItineraryDiff(previous, next, idFor2);
-    assert.equal(alerts.length, 1);
-    assert.equal(alerts[0].kind, "flight_time_changed");
-    assert.match(alerts[0].note, /14:30/);
-  });
-
-  it("a scheduled flight disappearing is an alert", () => {
-    const previous = itin({ flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }] });
-    const alerts = alertsFromItineraryDiff(previous, itin(), idFor2);
-    assert.equal(alerts.length, 1);
-    assert.equal(alerts[0].kind, "flight_removed");
-  });
-
-  it("a stop added that was never there before is ordinary trip-building, not a change", () => {
-    const next = itin({ activities: [{ id: "a1", name: "Old Town", date: "2026-06-11" }] });
-    assert.deepEqual(alertsFromItineraryDiff(itin(), next, idFor2), []);
-  });
-
-  it("a scheduled stop moving to a new date is an alert", () => {
-    const previous = itin({ activities: [{ id: "a1", name: "Old Town", date: "2026-06-11" }] });
-    const next = itin({ activities: [{ id: "a1", name: "Old Town", date: "2026-06-12" }] });
-    const alerts = alertsFromItineraryDiff(previous, next, idFor2);
-    assert.equal(alerts.length, 1);
-    assert.equal(alerts[0].kind, "activity_time_changed");
-  });
-
-  it("a hotel's check-in date changing, once it had one, is an alert", () => {
-    const previous = itin({ lodging: [{ id: "l1", type: "hotel", name: "Hotel Bristol", checkIn: "2026-06-10", checkOut: "2026-06-12" }] });
-    const next = itin({ lodging: [{ id: "l1", type: "hotel", name: "Hotel Bristol", checkIn: "2026-06-11", checkOut: "2026-06-12" }] });
-    const alerts = alertsFromItineraryDiff(previous, next, idFor2);
-    assert.equal(alerts.length, 1);
-    assert.equal(alerts[0].kind, "lodging_changed");
-  });
-
-  it("re-saving with nothing actually different produces nothing", () => {
-    const same = itin({
-      flights: [{ id: "f1", from: "JFK", to: "WAW", date: "2026-06-10", departTime: "10:00" }],
-      lodging: [{ id: "l1", type: "hotel", name: "Hotel Bristol", checkIn: "2026-06-10", checkOut: "2026-06-12" }],
-      activities: [{ id: "a1", name: "Old Town", date: "2026-06-11" }],
-    });
-    assert.deepEqual(alertsFromItineraryDiff(same, { ...same }, idFor2), []);
   });
 });

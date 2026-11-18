@@ -45,13 +45,11 @@ const KOSHER_LINKS = [
 ];
 
 // The itineraries site is the planner; Advertise and Sources belong to the
-// kosher guide. Note that whitegloveitineraries.com is served by its own
-// deployment, not this one, so this list is what an itineraries-branded page
-// OF THIS APP would show — /packing is deliberately not in it, because that
-// path does not exist on the site the brand names. Pricing leads because it was the thing a visitor could not
-// reach at all: what the planner costs lived behind a sign-in, so anybody
-// weighing the tool up had to open an account to find out.
+// kosher guide, so its footer carries only the three everyone needs.
 const ITINERARIES_LINKS = [
+  // What it costs, said where somebody looks for it. The page existed only in
+  // the other repository until now, so this site answered a visitor asking the
+  // most ordinary question about a paid product with a 404.
   { label: "Pricing", href: "/pricing" },
   { label: "Contact", href: "/contact" },
   { label: "Support", href: "/contact?reason=help" },
@@ -59,16 +57,28 @@ const ITINERARIES_LINKS = [
   { label: "Privacy", href: "/privacy" },
 ];
 
-export default function Footer({ brand: brandProp }: { brand?: "kosher" | "itineraries" } = {}) {
-  // It rendered "kosher" and corrected itself in an effect, which React's lint
-  // rule refuses and which ignored the deployment's own brand setting that the
-  // Navbar has always honoured. One hook now answers this for both.
-  const brand = useSiteBrand(brandProp);
-  const isItineraries = brand === "itineraries";
-  const links = isItineraries ? ITINERARIES_LINKS : KOSHER_LINKS;
+// Footer links that are marketing, not support/legal — dropped in the app's
+// minimal footer so a sealed app surface has no tap-path out to the sales side.
+const FOOTER_MARKETING = new Set(["Pricing", "Advertise", "Sources"]);
+
+export default function Footer({ brand: brandProp, minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
+  /**
+   * The same three answers as the navigation, in the same order: what the page
+   * passed, what this deployment was BUILT as, then the hostname.
+   *
+   * The footer settled from the hostname after mount too, so it signed itself
+   * "White Glove Kosher Travel" for a frame on this site — and in the HTML,
+   * for anything that never runs the correction. Asked of
+   * components/useSiteBrand.ts, the same hook the header asks.
+   */
+  const isItineraries = useSiteBrand(brandProp) === "itineraries";
+  const allLinks = isItineraries ? ITINERARIES_LINKS : KOSHER_LINKS;
+  // Inside the app, keep only support/legal (Contact, Terms, Privacy) — no
+  // Pricing or other marketing. Contact/Terms/Privacy belong in an app.
+  const links = minimal ? allLinks.filter((link) => !FOOTER_MARKETING.has(link.label)) : allLinks;
 
   return (
-    <footer id="contact" className="border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#D5CEC3]">
+    <footer id="contact" className="mt-auto border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#D5CEC3]">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         {/* THE MARK, AND THE NAME AS TEXT — the same lockup as the header. */}
         <div className="flex items-center gap-3">

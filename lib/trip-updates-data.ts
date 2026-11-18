@@ -2,13 +2,12 @@ import "server-only";
 
 import { getTripAlerts, getTripItinerary, getTrips } from "@/lib/account-store";
 import { stopsForTrip } from "@/lib/command-center-data";
-import { readPublishedUpdates } from "@/lib/current-updates-store";
 import { fetchAdvisories } from "@/lib/travel-advisories";
 import { tripAdvisories } from "@/lib/trip-advisories";
-import { destinationSlugsOnTrip, nextTripFor, noticesForTrip, tripUpdates, type TripUpdate } from "@/lib/trip-updates";
+import { nextTripFor, tripUpdates, type TripUpdate } from "@/lib/trip-updates";
 
 /**
- * The reading half of trip updates: the four stores and the one feed.
+ * The reading half of trip updates: the stores and the one feed.
  *
  * Kept apart from lib/trip-updates.ts, which touches nothing, for the same
  * reason lib/command-center-data.ts is kept apart from lib/command-center.ts —
@@ -35,18 +34,16 @@ export async function tripUpdatesFor(
   if (!loaded) return none;
 
   const stops = await stopsForTrip(loaded.itinerary).catch(() => []);
-  const [alerts, feed, published] = await Promise.all([
+  const [alerts, feed] = await Promise.all([
     getTripAlerts(email, next.id).catch(() => []),
     fetchAdvisories(),
-    readPublishedUpdates().catch(() => []),
   ]);
 
   const advisories = feed.available ? tripAdvisories(stops, feed.advisories) : null;
-  const notices = noticesForTrip(published, destinationSlugsOnTrip(stops), today);
 
   return {
     trip: { id: next.id, name: next.name },
     // The trip's own page, where all three of these already live in full.
-    updates: tripUpdates({ alerts, advisories, notices, tripHref: "/command-center" }),
+    updates: tripUpdates({ alerts, advisories, tripHref: "/command-center" }),
   };
 }

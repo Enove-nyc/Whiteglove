@@ -78,6 +78,9 @@ export default function KosherNearby({
 }) {
   const point = useMemo(() => coordinatesToPoint(coordinates), [coordinates]);
   const [added, setAdded] = useState<Record<string, boolean>>({});
+  // A failed "Add to my trip" used to be silent; this flags the one that
+  // failed so its button can say so and invite a retry.
+  const [addFailed, setAddFailed] = useState<Record<string, boolean>>({});
   // This card is also used inside the itinerary builder, reachable on the
   // itineraries domain — where /kosher does not exist (middleware.ts sends
   // guide-only paths to the kosher site). A same-tab link there would bounce

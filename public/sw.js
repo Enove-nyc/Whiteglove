@@ -8,8 +8,7 @@
 // styles are therefore network-first: the newest version always wins when
 // online, and the cache is only a fallback when offline. Only truly static
 // media (images, fonts) is cache-first.
-const CACHE = "wg-cache-v5";
-const PRECACHE = ["/", "/offline", "/icon-192.png", "/icon-512.png"];
+const CACHE = "wg-cache-v9";
 
 /**
  * The day's documents, kept on purpose.
@@ -27,26 +26,30 @@ const PRECACHE = ["/", "/offline", "/icon-192.png", "/icon-512.png"];
  */
 const OFFLINE_DOCS = "wg-offline-docs-v1";
 const ATTACHMENTS = "/api/account/attachments";
+const PRECACHE = ["/", "/offline", "/icon-192.png", "/icon-512.png"];
 
 /**
  * Pages that belong to one signed-in person, and must not outlive their session.
  *
- * Every successful navigation is cached (see networkFirst below), which is what
+ * Every successful navigation is cached by networkFirst below — which is what
  * makes a trip readable at a gate with no signal — and also meant a rendered
- * itinerary, with its flight numbers, hotel and client's name, stayed on the
- * device after they signed out. That was true long before any boarding pass
- * was ever cached on purpose: the page LISTING the passes was already there.
+ * itinerary, carrying its flight numbers, hotel and the client's name, stayed
+ * on the device after they signed out. Nothing deliberate put it there:
+ * visiting the page was enough.
  *
- * These prefixes are swept on sign-out, alongside the documents. Public pages
- * are left alone — a cached destination guide is nobody's business but the
- * site's, and clearing the whole cache would take the offline shell with it.
+ * These prefixes are swept on sign-out (see forgetPrivate + the wg-offline-forget
+ * message). Public pages are left alone — a cached destination guide is nobody's
+ * business but the site's, and clearing the whole cache would take the offline
+ * shell (/offline) with it.
  */
 const PRIVATE_PREFIXES = [
   "/command-center",
   "/itinerary",
   "/my-route",
   "/account",
-  "/app",
+  "/advisor",
+  "/clients",
+  "/commissions",
   "/library",
   "/forms",
   "/form/",
@@ -54,10 +57,13 @@ const PRIVATE_PREFIXES = [
   "/payments",
   "/pay/",
   "/proposal",
+  "/group",
+  "/app",
   "/i/",
   "/f/",
   "/p/",
   "/t/",
+  "/r/",
 ];
 
 function isPrivatePath(pathname) {
@@ -79,6 +85,9 @@ self.addEventListener("activate", (event) => {
     // passes the morning of a flight, which is the one moment this exists for.
     caches
       .keys()
+      // Everything EXCEPT the current cache and the documents a traveller asked
+      // to keep. Sweeping that one away on a routine release would empty their
+      // passes the morning of a flight, which is the one moment this exists for.
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== OFFLINE_DOCS).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
@@ -86,12 +95,17 @@ self.addEventListener("activate", (event) => {
 
 // Network-first: use the network when we can, fall back to the cache offline.
 //
-// A NAVIGATION MISS GOES TO /offline, NOT THE HOMEPAGE. It used to fall back
-// to "/" for any page that wasn't already cached — silently swapping the
-// trip somebody was trying to reopen for the marketing homepage, with
-// nothing said about why. A traveler standing at a gate with no signal needs
-// to know the connection is the problem, not wonder if the app lost their
-// trip.
+// `cache: "reload"` is the crucial part, not a detail — and it is stronger than
+// the `no-cache` this used to use. The app's JS under /_next/static keeps
+// STABLE filenames across releases but is served `Cache-Control: immutable,
+// max-age=1y`. `immutable` tells the browser never even to REVALIDATE for a
+// year, so an already-cached chunk is frozen: `no-cache` asks it to revalidate,
+// which an aggressive HTTP cache can still answer from its own frozen copy.
+// `reload` bypasses the HTTP cache for the request outright and repopulates it,
+// which is what actually forces a new deploy's code into an already-installed
+// app. (The proper server-side fix — not serving a stable filename as immutable
+// — rides in next.config alongside this; this is the belt to that suspenders,
+// and the only half that can un-freeze a copy already cached as immutable.)
 function networkFirst(req) {
   const isNav = req.mode === "navigate";
   const store = (res) => {
@@ -103,19 +117,20 @@ function networkFirst(req) {
   };
   // NAVIGATIONS FETCH NORMALLY — no `cache: "reload"`.
   //
-  // A page's HTML is served `no-store`, so it is never frozen in the HTTP cache
-  // and needs none of the reload bypass the app CODE below does. And
-  // `cache: "reload"` on the navigation path is what some mobile networks,
-  // carrier proxies and Android WebViews reset outright — a reset is a rejected
-  // fetch, which drops a perfectly online page to the offline shell. That was
-  // the "You're offline while online" report. A plain credentialed fetch always
-  // hits the network for the no-store HTML and does not trip those.
+  // A page's HTML is served `no-store` (see the response headers), so it is
+  // never frozen in the HTTP cache and needs none of the reload bypass that the
+  // app CODE below does. Worse, `cache: "reload"` on the navigation path is what
+  // some mobile networks, carrier proxies and Android WebViews reset outright —
+  // and a reset is a rejected fetch, which drops a perfectly online page to the
+  // offline shell. That is the "You're offline while online" report. A plain
+  // credentialed fetch always hits the network for the no-store HTML and does
+  // not trip those intermediaries.
   //
   // App CODE keeps `cache: "reload"`: those /_next/static files ARE served
-  // immutable with stable filenames, so without the bypass an installed app
-  // would keep running a year-old copy of its own code. A navigation Request
-  // also cannot be rebuilt through `new Request(req, init)`, the other reason
-  // the two split.
+  // immutable, so without the bypass an already-installed app would keep running
+  // a year-old copy of its own code. A navigation Request also cannot be rebuilt
+  // through `new Request(req, init)` (the constructor rejects a navigate-mode
+  // request with a non-empty init), which is the other reason the two split.
   //
   // AND NAVIGATIONS DO NOT FOLLOW REDIRECTS HERE — `redirect: "manual"`.
   //
@@ -124,16 +139,20 @@ function networkFirst(req) {
   // worker may not answer a navigation with a redirected response — a
   // navigation's own redirect mode is "manual" — so the browser throws the
   // answer away and the tab shows a network error with the server having
-  // returned 200 twice. The admin hostname's root ALWAYS redirects to /login,
-  // which made the whole dashboard unreachable on any device where this worker
-  // had taken control: every attempt fetched /, followed it to /login, and
-  // failed. Asking for the redirect unfollowed hands back an opaque redirect,
-  // which the browser is allowed to follow itself, and the page loads.
+  // returned 200 twice. Signed in, this site's "/" redirects to /app or
+  // /advisor, so the home page failed for exactly the people who have the app
+  // installed. Asking for the redirect unfollowed hands back an opaque
+  // redirect, which the browser is allowed to follow itself, and the page
+  // loads.
   const fresh = isNav
     ? fetch(req.url, { credentials: "same-origin", redirect: "manual" })
     : fetch(new Request(req, { cache: "reload" }));
   return fresh
     .then(store)
+    // A genuine network failure: prefer a cached copy of this very page, and
+    // only fall back to the offline shell when there is nothing and this was a
+    // navigation. Non-navigation misses resolve undefined and let the browser
+    // handle it, exactly as before.
     .catch(() => caches.match(req).then((r) => r || (isNav ? caches.match("/offline") : undefined)));
 }
 
@@ -177,19 +196,27 @@ async function keepDocuments(urls, pages) {
 }
 
 /**
- * Sweep everything belonging to the session that has just ended.
+ * Sweep every cached page belonging to the session that has just ended.
  *
- * Both caches: the documents somebody chose to keep, and the private pages the
- * ordinary navigation cache picked up on its own without anybody choosing
- * anything.
+ * Across every app-shell cache, whatever its version — this worker bumps its
+ * cache name on its own release schedule, so a sweep pinned to one name would
+ * miss a rendered itinerary sitting in the current one. The private pages are
+ * the only ones removed; the public site and the /offline shell stay cached.
  */
 async function forgetPrivate() {
+  // The documents somebody chose to keep go wholesale — this cache holds
+  // nothing else, so there is nothing to sift.
   await caches.delete(OFFLINE_DOCS);
   try {
-    const cache = await caches.open(CACHE);
-    const requests = await cache.keys();
+    const names = await caches.keys();
     await Promise.all(
-      requests.filter((req) => isPrivatePath(new URL(req.url).pathname)).map((req) => cache.delete(req)),
+      names.map(async (name) => {
+        const cache = await caches.open(name);
+        const requests = await cache.keys();
+        await Promise.all(
+          requests.filter((req) => isPrivatePath(new URL(req.url).pathname)).map((req) => cache.delete(req)),
+        );
+      }),
     );
   } catch {
     // A browser that will not open the cache has nothing in it to leak.
@@ -199,11 +226,11 @@ async function forgetPrivate() {
 self.addEventListener("message", (event) => {
   const data = event.data;
   if (!data || typeof data.type !== "string") return;
-  const reply = (payload) => {
-    const port = event.ports && event.ports[0];
-    if (port) port.postMessage(payload);
-  };
-
+  // Signing out. The private navigation cache holds a rendered itinerary with
+  // its flight numbers, hotel and client's name; leaving it on a borrowed or
+  // shared computer after sign-out is the whole risk. The page also sweeps and
+  // deletes the offline database directly — this is the tidy path for when the
+  // worker is awake.
   if (data.type === "wg-offline-keep") {
     event.waitUntil(
       keepDocuments(data.urls, data.pages).then(
@@ -214,10 +241,11 @@ self.addEventListener("message", (event) => {
     return;
   }
 
-  // Turning it off, and signing out. Both must actually empty it: a document
-  // left in the cache after somebody signs out on a borrowed laptop is the
-  // whole risk this feature carries.
   if (data.type === "wg-offline-forget") {
+    const reply = (payload) => {
+      const port = event.ports && event.ports[0];
+      if (port) port.postMessage(payload);
+    };
     event.waitUntil(forgetPrivate().then(() => reply({ ok: true }), () => reply({ ok: false })));
   }
 });
@@ -231,10 +259,12 @@ self.addEventListener("fetch", (event) => {
   /**
    * The one API path with an offline answer — and only ever as a fallback.
    *
-   * The network is always tried first and its response is never written here;
-   * this cache is filled only by wg-offline-keep above. So a traveller who
-   * never asked for offline documents gets exactly the behaviour they had
-   * before: the request goes out, and if there is no signal it fails.
+   * BEFORE the /api/ bail-out below, which would otherwise return first and
+   * leave this branch dead. The network is always tried first and its response
+   * is never written here; this cache is filled only by wg-offline-keep above.
+   * So a traveller who never asked for offline documents gets exactly the
+   * behaviour they had before: the request goes out, and if there is no signal
+   * it fails.
    */
   if (url.pathname === ATTACHMENTS) {
     event.respondWith(
@@ -255,9 +285,9 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin") || url.pathname.startsWith("/access")) return;
 
   // Pages and app code: always prefer the network so a new release takes effect
-  // immediately. Matched by PATH as well as request destination — in a WebView
-  // a dynamically-imported chunk or a preload can arrive with an empty
-  // `destination`, so keying only on `=== "script"` let the frozen
+  // immediately. Matched by PATH as well as request destination — in a
+  // WebView a dynamically-imported chunk or a preload can arrive with an empty
+  // `destination`, so keying only on `=== "script"` let exactly the frozen
   // /_next/static chunks slip through to the immutable HTTP cache. The path
   // check closes that.
   if (

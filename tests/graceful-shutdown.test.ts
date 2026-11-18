@@ -52,15 +52,12 @@ describe("the server stops on purpose", () => {
     assert.ok(grace > 0 && grace < RAILWAY.deploy.drainingSeconds * 1000, `grace ${grace}ms vs drain ${RAILWAY.deploy.drainingSeconds}s`);
   });
 
-  it("does not try to solve it from instrumentation, which is the wrong process", () => {
-    // next start runs the server in a child; a handler registered there never
-    // sees the signal. Tried, measured, removed — this stops it coming back.
-    let exists = true;
-    try {
-      readFileSync("instrumentation.ts", "utf8");
-    } catch {
-      exists = false;
-    }
-    assert.equal(exists, false, "instrumentation.ts cannot receive the shutdown signal");
+  it("the shutdown is not attempted from instrumentation, which is the wrong process", () => {
+    // instrumentation.ts is real here and stays — it starts the in-process trip
+    // schedulers. But `next start` runs it in the SERVER CHILD, and the signal
+    // goes to the parent, so a handler registered there would never fire. It
+    // was tried in the sibling repository, measured, and removed.
+    const instrumentation = readFileSync("instrumentation.ts", "utf8");
+    assert.doesNotMatch(instrumentation, /SIGTERM|SIGINT/, "shutdown belongs in scripts/start.mjs, not here");
   });
 });

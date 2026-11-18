@@ -107,8 +107,6 @@ export default function AccountSettings({
       setMessage({ ok: false, text: describeSave(result.state)! });
       return;
     }
-    setMessage({ ok: true, text: "Saved" });
-    router.refresh();
   }
 
   async function removeAccount() {

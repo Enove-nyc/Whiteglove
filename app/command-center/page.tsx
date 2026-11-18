@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
-import MixedText from "@/components/MixedText";
-import CommandCenterNotify from "@/components/CommandCenterNotify";
 import TripAdvisories from "@/components/TripAdvisories";
 import { BeforeYouGo } from "@/components/BeforeYouGo";
+import Navbar from "@/components/Navbar";
+import MixedText from "@/components/MixedText";
 import TripDocuments from "@/components/TripDocuments";
 import { accountCookieName, getCurrentAccountData, getTripItinerary } from "@/lib/account-store";
 import { daysUntil, tripReadiness, type StopReadiness } from "@/lib/command-center";
 import { stopsForTrip } from "@/lib/command-center-data";
-import { tripAlerts } from "@/lib/trip-alerts";
 import { fetchAdvisories } from "@/lib/travel-advisories";
 import { tripAdvisories } from "@/lib/trip-advisories";
+import { tripAlerts } from "@/lib/trip-alerts";
+import { getAppPrefs } from "@/lib/app-prefs-store";
 import { tripDocuments } from "@/lib/trip-documents";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
@@ -64,6 +64,13 @@ export default async function CommandCenterPage() {
   const trip = await getTripItinerary(account.email);
   const stops = trip ? await stopsForTrip(trip.itinerary) : [];
   const readiness = tripReadiness(stops);
+  // WHERE THIS TRIP GOES, and what the governments there currently say.
+  // The advisory feed and the roll-up have both existed for months and were
+  // wired to nothing here — and StopFacts.country was never populated, so even
+  // once wired they would have seen a trip with no countries in it. Both are
+  // fixed together, because either alone shows an empty card.
+  const feed = await fetchAdvisories();
+  const advisories = tripAdvisories(stops, feed.available ? feed.advisories : []);
   // Read once, here, rather than while the page renders.
   const today = new Date().toISOString().slice(0, 10);
   const leaving = daysUntil(trip?.itinerary.startDate, today);
@@ -75,19 +82,28 @@ export default async function CommandCenterPage() {
   // references the itinerary already holds, and each one opens only for the
   // account that uploaded it.
   const documents = tripDocuments(trip?.itinerary);
-
-  // The one thing on this page that leaves the server. It fails fast and says
-  // so on the screen rather than rendering an empty list, which would read as
-  // "nothing to report" when it means "nobody could check".
-  const feed = await fetchAdvisories();
-  const advisories = tripAdvisories(stops, feed.available ? feed.advisories : []);
+  /**
+   * SHABBOS IS BEHIND THE SWITCH, AND OFF UNTIL AN ACCOUNT ASKS FOR IT.
+   *
+   * This is a general itinerary product. "Kraków is planned for Shabbos" is a
+   * real warning for an agency that plans kosher travel and noise on somebody
+   * else's screen — and until now every account got it whether they wanted it
+   * or not, with nothing to turn it off. The same one setting that already
+   * decides whether the app shows candle-lighting decides this
+   * (AppPrefs.kosherFeatures, the switch on /account).
+   *
+   * Dropped HERE rather than inside tripAlerts, which stays the pure "what is
+   * true about this trip" answer and is shared with the deployment whose
+   * travellers all want it.
+   */
+  const kosher = (await getAppPrefs(account.email).catch(() => ({ kosherFeatures: false }))).kosherFeatures;
   const alerts = tripAlerts({
     stops,
     readiness,
     startDate: trip?.itinerary.startDate,
     today,
     timesById,
-  });
+  }).filter((alert) => kosher || alert.kind !== "shabbos");
 
   if (!stops.length) {
     return (
@@ -124,10 +140,6 @@ export default async function CommandCenterPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
-        {/* Everything below waits to be opened. This is the one thing on the
-            page that offers not to. */}
-        <CommandCenterNotify />
-
         {/* Above everything, because these are the ones that get worse the
             longer nobody notices — and Shabbos above those. */}
         {alerts.length > 0 && (
@@ -205,11 +217,6 @@ export default async function CommandCenterPage() {
             by which stop they were filed on. The planner's shape is right for
             building a trip; this one is right at half past five at the
             airport. */}
-        {/* Where the trip actually goes, said once for the whole trip. The
-            advisory already showed on a beis hachaim's own page one country at
-            a time, which answers "what about Ukraine" for somebody who opens
-            the Ukraine page and never answered "is there anything I should
-            know about my trip". */}
         <div className="mt-12 border-t border-[var(--gold-light)] pt-10">
           <TripAdvisories roll={advisories} unavailable={feed.available ? undefined : feed.reason} />
         </div>

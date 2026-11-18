@@ -133,7 +133,7 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(route.network, "stay22");
     assert.equal(route.destinationLabel, "Kayak");
     const resolved = resolveLink(
-      { product: "car", destination: "Rome", checkIn: "2026-09-01", checkOut: "2026-09-08" },
+      { product: "car", destination: "Rome", checkIn: "2027-09-01", checkOut: "2027-09-08" },
       viaAid,
     );
     assert.ok(resolved);
@@ -141,7 +141,7 @@ describe("who pays and where the traveler lands", () => {
     assert.equal(url.host, "www.stay22.com");
     assert.equal(url.pathname, "/allez/kayak");
     assert.equal(url.searchParams.get("aid"), "whiteglove");
-    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/cars\/Rome\/2026-09-01\/2026-09-08/);
+    assert.match(url.searchParams.get("link") ?? "", /kayak\.com\/cars\/Rome\/2027-09-01\/2027-09-08/);
   });
 
   it("prefers Stay22 Kayak over a Travelpayouts wrap when the Stay22 ID is set", () => {

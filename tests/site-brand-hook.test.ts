@@ -35,14 +35,16 @@ describe("one hook answers which brand this is", () => {
     assert.doesNotMatch(FOOTER, /setBrand/);
   });
 
-  it("the order is prop, then the deployment's setting, then the hostname", () => {
-    assert.match(HOOK, /return brandProp \?\? built \?\? fromHost;/);
+  it("the order is prop, then the owner's /site view, then the deployment's setting, then the hostname", () => {
+    assert.match(HOOK, /return brandProp \?\? \(fromHost === "kosher" \? "kosher" : built \?\? fromHost\);/);
+    assert.match(HOOK, /inKosherSite\(window\.location\.pathname\) \? "kosher"/);
     assert.match(HOOK, /configuredBrand\(\)/);
   });
 
   it("the server is told which value it used, so hydration is honest", () => {
     // The third argument is the server snapshot. Without it React has no way
     // to render this without a mismatch.
-    assert.match(HOOK, /useSyncExternalStore\(\s*NO_CHANGE,[\s\S]*?\(\) => built \?\? "kosher",/);
+    // Itineraries when the build says nothing: one site now (AGENTS.md, 18 November 2026).
+    assert.match(HOOK, /useSyncExternalStore\(\s*NO_CHANGE,[\s\S]*?\(\) => built \?\? "itineraries",/);
   });
 });

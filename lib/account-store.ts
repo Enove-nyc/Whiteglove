@@ -8,7 +8,7 @@ import type { ManualTripStage } from "@/data/trip-pipeline";
 import { formatCents, type PaymentRecord, type TripBalance } from "@/data/trip-payments";
 import type { CommissionRecord } from "@/data/trip-commission";
 import type { AddonItem } from "@/data/trip-addons";
-import { withActivity, type ActivityEntry } from "@/data/trip-activity";
+import { recentActivity, withActivity, type ActivityEntry } from "@/data/trip-activity";
 import { tripSignature, type PackingList } from "@/data/packing-list";
 import { suggestPackingList } from "@/lib/packing-ai";
 import { dismissSuggestion, itinerarySignature, type OptimizationResult } from "@/data/itinerary-optimization";
@@ -16,7 +16,10 @@ import { suggestItineraryOptimizations } from "@/lib/itinerary-optimization-ai";
 import { emptyTranslation, type TranslatedItinerary } from "@/data/itinerary-translation";
 import { translateFields, type TranslationField } from "@/lib/itinerary-translation-ai";
 import type { AdvisorWelcome } from "@/data/advisor-welcome";
-import { alertsFromItineraryDiff, alertsFromStatusChange, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
+import { alertsFromStatusChange, flightRecheckMs, type FlightStatusSnapshot, type TripAlert } from "@/data/trip-alerts";
+import { summarizeItineraryChange, type ItineraryChange } from "@/data/trip-changes";
+import { accepting, openStatus, withOpen, withRevoked, type OpenStatus, type ShareOpens } from "@/lib/share-opens";
+import { tripTimeZone } from "@/lib/trip-timezone";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
 import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
@@ -165,6 +168,12 @@ export type SavedTrip = {
    * notifications off. This is the only thing that makes it once.
    */
   alertsPushed?: Record<string, string>;
+  /**
+   * Tokens this trip has had and stopped. Kept so the open history of a
+   * stopped link survives it; the token itself opens nothing once its share
+   * record is deleted.
+   */
+  revokedShareIds?: string[];
   /** Public read-only token, when this particular trip is shared. */
   shareId?: string;
   /**
@@ -966,6 +975,12 @@ export type TripSummary = {
   updatedAt: string;
   /** Whether this trip's client gets automatic reminders — see lib/trip-reminders.ts. */
   autoReminders: boolean;
+  /**
+   * Every link this trip has, live or stopped, with whether it has been
+   * opened. One entry per link because an advisor who sent three travellers
+   * three separate doors needs to know which of the three walked through.
+   */
+  links: TripLinkStatus[];
 };
 
 /** How many days the trip covers, from its dates. Zero until both are set. */
@@ -992,6 +1007,7 @@ function summarize(trips: SavedTrip[], activeId: string): TripSummary[] {
     shareId: t.shareId,
     updatedAt: t.updatedAt,
     autoReminders: Boolean(t.autoReminders),
+    links: linksOf(t),
   }));
 }
 
@@ -1441,23 +1457,22 @@ export async function saveAccountItinerary(email: string, itinerary: Itinerary, 
   if (id && !trips.some((t) => t.id === id)) return false;
   const targetId = id ?? activeId;
   const target = trips.find((t) => t.id === targetId);
-  const stamped = { ...itinerary, updatedAt: new Date().toISOString() };
-  // "What Changed?" — see data/trip-alerts.ts. Computed against the record
-  // being replaced, so a change made anywhere a trip is saved from (the
-  // planner, an import, a proposal turning into the itinerary) is caught the
-  // same way, without each of those call sites having to know about it.
-  const changeAlerts = target ? alertsFromItineraryDiff(target.itinerary, stamped, tripAlertId) : [];
-  const next = trips.map((t) =>
-    t.id === targetId
-      ? {
-          ...t,
-          itinerary: stamped,
-          name: stamped.title?.trim() || t.name,
-          alerts: changeAlerts.length ? [...(t.alerts ?? []), ...changeAlerts] : t.alerts,
-          updatedAt: new Date().toISOString(),
-        }
-      : t,
-  );
+  const now = new Date().toISOString();
+  const stamped = { ...itinerary, updatedAt: now };
+
+  // A shared trip has someone else watching it — a client on a per-trip code,
+  // family on a group link. When the plan they were handed moves, record it on
+  // the Changes feed so they see WHAT changed, not just a silently different
+  // itinerary the next time they open the app. A trip nobody has been given a
+  // link to has no such audience, so its edits are logged for no one.
+  const change = target?.shareId ? summarizeItineraryChange(target.itinerary, stamped) : null;
+
+  const next = trips.map((t) => {
+    if (t.id !== targetId) return t;
+    const withPlan = { ...t, itinerary: stamped, name: stamped.title?.trim() || t.name, updatedAt: now };
+    if (change) withPlan.alerts = coalesceItineraryChange(t.alerts ?? [], change, now, tripAlertId);
+    return withPlan;
+  });
   return Boolean(await writeTrips(normalized, next, activeId));
 }
 
@@ -1568,14 +1583,19 @@ export async function recordPayment(ownerEmail: string, tripId: string, record: 
   const trip = trips.find((t) => t.id === tripId);
   if (!trip) return false;
   const balance: TripBalance = trip.balance ?? { currency: record.currency, splitMode: "equal", assignments: [], schedule: [], showTotalToTravelers: false, payments: [] };
-  if (balance.payments.some((p) => p.stripePaymentIntentId === record.stripePaymentIntentId)) return true;
+  const merged = mergePaymentRecord(balance.payments, record);
+  // Nothing changed — a genuine duplicate, or a stale failure after success.
+  // Idempotent success, exactly as a retried webhook expects.
+  if (!merged) return true;
+  // A settled charge is worth a line in the trip's feed; a declined attempt is
+  // not (the ledger keeps it, but it isn't something that happened to the trip).
   const activity =
     record.status === "succeeded"
       ? withActivity(trip.activity ?? [], activityEntry("payment_received", `Payment received: ${formatCents(record.amountCents, record.currency)}.`))
       : trip.activity;
   const next = trips.map((t) =>
     t.id === tripId
-      ? { ...t, balance: { ...balance, payments: [...balance.payments, record] }, activity, updatedAt: new Date().toISOString() }
+      ? { ...t, balance: { ...balance, payments: merged }, ...(activity ? { activity } : {}), updatedAt: new Date().toISOString() }
       : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));
@@ -2083,7 +2103,7 @@ function tripAlertId() {
 }
 
 /** Re-check status if the last real reading is older than this. */
-const FLIGHT_RECHECK_MS = 3 * 60 * 60 * 1000;
+
 /** Only bother checking a flight departing this soon — no use querying a flight six months out. */
 const FLIGHT_CHECK_WINDOW_DAYS = 3;
 
@@ -2097,7 +2117,7 @@ export async function checkTripFlightStatus(email: string, tripId: string): Prom
   if (!hasAccountStorage()) return [];
   const normalized = normalizeId(email);
   const data = await getAccountData(normalized);
-  const { trips, activeId } = withTrips(data);
+  const { trips } = withTrips(data);
   const trip = trips.find((t) => t.id === tripId);
   if (!trip) return [];
 
@@ -2106,35 +2126,54 @@ export async function checkTripFlightStatus(email: string, tripId: string): Prom
   const candidates = trip.itinerary.flights.filter((f) => f.flightNo?.trim() && f.date && f.date >= today && f.date <= cutoff);
   if (candidates.length === 0) return [];
 
-  const statuses = { ...(trip.flightStatus ?? {}) };
+  // Only the flights actually re-read this run — merged onto the freshest copy
+  // at write time, so a stale reading for a flight we did not check cannot
+  // overwrite a newer one.
+  const checkedStatuses: Record<string, FlightStatusSnapshot> = {};
   const newAlerts: TripAlert[] = [];
   let checkedAny = false;
 
   for (const flight of candidates) {
-    const previous = statuses[flight.id];
-    if (previous && Date.now() - Date.parse(previous.checkedAt) < FLIGHT_RECHECK_MS) continue;
+    const previous = trip.flightStatus?.[flight.id];
+    if (previous && Date.now() - Date.parse(previous.checkedAt) < flightRecheckMs(flight.date, Date.now())) continue;
     const next = await checkFlightStatus(flight.id, flight.flightNo!.trim(), flight.date);
     if (!next) continue;
     checkedAny = true;
     const label = [flight.airline, flight.flightNo].filter(Boolean).join(" ") || `${flight.from} → ${flight.to}`;
     newAlerts.push(...alertsFromStatusChange(label, previous, next, tripAlertId));
-    statuses[flight.id] = next;
+    checkedStatuses[flight.id] = next;
   }
   if (!checkedAny) return [];
 
-  const nextTrips = trips.map((t) =>
+  // Re-read immediately before writing. The status lookups above are slow
+  // network calls; a user edit (or another writer) can land on this account
+  // during them, and writeTrips rewrites the whole account. Merging the new
+  // statuses and alerts onto the freshest trip — not the stale snapshot read
+  // before the network round-trips — keeps a concurrent itinerary edit from
+  // being clobbered.
+  const fresh = withTrips(await getAccountData(normalized));
+  const target = fresh.trips.find((t) => t.id === tripId);
+  if (!target) return [];
+  const nextTrips = fresh.trips.map((t) =>
     t.id === tripId
-      ? { ...t, flightStatus: statuses, alerts: [...(t.alerts ?? []), ...newAlerts], updatedAt: new Date().toISOString() }
+      ? {
+          ...t,
+          flightStatus: { ...(t.flightStatus ?? {}), ...checkedStatuses },
+          alerts: [...(t.alerts ?? []), ...newAlerts],
+          updatedAt: new Date().toISOString(),
+        }
       : t,
   );
-  await writeTrips(normalized, nextTrips, activeId);
+  await writeTrips(normalized, nextTrips, fresh.activeId);
 
   // Told, not just recorded — a device subscribed to this trip (see
   // savePushSubscription) is pushed the moment there is something worth
   // knowing, rather than only finding out the next time the app happens to
   // be opened. Best-effort: nothing here is allowed to fail the check itself.
-  if (newAlerts.length && trip.pushSubscriptions?.length) {
-    await notifySubscribers(normalized, tripId, newAlerts);
+  if (newAlerts.length && target.pushSubscriptions?.length) {
+    await notifySubscribers(normalized, tripId, newAlerts).catch((error) =>
+      console.error("[account-store] push notify failed:", error),
+    );
   }
 
   return newAlerts;
@@ -2242,14 +2281,15 @@ export async function ensureProposalShare(email: string, tripId: string): Promis
 }
 
 /** A proposal by its public token — marks it "viewed" the first time a client opens a "sent" one. */
-export async function getSharedProposal(shareId: string) {
+export async function getSharedProposal(shareId: string, viewer?: string | null) {
   const rec = await readJson<{ ownerEmail: string; tripId: string }>(proposalShareKey(shareId));
   if (!rec) return null;
   const data = await getAccountData(rec.ownerEmail);
   const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
   if (!trip?.proposal) return null;
   let proposal = trip.proposal;
-  if (proposal.status === "sent") {
+  const isOwner = Boolean(viewer) && normalizeId(viewer!) === normalizeId(rec.ownerEmail);
+  if (proposal.status === "sent" && !isOwner) {
     proposal = { ...proposal, status: "viewed", viewedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     await saveProposal(rec.ownerEmail, rec.tripId, proposal);
   }
@@ -2677,7 +2717,10 @@ export async function submitFormResponse(shareId: string, respondentName: string
   }
   const response: ClientFormResponse = { id: formResponseId(), respondentName: name, answers: cleanAnswers, submittedAt: new Date().toISOString() };
   const nextResponses = [...(trip.formResponses ?? []), response];
-  const next = trips.map((t) => (t.id === rec.tripId ? { ...t, formResponses: nextResponses, updatedAt: new Date().toISOString() } : t));
+  const activity = withActivity(trip.activity ?? [], activityEntry("form_submitted", `${name} filled out the pre-trip form.`));
+  const next = trips.map((t) =>
+    t.id === rec.tripId ? { ...t, formResponses: nextResponses, activity, updatedAt: new Date().toISOString() } : t,
+  );
   return Boolean(await writeTrips(normalized, next, activeId));
 }
 
@@ -2910,7 +2953,18 @@ export async function stopTripShare(email: string, tripId: string): Promise<bool
   const { trips, activeId } = withTrips(data);
   const trip = trips.find((t) => t.id === tripId);
   if (!trip) return false;
-  if (trip.shareId) await deleteKey(shareKey(trip.shareId));
+  // Marked revoked BEFORE the link is deleted: after the delete there is no
+  // token left to look up, and the open history has to survive the link it
+  // belongs to (see readShareOpens).
+  if (trip.shareId) {
+    await markShareRevoked(trip.shareId);
+    await deleteKey(shareKey(trip.shareId));
+  }
+  // A traveller's own door is stopped with the trip-wide one — each is a
+  // separate link with its own status, so each gets its own tombstone.
+  for (const token of Object.values(trip.travelerShares ?? {})) {
+    if (token) await markShareRevoked(token);
+  }
   for (const collaborator of readCollaborators(trip.collaborators)) {
     await removeFromSharedWith(collaborator.person, normalized);
   }
@@ -2920,8 +2974,22 @@ export async function stopTripShare(email: string, tripId: string): Promise<bool
   // (called whenever a flight-status check finds something new) would keep
   // sending to it regardless: it reads pushSubscriptions off the trip, not
   // the share token, and never itself checks whether shareId is still set.
+  // The stopped tokens are remembered so the advisor can still see what
+  // happened on them. Capped: this is a short history, not a log.
+  const stopped = [trip.shareId, ...Object.values(trip.travelerShares ?? {})].filter(Boolean) as string[];
+  const remembered = [...stopped, ...(trip.revokedShareIds ?? [])].filter((v, i, all) => all.indexOf(v) === i).slice(0, 10);
   const next = trips.map((t) =>
-    t.id === tripId ? { ...t, shareId: undefined, collaborators: [], pushSubscriptions: [], updatedAt: new Date().toISOString() } : t,
+    t.id === tripId
+      ? {
+          ...t,
+          shareId: undefined,
+          travelerShares: {},
+          revokedShareIds: remembered,
+          collaborators: [],
+          pushSubscriptions: [],
+          updatedAt: new Date().toISOString(),
+        }
+      : t,
   );
   return Boolean(await writeTrips(normalized, next, activeId));
 }
@@ -3319,7 +3387,6 @@ export async function getCurrentAccountData(cookieValue?: string) {
   return { email, record, data };
 }
 
-export { accountCookieName };
 /* ---- the assistant's conversation --------------------------------------- */
 
 /**
@@ -3350,3 +3417,373 @@ export async function clearAssistantConversation(email: string): Promise<boolean
   return Boolean(response);
 }
 
+
+// ---- Merged from White Glove Itineraries ---------------------------------
+
+
+/**
+ * A best-effort distributed lease — SET NX PX. Succeeds for exactly one caller
+ * across every instance for `ms`, then auto-expires so a crashed holder never
+ * wedges it. Used to keep the in-process scheduler (lib/cron-scheduler.ts) from
+ * running the same tick on every replica: duplicate client reminders and
+ * multiplied paid flight lookups. Returns false when storage is unavailable —
+ * the scheduler treats that as "skip", which is the safe side (a missed tick,
+ * not a doubled send).
+ */
+export async function tryAcquireLease(name: string, ms: number): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const key = `white-glove:lease:${name}`;
+  const token = randomBytes(8).toString("base64url");
+  const res = await redis<string>(`set/${encodeURIComponent(key)}/${token}/NX/PX/${ms}`);
+  return res?.result === "OK";
+}
+
+
+/**
+ * Has this trip been started at all?
+ *
+ * WHY IT EXISTS. withTrips() answers "what trips does this account have",
+ * and for an account still on the old single-trip shape it answers by
+ * SYNTHESIZING one out of data.itinerary — which is right, because that
+ * itinerary is a real trip somebody planned. For an account with nothing at
+ * all it synthesizes an empty "My trip", which is also right for the planner
+ * (you have to open something) and wrong for anything that counts trips: a new
+ * advisor would be told they had one active trip before they had made any.
+ *
+ * The advisor dashboard tried to dodge that by reading data.trips directly and
+ * skipping withTrips entirely. That fixed the phantom and broke the real case:
+ * an account whose trip is still in the legacy slot has an empty data.trips, so
+ * the dashboard showed "Start your first trip" while the planner, the pipeline
+ * and every other screen showed the trip. Empty and wrong, on the one screen
+ * meant to say how the business is doing.
+ *
+ * So: take withTrips' answer, and drop what has nothing in it. A trip with a
+ * name somebody chose, a client, a date, a stop, a traveller, a proposal or a
+ * balance has been started. One with none of those is the placeholder, whether
+ * it was synthesized just now or saved empty months ago — and either way there
+ * is nothing on it to count.
+ */
+export function tripIsStarted(trip: SavedTrip): boolean {
+  const itinerary = trip.itinerary;
+  // The one string that means "nobody has named this". emptyItinerary() puts it
+  // on the title and withTrips falls back to it for the name, so a trip
+  // carrying it has not been named — it has been left alone.
+  const UNTITLED = "My trip";
+  const named = trip.name?.trim();
+  const titled = itinerary?.title?.trim();
+  return Boolean(
+    (named && named !== UNTITLED) ||
+      (titled && titled !== UNTITLED) ||
+      trip.client?.trim() ||
+      trip.advisor?.trim() ||
+      trip.proposal ||
+      trip.balance ||
+      trip.shareId ||
+      itinerary?.startDate ||
+      itinerary?.endDate ||
+      itinerary?.flights?.length ||
+      itinerary?.lodging?.length ||
+      itinerary?.activities?.length ||
+      itinerary?.travelers?.length ||
+      trip.route?.length,
+  );
+}
+
+
+/** One share link, and the two dates that say whether it has been used. */
+export type TripLinkStatus = {
+  shareId: string;
+  /** "The trip link" or a traveller's name — what the advisor called it. */
+  label: string;
+  /** Live links can still record an open; stopped ones are frozen. */
+  live: boolean;
+  opens: ShareOpens;
+  /**
+   * The line to show, worked out on the server.
+   *
+   * Computed here rather than in the browser for two reasons the codebase
+   * already settled: a component may not read a clock while it renders, and
+   * the day shown has to be the day where the TRIP is — which needs the
+   * itinerary's coordinates, and those never leave the server.
+   */
+  status: OpenStatus;
+};
+
+
+/**
+ * Every door into one trip, named the way the advisor would name it.
+ *
+ * The trip-wide link first, then each traveller's own, then the ones that have
+ * been stopped. Dates are left empty here — summarize() is synchronous and the
+ * open records are separate keys; withLinkOpens() below fills them in for the
+ * screens that show status, so the many callers that only want trip names pay
+ * nothing for it.
+ */
+/** What a link shows before withLinkOpens has read its record. */
+const BLANK_STATUS: OpenStatus = { text: "Not opened yet", detail: "", state: "unopened" };
+
+
+function linksOf(t: SavedTrip): TripLinkStatus[] {
+  const links: TripLinkStatus[] = [];
+  if (t.shareId) links.push({ shareId: t.shareId, label: "The trip link", live: true, opens: {}, status: BLANK_STATUS });
+  for (const [travelerId, token] of Object.entries(t.travelerShares ?? {})) {
+    if (!token || token === t.shareId) continue;
+    const traveler = t.itinerary?.travelers?.find((p) => p.id === travelerId);
+    links.push({ shareId: token, label: traveler?.name?.trim() || "A traveller's own link", live: true, opens: {}, status: BLANK_STATUS });
+  }
+  for (const token of t.revokedShareIds ?? []) {
+    if (!token || links.some((l) => l.shareId === token)) continue;
+    links.push({ shareId: token, label: "A stopped link", live: false, opens: {}, status: BLANK_STATUS });
+  }
+  return links;
+}
+
+
+/**
+ * Fill in when each link was opened, and the line that says so.
+ *
+ * One read per link, and only for trips that have one — an account sharing
+ * nothing costs nothing. Kept out of summarize() deliberately: getTrips is
+ * called by screens that only want names and dates, and none of them should
+ * pay for a status they do not draw.
+ */
+export async function withLinkOpens(email: string, now = new Date().toISOString()): Promise<TripSummary[]> {
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const summaries = summarize(trips, activeId);
+  return Promise.all(
+    summaries.map(async (summary) => {
+      if (summary.links.length === 0) return summary;
+      const zone = tripTimeZone(trips.find((t) => t.id === summary.id)?.itinerary);
+      const links = await Promise.all(
+        summary.links.map(async (link) => {
+          const opens = await readShareOpens(link.shareId).catch(() => ({}) as ShareOpens);
+          return { ...link, opens, status: openStatus(opens, now, zone) };
+        }),
+      );
+      return { ...summary, links };
+    }),
+  );
+}
+
+
+/** How close two edits must be to read as one sitting. Beyond it, a fresh
+ *  round of changes earns its own entry — and its own unread mark, which
+ *  matters for a client whose read state is kept per alert id in their own
+ *  browser rather than in the server's `acknowledged` flag. */
+const CHANGE_COALESCE_MS = 30 * 60 * 1000;
+
+
+/**
+ * Fold a fresh plan-change into a trip's alerts. A burst of edits in one
+ * sitting should read as one "Trip updated", not a wall of them — so while the
+ * newest alert is a still-unseen itinerary_update from within the last
+ * half-hour, this refreshes that one in place (newest wording, newest time)
+ * rather than adding another. A later round of edits, or one after the
+ * traveler has read this, starts a fresh entry. Alerts are stored oldest-first,
+ * so the last element is the newest.
+ */
+function coalesceItineraryChange(
+  alerts: TripAlert[],
+  change: ItineraryChange,
+  now: string,
+  idFor: () => string,
+): TripAlert[] {
+  const last = alerts[alerts.length - 1];
+  const recent = last ? Date.parse(now) - Date.parse(last.createdAt) < CHANGE_COALESCE_MS : false;
+  if (last && last.kind === "itinerary_update" && !last.acknowledged && recent) {
+    // Fold in place so a burst of edits reads as one entry, but with a FRESH
+    // id. A client's read state is kept per alert id in their own browser (the
+    // owner's `acknowledged` flag never reaches them), so reusing the id would
+    // leave a change they made after the client already read the entry looking
+    // already-seen. A new id restores the unread signal; the feed still shows
+    // one line, since the old entry is dropped.
+    return [...alerts.slice(0, -1), { id: idFor(), kind: "itinerary_update", title: change.title, note: change.note, createdAt: now, acknowledged: false }];
+  }
+  return [
+    ...alerts,
+    { id: idFor(), kind: "itinerary_update", title: change.title, note: change.note, createdAt: now, acknowledged: false },
+  ];
+}
+
+
+/**
+ * Merge one payment attempt into a ledger, keyed on the intent AND its outcome.
+ * Returns the new payments array, or null when nothing should change. Pulled
+ * out of recordPayment as pure logic so the idempotency rules can be pinned by
+ * a test without a live store. See recordPayment for why the id alone is not a
+ * safe key (a declined attempt and its successful retry share one intent id).
+ */
+export function mergePaymentRecord(existing: PaymentRecord[], record: PaymentRecord): PaymentRecord[] | null {
+  const sameIntent = existing.filter((p) => p.stripePaymentIntentId === record.stripePaymentIntentId);
+  // Same intent, same outcome → a retried or double-delivered webhook. No-op.
+  if (sameIntent.some((p) => p.status === record.status)) return null;
+  // A failure arriving after this intent already succeeded is stale — drop it.
+  if (record.status === "failed" && sameIntent.some((p) => p.status === "succeeded")) return null;
+  // A success supersedes any earlier failed attempt on the same intent, rather
+  // than sitting behind it where paidCentsFor would never count the money.
+  const kept =
+    record.status === "succeeded"
+      ? existing.filter((p) => !(p.stripePaymentIntentId === record.stripePaymentIntentId && p.status === "failed"))
+      : existing;
+  return [...kept, record];
+}
+
+
+/** Mark every alert on this trip read at once — what opening the Changes
+ *  screen does, rather than dismissing them one by one. No-op, and reported as
+ *  success, when they were all already read. */
+export async function acknowledgeAllAlerts(email: string, tripId: string): Promise<boolean> {
+  if (!hasAccountStorage()) return false;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return false;
+  if (!(trip.alerts ?? []).some((a) => !a.acknowledged)) return true;
+  const nextTrips = trips.map((t) =>
+    t.id === tripId
+      ? { ...t, alerts: (t.alerts ?? []).map((a) => (a.acknowledged ? a : { ...a, acknowledged: true })), updatedAt: new Date().toISOString() }
+      : t,
+  );
+  return Boolean(await writeTrips(normalized, nextTrips, activeId));
+}
+
+
+/** Longest a hand-sent advisor alert may be — a line or two, not an essay. */
+export const ADVISOR_ALERT_MAX = 280;
+
+
+/**
+ * A note the advisor sends the traveler by hand — "your driver is running
+ * twenty minutes late", "the museum opens an hour later than we thought". It
+ * lands on the same Changes feed as everything else and, like a flight change,
+ * is pushed straight to any device following the trip. Nothing a data feed
+ * would ever produce; this is the one alert a person types.
+ *
+ * Returns the created alert, or null if it could not be stored (no trip, no
+ * storage) — the caller reports that rather than pretending it was sent.
+ */
+export async function sendAdvisorAlert(email: string, tripId: string, text: string): Promise<TripAlert | null> {
+  if (!hasAccountStorage()) return null;
+  const clean = text.trim().slice(0, ADVISOR_ALERT_MAX);
+  if (!clean) return null;
+  const normalized = normalizeId(email);
+  const data = await getAccountData(normalized);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === tripId);
+  if (!trip) return null;
+
+  const alert: TripAlert = {
+    id: tripAlertId(),
+    kind: "advisor_alert",
+    title: "From your travel advisor",
+    note: clean,
+    createdAt: new Date().toISOString(),
+    acknowledged: false,
+  };
+  const nextTrips = trips.map((t) =>
+    t.id === tripId ? { ...t, alerts: [...(t.alerts ?? []), alert], updatedAt: new Date().toISOString() } : t,
+  );
+  if (!(await writeTrips(normalized, nextTrips, activeId))) return null;
+
+  if (trip.pushSubscriptions?.length) {
+    await notifySubscribers(normalized, tripId, [alert]).catch((error) =>
+      console.error("[account-store] advisor alert push failed:", error),
+    );
+  }
+  return alert;
+}
+
+
+/* ---- the advisor's OWN devices (account-level push) -----------------------
+ *
+ * The advisor opts in once, in their app, and is then told when a client writes
+ * back on ANY of their trips. So the subscription lives on the account, not a
+ * trip — one list of the advisor's devices, read whenever a client message
+ * needs to reach them.
+ */
+
+/** The advisor's subscribed devices. */
+export async function readAccountPushSubscriptions(email: string): Promise<PushSubscriptionRecord[]> {
+  const data = await getAccountData(normalizeId(email));
+  return data.pushSubscriptions ?? [];
+}
+
+
+/**
+ * One trip's own history — proposal, form, payment and add-on events in the
+ * order they should be read (most recent first). Resolves the trip the same
+ * way every per-trip screen does: the one named in `?trip=` when the advisor
+ * opened it from a specific trip, otherwise whichever is open on the account.
+ * The advisor's own read; a client never reaches this.
+ */
+export async function getTripActivity(
+  email: string,
+  wanted?: string,
+): Promise<{ tripId: string; tripName: string; activity: ActivityEntry[] } | null> {
+  const data = await getAccountData(email);
+  const { trips, activeId } = withTrips(data);
+  const trip = trips.find((t) => t.id === (wanted || activeId)) ?? trips[0];
+  if (!trip) return null;
+  return {
+    tripId: trip.id,
+    tripName: trip.client?.trim() || trip.name || trip.itinerary.title || "This trip",
+    activity: recentActivity(trip.activity ?? []),
+  };
+}
+
+
+// ---- Itinerary sharing ------------------------------------------------
+
+function shareOpensKey(shareId: string) {
+  return `white-glove:share-opens:${shareId}`;
+}
+
+
+/**
+ * WHETHER THE TRAVELLER HAS OPENED THIS LINK, kept apart from the link itself.
+ *
+ * Its own key rather than a field on the share record, for one reason that
+ * decides the design: stopTripShare DELETES the share record, and the advisor
+ * still needs to see that the client opened it twice before it was stopped. A
+ * field would go with the link; this outlives it, and is where `revokedAt` is
+ * written so a stopped link refuses later opens rather than merely failing to
+ * receive them.
+ *
+ * Two timestamps. Nothing else is stored — see lib/share-opens.ts for what
+ * that promise is and why it is not negotiable.
+ */
+export async function readShareOpens(shareId: string): Promise<ShareOpens> {
+  if (!shareId) return {};
+  return (await readJson<ShareOpens>(shareOpensKey(shareId))) ?? {};
+}
+
+
+/**
+ * Record that somebody who is not the owner opened this link.
+ *
+ * BEST EFFORT, ALWAYS. A traveller opening their itinerary on a train must
+ * never see an error because a status write failed, so every caller ignores
+ * the result and this never throws. Returns false when nothing was written —
+ * the link is stopped, or the store is not configured.
+ */
+export async function recordShareOpen(shareId: string, at = new Date().toISOString()): Promise<boolean> {
+  if (!shareId || !hasAccountStorage()) return false;
+  const current = await readShareOpens(shareId);
+  if (!accepting(current)) return false;
+  const next = withOpen(current, at);
+  if (next.firstOpenedAt === current.firstOpenedAt && next.lastOpenedAt === current.lastOpenedAt) return false;
+  return writeJson(shareOpensKey(shareId), next);
+}
+
+
+/** Freeze the record when a link is stopped. Keeps the history, takes no more. */
+export async function markShareRevoked(shareId: string, at = new Date().toISOString()): Promise<void> {
+  if (!shareId || !hasAccountStorage()) return;
+  const current = await readShareOpens(shareId);
+  if (current.revokedAt) return;
+  await writeJson(shareOpensKey(shareId), withRevoked(current, at));
+}
+
+export { accountCookieName };

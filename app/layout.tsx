@@ -3,6 +3,7 @@ import "./globals.css";
 import NewSiteNotice from "@/components/NewSiteNotice";
 import SearchPalette from "@/components/SearchPalette";
 import SiteAssistant from "@/components/SiteAssistant";
+import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
 import { SignInGateProvider } from "@/components/SignInGate";
 import IdleLogout from "@/components/IdleLogout";
@@ -112,11 +113,18 @@ export default async function RootLayout({
         {/* Flags <html data-app-shell> when running inside the installed app so
             website-only chrome (the marketing footer) is hidden there. */}
         <AppShellFlag />
-        <KosherSearchShell />
+        {/* The kosher search app shell and the keyboard search both search the
+            directory, which is the owner's alone now (lib/public-access.ts). */}
+        {DIRECTORY_SEARCH_IS_PUBLIC && <KosherSearchShell />}
         <IdleLogout minutes={45} endpoint="/api/account/logout" requireAccount />
         {/* tabIndex -1 so the skip link can actually put the focus here.
             Without it the browser scrolls to the anchor and leaves the focus
-            behind, and the next Tab starts at the header again. */}
+            behind, and the next Tab starts at the header again.
+
+            AND NO overflow-y HERE. A scroll container between a sticky header
+            and the viewport is what the header sticks to, so it stuck to a box
+            that never moves (measured on Itineraries: the header sat at -2,076
+            after scrolling 2,500px; without it, at 0). */}
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
           <BookingLinkProvider value={booking}>
             <SignInGateProvider googleAvailable={googleAvailable} phoneSignupAvailable={phoneSignupAvailable}>
@@ -127,10 +135,10 @@ export default async function RootLayout({
         {/* ON EVERY PAGE, IN THE CORNER. Outside #main-content on purpose: it
             is not part of the page's own content and must not land in the
             middle of the tab order of whatever page somebody is reading. */}
-        <SiteAssistant />
-        {/* Keyboard only, and nothing on the page: "/" or ⌘K opens the search
-            the header already carries. See components/SearchPalette.tsx. */}
-        <SearchPalette />
+        {/* It answers from the directory, which is the owner's alone now
+            (lib/public-access.ts). So does the keyboard search below. */}
+        {DIRECTORY_SEARCH_IS_PUBLIC && <SiteAssistant />}
+        {DIRECTORY_SEARCH_IS_PUBLIC && <SearchPalette />}
         {/* VERCEL SPEED INSIGHTS WAS HERE, and it went when the site did.
             The component asks for /_vercel/speed-insights/script.js, which
             only exists on Vercel's edge — served from Railway it is a 404 on

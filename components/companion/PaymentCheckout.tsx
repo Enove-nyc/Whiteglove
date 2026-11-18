@@ -9,7 +9,15 @@ const GOLD = "#C6A15B";
 const serif = "Georgia,'Times New Roman',serif";
 
 function formatCents(cents: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(cents / 100);
+  // A currency that isn't a valid ISO 4217 code makes Intl throw a RangeError,
+  // which would white-screen the one screen where a customer is trying to pay.
+  // Fall back to USD rather than crash — the same guard the main app's
+  // currencyFmt already carries.
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(cents / 100);
+  } catch {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+  }
 }
 
 let stripePromise: Promise<Stripe | null> | null = null;
@@ -97,6 +105,10 @@ export default function PaymentCheckout({ payment, publishableKey, onDone }: { p
         return;
       }
       setClientSecret(data.clientSecret);
+    } catch {
+      // A network rejection creating the PaymentIntent used to be a silent
+      // no-op — the button twitched and nothing happened. Say so instead.
+      setError("Could not reach the payment service. Please try again.");
     } finally {
       setStarting(false);
     }

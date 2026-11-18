@@ -1,45 +1,9 @@
-/**
- * What kind of account somebody has.
- *
- * Four: the one every account starts on before anything is bought, One Trip,
- * Advisor Starter, and Advisor Pro.
- *
- * NOBODY IS FREE FOREVER. That used to be a Traveler account with two trips
- * and a print a week, and it is gone — the owner's own word was that even
- * planning a single trip for yourself now asks for a small, one-time fee.
- * "free" below is not a fourth thing anybody chooses; it is what an account
- * is before it has bought anything, and it can plan nothing yet. See
- * lib/account-limits.ts for exactly what that means in numbers.
- *
- * TWO THINGS ARE BEHIND THEM, and they arrived the way this file said they
- * would have to. It used to read: "a plan never decides what anybody can
- * do… if that changes, it changes on purpose, in one place, with the words
- * on the page changed to match — not by a gate quietly appearing somewhere
- * and a traveller finding out that something they had yesterday now costs
- * money." That happened. The one place is **lib/account-limits.ts**, and the
- * account page says what changed before anybody meets it.
- *
- * NOTHING ALREADY MADE IS TAKEN AWAY. A limit refuses a new trip; it never
- * closes, hides or deletes one that exists.
- *
- * NOTHING IS CHARGED FROM THIS FILE, AND NOTHING IS CHARGED BY DEFAULT. Money
- * is possible only when the offering in **lib/plan-billing.ts** is both open
- * AND set to "stripe", which is a setting only the owner can make, on a
- * screen that refuses it until Stripe's keys and prices genuinely exist.
- * Unless he has done that, asking for a plan does exactly what it always
- * did: it registers interest, tells him, takes no card, starts nothing, and
- * says so plainly where it is asked for.
- *
- * Nothing in THIS file reads that setting or knows anything about money. A
- * plan is what kind of account somebody has, however they came by it —
- * granted by hand or paid for — and everything downstream treats the two
- * identically.
- */
+/** Stable stored plan keys. Personal includes free planning; a Trip Pass adds app access to one trip. */
 
 export const ACCOUNT_PLANS = ["free", "one_trip", "starter", "pro"] as const;
 export type AccountPlan = (typeof ACCOUNT_PLANS)[number];
 
-/** The one an account has before it has bought anything. Cannot plan a trip yet — see lib/account-limits.ts. */
+/** The one an account has before it has bought anything. Includes free planning — see lib/account-limits.ts. */
 export const DEFAULT_PLAN: AccountPlan = "free";
 
 /**

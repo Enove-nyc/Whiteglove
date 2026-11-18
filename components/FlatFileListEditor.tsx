@@ -144,7 +144,7 @@ export default function FlatFileListEditor({
             role="dialog"
             aria-modal="true"
             aria-labelledby="flatfile-modal-title"
-            className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(23,45,82,.20)] sm:p-8"
+            className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--gold-light)] bg-white p-6 shadow-[0_24px_60px_rgba(16, 47, 53,.20)] sm:p-8"
           >
             <div className="flex items-start justify-between gap-4">
               <h3 id="flatfile-modal-title" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">

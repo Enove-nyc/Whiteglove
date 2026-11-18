@@ -1,16 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import type { CurrentUpdate } from "@/data/current-updates";
 import type { TripAlert } from "@/data/trip-alerts";
 import type { TripAdvisories } from "@/lib/trip-advisories";
-import {
-  MAX_PLACE_NOTICES,
-  destinationSlugsOnTrip,
-  nextTripFor,
-  noticesForTrip,
-  tripUpdates,
-} from "@/lib/trip-updates";
+import { nextTripFor, tripUpdates } from "@/lib/trip-updates";
 
 const HREF = "/command-center";
 
@@ -23,23 +16,6 @@ function alert(over: Partial<TripAlert> = {}): TripAlert {
     note: "Now running about 45 minutes late.",
     createdAt: "2026-09-01T09:00:00.000Z",
     acknowledged: false,
-    ...over,
-  };
-}
-
-function notice(over: Partial<CurrentUpdate> = {}): CurrentUpdate {
-  return {
-    id: "n1",
-    kind: "moved",
-    title: "The bakery has moved",
-    detail: "Now two streets over, by the square.",
-    destinationSlug: "krakow",
-    startsOn: "2026-08-01",
-    endsOn: "2026-10-01",
-    source: "Spoke to the owner",
-    published: true,
-    createdAt: "2026-08-01T00:00:00.000Z",
-    updatedAt: "2026-08-01T00:00:00.000Z",
     ...over,
   };
 }
@@ -61,16 +37,16 @@ function roll(level: number | null, over: Partial<TripAdvisories> = {}): TripAdv
 }
 
 test("nothing changed means no list at all, not an empty heading", () => {
-  assert.deepEqual(tripUpdates({ alerts: [], advisories: null, notices: [], tripHref: HREF }), []);
+  assert.deepEqual(tripUpdates({ alerts: [], advisories: null, tripHref: HREF }), []);
 });
 
 test("an acknowledged flight alert is not shown again", () => {
-  const out = tripUpdates({ alerts: [alert({ acknowledged: true })], advisories: null, notices: [], tripHref: HREF });
+  const out = tripUpdates({ alerts: [alert({ acknowledged: true })], advisories: null, tripHref: HREF });
   assert.deepEqual(out, []);
 });
 
 test("a live flight alert leads, and points at the trip's own page", () => {
-  const out = tripUpdates({ alerts: [alert()], advisories: null, notices: [], tripHref: HREF });
+  const out = tripUpdates({ alerts: [alert()], advisories: null, tripHref: HREF });
   assert.equal(out.length, 1);
   assert.equal(out[0].source, "flight");
   assert.equal(out[0].title, "LY1 delayed");
@@ -78,19 +54,34 @@ test("a live flight alert leads, and points at the trip's own page", () => {
 });
 
 test("a cancellation is drawn louder than a delay", () => {
-  const cancelled = tripUpdates({ alerts: [alert({ kind: "flight_cancelled" })], advisories: null, notices: [], tripHref: HREF });
+  const cancelled = tripUpdates({ alerts: [alert({ kind: "flight_cancelled" })], advisories: null, tripHref: HREF });
   assert.equal(cancelled[0].tone, "danger");
-  assert.equal(tripUpdates({ alerts: [alert()], advisories: null, notices: [], tripHref: HREF })[0].tone, "caution");
+  assert.equal(tripUpdates({ alerts: [alert()], advisories: null, tripHref: HREF })[0].tone, "caution");
 });
 
 test("a level 1 or 2 advisory is not repeated here", () => {
   for (const level of [1, 2]) {
-    assert.deepEqual(tripUpdates({ alerts: [], advisories: roll(level), notices: [], tripHref: HREF }), []);
+    assert.deepEqual(tripUpdates({ alerts: [], advisories: roll(level), tripHref: HREF }), []);
+  }
+});
+
+test("a flight change comes before a country advisory", () => {
+  const out = tripUpdates({ alerts: [alert()], advisories: roll(4), tripHref: HREF });
+  assert.deepEqual(out.map((u) => u.source), ["flight", "advisory"]);
+});
+
+test("there is no third source here — this product has no place notices", () => {
+  const source = readFileSync(new URL("../lib/trip-updates.ts", import.meta.url), "utf8");
+  // The kosher copy hangs the owner's dated notices off destination pages.
+  // There are no destination pages here, so the source is absent rather than
+  // stubbed — an empty third list would be a heading with nothing behind it.
+  for (const gone of ["current-updates", "noticesForTrip", "destinationSlugsOnTrip", '"place"']) {
+    assert.ok(!source.includes(gone), `lib/trip-updates.ts still refers to ${gone}`);
   }
 });
 
 test("a level 3 or 4 advisory is, in the State Department's own words", () => {
-  const out = tripUpdates({ alerts: [], advisories: roll(4), notices: [], tripHref: HREF });
+  const out = tripUpdates({ alerts: [], advisories: roll(4), tripHref: HREF });
   assert.equal(out.length, 1);
   assert.equal(out[0].label, "Ukraine");
   assert.equal(out[0].title, "Level 4: Do Not Travel");
@@ -100,60 +91,14 @@ test("a level 3 or 4 advisory is, in the State Department's own words", () => {
 });
 
 test("a country with no advisory in the feed adds no row", () => {
-  assert.deepEqual(tripUpdates({ alerts: [], advisories: roll(null), notices: [], tripHref: HREF }), []);
+  assert.deepEqual(tripUpdates({ alerts: [], advisories: roll(null), tripHref: HREF }), []);
 });
 
-test("flights come before advisories, and advisories before place notices", () => {
-  const out = tripUpdates({ alerts: [alert()], advisories: roll(4), notices: [notice()], tripHref: HREF });
-  assert.deepEqual(out.map((u) => u.source), ["flight", "advisory", "place"]);
-});
 
-test("a place notice links to the destination it is about", () => {
-  const out = tripUpdates({ alerts: [], advisories: null, notices: [notice()], tripHref: HREF });
-  assert.equal(out[0].href, "/destinations/krakow");
-  assert.equal(out[0].label, "Moved");
-  assert.notEqual(out[0].external, true);
-});
 
-test("destination slugs are read off the stops that link to one, once each", () => {
-  const slugs = destinationSlugsOnTrip([
-    { href: "/destinations/krakow" },
-    { href: "/destinations/krakow/" },
-    { href: "/cemeteries/lizhensk" },
-    { href: "https://booking.example.com/hotel" },
-    {},
-  ]);
-  assert.deepEqual(slugs, ["krakow"]);
-});
 
-test("only published, in-window notices for this trip's places are gathered", () => {
-  const updates = [
-    notice({ id: "live" }),
-    notice({ id: "draft", published: false }),
-    notice({ id: "lapsed", endsOn: "2026-08-10" }),
-    notice({ id: "elsewhere", destinationSlug: "vienna" }),
-  ];
-  const got = noticesForTrip(updates, ["krakow"], "2026-09-02");
-  assert.deepEqual(got.map((u) => u.id), ["live"]);
-});
 
-test("place notices are capped, soonest to lapse first", () => {
-  const updates = [
-    notice({ id: "d", endsOn: "2026-12-01" }),
-    notice({ id: "a", endsOn: "2026-09-10" }),
-    notice({ id: "c", endsOn: "2026-11-01" }),
-    notice({ id: "b", endsOn: "2026-10-01" }),
-  ];
-  const got = noticesForTrip(updates, ["krakow"], "2026-09-02");
-  assert.equal(got.length, MAX_PLACE_NOTICES);
-  assert.deepEqual(got.map((u) => u.id), ["a", "b", "c"]);
-});
 
-test("the same notice on two of the trip's places is only counted once", () => {
-  const shared = notice({ id: "one", destinationSlug: "krakow" });
-  const got = noticesForTrip([shared], ["krakow", "krakow"], "2026-09-02");
-  assert.equal(got.length, 1);
-});
 
 test("the trip chosen is the soonest one that has not finished", () => {
   const trips = [

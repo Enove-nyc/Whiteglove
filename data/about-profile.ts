@@ -53,6 +53,29 @@ export const EMPTY_ABOUT_PROFILE: AboutProfile = {
  * It also does not sell the planning service. That is the bottom option and
  * not what this website offers — see AGENTS.md.
  */
+/**
+ * The About page's opening, per brand.
+ *
+ * WHY TWO. This app serves two sites, and the About page was one page: on
+ * whitegloveitineraries.com it opened "White Glove Kosher Travel is built
+ * around the questions that decide a Jewish family's trip. Where the kosher
+ * food is..." — to a visitor who came for an itinerary tool, has quite
+ * possibly never heard of the other site, and is now reading about a business
+ * they did not come to. Substituting the NAME would not have fixed it: the
+ * sentences underneath are about a kosher travel guide, and they are not true
+ * of a planner.
+ *
+ * So the itineraries brand gets its own three paragraphs, saying what that
+ * site is for and what its information is worth. Same voice, same restraint:
+ * no personal facts, nobody's name, nowhere it is based, and no offer to plan
+ * anybody's trip for them.
+ */
+export const ABOUT_INTRO_ITINERARIES: readonly string[] = [
+  "White Glove Itineraries brings travel itineraries and trip management together for travellers and advisers.",
+  "Organise itineraries, flights, accommodation, transport, documents and the day-by-day details of a trip in one connected place.",
+  "Plan your own trip or manage client itineraries, with the schedule and important details ready to carry with you.",
+];
+
 export const ABOUT_INTRO: readonly string[] = [
   "White Glove Kosher Travel is built around the questions that decide a Jewish family's trip. Where the kosher food is, and who stands behind it. Which quarter keeps you within walking distance on Shabbos. How long the drive between two places really takes, and what Friday afternoon looks like when the clock is against you.",
   "Answers like those are only worth having if they hold up. So every listing here names its source, nothing is shown as checked unless somebody checked it, and where we cannot yet stand behind something we leave it out — better an honest gap than a phone number that stopped working two years ago.",
@@ -64,3 +87,16 @@ export const ABOUT_INTRO: readonly string[] = [
  * Same voice, same promise, no personal claim.
  */
 export const ABOUT_FALLBACK_INTRO = ABOUT_INTRO[0];
+
+/** The heading above each, so neither page opens with the other's promise. */
+export const ABOUT_HEADING: Record<"kosher" | "itineraries", string> = {
+  kosher: "Travel information you can plan around.",
+  itineraries: "Your itinerary, together.",
+};
+
+/** Which opening a brand gets. */
+export function aboutIntroFor(brand: "kosher" | "itineraries"): readonly string[] {
+  return brand === "itineraries" ? ABOUT_INTRO_ITINERARIES : ABOUT_INTRO;
+}
+
+

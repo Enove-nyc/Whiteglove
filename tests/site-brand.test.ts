@@ -14,11 +14,13 @@ describe("site brand by host", () => {
     assert.equal(brandForHost("whitegloveitineraries.com"), "itineraries");
     assert.equal(isItinerariesHost("WHITEGLOVEITINERARIES.COM"), true);
   });
-  it("treats the kosher domain and everything unknown as kosher", () => {
+  // One site now (AGENTS.md, 18 November 2026): only the closed kosher domain
+  // is kosher, and everything unknown is White Glove Itineraries.
+  it("treats only the kosher domain as kosher, and everything unknown as itineraries", () => {
     assert.equal(brandForHost("www.whiteglovekoshertravel.com"), "kosher");
-    assert.equal(brandForHost("localhost:3000"), "kosher");
-    assert.equal(brandForHost(undefined), "kosher");
-    assert.equal(brandForHost(null), "kosher");
+    assert.equal(brandForHost("localhost:3000"), "itineraries");
+    assert.equal(brandForHost(undefined), "itineraries");
+    assert.equal(brandForHost(null), "itineraries");
   });
   it("keeps the two origins apart", () => {
     assert.notEqual(BRAND_ORIGIN.kosher, BRAND_ORIGIN.itineraries);

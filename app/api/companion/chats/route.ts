@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getCurrentAccountData, getTrips, resolveBusinessOwner } from "@/lib/account-store";
-import { deleteConversation, readChat } from "@/lib/companion-chat-store";
+import { accountCookieName, getCurrentAccountData, getTrips } from "@/lib/account-store";
+import { deleteConversation, readChannels, readChat, readMarkers, type CompanionChatMessage } from "@/lib/companion-chat-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
@@ -26,26 +26,49 @@ export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  // The inbox belongs to the BUSINESS, not the login — an agency's staff login
-  // (whose own account holds no trips) reads its owner's conversations, the same
-  // way account/clients and account/pipeline resolve the owner. Without this,
-  // staff saw an empty inbox.
-  const owner = await resolveBusinessOwner(account.email);
-  if (!mayServeCompanionClients(await getPlan(owner))) {
+  if (!mayServeCompanionClients(await getPlan(account.email))) {
     return NextResponse.json({ error: `The client inbox is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
 
-  const shared = (await getTrips(owner).catch(() => [])).filter((t) => t.shareId);
+  const shared = (await getTrips(account.email).catch(() => [])).filter((t) => t.shareId);
   const conversations = await Promise.all(
     shared.map(async (t) => {
-      const messages = await readChat(t.shareId!);
-      const last = messages[messages.length - 1];
+      const shareId = t.shareId!;
+      // A trip's conversation is one row here, but it can hold several channels
+      // now — General plus any the advisor made. Read them all: the badge sums
+      // the unread across every channel, and the preview is the newest message
+      // of any channel, so a row still speaks for the whole trip.
+      const channels = await readChannels(shareId);
+      const perChannel = await Promise.all(
+        channels.map(async (ch) => {
+          const [messages, markers] = await Promise.all([readChat(shareId, ch.id), readMarkers(shareId, ch.id)]);
+          const advisorRead = markers.advisor ?? "";
+          const unread = messages.filter((m) => m.from === "client" && !m.deletedAt && m.at > advisorRead).length;
+          const last: CompanionChatMessage | null = messages[messages.length - 1] ?? null;
+          return { last, unread, has: messages.length > 0 };
+        }),
+      );
+      // The badge is UNREAD, not the whole history: the client's messages that
+      // arrived after the advisor last opened each thread. Summed across
+      // channels so a message on "Flights" still lights the trip up.
+      const unread = perChannel.reduce((n, c) => n + c.unread, 0);
+      const hasMessages = perChannel.some((c) => c.has);
+      // The newest message of any channel is what the row previews.
+      const last = perChannel.reduce<CompanionChatMessage | null>(
+        (best, c) => (c.last && (!best || c.last.at > best.at) ? c.last : best),
+        null,
+      );
       return {
-        shareId: t.shareId!,
+        shareId,
         name: t.name,
         client: t.client,
-        count: messages.length,
+        count: unread,
+        hasMessages,
         lastText: last?.text ?? "",
+        // The kind of the last message, so the list can read "Photo" / "Voice
+        // message" / "Location" when it has no text of its own — the way a
+        // messenger's list does, instead of a blank that looks like "nothing".
+        lastKind: last ? (last.kind ?? "text") : null,
         lastFrom: last?.from ?? null,
         lastAt: last?.at ?? "",
       };
@@ -77,8 +100,7 @@ export async function DELETE(request: NextRequest) {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  const owner = await resolveBusinessOwner(account.email);
-  if (!mayServeCompanionClients(await getPlan(owner))) {
+  if (!mayServeCompanionClients(await getPlan(account.email))) {
     return NextResponse.json({ error: `The client inbox is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
   }
 
@@ -86,9 +108,7 @@ export async function DELETE(request: NextRequest) {
   const shareId = body?.share?.trim();
   if (!shareId) return NextResponse.json({ error: "Which conversation?" }, { status: 400 });
 
-  // Ownership is proven against the business's trips (the owner), so staff can
-  // clear their own business's conversations — and still never someone else's.
-  const owns = (await getTrips(owner).catch(() => [])).some((t) => t.shareId === shareId);
+  const owns = (await getTrips(account.email).catch(() => [])).some((t) => t.shareId === shareId);
   if (!owns) return NextResponse.json({ error: "That conversation isn't yours." }, { status: 404 });
 
   await deleteConversation(shareId);

@@ -1,3 +1,4 @@
+import { noteShareOpened } from "@/lib/share-open-recorder";
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import ClientCodeMemory from "@/components/companion/ClientCodeMemory";
@@ -21,6 +22,7 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   if (shareId === SAMPLE_TRIP_CODE) return sampleApp();
   const shared = await getSharedItineraryByShareId(shareId);
   if (!shared) redirect(`/i/${encodeURIComponent(shareId)}`);
+  await noteShareOpened(shareId, shared.ownerEmail);
   const trip = await buildCompanionFromItinerary({ ...emptyItinerary(), ...shared.itinerary }, {
     today: new Date().toISOString().slice(0, 10),
     kosher: (await currentBrand()) === "kosher",

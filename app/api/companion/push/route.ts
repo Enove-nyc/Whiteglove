@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { removePushSubscription, savePushSubscription } from "@/lib/account-store";
+import { removePushSubscription, resolveCompanionShare, savePushSubscription } from "@/lib/account-store";
+import { mayServeCompanionClients } from "@/lib/account-limits";
+import { getPlan } from "@/lib/account-plan-store";
+import { isValidPushSubscription } from "@/lib/push-notify";
+import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 import type { PushSubscriptionRecord } from "@/data/push-subscriptions";
 
@@ -9,15 +13,9 @@ export const dynamic = "force-dynamic";
 // components/companion/CompanionApp.tsx for the control, and
 // savePushSubscription in lib/account-store.ts for where it lands. No
 // account and no sign-in here: the per-trip share token IS the credential,
-// the same as every other client-side action on a shared trip.
-
-function isValidSubscription(v: unknown): v is { endpoint: string; keys: { p256dh: string; auth: string } } {
-  if (!v || typeof v !== "object") return false;
-  const s = v as { endpoint?: unknown; keys?: unknown };
-  if (typeof s.endpoint !== "string" || !s.endpoint.trim()) return false;
-  const keys = s.keys as { p256dh?: unknown; auth?: unknown } | undefined;
-  return Boolean(keys && typeof keys.p256dh === "string" && typeof keys.auth === "string");
-}
+// the same as every other client-side action on a shared trip. The endpoint
+// fence (isValidPushSubscription) lives in lib/push-notify.ts, shared with the
+// advisor's account-level subscribe route so the two cannot drift.
 
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) {
@@ -30,6 +28,22 @@ export async function POST(request: NextRequest) {
   const shareId = body?.shareId?.trim();
   if (!shareId) return NextResponse.json({ ok: false, error: "Missing the trip." }, { status: 400 });
 
+  // A courtesy fence against a hammered subscribe/unsubscribe loop. The store
+  // already caps a trip at a dozen subscriptions and dedups by endpoint, so
+  // this is about request rate, not storage.
+  const limited = await rateLimit(`companion-push:${shareId}`, { limit: 30, windowSeconds: 3600 });
+  if (!limited.ok) {
+    return NextResponse.json({ ok: false, error: "Too many changes at once — try again shortly." }, { status: 429 });
+  }
+
+  // Push, like the chat itself, is a companion-app feature: only a trip whose
+  // owner may serve companion clients (Business) has an app to be pushed from.
+  // A share token from any other plan is a read-only itinerary, not a channel.
+  const resolved = await resolveCompanionShare(shareId);
+  if (!resolved || !mayServeCompanionClients(await getPlan(resolved.ownerEmail))) {
+    return NextResponse.json({ ok: false, error: "That link is not active." }, { status: 404 });
+  }
+
   if (body?.action === "unsubscribe") {
     const endpoint = body.endpoint?.trim();
     if (!endpoint) return NextResponse.json({ ok: false, error: "Missing the subscription." }, { status: 400 });
@@ -38,7 +52,7 @@ export async function POST(request: NextRequest) {
   }
 
   const subscription = body?.subscription;
-  if (!isValidSubscription(subscription)) {
+  if (!isValidPushSubscription(subscription)) {
     return NextResponse.json({ ok: false, error: "That does not look like a push subscription." }, { status: 400 });
   }
   const record: PushSubscriptionRecord = {

@@ -1,6 +1,7 @@
 import { ITINERARIES_IN_DEVELOPMENT } from "@/lib/launch-status";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { sameOrigin } from "@/lib/secure-access";
 import { PLAN_LABELS } from "@/lib/account-plans";
 import { getPlan } from "@/lib/account-plan-store";
 import { accountCookieName, getCurrentAccountData, getTrips } from "@/lib/account-store";

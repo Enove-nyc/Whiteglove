@@ -1,12 +1,14 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, getAccountData, getCurrentAccountData, resolveBusinessOwner, savePipelineStage, withTrips } from "@/lib/account-store";
+import { accountCookieName, getAccountData, getCurrentAccountData, readShareOpens, resolveBusinessOwner, savePipelineStage, withTrips } from "@/lib/account-store";
+import { openStatus, type OpenStatus } from "@/lib/share-opens";
+import { tripTimeZone } from "@/lib/trip-timezone";
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients, mayViewPipelineAnalytics } from "@/lib/account-limits";
 import { readChat, readMarkers } from "@/lib/companion-chat-store";
 import { needsAttention, tripStage, type ManualTripStage, type TripStage } from "@/data/trip-pipeline";
-import { hasBalance, outstandingCents } from "@/data/trip-payments";
 import { tripReminders, type TripReminder } from "@/data/trip-reminders";
+import { hasBalance, outstandingCents } from "@/data/trip-payments";
 import { sameOrigin } from "@/lib/secure-access";
 import { allCrossings } from "@/lib/border-store";
 import { borderCostForLegs } from "@/lib/border-legs";
@@ -24,17 +26,18 @@ export type PipelineRow = {
   endDate: string;
   stage: TripStage;
   needsAttention: boolean;
+  /** What needs the advisor on this trip, worked out fresh every time and
+   *  never stored. See data/trip-reminders.ts. */
+  reminders: TripReminder[];
   shareId?: string;
   /** True when the client's last word in the thread hasn't been read yet. */
   unread: boolean;
-  /** What this trip still owes, when a balance has actually been set up.
-   *  Absent when there is none; zero once it's fully paid. */
+  /** Whether the client has opened the trip link, and when. Only when shared. */
+  openStatus?: OpenStatus;
+  updatedAt: string;
+  /** What this trip still owes, when a balance has actually been set up. */
   outstandingCents?: number;
   currency?: string;
-  /** What needs a planner's attention on this trip — worked out fresh each
-   *  time, never stored. See data/trip-reminders.ts. */
-  reminders: TripReminder[];
-  updatedAt: string;
   /**
    * Only present for a trip in the "traveling" stage — the day-by-day shape
    * needed to say where this client is right now, on the advisor's own
@@ -54,23 +57,19 @@ export type PipelineRow = {
 
 /**
  * The planner's whole business, one row per trip/client — the Planner CRM /
- * Trip Pipeline. Reads things that already exist rather than keeping copies
- * in sync with them: each trip's own proposal status, its own dates, its
- * chat thread's read marker (lib/companion-chat-store.ts, the same one the
- * advisor inbox already reads), and its own payment balance
- * (data/trip-payments.ts) — the same balance /payments shows, not a second
- * number kept alongside it. ADVISOR STARTER AND UP, same door as the client
- * inbox and the proposal/library/form pages — One Trip has the app for its
- * own one trip and no clients to run a pipeline of.
+ * Trip Pipeline. Reads three things that already exist rather than keeping a
+ * fourth in sync with them: each trip's own proposal status, its own dates,
+ * and its chat thread's read marker (lib/companion-chat-store.ts, the same
+ * one the advisor inbox already reads). ADVISOR STARTER AND UP, same door as
+ * the client inbox and the proposal/library/form pages — One Trip has the
+ * app for its own one trip and no clients to run a pipeline of.
  */
 export async function GET() {
   const cookie = (await cookies()).get(accountCookieName())?.value;
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
-  // A staff login works against the business it's linked to, not its own
-  // (otherwise empty) account — see lib/account-store.ts's resolveBusinessOwner.
-  // An account with no team just resolves to itself, same as always. The
-  // plan read from that owner is also what gates the analytics strip below.
+  // A staff login works on the business it belongs to (data/team.ts); the
+  // business's trips, under the business's plan. Never a trip id off the request.
   const owner = await resolveBusinessOwner(account.email);
   const plan = await getPlan(owner);
   if (!mayServeCompanionClients(plan)) {
@@ -93,10 +92,19 @@ export async function GET() {
   const rows: PipelineRow[] = await Promise.all(
     trips.map(async (t) => {
       let unread = false;
+      // Whether the client has opened the trip link at all — a different
+      // question from whether they have written, and the one an advisor asks
+      // first. Read on the same pass, and only for a trip that has a link.
+      let opened: OpenStatus | undefined;
       if (t.shareId) {
-        const [messages, markers] = await Promise.all([readChat(t.shareId), readMarkers(t.shareId)]);
+        const [messages, markers, opens] = await Promise.all([
+          readChat(t.shareId),
+          readMarkers(t.shareId),
+          readShareOpens(t.shareId).catch(() => ({})),
+        ]);
         const last = messages[messages.length - 1];
         unread = Boolean(last && last.from === "client" && (!markers.advisor || last.at > markers.advisor));
+        opened = openStatus(opens, new Date().toISOString(), tripTimeZone(t.itinerary));
       }
       const stage = tripStage(
         { pipelineStage: t.pipelineStage, proposal: t.proposal, startDate: t.itinerary?.startDate, endDate: t.itinerary?.endDate },
@@ -111,10 +119,13 @@ export async function GET() {
         endDate: t.itinerary?.endDate ?? "",
         stage,
         needsAttention: needsAttention(t.proposal),
-        shareId: t.shareId,
-        unread,
-        outstandingCents: t.balance && hasBalance(t.balance) ? outstandingCents(t.balance) : undefined,
-        currency: t.balance?.currency,
+        // NO RATING NUDGE ON THIS PRODUCT. tripReminders raises
+        // "trip's over — send a rating request" for a completed trip whose
+        // request has not gone yet, and clears it once ratingRequestSentAt is
+        // set. There are no rating requests here, so that flag can never be
+        // set: the nudge would arrive on every completed trip, point at a
+        // screen that does not exist, and never go away. Dropped at the source
+        // rather than passed through and ignored.
         reminders: tripReminders(
           {
             stage,
@@ -123,10 +134,12 @@ export async function GET() {
             addons: t.addons,
             startDate: t.itinerary?.startDate,
             endDate: t.itinerary?.endDate,
-            ratingRequestSentAt: t.ratingRequestSentAt,
           },
           today,
-        ),
+        ).filter((reminder) => reminder.reason !== "trip_completed_no_rating_sent"),
+        shareId: t.shareId,
+        unread,
+        ...(opened ? { openStatus: opened } : {}),
         updatedAt: t.updatedAt,
         ...(t.balance && hasBalance(t.balance) ? { outstandingCents: outstandingCents(t.balance), currency: t.balance.currency } : {}),
         ...(stage === "traveling" && t.itinerary ? { travelDays: travelDaysFor(t.itinerary, borderCost, assume) } : {}),

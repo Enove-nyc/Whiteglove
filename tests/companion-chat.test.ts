@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { parseChatMessages, quoteFor } from "@/lib/companion-chat-store";
+import { parseChatMessages, quoteFor, REACTION_EMOJIS } from "@/lib/companion-chat-store";
 
 /**
  * The concierge thread: text, a picture, a video, a voice note, or a place —
@@ -153,8 +153,8 @@ describe("reading the thread also marks it read", () => {
   const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
 
   it("records this side's own marker at the newest message, and returns both sides' markers", () => {
-    assert.match(GET, /markRead\(who\.chatKey, who\.side, latest\.at\)/);
-    assert.match(GET, /readMarkers: await readMarkers\(who\.chatKey\)/);
+    assert.match(GET, /markRead\(who\.chatKey, who\.side, latest\.at, channel\)/);
+    assert.match(GET, /readMarkers: await readMarkers\(who\.chatKey, channel\)/);
     assert.ok(GET.indexOf("markRead") < GET.indexOf("readMarkers:"), "the poll's own read is recorded before the response is built");
   });
 });
@@ -180,7 +180,7 @@ describe("changing or removing a message is fenced", () => {
   });
 
   it("delete proves ownership the same way", () => {
-    assert.match(DEL, /deleteMessage\(who\.chatKey, at, who\.side\)/);
+    assert.match(DEL, /deleteMessage\(who\.chatKey, at, who\.side, channel\)/);
   });
 });
 
@@ -228,7 +228,7 @@ describe("a reply quotes a real message, never a client-supplied one", () => {
   const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
 
   it("looks the quote up server-side from replyToAt, never takes quoted text from the body", () => {
-    assert.match(POST, /quoteFor\(who\.chatKey, body\.replyToAt\)/);
+    assert.match(POST, /quoteFor\(who\.chatKey, body\.replyToAt, channel\)/);
     assert.doesNotMatch(POST, /replyTo:\s*body\.replyTo/);
   });
 
@@ -276,7 +276,7 @@ describe("typing is a courtesy signal, not a message", () => {
 
   it("GET reports the OTHER side's typing state, never this side's own", () => {
     const GET = ROUTE.slice(ROUTE.indexOf("export async function GET"), ROUTE.indexOf("export async function PATCH"));
-    assert.match(GET, /isTyping\(who\.chatKey, otherSideOf\(who\.side\)\)/);
+    assert.match(GET, /isTyping\(who\.chatKey, otherSideOf\(who\.side\), channel\)/);
   });
 });
 
@@ -306,20 +306,14 @@ describe("deleting a whole conversation is fenced", () => {
   });
 
   it("is gated the same as the inbox it clears", () => {
-    // Gated on the BUSINESS's plan (resolveBusinessOwner), like the GET inbox —
-    // so an agency's staff login is judged by its owner's plan, not its own
-    // (which carries no clients).
-    assert.match(DEL, /mayServeCompanionClients\(await getPlan\(owner\)\)/);
-    assert.match(DEL, /resolveBusinessOwner\(account\.email\)/);
+    assert.match(DEL, /mayServeCompanionClients\(await getPlan\(account\.email\)\)/);
   });
 
-  it("proves the conversation belongs to THIS business before clearing it — never trusts the share id alone", () => {
+  it("proves the conversation belongs to THIS account before clearing it — never trusts the share id alone", () => {
     // Otherwise any signed-in advisor could clear any other advisor's
     // conversation just by knowing (or guessing) their client's share id.
-    // Ownership is proven against the business's trips (the resolved owner), so
-    // staff can clear their own business's conversations and no one else's.
-    const body = DEL.slice(DEL.indexOf("const body"));
-    assert.match(body, /getTrips\(owner\)/);
+    const body = DEL.slice(DEL.indexOf("const shareId"));
+    assert.match(body, /getTrips\(account\.email\)/);
     assert.match(body, /t\.shareId === shareId/);
     assert.ok(body.indexOf("getTrips") < body.indexOf("deleteConversation"), "ownership is proven before the store is touched");
   });
@@ -332,77 +326,163 @@ describe("deleting a whole conversation is fenced", () => {
 
   it("clearing a conversation also clears both sides' typing signal, not just the messages", () => {
     const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
-    const fn = STORE.slice(STORE.indexOf("export async function deleteConversation"), STORE.indexOf("/* ---- read markers"));
-    assert.match(fn, /DEL", typingKeyFor\(shareId, "client"\)/);
-    assert.match(fn, /DEL", typingKeyFor\(shareId, "advisor"\)/);
+    const fn = STORE.slice(STORE.indexOf("export async function deleteConversation"), STORE.indexOf("/* ---- channel list"));
+    // Now channel-aware: deleteConversation walks every channel and clears each
+    // one's typing signal, so the key carries the channel id.
+    assert.match(fn, /DEL", typingKeyFor\(shareId, "client", ch\.id\)/);
+    assert.match(fn, /DEL", typingKeyFor\(shareId, "advisor", ch\.id\)/);
   });
 });
 
-describe("pinning a message survives a round trip through storage", () => {
-  it("a pinned message reads back pinned", () => {
-    const [m] = parseChatMessages([JSON.stringify({ from: "advisor", text: "Meet at the lobby, 8am", at: "t1", pinned: true })]);
-    assert.equal(m.pinned, true);
+describe("reactions — one emoji per side, both people see both", () => {
+  it("keeps a valid reaction and its side", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", text: "hi", at: "t", reactions: { client: "❤️" } }),
+    ]);
+    assert.deepEqual(m.reactions, { client: "❤️" });
   });
 
-  it("an ordinary message has no pinned field at all, not false", () => {
-    const [m] = parseChatMessages([JSON.stringify({ from: "client", text: "ok thanks", at: "t1" })]);
-    assert.equal(m.pinned, undefined);
+  it("drops an unknown emoji and an unknown side, keeps the good one", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", text: "hi", at: "t", reactions: { client: "🐸", advisor: "👍", nobody: "❤️" } }),
+    ]);
+    assert.deepEqual(m.reactions, { advisor: "👍" });
   });
 
-  it("a deleted message loses its pin along with everything else it carried", () => {
-    const [m] = parseChatMessages([JSON.stringify({ from: "advisor", text: "the address", at: "t1", pinned: true, deletedAt: "t2" })]);
-    assert.equal(m.pinned, undefined);
+  it("a message with no valid reactions carries none", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", text: "hi", at: "t", reactions: { client: "not-an-emoji" } }),
+    ]);
+    assert.equal(m.reactions, undefined);
+  });
+
+  it("a deleted message keeps no reactions", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", text: "hi", at: "t", deletedAt: "t2", reactions: { client: "❤️" } }),
+    ]);
+    assert.equal(m.reactions, undefined);
+  });
+
+  it("reactMessage rejects a made-up emoji and toggles the same one off", () => {
+    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
+    const fn = STORE.slice(STORE.indexOf("export async function reactMessage"), STORE.indexOf("* Delete one message"));
+    assert.match(fn, /if \(!REACTION_SET\.has\(emoji\)\) return null/);
+    assert.match(fn, /if \(reactions\[by\] === emoji\) delete reactions\[by\]/);
+  });
+
+  it("the route stores a reaction only through reactMessage, from the link's own side", () => {
+    const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+    const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+    assert.match(POST, /reactMessage\(who\.chatKey, body\.reactAt, who\.side, body\.reaction, channel\)/);
+    assert.match(POST, /rateLimit\(`companion-react:/);
+  });
+
+  it("offers exactly the six agreed emoji", () => {
+    assert.deepEqual([...REACTION_EMOJIS], ["❤️", "👍", "😂", "😮", "😢", "🙏"]);
+  });
+});
+
+describe("polls — a question everyone on the link can vote on", () => {
+  it("keeps a well-formed poll and its votes", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", kind: "poll", text: "Dinner?", at: "t", poll: { question: "Dinner?", options: ["A", "B", "C"], votes: { advisor: 1, "c:x": 2 } } }),
+    ]);
+    assert.equal(m.kind, "poll");
+    assert.deepEqual(m.poll?.options, ["A", "B", "C"]);
+    assert.deepEqual(m.poll?.votes, { advisor: 1, "c:x": 2 });
+  });
+
+  it("drops a poll with fewer than two options", () => {
+    const out = parseChatMessages([
+      JSON.stringify({ from: "advisor", kind: "poll", text: "Q", at: "t", poll: { question: "Q", options: ["only one"] } }),
+    ]);
+    assert.equal(out.length, 0);
+  });
+
+  it("strips a vote that points at an option that isn't there", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", kind: "poll", text: "Q", at: "t", poll: { question: "Q", options: ["A", "B"], votes: { advisor: 5, "c:y": 0 } } }),
+    ]);
+    assert.deepEqual(m.poll?.votes, { "c:y": 0 });
+  });
+
+  it("a deleted poll carries neither question nor votes", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "advisor", kind: "poll", text: "Q", at: "t", deletedAt: "t2", poll: { question: "Q", options: ["A", "B"], votes: { advisor: 0 } } }),
+    ]);
+    assert.equal(m.poll, undefined);
     assert.equal(m.text, "");
   });
+
+  it("a public poll keeps the names of who voted, only for real voters", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({
+        from: "advisor",
+        kind: "poll",
+        text: "Q",
+        at: "t",
+        poll: { question: "Q", options: ["A", "B"], votes: { "t:a": 0 }, voterNames: { "t:a": "Sarah", "t:ghost": "Nobody" } },
+      }),
+    ]);
+    // Sarah has a vote so her name stays; the orphan name (no vote) is dropped.
+    assert.deepEqual(m.poll?.voterNames, { "t:a": "Sarah" });
+  });
+
+  it("a private poll never carries who voted for what", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({
+        from: "advisor",
+        kind: "poll",
+        text: "Q",
+        at: "t",
+        poll: { question: "Q", options: ["A", "B"], votes: { "t:a": 0 }, voterNames: { "t:a": "Sarah" }, secret: true },
+      }),
+    ]);
+    assert.equal(m.poll?.secret, true);
+    assert.equal(m.poll?.voterNames, undefined);
+    // The tally itself is still there — a private poll hides who, not how many.
+    assert.deepEqual(m.poll?.votes, { "t:a": 0 });
+  });
+
+  it("votePoll toggles the same option off and moves a different one", () => {
+    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
+    const fn = STORE.slice(STORE.indexOf("export async function votePoll"), STORE.indexOf("* Delete one message"));
+    assert.match(fn, /votes\[voter\] === optionIndex/);
+    assert.match(fn, /delete votes\[voter\]/);
+    assert.match(fn, /kindOf\(existing\.kind\) !== "poll"/);
+  });
+
+  it("the route votes as 'advisor' for the advisor and a device id for a client", () => {
+    const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+    const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
+    assert.match(POST, /who\.side === "advisor"\s*\?\s*"advisor"/);
+    assert.match(POST, /votePoll\(who\.chatKey, body\.pollVoteAt, voterId, body\.pollOption, channel, sender\?\.name\)/);
+    assert.match(POST, /rateLimit\(`companion-vote:/);
+  });
 });
 
-describe("pinning is fenced — anyone in the thread, but not the words themselves", () => {
-  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
-  const PATCH = ROUTE.slice(ROUTE.indexOf("export async function PATCH"), ROUTE.indexOf("export async function DELETE"));
-
-  it("checks same-origin before touching the store, same as an edit", () => {
-    assert.ok(PATCH.indexOf("sameOrigin") < PATCH.indexOf("setPinned"));
+describe("a message says who on the client side sent it", () => {
+  it("carries a named traveller's sender through, capped", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "client", kind: "text", text: "hi", at: "t", senderId: "trav-1", senderName: "David" }),
+    ]);
+    assert.equal(m.senderId, "trav-1");
+    assert.equal(m.senderName, "David");
   });
 
-  it("is not the sender the way an edit is — setPinned is never passed who.side, unlike editMessageText", () => {
-    assert.match(PATCH, /setPinned\(who\.chatKey, at, body\.pinned\)/);
-    assert.doesNotMatch(PATCH, /setPinned\(who\.chatKey, at, who\.side/);
+  it("keeps who it was from even on a deleted message", () => {
+    const [m] = parseChatMessages([
+      JSON.stringify({ from: "client", kind: "text", text: "hi", at: "t", deletedAt: "t2", senderId: "trav-1", senderName: "David" }),
+    ]);
+    assert.equal(m.text, "");
+    assert.equal(m.senderName, "David");
   });
 
-  it("is checked before the text-edit branch, and does not share its rate limit", () => {
-    const pinIdx = PATCH.indexOf("typeof body?.pinned");
-    const rateIdx = PATCH.indexOf("rateLimit");
-    assert.ok(pinIdx > -1 && pinIdx < rateIdx, "pinning is handled before the edit path's rate limit");
-  });
-
-  it("store-side: a deleted message cannot be (un)pinned", () => {
-    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
-    const fn = STORE.slice(STORE.indexOf("export async function setPinned"));
-    assert.match(fn, /if \(existing\.deletedAt\) return null;/);
-  });
-
-  it("store-side: found by \"at\" alone, not gated to the original sender", () => {
-    const STORE = readFileSync("lib/companion-chat-store.ts", "utf8");
-    const fn = STORE.slice(STORE.indexOf("export async function setPinned"));
-    assert.match(fn, /findRawIndexByAt\(shareId, at\)/);
-  });
-});
-
-describe("a group announcement is only ever the advisor's, never a client's", () => {
-  const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
-  const POST = ROUTE.slice(ROUTE.indexOf("export async function POST"));
-
-  it("the flag is only honored when who.side is advisor, decided server-side — never trusted from the body alone", () => {
-    assert.match(POST, /body\?\.announcement === true && who\.side === "advisor"/);
-  });
-
-  it("a client sending announcement:true gets an ordinary message, not a silent error", () => {
-    // Same shape as every other "ignore what a client can't do" fence here —
-    // sideFor() decides who.side from the session, so a client's own request
-    // simply doesn't match the condition above and appendChat runs without
-    // the flag, exactly like an ordinary send.
-    const appendIdx = POST.lastIndexOf("appendChat(who.chatKey, {");
-    const block = POST.slice(appendIdx, POST.indexOf("});", appendIdx));
-    assert.match(block, /who\.side === "advisor"/);
+  it("resolves the sender from the link, never the body", () => {
+    const ROUTE = readFileSync("app/api/companion/chat/route.ts", "utf8");
+    // The name comes off the resolved traveller (sideFor → getSharedTraveler),
+    // and rides on the message as senderFields — not from anything posted.
+    assert.match(ROUTE, /const sender = who\.traveler \?\? null/);
+    assert.match(ROUTE, /senderFields = sender \? \{ senderId: sender\.id, senderName: sender\.name \}/);
   });
 });

@@ -16,8 +16,11 @@ const KAYAK_DEFAULTS: AffiliateConfig = {
  * legs, and no affiliate IDs in the public /go query the page would open.
  */
 
-const FUTURE_OUT = "2026-11-12";
-const FUTURE_BACK = "2026-11-19";
+// Computed from today: fixed dates went stale on 12 November 2026 and the
+// partner code, correctly, refuses a trip that leaves in the past.
+const isoDaysAhead = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+const FUTURE_OUT = isoDaysAhead(60);
+const FUTURE_BACK = isoDaysAhead(67);
 const FUTURE_LEG2 = "2026-11-15";
 
 describe("partner handoffs (no purchase)", () => {

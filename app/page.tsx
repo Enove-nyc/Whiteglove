@@ -21,9 +21,15 @@ import { currentSpotlight } from "@/lib/seasonal-spotlight-view";
 import { planningNow } from "@/data/planning-now";
 import { readPlanningChips } from "@/lib/planning-now-store";
 import { website } from "@/lib/structured-data";
+import { ITINERARIES_DESCRIPTION, ITINERARIES_TITLE, itinerariesStructuredData } from "@/lib/itineraries-discovery";
 import ItinerariesHome from "@/components/ItinerariesHome";
-import { BRAND_ORIGIN, brandFromRequestHeaders, currentBrand } from "@/lib/site-brand";
-import { headers } from "next/headers";
+import StandaloneAppRedirect from "@/components/StandaloneAppRedirect";
+import { brandFromRequestHeaders, currentBrand } from "@/lib/site-brand";
+import { accountCookieName, getCurrentAccountSummary, readSessionEmail } from "@/lib/account-store";
+import { getPlan } from "@/lib/account-plan-store";
+import { mayServeCompanionClients } from "@/lib/account-limits";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 // Two front doors, one page. The kosher site keeps the metadata it always had;
@@ -31,12 +37,11 @@ import Link from "next/link";
 // origin so search does not fold the two into one.
 export async function generateMetadata() {
   if ((await currentBrand()) === "itineraries") {
-    return {
-      title: "White Glove Itineraries — the trip you plan, in your client's pocket",
-      description:
-        "Build an itinerary a day at a time and hand it to your client as an app on their phone — the days, a travel wallet for no signal, and a chat with you.",
-      alternates: { canonical: `${BRAND_ORIGIN.itineraries}/` },
-    };
+    return pageMetadata({
+      title: ITINERARIES_TITLE,
+      description: ITINERARIES_DESCRIPTION,
+      path: "/",
+    });
   }
   return pageMetadata({
     title: "Jewish Travel Guide — Kosher Destinations & Trip Planning",
@@ -104,7 +109,24 @@ export default async function Home() {
   // kosher site, unchanged. Read through the same helper generateMetadata uses,
   // so the proxy's brand header and the Host are honoured the one same way.
   if (brandFromRequestHeaders(requestHeaders) === "itineraries") {
-    return <ItinerariesHome />;
+    // SIGNED IN, THE FRONT DOOR IS THE DASHBOARD, NOT THE PITCH (AGENTS.md).
+    // An adviser lands on the advisor dashboard; anyone else signed in lands
+    // on their own trips. Signed out, the front door is unchanged. Read the
+    // same way /app reads it, so the two agree on who is signed in.
+    const cookie = (await cookies()).get(accountCookieName())?.value;
+    const account = await getCurrentAccountSummary(cookie);
+    const who = account?.email || readSessionEmail(cookie) || "";
+    if (who) {
+      const plan = await getPlan(who).catch(() => "free" as const);
+      redirect(mayServeCompanionClients(plan) ? "/advisor" : "/app");
+    }
+    return (
+      <>
+        <StandaloneAppRedirect />
+        <StructuredData data={itinerariesStructuredData()} />
+        <ItinerariesHome />
+      </>
+    );
   }
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";

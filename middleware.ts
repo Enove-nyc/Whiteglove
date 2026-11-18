@@ -15,47 +15,21 @@ import {
   edgeSiteIsLocked,
 } from "@/lib/edge-lock";
 import { MIGRATION_LISTS, movedTo } from "@/lib/route-migration";
-import { BRAND_ORIGIN, brandFromRequestHeaders } from "@/lib/site-brand-core";
+import { guideAnswer } from "@/lib/guide-paths";
+import { isDirectoryApi, isPublicPage } from "@/lib/public-access";
+import { BRAND_HEADER, brandFromRequestHeaders } from "@/lib/site-brand-core";
+import { KOSHER_SITE_PREFIX, kosherSiteRoute, refererPath } from "@/lib/kosher-site-archive";
 import { CLOSURE_HTML, closureAction, isClosedKosherHost } from "@/lib/kosher-closure";
-
-/**
- * The guide lives on the kosher site; the itineraries site is strictly the
- * planner. These are the guide's path prefixes — the browsable directory of
- * destinations, kosher information, heritage and travel services — and any of
- * them reached on the itineraries domain is redirected to the kosher one, where
- * it belongs. The planner's own paths (/plan, /itinerary, /app, /account, the
- * share links) are deliberately NOT here, so they stay put.
- */
-const GUIDE_ONLY_PREFIXES = [
-  "/destinations",
-  "/map",
-  "/kosher",
-  "/kosher-travel",
-  "/shuls",
-  "/mikvaos",
-  "/eruvin",
-  "/zmanim",
-  "/tzaddikim",
-  "/cemeteries",
-  "/hechsherim",
-  "/heritage",
-  "/hotels",
-  "/things-to-do",
-  "/transfers",
-  "/travel-insurance",
-  "/travel-gear",
-  "/directory",
-  "/esim",
-  "/travel-guide",
-  "/sources",
-  "/verification",
-  "/submit",
-  "/alerts",
-  "/case-studies",
-  "/info",
-];
+import { isAndroidAppHeaders } from "@/lib/android-app";
+import { isMainstreamPath } from "@/lib/mainstream-property-check";
+import { prefersMarkdown } from "@/lib/markdown-request";
 
 /*
+ * The guide lives on the kosher site; the itineraries site is strictly the
+ * planner. GUIDE_ONLY_PREFIXES and isGuidePath moved to lib/guide-paths.ts so
+ * the sitemap reads the same list — it did not, and offered Google 760 kosher
+ * URLs this middleware redirects away from.
+ *
  * /sample-itinerary IS NOT ON THAT LIST, and used to be.
  *
  * It is the one page that answers "what do I actually get" — a real week
@@ -65,9 +39,6 @@ const GUIDE_ONLY_PREFIXES = [
  * the site was ejecting its own prospects mid-decision.
  */
 
-function isGuidePath(pathname: string): boolean {
-  return GUIDE_ONLY_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-}
 
 /**
  * Hostnames that are always open, set as a comma-separated SITE_OPEN_HOSTS
@@ -94,6 +65,38 @@ function hostIsOpen(request: NextRequest): boolean {
  * With `ADMIN_HOST` unset — which is the default — none of this runs and the
  * site behaves exactly as before.
  */
+/**
+ * 410 Gone, with something a person can read.
+ *
+ * A status alone is for the crawler; a human who followed an old link needs a
+ * way onward. Deliberately minimal and self-contained — it cannot render the
+ * site's own chrome from the edge, and a gone page that looks like a working
+ * page invites another try. noindex as well as 410, so the two agree.
+ *
+ * Brand-neutral: this is the general-travel domain and the reason the address
+ * is gone is that it never belonged here.
+ */
+function goneResponse(): NextResponse {
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8">` +
+    `<meta name="viewport" content="width=device-width,initial-scale=1">` +
+    `<meta name="robots" content="noindex,nofollow">` +
+    `<title>Page not available — White Glove Itineraries</title>` +
+    `<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;` +
+    `background:#F7F4EE;color:#102F35;font:16px/1.6 Inter,system-ui,sans-serif;padding:24px}` +
+    `main{max-width:34rem}h1{font:600 1.6rem/1.25 Georgia,serif;margin:0 0 .75rem}` +
+    `p{margin:0 0 1.25rem;color:#57534e}a{display:inline-flex;min-height:44px;align-items:center;` +
+    `padding:0 20px;margin:0 8px 8px 0;border-radius:999px;text-decoration:none;font-weight:600}` +
+    `.p{background:#193F46;color:#FFFDFC}.s{border:1px solid #C6A15B;color:#102F35}</style></head>` +
+    `<body><main><h1>This page is not available.</h1>` +
+    `<p>Plan your trip in the itinerary planner, or book through our travel partners.</p>` +
+    `<p><a class="p" href="/itinerary">Build a trip</a><a class="s" href="/book">Book</a><a class="s" href="/">Home</a></p>` +
+    `</main></body></html>`;
+  return new NextResponse(body, {
+    status: 404,
+    headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex, nofollow" },
+  });
+}
+
 function requestHost(request: NextRequest): string {
   return (request.headers.get("host") || request.nextUrl.hostname).toLowerCase().split(":")[0].trim();
 }
@@ -178,6 +181,83 @@ function publicOrigin(): string | null {
   }
 }
 
+/**
+ * The Android app is a Trusted Web Activity wrapping this site, and its launch
+ * URL — baked into the published binary — is the bare domain. The owner wants it
+ * to open on the planner app (/app), not the marketing home page. Rather than
+ * ship a new binary and wait on another Play review, we land it here: the app's
+ * WebView tags every request with its package name, so a home-page open coming
+ * from the app is sent on to /app while an ordinary browser gets the home page
+ * untouched. Detection lives in lib/android-app.ts, tested there.
+ */
+function isAndroidAppRequest(request: NextRequest): boolean {
+  return isAndroidAppHeaders((name) => request.headers.get(name));
+}
+
+/**
+ * Constant-time string comparison. The admin cookie is an HMAC and the rest of
+ * the auth path (lib/edge-lock.ts) already compares in constant time; a plain
+ * `===` here short-circuits on the first differing byte. Practically
+ * unexploitable over a network against a base64url HMAC, but there is no reason
+ * for the one comparison in this file to be the odd one out.
+ */
+function timingSafeEqual(a: string | undefined | null, b: string | undefined | null): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/**
+ * The site-lock gate as a value: a redirect to /access when this request must
+ * be stopped, or null when it may proceed. Pulled out of the middleware body so
+ * the same gate covers the ordinary path AND the admin-host public-path branch
+ * that has nowhere to redirect to — a locked page must never be served in the
+ * clear just because it was reached on the admin hostname.
+ */
+async function siteLockRedirect(request: NextRequest, pathname: string): Promise<NextResponse | null> {
+  // /version and /api/health are the deployment checks and contain no private
+  // content. Both must answer THROUGH the site lock: Railway calls the health
+  // path before it moves traffic, so a locked site that redirected it would
+  // fail every deploy while the site itself was perfectly fine.
+  // It stays reachable while the site is locked so health checks keep working.
+  if (pathname === "/access" || pathname === "/version" || pathname === "/api/health" || pathname.startsWith("/admin")) return null;
+
+  let locked = hostIsOpen(request) ? false : await edgeSiteIsLocked();
+  if (!locked && !hostIsOpen(request)) {
+    const lockedPaths = await edgeLockedPaths();
+    locked = lockedPaths.some((raw) => {
+      const prefix = raw.endsWith("/") ? raw.slice(0, -1) : raw;
+      return prefix.length > 0 && (pathname === prefix || pathname.startsWith(prefix + "/"));
+    });
+  }
+  if (!locked) return null;
+
+  const generation = await edgeAccessGeneration();
+  let allowed = await edgeSiteAccessValid(request.cookies.get("white_glove_site_access")?.value, generation);
+  // Someone the owner has let in by name gets through without being told the
+  // shared password — they just sign in to their own account.
+  if (!allowed) {
+    const email = await edgeAccountEmail(request.cookies.get("white_glove_account")?.value);
+    allowed = await edgeAccountHasSiteAccess(email);
+  }
+  if (allowed) return null;
+
+  const url = new URL("/access", request.url);
+  url.searchParams.set("next", pathname);
+  return NextResponse.redirect(url);
+}
+
+/**
+ * The owner, signed in to the admin. The directory is private to him: he sees
+ * every page and every directory search as before; nobody else does. See
+ * lib/public-access.ts.
+ */
+async function isOwner(request: NextRequest): Promise<boolean> {
+  const token = await edgeAccessToken("admin");
+  return timingSafeEqual(request.cookies.get("white_glove_admin")?.value, token);
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -200,8 +280,31 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // The directory's own searches are the owner's alone now (lib/public-access.ts).
+  if (isDirectoryApi(pathname) && !(await isOwner(request))) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   if (pathname.startsWith("/api/")) return NextResponse.next();
   if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next();
+
+  // Expo visitors open this independent tool by QR code, without a travel
+  // account or site-access cookie. Keep the exception within this path only.
+  if (isMainstreamPath(pathname) && !isAdminHost(request)) return NextResponse.next();
+
+  // The Android app opens on the bare domain; the owner wants it to land on the
+  // planner app instead. Only the home page, and only when the request comes
+  // from the app itself — an ordinary browser at "/" still gets the home page.
+  // 307, never cached: the choice depends on a request header, so a shared cache
+  // must not serve one visitor's /app redirect to the next.
+  if (pathname === "/" && isAndroidAppRequest(request)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/app";
+    const response = NextResponse.redirect(url, 307);
+    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Vary", "X-Requested-With");
+    return response;
+  }
 
   // A heritage town that used to live under /destinations.
   //
@@ -219,21 +322,68 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  // The itineraries domain is strictly the planner — a guide page reached on it
-  // is sent to the kosher site, where the guide lives. Brand is read from the
-  // request (the proxy's x-wg-brand header first, then the Host), so it is right
-  // whether the request came straight to Railway or through the Cloudflare
-  // worker that fronts the itineraries domain. 307, not 308: the split is still
-  // young, and a permanent redirect would stick in browser caches if it moved.
-  if (isGuidePath(pathname) && brandFromRequestHeaders(request.headers) === "itineraries") {
-    return NextResponse.redirect(new URL(pathname + request.nextUrl.search, BRAND_ORIGIN.kosher), 307);
+  const onAdminHost = isAdminHost(request);
+
+  // THE WHOLE KOSHER TRAVEL SITE, FOR THE OWNER, INSIDE THE ADMIN. On the admin
+  // host, /site/... serves the closed Kosher Travel site as it was, branded as
+  // it was, to the owner signed in to the admin and nobody else. A link
+  // followed from a /site page is kept under /site. See lib/kosher-site-archive.ts.
+  // Any host, so it works before the admin subdomain's DNS exists too.
+  {
+    const referer = request.headers.get("referer");
+    let fromPath: string | null = null;
+    try {
+      // Same host only: a link from somewhere else never steers this.
+      const host = (request.headers.get("host") || request.nextUrl.host).toLowerCase();
+      if (referer && new URL(referer).host.toLowerCase() === host) fromPath = refererPath(referer);
+    } catch {
+      fromPath = null;
+    }
+    const route = kosherSiteRoute(pathname, fromPath);
+    if (route) {
+      if (!(await isOwner(request))) {
+        const login = new URL(onAdminHost ? "/login" : "/admin/login", request.url);
+        login.searchParams.set("next", pathname);
+        return NextResponse.redirect(login);
+      }
+      if (route.kind === "enter") {
+        const to = request.nextUrl.clone();
+        to.pathname = route.to;
+        return NextResponse.redirect(to, 307);
+      }
+      const headers = new Headers(request.headers);
+      headers.set(BRAND_HEADER, "kosher");
+      const target = request.nextUrl.clone();
+      target.pathname = route.path;
+      const response = NextResponse.rewrite(target, { request: { headers } });
+      response.headers.set("x-robots-tag", "noindex, nofollow");
+      return response;
+    }
   }
 
-  const onAdminHost = isAdminHost(request);
+  // ONLY THE PLANNER, BOOKING AND THE COMPANION ARE PUBLIC. White Glove Kosher
+  // Travel has closed and its directory is kept for the owner alone (AGENTS.md,
+  // 18 November 2026). Every page not on the allow-list in lib/public-access.ts
+  // answers "not available" — except to the owner signed in to the admin, who
+  // sees it as before. A directory path with a booking or planning equivalent
+  // (/hotels, /esim, /stops…) is sent there instead of a dead end.
+  //
+  // NEVER on the admin host, and never for /admin itself: the admin has its
+  // own sign-in below.
+  if (!onAdminHost && !pathname.startsWith("/admin") && !isPublicPage(pathname) && !(await isOwner(request))) {
+    const answer = guideAnswer(pathname);
+    if (answer?.kind === "redirect" && isPublicPage(answer.to)) {
+      return NextResponse.redirect(new URL(answer.to + request.nextUrl.search, request.url), 307);
+    }
+    return goneResponse();
+  }
+
+  // The one admin dashboard lives on this site (with its second factor);
+  // White Glove Kosher Travel has closed. See AGENTS.md, 18 November 2026.
 
   if (onAdminHost && pathname.startsWith("/admin")) {
     const token = await edgeAccessToken("admin");
-    const authed = Boolean(token && request.cookies.get("white_glove_admin")?.value === token);
+    const authed = timingSafeEqual(request.cookies.get("white_glove_admin")?.value, token);
     const entry = adminHostEntry(pathname, request.nextUrl.search, authed);
     if (entry.kind === "redirect") {
       const url = request.nextUrl.clone();
@@ -261,14 +411,24 @@ export async function middleware(request: NextRequest) {
   // /cemeteries — and before this they were rewritten into /admin/cemeteries
   // and 404'd, so the site was unreachable from inside the admin.
   if (onAdminHost && adminPath === pathname && pathname !== "/version" && !pathname.startsWith("/admin")) {
+    // A page the public can no longer open (the kevarim screen links to
+    // /cemeteries) is opened in the owner's Kosher Travel view instead.
+    if (!isPublicPage(pathname)) {
+      return NextResponse.redirect(new URL(KOSHER_SITE_PREFIX + pathname + request.nextUrl.search, request.url), 307);
+    }
     const origin = publicOrigin();
     if (origin) {
       const url = new URL(request.url);
       const target = new URL(pathname + url.search, origin);
       return NextResponse.redirect(target);
     }
-    // Nowhere to send them. Serve the page here rather than 404 — noindexed,
-    // because the admin hostname must never look like a second copy of the site.
+    // Nowhere to send them. The site lock still applies — a locked public page
+    // must not be served in the clear just because it was reached on the admin
+    // host with no public origin configured to bounce to.
+    const lockRedirect = await siteLockRedirect(request, pathname);
+    if (lockRedirect) return lockRedirect;
+    // Serve the page here rather than 404 — noindexed, because the admin
+    // hostname must never look like a second copy of the site.
     const response = NextResponse.next();
     response.headers.set("x-robots-tag", "noindex, nofollow");
     return response;
@@ -294,10 +454,10 @@ export async function middleware(request: NextRequest) {
 
   if (adminPath.startsWith("/admin") && adminPath !== "/admin/login") {
     // A null token means this deployment has no signing secret and cannot
-    // authorise anybody. Said explicitly rather than relying on a cookie never
-    // being equal to null, so a later refactor cannot turn it into fail-open.
+    // authorise anybody: timingSafeEqual returns false for a null expected
+    // value, so no cookie can ever match it and the request goes to login.
     const token = await edgeAccessToken("admin");
-    if (!token || request.cookies.get("white_glove_admin")?.value !== token) {
+    if (!timingSafeEqual(request.cookies.get("white_glove_admin")?.value, token)) {
       const login = new URL(onAdminHost ? "/login" : "/admin/login", request.url);
       const nextPath = (onAdminHost ? pathname : pathname.replace(/^\/admin/, "") || "/") + request.nextUrl.search;
       if (nextPath && nextPath !== "/" && nextPath !== "/login" && !nextPath.startsWith("/admin/login")) {
@@ -344,38 +504,16 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // /version and /api/health are the deployment checks and contain no private
-  // content. Both stay reachable while the site is locked: Railway calls the
-  // health path before it moves traffic, so a locked site that redirected it
-  // would fail every deploy while the site itself was perfectly fine.
-  if (pathname !== "/access" && pathname !== "/version" && pathname !== "/api/health" && !pathname.startsWith("/admin")) {
-    let locked = hostIsOpen(request) ? false : await edgeSiteIsLocked();
-    if (!locked && !hostIsOpen(request)) {
-      const lockedPaths = await edgeLockedPaths();
-      locked = lockedPaths.some((raw) => {
-        const prefix = raw.endsWith("/") ? raw.slice(0, -1) : raw;
-        return prefix.length > 0 && (pathname === prefix || pathname.startsWith(prefix + "/"));
-      });
-    }
-    if (locked) {
-      const generation = await edgeAccessGeneration();
-      let allowed = await edgeSiteAccessValid(request.cookies.get("white_glove_site_access")?.value, generation);
-
-      // Someone the owner has let in by name gets through without being told
-      // the shared password — they just sign in to their own account.
-      if (!allowed) {
-        const email = await edgeAccountEmail(request.cookies.get("white_glove_account")?.value);
-        allowed = await edgeAccountHasSiteAccess(email);
-      }
-
-      if (!allowed) {
-        const url = new URL("/access", request.url);
-        url.searchParams.set("next", pathname);
-        return NextResponse.redirect(url);
-      }
-    }
-  }
-  return NextResponse.next();
+  const lockRedirect = await siteLockRedirect(request, pathname);
+  if (lockRedirect) return lockRedirect;
+  // Negotiate only the public Itineraries homepage, after the existing lock.
+  // Private routes and all ordinary HTML/session redirects keep their handlers.
+  const homepage = pathname === "/" && brandFromRequestHeaders(request.headers) === "itineraries";
+  const response = homepage && prefersMarkdown(request.headers.get("accept"))
+    ? NextResponse.rewrite(new URL("/site-overview.md", request.url))
+    : NextResponse.next();
+  if (homepage) response.headers.append("Vary", "Accept");
+  return response;
 }
 
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };

@@ -1,3 +1,16 @@
+/**
+ * PORTED, AND POINTED AT THIS PRODUCT'S OWN FORGET FUNCTION.
+ *
+ * The kosher copy has lib/offline-documents.ts, whose one export empties the
+ * documents cache on sign-out. This product already had lib/offline-forget.ts
+ * doing the same job and more — it clears the on-device database too, and
+ * sweeps every app-shell cache rather than one pinned version. Porting the
+ * kosher function would have put two sign-out cleaners in a codebase whose own
+ * file says, in capitals, that there is one because this is the failure that
+ * matters. So the ported half is the cache name it deletes, added to the
+ * function that already existed, and these assertions follow it there.
+ */
+
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
@@ -18,7 +31,7 @@ import { describe, it } from "node:test";
  */
 
 const SW = readFileSync("public/sw.js", "utf8");
-const HELPER = readFileSync("lib/offline-documents.ts", "utf8");
+const HELPER = readFileSync("lib/offline-forget.ts", "utf8");
 const CONTROL = readFileSync("components/OfflineDocuments.tsx", "utf8");
 
 describe("nothing is cached that was not asked for", () => {
@@ -95,7 +108,7 @@ describe("signing out takes them with it", () => {
         // which does the clearing itself. Anything that actually signs
         // somebody out has to do it here.
         if (/<IdleLogout/.test(src) && !/fetch\(\s*["'`]\/api\/account\/logout/.test(src)) continue;
-        if (!src.includes("forgetOfflineDocuments")) offenders.push(full);
+        if (!src.includes("forgetOfflineData")) offenders.push(full);
       }
     };
     for (const root of roots) walk(root);
@@ -113,7 +126,7 @@ describe("signing out takes them with it", () => {
     // passes still on the machine. Named separately from the sweep above
     // because it is the case a sweep is most likely to be loosened around.
     const idle = readFileSync("components/IdleLogout.tsx", "utf8");
-    assert.match(idle, /forgetOfflineDocuments\(\)/);
+    assert.match(idle, /forgetOfflineData\(\)/);
   });
 
   it("finds the sign-outs at all, so the check above cannot pass vacuously", () => {
@@ -181,7 +194,7 @@ describe("private pages do not outlive the session either", () => {
     // opens a single hard-coded wg-cache-vN.
     assert.match(HELPER, /await caches\.keys\(\)/);
     assert.doesNotMatch(HELPER, /caches\.open\("wg-cache-v\d"\)/);
-    // Still never the documents cache — forgetOfflineDocuments deletes that
+    // Still never the documents cache — forgetOfflineData deletes that
     // outright, and the sweep must skip it rather than re-open it.
     assert.match(HELPER, /name !== "wg-offline-docs-v1"/);
   });

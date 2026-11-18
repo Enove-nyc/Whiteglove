@@ -5,9 +5,6 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { isSignedIn } from "@/lib/require-signed-in";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
-import { AMAZON_DISCLOSURE, isAmazonLink } from "@/lib/travel-extras";
-import { gearShownToVisitors } from "@/lib/travel-gear";
-import { readGear } from "@/lib/travel-gear-store";
 
 // Brand-aware and OPEN. This used to be signed-in only, and a visitor who
 // wanted to know what to pack met the login door instead of an answer. It now
@@ -19,7 +16,7 @@ export async function generateMetadata() {
   const itineraries = (await currentBrand()) === "itineraries";
   return pageMetadata({
     title: itineraries ? "Packing list — White Glove Itineraries" : "Packing list — White Glove Kosher Travel",
-    description: "What to pack for a kosher trip — documents, Shabbos, food, and the rest. Build a trip and the list is made for it.",
+    description: "What to pack for your trip — documents, clothing, electronics and the rest. Build a trip and the list is made for it.",
     path: "/packing",
   });
 }
@@ -30,15 +27,11 @@ export default async function PackingPage() {
   // Whether to ask the account for a trip at all. A signed-out visitor gets
   // the starter list without a round trip that could only return a 401.
   const signedIn = await isSignedIn();
-  // The gear shelf, read once here and handed to the list. A packing line
-  // that names something on the shelf gets a quiet link to it — the one place
-  // on the site where a traveller is already reading a list of things they
-  // have to go and buy. Nothing is added to the list and nothing is reordered;
-  // see data/packing-gear-match.ts.
-  const shelf = gearShownToVisitors(await readGear()).map((item) => ({ id: item.id, name: item.name, url: item.url }));
-  // Amazon's wording has to appear wherever its links do, not only on
-  // /travel-gear — and only when one of the links actually shown is Amazon's.
-  const amazon = shelf.some((item) => isAmazonLink(item.url));
+  // NO GEAR SHELF HERE. The kosher copy reads its travel-gear shelf and hands
+  // it down so a packing line naming a product can link to one. That shelf is
+  // a settled decision of that product and does not exist on this one — see
+  // components/PackingListPanel.tsx. Nothing to read, and no affiliate
+  // disclosure to print, because there are no affiliate links on this page.
 
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -47,12 +40,11 @@ export default async function PackingPage() {
         <PageHeader
           eyebrow="Packing list"
           title="What to pack"
-          description="A starting list for a kosher trip, to check off as you pack. With a trip in the planner it is built from where you are going, when, and what you have planned."
+          description="A starting list to check off as you pack. With a trip in the planner it is built from where you are going, when, and what you have planned."
         />
         <div className="mt-8">
-          <PackingListPanel gear={shelf} signedIn={signedIn} />
+          <PackingListPanel signedIn={signedIn} />
         </div>
-        {amazon && <p className="mt-8 text-xs leading-5 text-stone-700">{AMAZON_DISCLOSURE}</p>}
       </section>
       <Footer />
     </main>
