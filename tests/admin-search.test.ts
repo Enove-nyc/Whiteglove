@@ -71,7 +71,6 @@ describe("searching for a thing finds the thing", () => {
     ["amazon", "Travel gear"],
     ["esim", "Earnings"],
     ["insurance", "Earnings"],
-    ["voting", "Collaboration"],
     ["security", "Security policy"],
   ];
 

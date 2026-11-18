@@ -1,6 +1,5 @@
 import Link from "next/link";
 import AboutProfileSection from "@/components/AboutProfileSection";
-import CaseStudiesSection from "@/components/CaseStudiesSection";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import Navbar from "@/components/Navbar";
@@ -9,7 +8,6 @@ import StartingPoints from "@/components/StartingPoints";
 import { pageMetadata } from "@/lib/seo";
 import { resolvePage } from "@/lib/pages";
 import { readAboutProfile } from "@/lib/about-profile-store";
-import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { readWords } from "@/lib/site-words-store";
 import { ITINERARIES_ABOUT_BLOCKS } from "@/data/about-itineraries";
 import { currentBrand } from "@/lib/site-brand";
@@ -50,11 +48,10 @@ export async function generateMetadata() {
  * The process blocks below stay editable via /admin/pages.
  */
 export default async function AboutPage() {
-  const [page, words, profile, studies, siteBrand] = await Promise.all([
+  const [page, words, profile, siteBrand] = await Promise.all([
     resolvePage("about"),
     readWords(),
     readAboutProfile(),
-    readPublicCaseStudies(),
     currentBrand(),
   ]);
 
@@ -82,7 +79,6 @@ export default async function AboutPage() {
       <Navbar />
       <AboutProfileSection profile={profile} siteBrand={siteBrand} />
       <PageBlocks blocks={blocks} />
-      <CaseStudiesSection studies={studies} siteBrand={siteBrand} />
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <div className="rounded-2xl border border-[var(--navy)] bg-[var(--navy)] p-6 text-white sm:p-9">

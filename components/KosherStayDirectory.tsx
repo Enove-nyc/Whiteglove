@@ -5,8 +5,6 @@ import { SaveListingButton } from "@/components/SaveListingButton";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import MoreActions from "@/components/MoreActions";
-import RateExperienceLink from "@/components/RateExperienceLink";
-import SuggestEditPanel from "@/components/SuggestEditPanel";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
 import { staySearchHref } from "@/lib/stay-search";
@@ -324,8 +322,6 @@ export default function KosherStayDirectory({ stays }: { stays: KosherStay[] }) 
                 >
                   Things to do in {s.city} →
                 </Link>
-                <RateExperienceLink kind="listing" refId={s.slug} label={s.name} />
-                <SuggestEditPanel targetType="accommodation" targetId={s.slug} title={s.name} compact />
               </MoreActions>
             </div>
 

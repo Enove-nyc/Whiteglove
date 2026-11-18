@@ -76,7 +76,6 @@ export const ON_BOTH: readonly string[] = [
   "components/TripComments.tsx",
   "components/TripContextBar.tsx",
   "components/TripDocuments.tsx",
-  "components/TripGroupTools.tsx",
   "components/TripProgressStrip.tsx",
   "components/TripSetupPanel.tsx",
   "components/TripStartFlow.tsx",

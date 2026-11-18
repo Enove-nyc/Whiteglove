@@ -29,10 +29,8 @@ describe("pages that now read the brand before naming it", () => {
     { path: "app/access/page.tsx", body: /async function generateMetadata/ },
     { path: "app/search/page.tsx", body: /async function generateMetadata/ },
     { path: "app/assistant/page.tsx", body: /async function generateMetadata/ },
-    { path: "app/rate/page.tsx", body: /async function generateMetadata/ },
     { path: "app/about/page.tsx", body: /async function generateMetadata/ },
     { path: "app/contact/page.tsx", body: /async function generateMetadata/ },
-    { path: "app/account/referral/page.tsx", body: /async function generateMetadata/ },
   ];
 
   for (const { path, body } of cases) {

@@ -232,10 +232,7 @@ describe("the surfaces a traveller actually saves from", () => {
   const converted = [
     ["components/useAddToItinerary.tsx", "putting a place on a trip"],
     ["components/AccountSettings.tsx", "your name, email and picture"],
-    ["components/reviews/ReviewForm.tsx", "leaving a rating"],
     ["components/TripComments.tsx", "commenting on a shared trip"],
-    ["components/TripGroupTools.tsx", "voting on a shared trip"],
-    ["components/SendPlaceIn.tsx", "sending a place in"],
     ["components/LoginForm.tsx", "signing in"],
   ] as const;
 

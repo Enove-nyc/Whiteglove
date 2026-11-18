@@ -49,12 +49,12 @@ describe("every queue raises a card", () => {
     // that lies.
     const sources = [
       "app/api/contact/route.ts",
-      "app/api/ratings/route.ts",
-      "app/api/content/suggestions/route.ts",
       "app/api/account/plan/route.ts",
     ].map((path) => readFileSync(path, "utf8"));
     const all = sources.join("\n");
-    for (const kind of ["rating", "suggestion", "listing", "plan", "contact", "fault"]) {
+    // Ratings and suggestions came off the site (owner, 18 November 2026).
+    // "listing" was raised by the visitor listing form, now gone too.
+    for (const kind of ["plan", "contact", "fault"]) {
       assert.match(all, new RegExp(`"${kind}"`), `nothing ever raises a "${kind}" card`);
     }
   });

@@ -7,8 +7,6 @@ import { SaveListingButton } from "@/components/SaveListingButton";
 import Link from "next/link";
 import KosherNearby from "@/components/KosherNearby";
 import MoreActions from "@/components/MoreActions";
-import RateExperienceLink from "@/components/RateExperienceLink";
-import SuggestEditPanel from "@/components/SuggestEditPanel";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import { ACTION_BUTTON_CLASS } from "@/lib/action-button";
@@ -315,8 +313,6 @@ export default function AttractionDirectory({
                 >
                   Plan a trip here →
                 </Link>
-                <RateExperienceLink kind="listing" refId={a.slug} label={a.name} />
-                <SuggestEditPanel targetType="site" targetId={a.slug} title={a.name} compact />
               </MoreActions>
             </div>
 

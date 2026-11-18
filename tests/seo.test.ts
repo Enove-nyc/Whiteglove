@@ -154,15 +154,4 @@ describe("the canonical host", () => {
     }
   });
 
-  it("is the same host the alert emails link back to", () => {
-    // Two hardcoded fallbacks for the same feature disagreed with each other —
-    // the composer preview used the www host and the send action used the bare
-    // one — so a test blast and a real blast could carry different links.
-    const sendPage = readFileSync("app/admin/alerts/send/page.tsx", "utf8");
-    const sendAction = readFileSync("app/admin/alerts/send/actions.ts", "utf8");
-    for (const [name, source] of [["the composer", sendPage], ["the send action", sendAction]] as const) {
-      assert.doesNotMatch(source, /"https:\/\/(www\.)?whiteglovekoshertravel\.com"/, `${name} still hardcodes a host of its own`);
-      assert.match(source, /CANONICAL_ORIGIN/, `${name} should fall back to the one named host`);
-    }
-  });
 });

@@ -1,5 +1,4 @@
 import HomeSearchHero from "@/components/HomeSearchHero";
-import CaseStudiesSection from "@/components/CaseStudiesSection";
 import DestinationSearch from "@/components/DestinationSearch";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -9,7 +8,6 @@ import SeasonalSpotlight from "@/components/SeasonalSpotlight";
 import { PlanningNowRow } from "@/components/PlanningNowRow";
 import StructuredData from "@/components/StructuredData";
 import { getActivePromotions } from "@/lib/admin-content";
-import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { pageMetadata } from "@/lib/seo";
 import { Icon } from "@/components/icons/Icon";
 import Image from "next/image";
@@ -131,11 +129,9 @@ export default async function Home() {
   }
   const userAgent = requestHeaders.get("user-agent") || "";
   const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const [homepagePromotions, inlinePromotions, caseStudies, booking, spotlight, planningChips] = await Promise.all([
+  const [homepagePromotions, inlinePromotions, booking, spotlight, planningChips] = await Promise.all([
     getActivePromotions("homepage-promo", "/", device),
     getActivePromotions("inline-content", "/", device),
-    // Genuine, permitted, approved only — section renders nothing when empty.
-    readPublicCaseStudies(),
     readBookingLink(),
     // Null for most of the year, and then the section below is not there at
     // all — a seasonal prompt that is always on the front page is not
@@ -285,7 +281,6 @@ export default async function Home() {
 
       {/* Genuine case studies only — the component returns null when none are
           approved, and no quote is invented here to fill the space. */}
-      <CaseStudiesSection studies={caseStudies} />
 
       <Footer />
     </main>

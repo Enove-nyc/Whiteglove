@@ -6,24 +6,15 @@ import { areaForPath } from "@/lib/admin-permissions";
 describe("growth admin surfaces", () => {
   it("files new growth screens under known areas", () => {
     assert.equal(areaForPath("/admin/growth"), "content");
-    assert.equal(areaForPath("/admin/alerts"), "content");
-    assert.equal(areaForPath("/admin/settings/referral"), "access");
-    assert.equal(areaForPath("/admin/settings/collaboration"), "access");
-    assert.equal(areaForPath("/admin/settings/membership"), "access");
   });
 
   it("lists growth screens in admin navigation", () => {
     const nav = readFileSync("lib/admin-nav.ts", "utf8");
     assert.match(nav, /\/admin\/growth/);
-    assert.match(nav, /\/admin\/alerts/);
-    assert.match(nav, /\/admin\/settings\/referral/);
-    assert.match(nav, /\/admin\/settings\/collaboration/);
-    assert.match(nav, /\/admin\/settings\/membership/);
     assert.match(nav, /Growth/);
-    assert.match(nav, /Alerts/);
-    assert.match(nav, /Referrals/);
-    assert.match(nav, /Collaboration/);
-    assert.match(nav, /Plus/);
+    // Alerts, referrals, collaboration and White Glove Plus came off at the
+    // owner's word (18 November 2026).
+    assert.doesNotMatch(nav, /\/admin\/alerts|\/admin\/settings\/(referral|collaboration|membership)/);
   });
 
   it("keeps destination commerce free of fake partner buttons", () => {

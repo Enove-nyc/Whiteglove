@@ -42,13 +42,14 @@ export const PUBLIC_PAGE_PREFIXES = [
   "/t",
   "/p",
   "/f",
-  "/r",
   "/a",
   "/form",
   "/rate",
   // The company pages.
   "/about",
   "/contact",
+  // Where an old alert email's unsubscribe link lands — signups are closed, unsubscribing is not.
+  "/alerts/unsubscribed",
   "/privacy",
   "/terms",
   // Machine endpoints that are routes rather than files.

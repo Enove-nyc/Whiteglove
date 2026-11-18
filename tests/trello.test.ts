@@ -224,7 +224,8 @@ describe("what the owner is told", () => {
 });
 
 describe("a card can never cost a visitor their submission", () => {
-  const sources = ["app/api/ratings/route.ts", "app/api/content/suggestions/route.ts", "app/api/account/plan/route.ts"];
+  // Ratings and suggestions came off the site (owner, 18 November 2026).
+  const sources = ["app/api/account/plan/route.ts"];
 
   it("IS NEVER AWAITED AT ANY CALL SITE", () => {
     // THE ONE THAT MATTERS. Somebody who just rated a trip does not care whether
@@ -237,12 +238,6 @@ describe("a card can never cost a visitor their submission", () => {
     }
   });
 
-  it("sends the card after the thing is safely stored", () => {
-    // A card about a submission that then failed to save has somebody working
-    // on an item that is not in the queue.
-    const ratings = readFileSync("app/api/ratings/route.ts", "utf8");
-    assert.ok(ratings.indexOf("cardIfWanted(") > ratings.indexOf("saveExperienceRating"));
-  });
 
   it("swallows its own failures", () => {
     const store = readFileSync("lib/trello-store.ts", "utf8");

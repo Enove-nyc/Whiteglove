@@ -49,12 +49,12 @@ describe("the cards that had a wall of actions", () => {
       // Out here: the guide, and the two that put it on a trip.
       ["Full guide", "SaveTripItemButton", "AddToItineraryButton"],
       // Behind More.
-      ["Navigate →", "Website ↗", "Kosher food near here", "Where to stay in", "Plan a trip here", "RateExperienceLink", "SuggestEditPanel"],
+      ["Navigate →", "Website ↗", "Kosher food near here", "Where to stay in", "Plan a trip here"],
     ],
     [
       "components/KosherStayDirectory.tsx",
       ["Check dates in", "AddToItineraryButton"],
-      ["Navigate to", "Their site", "within walking distance", "Things to do in", "RateExperienceLink", "SuggestEditPanel"],
+      ["Navigate to", "Their site", "within walking distance", "Things to do in"],
     ],
   ];
 

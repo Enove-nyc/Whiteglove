@@ -8,14 +8,11 @@ import { canOpen, describeAreas } from "@/lib/admin-permissions";
 import { ADMIN_TOTAL_CARDS, contentTotals } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
 import { describeAdmin } from "@/lib/admin-session";
-import { countPendingSubmissions } from "@/lib/content-admin";
 import { messagesAlert } from "@/lib/contact-messages";
 import { listContactMessages } from "@/lib/contact-store";
 import { listPagesForAdmin } from "@/lib/pages";
 import { listPlanRequests } from "@/lib/account-plan-store";
 import { getImportReviewQueue } from "@/lib/import-review-queue";
-import { listExperienceRatings } from "@/lib/experience-ratings-store";
-import { listReportedPlaceReviews } from "@/lib/place-review-store";
 import { getDashboardStats } from "@/lib/site-analytics";
 import { PageHeader } from "@/components/ui/PageHeader";
 
@@ -94,22 +91,18 @@ export default async function AdminHome() {
   // them is worse than no tile: it reads as something broken.
   const may = (href: string) => canOpen(areas, href);
 
-  const [stats, inventory, content, pages, picturesWaiting, messages, importReviewQueue, privateRatings, reportedReviews] = await Promise.all([
+  const [stats, inventory, content, pages, messages, importReviewQueue] = await Promise.all([
     getDashboardStats(),
     getEditableInventory(),
     getAdminContent(),
     listPagesForAdmin(),
-    countPendingSubmissions(),
     listContactMessages(),
     getImportReviewQueue(),
-    listExperienceRatings(),
-    listReportedPlaceReviews(),
   ]);
 
   // Counted from the built-in content, so the tiles survive the database being
   // away — the same rule the completeness queue follows.
   const totals = contentTotals();
-  const pendingSuggestions = content.bundle.suggestions.filter((s) => s.status === "pending" || s.status === "needs-info");
   const unfinished = inventory.items.filter((item) => item.status !== "complete");
   const unpublishedPages = pages.filter((p) => p.status !== "PUBLISHED");
   const alerts: Array<{ text: string; href: string; label: string }> = [];
@@ -133,15 +126,6 @@ export default async function AdminHome() {
   const adTrouble = adsNeedingAttention(content.bundle.promotions, new Date().toISOString().slice(0, 10));
   if (adTrouble) {
     alerts.push({ text: adTrouble.says, href: "/admin/advertisements", label: "Open advertisements" });
-  }
-  // Somebody sent a picture and is waiting to hear. It is on no page until
-  // this is dealt with, which is exactly why it needs saying here.
-  if (picturesWaiting > 0) {
-    alerts.push({
-      text: "Visitor pictures are waiting for review.",
-      href: "/admin/photos",
-      label: "Look at them",
-    });
   }
 
   // Somebody wrote in from the contact page, the trip enquiry or the flight
@@ -218,10 +202,7 @@ export default async function AdminHome() {
       count: importReviewQueue.error ? 0 : importReviewQueue.counts.duplicates,
       href: "/admin/imports/needs-review",
     },
-    { label: "Corrections from visitors", count: pendingSuggestions.length, href: "/admin/content" },
     { label: "Pages not published", count: unpublishedPages.length, href: "/admin/pages" },
-    { label: "Ratings to read", count: privateRatings.length, href: "/admin/ratings" },
-    { label: "Flagged reviews", count: reportedReviews.length, href: "/admin/ratings" },
     { label: "Checklist items unfinished", count: unfinished.length, href: "/admin/inventory" },
   ].filter((item) => item.count > 0 && may(item.href));
   const quickAdd = ADMIN_QUICK_ADD.filter((item) => may(item.href));

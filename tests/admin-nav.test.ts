@@ -238,7 +238,7 @@ describe("every static admin page is reachable from nav or a hub", () => {
     const pagesHub = readFileSync(join(process.cwd(), "app", "admin", "pages", "page.tsx"), "utf8");
     assert.ok(hubListsSection(pagesHub, "/admin/pages"), "Pages hub does not render AdminSectionScreens");
     const hrefs = new Set(sectionScreens("/admin/pages").map((s) => s.href));
-    for (const required of ["/admin/photos", "/admin/ratings", "/admin/reports", "/admin/growth", "/admin/content"]) {
+    for (const required of ["/admin/reports", "/admin/growth"]) {
       assert.ok(hrefs.has(required), `Pages sectionScreens() omits ${required}`);
     }
   });

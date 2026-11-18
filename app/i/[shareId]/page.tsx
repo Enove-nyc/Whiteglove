@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import Footer from "@/components/Footer";
 import TripComments from "@/components/TripComments";
-import TripGroupTools from "@/components/TripGroupTools";
 import ItineraryFooter from "@/components/ItineraryFooter";
 import Navbar from "@/components/Navbar";
 import SharedItineraryActions from "@/components/SharedItineraryActions";
@@ -16,7 +15,6 @@ import { getSharedItineraryByShareId } from "@/lib/account-store";
 import { noteShareOpened } from "@/lib/share-open-recorder";
 import { allCrossings } from "@/lib/border-store";
 import { borderCostForLegs } from "@/lib/border-legs";
-import { readCollaborationSettings } from "@/lib/growth-settings-store";
 import { readAssumptions } from "@/lib/planner-settings-store";
 import { getActivePromotions } from "@/lib/admin-content";
 import { burialsForSlugs } from "@/lib/kever-search";
@@ -67,11 +65,7 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
   // The same two things the planner reads. This page was reading neither, so
   // one trip gave one set of driving times on the screen it was built on and
   // another on the link that was sent to the person actually driving it.
-  const [crossings, assume, collaboration] = await Promise.all([
-    allCrossings(),
-    readAssumptions(),
-    readCollaborationSettings(),
-  ]);
+  const [crossings, assume] = await Promise.all([allCrossings(), readAssumptions()]);
   const borderCost = borderCostForLegs(crossings, new Date().toISOString().slice(0, 10), assume.borderAllowanceMins);
   const days = itin.startDate && itin.endDate ? buildDays(itin, borderCost, assume) : [];
   const sharedByName = shared.ownerName || shared.ownerEmail;
@@ -235,15 +229,6 @@ export default async function SharedItineraryPage({ params }: { params: Promise<
           labels={Object.fromEntries(commentTargets.map((t) => [t.id, t.label]))}
         />
 
-        {(collaboration.votingEnabled || collaboration.sharedFavoritesEnabled) && (
-          <Card className="mt-8 p-5 sm:p-6">
-            <TripGroupTools
-              shareId={shareId}
-              votingEnabled={collaboration.votingEnabled}
-              favoritesEnabled={collaboration.sharedFavoritesEnabled}
-            />
-          </Card>
-        )}
 
         <p className="mt-8 text-center text-xs text-stone-400">Details are traveler-provided and gathered from public sources — please confirm bookings and access before you travel.</p>
 

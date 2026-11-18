@@ -145,10 +145,4 @@ describe("the contributor page is out of the customer journey", () => {
       assert.notEqual(entry.path, "/submit", "the contributor form is still submitted to search engines");
     }
   });
-
-  it("still exists, so a link the owner sends somebody keeps working", () => {
-    // Removed from the journey, not from the site. This is reversible in one
-    // line if the owner wants it back in the footer.
-    assert.ok(readFileSync("app/submit/page.tsx", "utf8").includes("SubmitEntryForm"));
-  });
 });

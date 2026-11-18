@@ -1,10 +1,6 @@
 import AdminNavLink from "@/components/AdminNavLink";
 import { passwordStorageAvailable } from "@/lib/access-passwords";
 import { teamStorageAvailable } from "@/lib/admin-roles";
-import { membershipPublicLabel } from "@/lib/growth-settings";
-import { readCollaborationSettings, readMembershipSettings } from "@/lib/growth-settings-store";
-import { publicReferralStatus } from "@/lib/referral";
-import { readReferralSettings } from "@/lib/referral-store";
 import { getDashboardStats } from "@/lib/site-analytics";
 import { PageHeader } from "@/components/ui/PageHeader";
 
@@ -28,13 +24,7 @@ function Card({ href, title, detail, state }: { href: string; title: string; det
 }
 
 export default async function AdminSettingsPage() {
-  const [stats, referral, collaboration, membership] = await Promise.all([
-    getDashboardStats(),
-    readReferralSettings(),
-    readCollaborationSettings(),
-    readMembershipSettings(),
-  ]);
-  const referralStatus = publicReferralStatus(referral);
+  const stats = await getDashboardStats();
 
   return (
     <>
@@ -59,12 +49,6 @@ export default async function AdminSettingsPage() {
             href="/admin/settings/about"
             title="About"
             detail="Optional fields. Blank stays hidden."
-            state={stats.configured ? undefined : "Needs the private store"}
-          />
-          <Card
-            href="/admin/settings/proof"
-            title="Case studies"
-            detail="Trip outcomes with permission."
             state={stats.configured ? undefined : "Needs the private store"}
           />
           <Card
@@ -125,28 +109,6 @@ export default async function AdminSettingsPage() {
             title="Growth"
             detail="Searches, empty results and clicks."
             state={stats.configured ? "Open the dashboard" : "Needs the private store"}
-          />
-          <Card
-            href="/admin/settings/referral"
-            title="Referrals"
-            detail="Off until reward rules are final."
-            state={referralStatus.open ? "On for visitors" : "Disabled by default"}
-          />
-          <Card
-            href="/admin/settings/collaboration"
-            title="Collaboration"
-            detail="Voting, favorites and rooms."
-            state={
-              collaboration.votingEnabled || collaboration.sharedFavoritesEnabled || collaboration.roomGroupsEnabled
-                ? "Tools available"
-                : "All tools off"
-            }
-          />
-          <Card
-            href="/admin/settings/membership"
-            title="White Glove Plus"
-            detail="Planned only. Not sold."
-            state={membershipPublicLabel(membership)}
           />
         </div>
       </section>

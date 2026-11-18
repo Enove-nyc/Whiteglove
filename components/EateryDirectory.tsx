@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { SaveListingButton } from "@/components/SaveListingButton";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
-import SuggestEditPanel from "@/components/SuggestEditPanel";
 import ListToolbar from "@/components/ListToolbar";
 import { useListUrl } from "@/components/useListUrl";
 import { IconLink } from "@/components/icons/IconAction";
@@ -172,7 +171,6 @@ export default function EateryDirectory({
               )}
               {e.website && <IconLink icon="website" label="Website" href={e.website} external />}
               {e.phone && <IconLink icon="phone" label={`Call ${e.phone}`} href={`tel:${e.phone}`} />}
-              <SuggestEditPanel targetType="site" targetId={e.slug} title={e.name} compact />
             </div>
 
             {/* Putting it on the trip, from the one search rather than from a

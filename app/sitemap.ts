@@ -1,8 +1,6 @@
 import type { MetadataRoute } from "next";
-import { caseStudiesPageShouldExist } from "@/data/case-studies";
 import { isGuidePath } from "@/lib/guide-paths";
 import { isPublicPage } from "@/lib/public-access";
-import { readPublicCaseStudies } from "@/lib/case-studies-store";
 import { siteOrigin } from "@/lib/seo";
 import { publicPaths } from "@/lib/site-map";
 
@@ -55,15 +53,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority,
     }));
 
-  const studies = isPublicPage("/case-studies") ? await readPublicCaseStudies() : [];
-  if (studies.length && caseStudiesPageShouldExist(studies)) {
-    entries.push({
-      url: new URL("/case-studies", origin).toString(),
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.5,
-    });
-  }
 
   return entries;
 }

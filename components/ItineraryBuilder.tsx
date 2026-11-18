@@ -15,11 +15,9 @@ import AssistantAnswer from "@/components/AssistantAnswer";
 import { useRequireSignIn } from "@/components/SignInGate";
 import DateField from "@/components/DateField";
 import KosherNearby from "@/components/KosherNearby";
-import SendPlaceIn from "@/components/SendPlaceIn";
 import RoomGroupsPanel from "@/components/RoomGroupsPanel";
 import SendToClientPanel from "@/components/SendToClientPanel";
 import ShareItineraryPanel from "@/components/ShareItineraryPanel";
-import { placeFromStay, placeFromStop, usePlaceOffer } from "@/components/usePlaceOffer";
 import TripProgressStrip, { useDeviceClock } from "@/components/TripProgressStrip";
 import { createItinerarySaveQueue, type SaveState } from "@/lib/itinerary-save-queue";
 import TripSetupPanel from "@/components/TripSetupPanel";
@@ -303,14 +301,10 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
       ...itin,
       lodging: isNew ? [...itin.lodging, l] : itin.lodging.map((x) => (x.id === l.id ? l : x)),
     });
-    // Only a new one. Editing a hotel that is already here is not the moment
-    // to ask about it — they came to change a date, not to answer a question.
-    if (isNew) void considerPlace(placeFromStay(l));
     return completion;
   };
   const addActivity = (a: ItinActivity) => {
     const completion = persist({ ...itin, activities: [...itin.activities.filter(x => x.id !== a.id), a] });
-    void considerPlace(placeFromStop(a));
     return completion;
   };
   const removeFlight = (id: string) => persist({ ...itin, flights: itin.flights.filter((x) => x.id !== id) });
@@ -424,7 +418,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // send it in. Only when signed in — a suggestion needs a name to credit and
   // somebody to ask back, and collecting an address through a pop-up to get
   // them would be worse than not asking at all.
-  const { offering, consider: considerPlace, answer: answerOffer } = usePlaceOffer(Boolean(viewer?.signedIn));
 
   // The traveler's own date, so the day they are actually on opens first
   // instead of day one. Empty until the browser has said what day it is where
@@ -555,8 +548,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
         days={days}
         documentsToday={todayInTrip ? documentsForDay(tripDocuments(itin), todayInTrip).map((d) => d.attachment) : []}
         onGoToToday={goToToday}
-        tripId={itin.startDate && itin.endDate ? `trip-${itin.startDate}-${itin.endDate}` : undefined}
-        tripTitle={itin.title?.trim() || "Your trip"}
       />
       )}
 
@@ -898,15 +889,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
       )}
 
 
-      {/* "You have added somewhere we do not have — would you send it in?"
-          The trip is theirs; nothing leaves it without this being answered. */}
-      {offering && (
-        <SendPlaceIn
-          place={offering}
-          from={{ name: viewer?.name?.trim() || "", email: viewer?.id ?? "" }}
-          onAnswered={answerOffer}
-        />
-      )}
     </div>
     </GuestContext.Provider>
   );

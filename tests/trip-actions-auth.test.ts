@@ -60,7 +60,6 @@ describe("every trip action stands behind the same dialog", () => {
     ["components/SharedItineraryActions.tsx", "copying a shared trip"],
     ["components/MyRouteDashboard.tsx", "editing the Route"],
     ["components/TripComments.tsx", "commenting on a trip"],
-    ["components/reviews/ReviewSection.tsx", "writing a review"],
   ];
 
   for (const [path, what] of GATED) {

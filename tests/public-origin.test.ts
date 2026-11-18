@@ -86,7 +86,6 @@ describe("no route redirects to the socket it was served on", () => {
   it("and neither does anything else that redirects a person", () => {
     for (const path of [
       "app/api/account/google/start/route.ts",
-      "app/api/admin/reviews/route.ts",
       "app/api/partners/flights/offer/route.ts",
       "app/api/alerts/unsubscribe/route.ts",
       "app/api/travel/cars/go/route.ts",

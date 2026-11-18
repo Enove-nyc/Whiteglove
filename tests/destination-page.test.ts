@@ -145,7 +145,6 @@ describe("the page folds into seven compact sections", () => {
       "minyanim-and-mikvaos",
       "getting-around",
       "cautions",
-      "reviews",
     ]) {
       assert.ok(PAGE.includes(`id="${id}"`), `the ${id} anchor is gone`);
     }

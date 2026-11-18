@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import DestinationActions from "@/components/DestinationActions";
-import SuggestEditPanel from "@/components/SuggestEditPanel";
-import { ReviewSection } from "@/components/reviews/ReviewSection";
 import { airportsFor } from "@/lib/destination-actions";
 import PhotoGallery from "@/components/PhotoGallery";
 import PracticalInformation from "@/components/PracticalInformation";
@@ -144,8 +142,6 @@ export default async function BulkDestinationPage({ params }: { params: Promise<
           <p className="mt-3 font-[family-name:var(--font-display)] text-3xl text-stone-500 sm:text-4xl">{destination.city}</p>
           {destination.summary && <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-600">{destination.summary}</p>}
           <DestinationActions place={{ id: `destination-${destination.slug}`, name: destination.city, yiddishName: destination.yiddishCity, address: `${destination.city}, ${destination.country}`, coordinates: record?.cemeteries[0]?.coordinates, href: `/destinations/${destination.slug}` }} airports={airportsFor(destination.country, `${destination.city}, ${destination.country}`, record?.cemeteries[0]?.coordinates)} />
-          <SuggestEditPanel targetType="location" targetId={destination.slug} title={destination.city} />
-          <ReviewSection placeKind="destination" placeRef={`heritage-${destination.slug}`} placeLabel={destination.city} sacred />
           
           {/* A picture of the town, or of one of its listings. Nothing sent
               here appears until the owner has looked at it. */}

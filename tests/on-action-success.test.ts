@@ -60,11 +60,9 @@ describe("what counts as a new action result", () => {
 describe("the six screens use it rather than their own copy", () => {
   const screens = [
     "components/AddEntryForms.tsx",
-    "components/BlastComposer.tsx",
     "components/BlockEditor.tsx",
     "components/FlatFileListEditor.tsx",
     "components/MikvaosEditor.tsx",
-    "components/CaseStudiesForm.tsx",
     "components/AirportAdmin.tsx",
     "components/KeverEditor.tsx",
     "components/ShomerEditor.tsx",

@@ -8,7 +8,6 @@ import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
 import KosherNearby from "@/components/KosherNearby";
 import Navbar from "@/components/Navbar";
-import AlertSignup from "@/components/AlertSignup";
 import DestinationBookingOptions from "@/components/DestinationBookingOptions";
 import AddDestinationToTrip from "@/components/AddDestinationToTrip";
 import DestinationStickyCta from "@/components/DestinationStickyCta";
@@ -16,8 +15,6 @@ import DetailActionRow from "@/components/DetailActionRow";
 import AddToItineraryButton from "@/components/AddToItineraryButton";
 import DestinationPhotos from "@/components/DestinationPhotos";
 import SaveTripItemButton from "@/components/SaveTripItemButton";
-import SuggestEditPanel from "@/components/SuggestEditPanel";
-import { ReviewSection } from "@/components/reviews/ReviewSection";
 import TravelEssentials from "@/components/TravelEssentials";
 import VerificationBadge from "@/components/VerificationBadge";
 import StructuredData from "@/components/StructuredData";
@@ -133,7 +130,7 @@ export async function generateMetadata({ params }: { params: Promise<{ destinati
  * headed sections laid end to end, and the repetition — a booking button per
  * section, a partner explanation per booking button — is what made it long,
  * not the content. Now it is Overview, Where to stay, Things to do, Kosher
- * food, Shabbos, Getting there and around, Reviews. Each fold is a native
+ * food, Shabbos, Getting there and around. Each fold is a native
  * <details>/<summary> (the same pattern as ListToolbar's Filter), so it works
  * before and without JavaScript, toggles from the keyboard, and announces
  * itself as expandable with no aria of its own. Overview is open by default;
@@ -673,7 +670,6 @@ export default async function VacationDestinationPage({ params }: { params: Prom
     ["kosher-food", "Kosher food"],
     ["shabbos", "Shabbos"],
     ["getting-around", "Getting there and around"],
-    ["reviews", "Reviews"],
   ];
 
   return (
@@ -724,7 +720,6 @@ export default async function VacationDestinationPage({ params }: { params: Prom
               href: `/destinations/${destination.slug}`,
             }}
           />
-          <SuggestEditPanel targetType="location" targetId={destination.slug} title={destination.name} />
 
           {/* Nothing at all until there is a credited picture — see
               components/DestinationPhotos.tsx. */}
@@ -977,12 +972,6 @@ export default async function VacationDestinationPage({ params }: { params: Prom
           </div>
         </Fold>
 
-        {/* Reviews stay flat rather than folded: ReviewSection carries its own
-            heading, and a review is the one thing here a visitor may have come
-            back specifically to leave. */}
-        <section id="reviews" className="wg-page-section scroll-mt-28 py-10">
-          <ReviewSection placeKind="destination" placeRef={destination.slug} placeLabel={destination.name} />
-        </section>
 
         {/* Rides the bottom of the viewport while there is page left, then
             lets go — the last section and the footer are never underneath it.
@@ -1012,16 +1001,6 @@ export default async function VacationDestinationPage({ params }: { params: Prom
         placement="destination-essentials"
       />
 
-      <section className="border-t border-[var(--gold-light)] px-5 py-10 sm:px-8 sm:py-12">
-        <div className="mx-auto max-w-3xl">
-          <AlertSignup
-            kind="destination"
-            destinationName={destination.name}
-            destinationSlug={destination.slug}
-            sourcePage={`/destinations/${destination.slug}`}
-          />
-        </div>
-      </section>
 
       <section className="border-t border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-10 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
