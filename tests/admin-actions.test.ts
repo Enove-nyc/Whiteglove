@@ -94,7 +94,6 @@ describe("recording never breaks the thing it records", () => {
     // A log of attempts would say somebody removed an account when the write
     // had failed.
     const cases: Array<[string, RegExp]> = [
-      ["app/api/admin/two-factor/route.ts", /if \(!result\.ok\) return[^]*?recordAdminAction\(\{ kind: "two-factor-on"/],
       ["app/api/admin/site-lock/route.ts", /if \(!saved\) return[^]*?recordAdminAction/],
       ["app/api/admin/password/route.ts", /if \(!result\.ok\) \{[^]*?\}\s*[^]*?recordAdminAction/],
       ["app/admin/team/actions.ts", /if \(result\.ok\) \{\s*await recordAdminAction/],
@@ -106,12 +105,8 @@ describe("recording never breaks the thing it records", () => {
 });
 
 describe("every action that changes who can get in is recorded", () => {
-  it("covers turning two-factor off — the most important line here", () => {
-    const src = readFileSync("app/api/admin/two-factor/route.ts", "utf8");
-    assert.match(src, /kind: "two-factor-off"/);
-    assert.match(src, /kind: "two-factor-on"/);
-    assert.match(src, /kind: "recovery-codes-new"/);
-  });
+  // The two-factor route is gone (removed at the owner's word, 18 November
+  // 2026); old "two-factor" entries in the log still read correctly below.
 
   it("covers granting, changing and removing access", () => {
     const src = readFileSync("app/admin/team/actions.ts", "utf8");

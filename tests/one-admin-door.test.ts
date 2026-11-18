@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 /**
- * One admin, on the one site, with its second factor.
+ * One admin, on the one site. (It carried an authenticator-app second factor
+ * until 18 November 2026, when the owner had it removed entirely.)
  *
  * UNTIL 18 NOVEMBER 2026 this file held the opposite: the itineraries
  * deployment read the same private store as the kosher one but had no second
@@ -23,10 +24,13 @@ describe("the one admin door", () => {
     assert.doesNotMatch(MIDDLEWARE, /configuredBrand\(\) === "itineraries" && pathname\.startsWith\("\/api\/admin\/"\)/);
   });
 
-  it("carries the second factor: the store, the route and the session check", () => {
-    readFileSync("lib/admin-2fa-store.ts", "utf8");
-    readFileSync("app/api/admin/two-factor/route.ts", "utf8");
-    assert.match(readFileSync("app/api/admin/session/route.ts", "utf8"), /admin-2fa-store/);
+  it("asks for no authenticator code: the owner had it removed (18 November 2026)", () => {
+    // The admin password, or a signed-in administrator account, is the check,
+    // behind the attempt limit. Nothing may quietly bring a code prompt back.
+    for (const file of ["app/api/access/route.ts", "app/api/admin/session/route.ts", "components/AccessForm.tsx", "components/OpenAdminButton.tsx"]) {
+      assert.doesNotMatch(readFileSync(file, "utf8"), /needsCode|checkSecondFactor|authenticator app/, file);
+    }
+    assert.match(readFileSync("app/api/access/route.ts", "utf8"), /tooManyAttempts\(request, body\.scope\)/);
   });
 
   it("still requires the admin cookie for every admin page", () => {
