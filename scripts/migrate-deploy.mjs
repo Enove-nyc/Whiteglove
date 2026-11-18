@@ -141,6 +141,13 @@ function attemptMigrate() {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main() {
+  // No address at all is a missing setting, not a failed migration — say so,
+  // or a new host's first build reads as a broken migration (Cloudflare,
+  // 18 November 2026).
+  if (migrationUrls(process.env).length === 0) {
+    console.error("[migrate] DATABASE_URL is not set, so there is no database to migrate. Add it to this host's build settings.");
+    return 1;
+  }
   for (let attempt = 0; ; attempt += 1) {
     const { ok, output } = attemptMigrate();
     if (ok) {
