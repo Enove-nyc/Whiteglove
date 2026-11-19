@@ -73,3 +73,20 @@ describe("flights and hotels", () => {
     assert.equal(q.get("product"), "hotel"); assert.equal(q.get("adults"), "3"); assert.equal(q.get("rooms"), "2");
   });
 });
+
+describe("the planner, checked as a guest", () => {
+  const BUILDER = readFileSync("components/ItineraryBuilder.tsx", "utf8");
+  it("has no Saved route button, now that Route is gone", () => {
+    assert.doesNotMatch(BUILDER, />Saved route</);
+  });
+  it("offers Plan my route only once there are stops to arrange", () => {
+    assert.match(BUILDER, /itin\.activities\.length > 0 && <button type="button" onClick=\{planMyRoute\}/);
+  });
+  it("prints a guest's trip from this browser", () => {
+    assert.match(readFileSync("app/itinerary/print/page.tsx", "utf8"), /localStorage\.getItem\(GUEST_TRIP_KEY\)/);
+  });
+  it("speaks to the traveller, not an adviser, and not in kosher terms", () => {
+    assert.doesNotMatch(readFileSync("components/PreviewDialog.tsx", "utf8"), /What your traveller sees/);
+    assert.doesNotMatch(BUILDER, /minyan times/);
+  });
+});

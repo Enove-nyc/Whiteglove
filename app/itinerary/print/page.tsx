@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import PrintableItinerary from "@/components/PrintableItinerary";
 import type { PrintBrand } from "@/lib/business-brand";
 import { emptyItinerary, type Itinerary } from "@/data/itinerary";
+import { GUEST_TRIP_KEY } from "@/lib/guest-trip";
 import { brandForHost } from "@/lib/site-brand-core";
 import { useKeverBurials } from "@/lib/use-kever-burials";
 import { usePlannerAssumptions } from "@/components/usePlannerAssumptions";
@@ -88,7 +89,11 @@ export default function PrintItineraryPage() {
         return;
       }
       try {
-        const local = localStorage.getItem(LS_KEY);
+        // Not signed in: the trip lives in this browser. The guest planner
+        // keeps it under GUEST_TRIP_KEY (AGENTS.md, 18 November 2026) — the
+        // older LS_KEY is read only when there is no guest trip, so "Print /
+        // PDF" prints the trip the visitor was just looking at.
+        const local = localStorage.getItem(GUEST_TRIP_KEY) ?? localStorage.getItem(LS_KEY);
         setItin(local ? { ...emptyItinerary(), ...JSON.parse(local) } : emptyItinerary());
       } catch {
         setItin(emptyItinerary());

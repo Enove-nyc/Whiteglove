@@ -83,7 +83,7 @@ export function PreviewDialog({
             <div className="flex items-start justify-between gap-4 border-b border-[var(--gold-light)] px-5 py-4">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">
-                  What your traveller sees
+                  Your itinerary as it prints
                 </p>
                 <h2 id={headingId} className="mt-0.5 text-lg font-bold text-[var(--navy)]">
                   {title || label}

@@ -71,11 +71,9 @@ import {
   type TravelLeg,
   type DayAdjustment as ItinAdjustment,
 } from "@/data/itinerary";
-import type { SavedPlace } from "@/data/route-utils";
 import { addImportedItemsToItinerary, type ImportedItem } from "@/data/smart-import";
 import SmartImportPanel from "@/components/SmartImportPanel";
 
-const ROUTE_KEY = "whiteGloveMyRoute";
 
 const inputClass = "mt-1 w-full rounded-md border border-[var(--gold-light)] bg-white px-3 py-2 text-sm text-[var(--navy)] shadow-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-light)]";
 const caption = "text-[10px] font-bold uppercase tracking-[0.12em] text-stone-500";
@@ -314,21 +312,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const removeLodging = (id: string) => persist({ ...itin, lodging: itin.lodging.filter((x) => x.id !== id) });
   const removeActivity = (id: string) => persist({ ...itin, activities: itin.activities.filter((x) => x.id !== id) });
 
-  function importSavedRoute() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(ROUTE_KEY) || "[]") as SavedPlace[];
-      const existing = new Set(itin.activities.map((a) => a.name.toLowerCase()));
-      const additions: ItinActivity[] = saved
-        .filter((p) => !existing.has(p.name.toLowerCase()))
-        .map((p) => ({ id: uid(), name: p.name, yiddishName: p.yiddishName, address: p.address, coordinates: p.coordinates, href: p.href, date: p.plannedDate || itin.startDate || "", bookedOnSite: true }));
-      if (additions.length) persist({ ...itin, activities: [...itin.activities, ...additions] });
-    } catch {
-      /* ignore */
-    }
-  }
-
   // Smart Import's chosen rows, added in one save — same shape as
-  // importSavedRoute's batch above, but across all three arrays at once since
+  // one batch, across all three arrays at once since
   // a single confirmation can name a flight, a hotel and a car in one go.
   function importSmartImportItems(items: ImportedItem[]) {
     if (items.length) persist(addImportedItemsToItinerary(items, itin));
@@ -643,9 +628,10 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <button type="button" onClick={() => { setEditingFlightId(null); setTab(tab === "flight" ? null : "flight"); }} className={toolbarButton(nextSetup === "flights")}>Flight</button>
           <button type="button" onClick={() => { setEditingLodgingId(null); setTab(tab === "hotel" ? null : "hotel"); }} className={toolbarButton(nextSetup === "stay")}>Hotel</button>
           <button type="button" onClick={() => setTab(tab === "activity" ? null : "activity")} className={toolbarButton(nextSetup === "stops")}>Stop</button>
-          <button type="button" onClick={importSavedRoute} className={toolbarButton(false)}>Saved route</button>
           {!guest && <button type="button" onClick={() => setTab(tab === "import" ? null : "import")} className={toolbarButton(false)}>Smart Import</button>}
-          <button type="button" onClick={planMyRoute} disabled={planning} className={`ml-auto ${toolbarButton(unscheduled.length > 0)} disabled:opacity-60`}>{planning ? "Planning…" : "Plan my route"}</button>
+          {/* Only once there are stops to arrange: on an empty trip it used to
+              answer "Route planned." with nothing to plan. */}
+          {itin.activities.length > 0 && <button type="button" onClick={planMyRoute} disabled={planning} className={`ml-auto ${toolbarButton(unscheduled.length > 0)} disabled:opacity-60`}>{planning ? "Planning…" : "Plan my route"}</button>}
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
         </div>
 
@@ -2061,7 +2047,7 @@ function LodgingForm({ startDate, initial, units, onAdd, onRemove, onCancel }: {
       }} /></Field>
       {!overnight && <Field label="Check-out *"><DateField ariaLabel="Check-out date" required className={inputClass} min={minCheckOut} value={l.checkOut ?? ""} onChange={(checkOut) => setL({ ...l, checkOut: correctedEnd(checkIn, checkOut, "exclusive") })} /></Field>}
       {!overnight && <Field label="Booking reference"><input className={inputClass} value={l.confirmation ?? ""} onChange={(e) => setL({ ...l, confirmation: e.target.value })} placeholder="What the hotel gave you" /></Field>}
-      <Field label="Notes"><input className={inputClass} value={l.notes ?? ""} onChange={(e) => setL({ ...l, notes: e.target.value })} placeholder="Late check-in, kitchen, minyan times…" /></Field>
+      <Field label="Notes"><input className={inputClass} value={l.notes ?? ""} onChange={(e) => setL({ ...l, notes: e.target.value })} placeholder="Late check-in, parking, breakfast…" /></Field>
       {units && units.length > 1 && (
         <Field label="Who is this for">
           <select className={inputClass} value={l.unitKey ?? ""} onChange={(e) => setL({ ...l, unitKey: e.target.value || undefined })}>
