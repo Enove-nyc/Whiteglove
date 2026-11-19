@@ -11,7 +11,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "whiteglove",
-  "main": ".open-next/worker.js",
+  "main": "cloudflare-worker.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "keep_vars": true,
@@ -35,6 +35,10 @@
   "d1_databases": [
     { "binding": "NEXT_TAG_CACHE_D1", "database_name": "whiteglove-tag-cache" }
   ],
+  // Followed flights are re-checked every 30 minutes (cloudflare-worker.ts).
+  "triggers": {
+    "crons": ["*/30 * * * *"]
+  },
   "observability": {
     "enabled": true
   }
