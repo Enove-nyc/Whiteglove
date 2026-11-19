@@ -132,6 +132,14 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const showZmanimHere = !itineraries || kosher;
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
   const [tab, setTab] = useState<Tab>(null);
+  // ?import=1 (the "Booked already?" links on Book and the samples) opens Smart
+  // Import straight away for a signed-in traveller. After mount, so the server
+  // and the browser draw the same first frame.
+  useEffect(() => {
+    if (guest || new URLSearchParams(window.location.search).get("import") !== "1") return;
+    const open = window.setTimeout(() => setTab("import"), 0);
+    return () => window.clearTimeout(open);
+  }, [guest]);
   // Which flight the top form is editing, if any. Null means adding a new one.
   const [editingFlightId, setEditingFlightId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -634,6 +642,21 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           {itin.activities.length > 0 && <button type="button" onClick={planMyRoute} disabled={planning} className={`ml-auto ${toolbarButton(unscheduled.length > 0)} disabled:opacity-60`}>{planning ? "Planning…" : "Plan my route"}</button>}
           {planNote && <span className="text-xs font-semibold text-[var(--navy)]">{planNote}</span>}
         </div>
+        {/* Booked already? The quickest way to fill a trip is the confirmation
+            itself (Smart Import), so say so where the trip is being built. */}
+        {guest ? (
+          <p className="mt-3 text-xs leading-5 text-stone-600">
+            Booked already?{" "}
+            <Link href={`/login?next=${encodeURIComponent("/itinerary?import=1")}`} className="font-semibold text-[var(--navy)] underline underline-offset-4">Log in</Link>{" "}
+            and paste or forward the confirmation email — the flight or hotel is added to your trip for you.
+          </p>
+        ) : itin.flights.length + itin.lodging.length === 0 && tab !== "import" ? (
+          <p className="mt-3 text-xs leading-5 text-stone-600">
+            Booked already?{" "}
+            <button type="button" onClick={() => setTab("import")} className="min-h-8 font-semibold text-[var(--navy)] underline underline-offset-4">Paste or forward the confirmation</button>{" "}
+            and the flight or hotel is added for you.
+          </p>
+        ) : null}
 
         <div ref={editFormRef}>
         {tab === "flight" && (() => {

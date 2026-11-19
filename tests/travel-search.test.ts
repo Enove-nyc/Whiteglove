@@ -123,3 +123,14 @@ describe("public sample itineraries", () => {
     assert.ok(moved.activities.every((stop) => stop.date >= "2030-01-10" && stop.date <= "2030-01-13"));
   });
 });
+
+describe("booked already? the confirmation fills the trip", () => {
+  it("Book says so under the search, and opens Smart Import", () => {
+    assert.match(readFileSync("app/book/page.tsx", "utf8"), /href="\/itinerary\?import=1"/);
+  });
+  it("the planner opens Smart Import on ?import=1, and tells a guest to log in for it", () => {
+    const BUILDER = readFileSync("components/ItineraryBuilder.tsx", "utf8");
+    assert.match(BUILDER, /get\("import"\) !== "1"/);
+    assert.match(BUILDER, /\/login\?next=\$\{encodeURIComponent\("\/itinerary\?import=1"\)\}/);
+  });
+});

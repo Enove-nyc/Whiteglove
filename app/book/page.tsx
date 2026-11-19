@@ -196,6 +196,12 @@ export default async function BookPage({
             — the owner's sentence, no heading, no panel.
           */}
           <p className="mt-3 max-w-2xl text-[11px] leading-4 text-stone-500">{words.affiliateDisclosure}</p>
+          {/* After the booking: the confirmation fills the trip in (Smart Import). */}
+          <p className="mt-4 max-w-2xl px-2 text-sm leading-6 text-stone-700 sm:px-0">
+            <strong className="text-[var(--navy)]">Booked?</strong> Paste or forward the confirmation email into{" "}
+            <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">your itinerary</Link>
+            {" "}and the flight or hotel is added for you, with the times and the booking reference.
+          </p>
           {/* Under the search, where it is read by somebody who has finished
               typing. The owner's line: /admin/settings/words. */}
           <p className="mt-6 max-w-2xl leading-7 text-stone-600">{words.bookingNotice}</p>
