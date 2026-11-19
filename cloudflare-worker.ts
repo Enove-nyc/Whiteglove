@@ -13,16 +13,49 @@
 
 // Built by `opennextjs-cloudflare build` before Wrangler bundles this file.
 import openNextWorker from "./.open-next/worker.js";
+import { EDGE_CACHE_SECONDS, edgeCacheKey, edgeCacheable } from "./lib/edge-page-cache";
 
 type Env = {
   CRON_SECRET?: string;
+  /** Which deploy is running; keys the page cache so a release never serves an old page. */
+  CF_VERSION_METADATA?: { id?: string };
   WORKER_SELF_REFERENCE: { fetch(input: string, init?: RequestInit): Promise<Response> };
 };
 
 type ScheduledContext = { waitUntil(promise: Promise<unknown>): void };
+type EdgeCache = { match(key: string): Promise<Response | undefined>; put(key: string, response: Response): Promise<void> };
 
 const worker = {
-  fetch: openNextWorker.fetch,
+  /**
+   * The pages that are the same for every signed-out visitor come from a
+   * five-minute copy at the edge (lib/edge-page-cache.ts); everything else,
+   * and anybody signed in, goes to the app exactly as before.
+   */
+  async fetch(request: Request, env: Env, ctx: ScheduledContext): Promise<Response> {
+    const key = edgeCacheKey(request, env.CF_VERSION_METADATA?.id ?? "");
+    const cache = key ? (globalThis as unknown as { caches?: { default?: EdgeCache } }).caches?.default : undefined;
+    if (!key || !cache) return openNextWorker.fetch(request, env, ctx);
+    try {
+      const hit = await cache.match(key);
+      if (hit) {
+        const served = new Response(hit.body, hit);
+        served.headers.set("x-edge-cache", "hit");
+        // The browser keeps nothing: somebody who signs in a minute later must
+        // get their own page from the app, not this copy from their own cache.
+        served.headers.set("cache-control", "private, no-cache");
+        return served;
+      }
+    } catch {
+      /* a cache that cannot be read is simply a miss */
+    }
+    const response: Response = await openNextWorker.fetch(request, env, ctx);
+    if (edgeCacheable(response)) {
+      const copy = new Response(response.clone().body, response);
+      copy.headers.set("cache-control", `public, max-age=${EDGE_CACHE_SECONDS}`);
+      ctx.waitUntil(cache.put(key, copy).catch(() => undefined));
+    }
+    return response;
+  },
 
   async scheduled(_controller: unknown, env: Env, ctx: ScheduledContext): Promise<void> {
     if (!env.CRON_SECRET) {
