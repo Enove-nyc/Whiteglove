@@ -253,6 +253,12 @@ async function siteLockRedirect(request: NextRequest, pathname: string): Promise
  * every page and every directory search as before; nobody else does. See
  * lib/public-access.ts.
  */
+/** True when the request arrived on whitegloveitineraries.com without the www. */
+function isBareItinerariesHost(headers: { get(name: string): string | null }): boolean {
+  const bare = (value: string | null) => (value ?? "").toLowerCase().split(",")[0].split(":")[0].trim();
+  return bare(headers.get("x-forwarded-host") || headers.get("host")) === "whitegloveitineraries.com";
+}
+
 async function isOwner(request: NextRequest): Promise<boolean> {
   const token = await edgeAccessToken("admin");
   return timingSafeEqual(request.cookies.get("white_glove_admin")?.value, token);
@@ -276,6 +282,14 @@ export async function middleware(request: NextRequest) {
         },
       });
     }
+  }
+
+  // The bare domain is one address for the site, www is the other: send it to
+  // www, which every link, email and the closing notice already use. Netlify
+  // did this itself; on Cloudflare the site has to (18 November 2026).
+  if (isBareItinerariesHost(request.headers)) {
+    const to = new URL(request.nextUrl.pathname + request.nextUrl.search, "https://www.whitegloveitineraries.com");
+    return NextResponse.redirect(to, 308);
   }
 
   // The directory's own searches are the owner's alone now (lib/public-access.ts).
