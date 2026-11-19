@@ -182,7 +182,7 @@ describe("what reaches the inbox", () => {
 });
 
 describe("the page", () => {
-  it("OPENS ON THE CHOICE, not on a form", () => {
+  it("lists this front door's reasons above the form", () => {
     // reasonsForBrand is CONTACT_REASONS filtered to the ones this front door
     // can act on — see tests/contact-brand. Still the list, still from here.
     assert.match(PAGE, /reasonsForBrand\(brand\)/);
@@ -201,8 +201,11 @@ describe("the page", () => {
     assert.doesNotMatch(PAGE, /"use client"/);
   });
 
-  it("shows no form until a reason is picked, and still gives an address", () => {
-    assert.match(PAGE, /reason === "" \?/);
+  it("OPENS ON THE FORM WITH HELP CHOSEN, and still gives an address", () => {
+    // One contact page (owner, 19 November 2026: merge Contact and Support).
+    // It used to show no form until a reason was picked; help is now the open
+    // door, and a link may still name another reason this site offers.
+    assert.match(PAGE, /readReasonForBrand\(reasonParam, brand\) \|\| "help"/);
     // Resolved by brand now, because the built-in address names the kosher
     // domain and this deployment is not it.
     assert.match(PAGE, /mailto:\$\{contactEmail\}/);
@@ -318,5 +321,16 @@ describe("the owner's door is not in the footer", () => {
       .replace(/\/\/[^\n]*/g, "");
     assert.doesNotMatch(footer, /"\/admin"/, "the owner's door is not customer-facing furniture");
     assert.doesNotMatch(footer, /Admin/, "no Admin label in the public footer");
+  });
+});
+
+describe("one door, not two", () => {
+  it("the footer has Contact and no separate Support link", () => {
+    const footer = readFileSync("components/Footer.tsx", "utf8");
+    assert.doesNotMatch(footer, /label: "Support"/);
+    assert.match(footer, /label: "Contact", href: "\/contact"/);
+  });
+  it("every reason has a short name for the choice above the form", () => {
+    for (const reason of CONTACT_REASONS) assert.ok(reason.short.length > 3, reason.value);
   });
 });

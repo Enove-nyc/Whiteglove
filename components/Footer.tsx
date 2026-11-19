@@ -34,10 +34,9 @@ const KOSHER_LINKS = [
   // Open to everybody since the starter list arrived; before that it was a
   // signed-in page and there was nothing to link a visitor to.
   { label: "What to pack", href: "/packing" },
+  // One door for every errand (owner, 19 November 2026: merge Contact and
+  // Support). The page opens on help already chosen.
   { label: "Contact", href: "/contact" },
-  // A door that lands on the support form already chosen, for a customer who
-  // wants help rather than the general contact page — see lib/contact-reasons.
-  { label: "Support", href: "/contact?reason=help" },
   { label: "Advertise", href: "/contact?reason=advertise" },
   { label: "Sources", href: "/sources" },
   { label: "Terms", href: "/terms" },
@@ -50,7 +49,6 @@ const ITINERARIES_LINKS = [
   // No Pricing: it came off the public site at the owner's word, 18 November 2026.
   { label: "Sample itineraries", href: "/sample-itineraries" },
   { label: "Contact", href: "/contact" },
-  { label: "Support", href: "/contact?reason=help" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
 ];

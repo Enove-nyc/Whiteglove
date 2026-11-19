@@ -188,8 +188,8 @@ export const editablePages: PageDef[] = [
         // touch." with an eyebrow and an intro. The page is the heading, the
         // reason choices and the form — nothing else to read first.
         eyebrow: "",
-        heading: "Contact",
-        intro: "",
+        heading: "Contact us",
+        intro: "Help with your account or a trip, something that isn’t working, or any other question — send it here and a person will reply.",
       },
     ],
   },

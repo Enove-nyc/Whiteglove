@@ -39,6 +39,8 @@ export type ContactReasonSpec = {
   value: ContactReason;
   /** On the button. */
   label: string;
+  /** On the small choice above the form, where a shorter name reads better. */
+  short: string;
   /** Under the label, so somebody picks the right one first time. */
   blurb: string;
   /** The heading over the fields, once chosen. */
@@ -68,6 +70,7 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
      * before it will help is not support.
      */
     value: "help",
+    short: "Help with my account or a trip",
     label: "Get help",
     blurb: "A question about your account, a payment, a trip, or the app — we’ll help.",
     heading: "How can we help?",
@@ -78,6 +81,7 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
   },
   {
     value: "correction",
+    short: "Something here is wrong",
     label: "Something here is wrong",
     blurb: "An address, a time, a hechsher, a shomer's number.",
     heading: "What is wrong, and where",
@@ -104,6 +108,7 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
   },
   {
     value: "advertise",
+    short: "Advertising",
     label: "Advertise or list a business",
     blurb: "A hotel, a programme, a caterer, a driver, a tour.",
     heading: "About the business",
@@ -139,6 +144,7 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
      * happened at one width and nowhere else.
      */
     value: "fault",
+    short: "Something isn’t working",
     label: "Something on the site is broken",
     blurb: "A page, button or link that does not work.",
     heading: "What broke, and where",
@@ -169,6 +175,7 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
   },
   {
     value: "question",
+    short: "Another question",
     label: "Ask a question",
     blurb: "Anything else.",
     heading: "Your question",
