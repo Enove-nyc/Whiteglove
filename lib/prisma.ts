@@ -91,8 +91,51 @@ function withCacheBusting(client: PrismaClient): PrismaClient {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createClient();
+/**
+ * ON A CLOUDFLARE WORKER, ONE CLIENT PER REQUEST.
+ *
+ * The Neon adapter talks to the database over a WebSocket, and a Worker does
+ * not let a request use a socket another request opened: the shared client
+ * below worked for the first request on each instance and then failed with
+ * "Connection terminated", or Cloudflare's error 1101, for the ones after it
+ * (19 November 2026). So on a Worker the client belongs to the request: it is
+ * keyed on that request's own context object, which OpenNext publishes on
+ * globalThis for the length of the request, and dropped with it.
+ *
+ * Everywhere else — tests, scripts, a Node server — the one shared client is
+ * kept, as before.
+ */
+const CLOUDFLARE_CONTEXT = Symbol.for("__cloudflare-context__");
+const perRequest = new WeakMap<object, PrismaClient>();
 
-// Share the pool across production route bundles as well as development reloads.
-globalForPrisma.prisma = prisma;
+function requestContext(): object | null {
+  if ((globalThis as { navigator?: { userAgent?: string } }).navigator?.userAgent !== "Cloudflare-Workers") return null;
+  const context = (globalThis as Record<symbol, { ctx?: object } | undefined>)[CLOUDFLARE_CONTEXT];
+  return context?.ctx ?? null;
+}
+
+function sharedClient(): PrismaClient {
+  globalForPrisma.prisma ??= createClient();
+  return globalForPrisma.prisma;
+}
+
+function currentClient(): PrismaClient {
+  const key = requestContext();
+  if (!key) return sharedClient();
+  let client = perRequest.get(key);
+  if (!client) {
+    client = createClient();
+    perRequest.set(key, client);
+  }
+  return client;
+}
+
+/** The database client for the code that is running now — see above. */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, property) {
+    const client = currentClient();
+    const value = Reflect.get(client, property, client);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
 
