@@ -48,6 +48,7 @@ const KOSHER_LINKS = [
 // kosher guide, so its footer carries only the three everyone needs.
 const ITINERARIES_LINKS = [
   // No Pricing: it came off the public site at the owner's word, 18 November 2026.
+  { label: "Sample itineraries", href: "/sample-itineraries" },
   { label: "Contact", href: "/contact" },
   { label: "Support", href: "/contact?reason=help" },
   { label: "Terms", href: "/terms" },

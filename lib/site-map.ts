@@ -23,6 +23,7 @@
  */
 
 import { isPrivatePath } from "@/lib/private-paths";
+import { SAMPLE_ITINERARIES } from "@/data/sample-itineraries";
 import { cemeteries } from "@/data/cemeteries";
 import { cityGuides } from "@/data/destinations-detailed";
 import { bulkDestinations } from "@/data/destinations-bulk";
@@ -86,6 +87,7 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/hechsherim", priority: 0.6, changeFrequency: "monthly" },
   { path: "/verification", priority: 0.5, changeFrequency: "yearly" },
   { path: "/sample-itinerary", priority: 0.7, changeFrequency: "yearly" },
+  { path: "/sample-itineraries", priority: 0.7, changeFrequency: "monthly" },
   { path: "/book", priority: 0.6, changeFrequency: "monthly" },
   { path: "/transfers", priority: 0.5, changeFrequency: "monthly" },
   { path: "/esim", priority: 0.5, changeFrequency: "monthly" },
@@ -165,6 +167,11 @@ export function publicPaths(
   destinations: readonly { slug: string }[] = vacationDestinations,
 ): SitemapEntry[] {
   const entries: SitemapEntry[] = [...STATIC_PAGES];
+
+  // The public sample itineraries (data/sample-itineraries.ts).
+  for (const sample of SAMPLE_ITINERARIES) {
+    entries.push({ path: `/sample-itineraries/${sample.slug}`, priority: 0.7, changeFrequency: "monthly" });
+  }
 
   // The detailed city guides live at the root: /uman, /lizhensk. Deliberately,
   // because that is what somebody types. Lizhensk is in this loop now rather

@@ -26,6 +26,7 @@ export const PUBLIC_PAGE_PREFIXES = [
   "/esim",
   "/travel-insurance",
   "/sample-itinerary",
+  "/sample-itineraries",
   "/packing",
   "/optimize",
   "/translate",

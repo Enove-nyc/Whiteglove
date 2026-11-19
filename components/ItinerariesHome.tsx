@@ -120,6 +120,10 @@ export default function ItinerariesHome() {
               </span>
             </span>
           </Link>
+          <p className="text-sm lg:col-start-3">
+            <Link href="/sample-itineraries" className="font-semibold text-[var(--navy)] underline underline-offset-4">More sample itineraries</Link>
+            <span className="text-stone-600"> — Rome, Paris, London and Barcelona, ready to copy into your planner.</span>
+          </p>
         </div>
       </section>
 

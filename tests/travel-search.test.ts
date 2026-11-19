@@ -90,3 +90,36 @@ describe("the planner, checked as a guest", () => {
     assert.doesNotMatch(BUILDER, /minyan times/);
   });
 });
+
+describe("public sample itineraries", () => {
+  it("are public, listed for search engines and edge-cached", async () => {
+    const { isPublicPage } = await import("@/lib/public-access");
+    const { publicPaths } = await import("@/lib/site-map");
+    const { SAMPLE_ITINERARIES } = await import("@/data/sample-itineraries");
+    const paths = publicPaths().map((entry) => entry.path);
+    for (const sample of SAMPLE_ITINERARIES) {
+      assert.ok(isPublicPage(`/sample-itineraries/${sample.slug}`));
+      assert.ok(paths.includes(`/sample-itineraries/${sample.slug}`), sample.slug);
+    }
+    assert.ok(isPublicPage("/sample-itineraries"));
+  });
+  it("name no hotel, airline or price — places only", async () => {
+    const { SAMPLE_ITINERARIES } = await import("@/data/sample-itineraries");
+    for (const sample of SAMPLE_ITINERARIES) {
+      assert.equal(sample.itinerary.flights.length, 0);
+      for (const stay of sample.itinerary.lodging) assert.match(stay.name, /^Your hotel/);
+      for (const stop of sample.itinerary.activities) assert.match(stop.coordinates ?? "", /^-?\d+\.\d+, -?\d+\.\d+$/, stop.name);
+      assert.doesNotMatch(JSON.stringify(sample), /[$€£]\s?\d/);
+    }
+  });
+  it("copy moves the whole trip to the new start, stays and stops with it", async () => {
+    const { SAMPLE_ITINERARIES, shiftItinerary } = await import("@/data/sample-itineraries");
+    const rome = SAMPLE_ITINERARIES[0].itinerary;
+    const moved = shiftItinerary(rome, "2030-01-10");
+    assert.equal(moved.startDate, "2030-01-10");
+    assert.equal(moved.endDate, "2030-01-13");
+    assert.equal(moved.lodging[0].checkIn, "2030-01-10");
+    assert.equal(moved.lodging[0].checkOut, "2030-01-13");
+    assert.ok(moved.activities.every((stop) => stop.date >= "2030-01-10" && stop.date <= "2030-01-13"));
+  });
+});

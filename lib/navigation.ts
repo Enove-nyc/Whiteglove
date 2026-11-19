@@ -206,6 +206,8 @@ export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
     label: "My itineraries",
     links: [
       { label: "Build a trip", href: "/itinerary" },
+      // Public, copyable day-by-day trips (owner, 19 November 2026).
+      { label: "Sample itineraries", href: "/sample-itineraries" },
       // "Your route" came off the menu at the owner's word (18 November 2026).
       // Get recommendations, the app pages, pricing and the adviser screens
       // came off the public site at the owner's word (18 November 2026). The
