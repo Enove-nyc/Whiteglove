@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { getSharedItineraryByShareId } from "@/lib/account-store";
+import { getShareOwnerEmail, getSharedItineraryByShareId } from "@/lib/account-store";
 import { sameOrigin } from "@/lib/secure-access";
 import { rateLimit } from "@/lib/rate-limit";
 import { groupKey, memberCookieName, readMember, signMember } from "@/lib/trip-group-identity";
@@ -34,7 +34,11 @@ export async function POST(request: NextRequest) {
   if (!limited.ok) return reply({ error: "Please wait a moment before trying again." }, 429);
   // Always resolve against the live trip. Revoking sharing closes chat too;
   // a stale cookie, raw trip id, or guessed neighboring id grants no access.
-  if (!(await getSharedItineraryByShareId(code))) return reply({ error: "That trip code is not active." }, 404);
+  // Joining reads the whole trip once. Everything after only needs the code's
+  // own key, which revoking the code or deleting the trip removes — so a poll
+  // costs one small read instead of loading the trip owner's whole account.
+  const live = action === "join" ? Boolean(await getSharedItineraryByShareId(code)) : Boolean(await getShareOwnerEmail(code));
+  if (!live) return reply({ error: "That trip code is not active." }, 404);
   const secret = process.env.WHITE_GLOVE_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim();
   if (!secret) return reply({ error: "Trip chat is unavailable. Please try again later." }, 503);
   const cookie = memberCookieName(code);

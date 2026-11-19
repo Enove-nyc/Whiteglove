@@ -49,3 +49,15 @@ describe("the route", () => {
     assert.match(ROUTE, /limit: writes \? 10/);
   });
 });
+
+describe("an open chat stays cheap on the free plans", () => {
+  const ROUTE = readFileSync("app/api/trip-group/route.ts", "utf8");
+  const UI = readFileSync("components/companion/TripGroupChat.tsx", "utf8");
+  it("loads the whole trip only on join; every other call checks the code's own key", () => {
+    assert.match(ROUTE, /action === "join" \? Boolean\(await getSharedItineraryByShareId\(code\)\) : Boolean\(await getShareOwnerEmail\(code\)\)/);
+  });
+  it("eases off polling when the conversation is quiet", () => {
+    assert.match(UI, /quiet < 60_000 \? 10_000 : quiet < 300_000 \? 30_000 : 60_000/);
+    assert.doesNotMatch(UI, /setInterval\(poll, 15000\)/);
+  });
+});

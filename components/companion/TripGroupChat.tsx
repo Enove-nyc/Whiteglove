@@ -101,12 +101,29 @@ function ChannelTripGroupChat({ code, channel, label, draft, onDraftChange, onJo
     finally { if (current === sequence.current) setLoading(false); }
   }, [request]);
   const invalidate = useCallback(() => { ++sequence.current; }, []);
+  // Every 10 seconds while a conversation is moving, easing off to once a
+  // minute when it goes quiet — most of an open chat's life is quiet, and each
+  // check is a request on the free plans this runs on. Any new message, a send
+  // or coming back to the tab puts it straight back to 10 seconds.
+  const quietSince = useRef(Date.now());
+  const lastSeen = useRef<string | undefined>(undefined);
   useEffect(() => {
-    const firstPoll = window.setTimeout(() => void refresh(), 0);
-    const poll = () => { if (joined.current && !mutating.current && document.visibilityState === "visible" && navigator.onLine) void refresh(); };
-    const timer = window.setInterval(poll, 15000);
-    window.addEventListener("online", poll); document.addEventListener("visibilitychange", poll);
-    return () => { invalidate(); clearTimeout(firstPoll); clearInterval(timer); window.removeEventListener("online", poll); document.removeEventListener("visibilitychange", poll); };
+    let timer = 0;
+    let stopped = false;
+    const delay = () => { const quiet = Date.now() - quietSince.current; return quiet < 60_000 ? 10_000 : quiet < 300_000 ? 30_000 : 60_000; };
+    const poll = async () => {
+      if (stopped) return;
+      if (joined.current && !mutating.current && document.visibilityState === "visible" && navigator.onLine) {
+        await refresh();
+        if (cursor.current !== lastSeen.current) { lastSeen.current = cursor.current; quietSince.current = Date.now(); }
+      }
+      if (!stopped) timer = window.setTimeout(() => void poll(), delay());
+    };
+    const wake = () => { quietSince.current = Date.now(); window.clearTimeout(timer); timer = window.setTimeout(() => void poll(), 0); };
+    timer = window.setTimeout(async () => { await refresh(); lastSeen.current = cursor.current; if (!stopped) timer = window.setTimeout(() => void poll(), delay()); }, 0);
+    const onVisible = () => { if (document.visibilityState === "visible") wake(); };
+    window.addEventListener("online", wake); document.addEventListener("visibilitychange", onVisible);
+    return () => { stopped = true; invalidate(); window.clearTimeout(timer); window.removeEventListener("online", wake); document.removeEventListener("visibilitychange", onVisible); };
   }, [refresh, invalidate]);
   async function join() {
     setBusy(true); setError(""); mutating.current = true;
@@ -117,7 +134,7 @@ function ChannelTripGroupChat({ code, channel, label, draft, onDraftChange, onJo
   async function send() {
     if (busy || !draft.trim()) return;
     const text = draft.trim(); setBusy(true); setError(""); mutating.current = true; ++sequence.current;
-    try { const data = await request("send", { text }); if (data.needsName) { setNeedsName(true); return; } setMessages(data.messages ?? []); cursor.current = data.messages?.at(-1)?.id; onDraftChange(""); }
+    try { const data = await request("send", { text }); if (data.needsName) { setNeedsName(true); return; } setMessages(data.messages ?? []); cursor.current = data.messages?.at(-1)?.id; quietSince.current = Date.now(); onDraftChange(""); }
     catch (problem) { if ((problem as { channelGone?: boolean }).channelGone) { onGone(); return; } setError(problem instanceof Error ? problem.message : "Your message was not sent. Try again."); }
     finally { mutating.current = false; setBusy(false); }
   }
