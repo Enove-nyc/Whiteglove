@@ -93,7 +93,7 @@ export default async function TermsOfUsePage() {
         </Section>
 
         <Section title="Your account">
-          <p>Accounts are opened by invitation. If you have one, you agree to keep your sign-in details confidential and you are responsible for activity under your account. Tell us promptly if you believe someone else has used it.</p>
+          <p>Anyone can create a free account; you do not need one to build an itinerary. If you have one, you agree to keep your sign-in details confidential and you are responsible for activity under your account. Tell us promptly if you believe someone else has used it.</p>
         </Section>
 
         <Section title="Trip codes and group conversations">

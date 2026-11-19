@@ -4,14 +4,19 @@ import { describe, it } from "node:test";
 const PAGE = readFileSync("app/login/page.tsx", "utf8");
 const FORM = readFileSync("components/LoginForm.tsx", "utf8");
 const GATE = readFileSync("components/SignInGate.tsx", "utf8");
-describe("public authentication is login-only", () => {
+describe("the login page, with sign-up open", () => {
   it("opens both public authentication surfaces on login", () => {
     assert.match(PAGE, /initialMode="login"/); assert.match(GATE, /initialMode="login"/); assert.match(FORM, /initialMode = "login"/);
   });
-  it("reserves account creation for the invitation flow", () => {
-    assert.match(FORM, /invitationToken && initialMode === "signup"/);
-    assert.doesNotMatch(FORM, /setMode\("signup"\)/);
+  it("offers account creation to anyone, from the login page", () => {
+    // Sign-up is open (owner, 19 November 2026: "we should let new people sign
+    // up"). The page still opens on login; "Create an account" switches to it.
+    assert.match(FORM, /Create an account/);
+    assert.doesNotMatch(FORM, /New accounts require an invitation/);
     assert.match(FORM, /phone: contactPhone, invitationToken/);
-    assert.doesNotMatch(PAGE, /Sign in or create an account/);
+    const register = readFileSync("app/api/account/register/route.ts", "utf8");
+    assert.doesNotMatch(register, /New accounts require an invitation link/);
+    // An invitation, when one is used, is still checked against its address.
+    assert.match(register, /invitation\.identity !== identity\.value/);
   });
 });

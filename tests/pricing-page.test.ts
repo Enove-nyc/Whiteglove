@@ -75,10 +75,11 @@ describe("the introduction does not promise what the table takes back", () => {
     );
   });
 
-  it("describes invitation access and keeps client entitlements separate", () => {
+  it("says anyone can sign up, and keeps client entitlements separate", () => {
     // The claim is worth making — it is true of the planner, and it is why
     // One Trip is not a crippled tier. It just has to be the true version.
-    assert.match(PAGE, /New accounts are available by invitation/);
+    // Sign-up is open (owner, 19 November 2026).
+    assert.match(PAGE, /Anyone can create a free account/);
     assert.doesNotMatch(PAGE, /not open for business|in development/i);
     const limits = readFileSync("lib/account-limits.ts", "utf8");
     assert.match(limits, /one_trip: \{[^}]*companionClients: false/);

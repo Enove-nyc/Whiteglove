@@ -681,8 +681,27 @@ export async function signInWithGoogle(input: { email: string; name?: string; go
     return { ok: true as const, email: normalized, created: false };
   }
 
-  // New accounts require the owner's invitation; OAuth is login-only.
-  return { ok: false as const, error: "New accounts require an invitation. Use your invitation link to create an account, then log in with Google." };
+  // SIGN-UP IS OPEN (owner, 19 November 2026), so Google may create the
+  // account. Google has already verified the address, so it is verified here
+  // too; there is no password until the person sets one through the reset.
+  const record: AccountRecord = {
+    email: normalized,
+    identityKind: "email",
+    name: input.name?.trim() || undefined,
+    // The hash of nothing, as noPasswordYet describes: no typed password can
+    // ever match until the person sets one through "Forgotten password".
+    salt: randomBytes(16).toString("hex"),
+    passwordHash: randomBytes(32).toString("hex"),
+    noPasswordYet: true,
+    createdAt: now,
+    googleLinkedAt: now,
+    verifiedAt: now,
+  };
+  if (!(await writeJson(accountKey(normalized), record))) {
+    return { ok: false as const, error: "Could not create your account just now. Try again." };
+  }
+  await writeJson(dataKey(normalized), { route: [], favorites: [], updatedAt: now } satisfies AccountData);
+  return { ok: true as const, email: normalized, created: true };
 }
 
 export async function verifyAccount(email: string, password: string) {

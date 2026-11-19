@@ -2,5 +2,5 @@
 export const ITINERARIES_IN_DEVELOPMENT = true;
 
 export const ITINERARIES_DEVELOPMENT_MESSAGE =
-  "New accounts are available by invitation. Existing members can log in.";
+  "Anyone can create a free account, and existing members can log in.";
 

@@ -207,7 +207,7 @@ export default async function PricingPage() {
           <div>
             <dt className="text-sm font-bold text-[var(--navy)]">Can I stop, or move to a smaller plan?</dt>
             <dd className="mt-1 text-sm leading-6 text-stone-600">
-              Existing subscribers can manage their billing from the account page. New accounts are available by invitation. Your saved itineraries remain accessible.
+              Existing subscribers can manage their billing from the account page. Anyone can create a free account. Your saved itineraries remain accessible.
             </dd>
           </div>
           <div>

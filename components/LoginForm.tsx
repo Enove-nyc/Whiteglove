@@ -104,7 +104,7 @@ export default function LoginForm({
   // A way to reach them, not a way to sign in. Never required.
   const [contactPhone, setContactPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">(invitationToken && initialMode === "signup" ? "signup" : "login");
+  const [mode, setMode] = useState<"signup" | "login" | "verify" | "forgot" | "reset">(initialMode === "signup" ? "signup" : "login");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   // Signing in was a bare await fetch too. Losing the connection on the
@@ -173,7 +173,6 @@ export default function LoginForm({
     }
 
     if (mode === "signup") {
-      if (!invitationToken) { setMessage("New accounts require an invitation."); setSaving(false); return; }
       if (!agreed) { setMessage("Please agree to the terms and the privacy policy to create an account."); setSaving(false); return; }
       const problem = passwordProblem(password);
       if (problem) { setMessage(problem); setSaving(false); return; }
@@ -246,7 +245,19 @@ export default function LoginForm({
         </div>
       )}
 
-      {!invitationToken && mode === "login" && <p className="text-sm leading-6 text-stone-700">New accounts are available by invitation.</p>}
+      {/* Sign-up is open (owner, 19 November 2026). */}
+      {(mode === "login" || mode === "signup") && (
+        <p className="text-sm leading-6 text-stone-700">
+          {mode === "login" ? "New here? " : "Already have an account? "}
+          <button
+            type="button"
+            onClick={() => { setMode(mode === "login" ? "signup" : "login"); setMessage(""); }}
+            className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4"
+          >
+            {mode === "login" ? "Create an account" : "Log in"}
+          </button>
+        </p>
+      )}
 
       {mode === "signup" && (
         <label className="block text-sm font-semibold text-[var(--navy)]">Your name
