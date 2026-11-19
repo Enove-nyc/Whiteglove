@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeon, PrismaNeonHttp } from "@prisma/adapter-neon";
+import { PrismaNeon } from "@prisma/adapter-neon";
 import { bustTag, DB_CONTENT_TAG } from "@/lib/cache-tags";
 
 // Keep the existing Prisma/Neon adapter and DATABASE_URL on Railway.
@@ -19,16 +19,7 @@ function createClient() {
       "DATABASE_URL is not set. Add your Neon connection string to the environment.",
     );
   }
-  // ON A CLOUDFLARE WORKER, HTTPS, NOT A WEBSOCKET (19 November 2026). The
-  // WebSocket pool keeps a connection open, and a Worker refuses to let one
-  // request use a socket another request opened — the shared client failed
-  // with "Connection terminated" or error 1101 after the first request, and a
-  // fresh client per request cost more CPU than the free plan's 10 ms allows
-  // (error 1102). Neon's HTTP driver holds nothing open, so one client is safe
-  // to share. It runs batched transactions ($transaction([...])), the only
-  // kind this site uses; an interactive transaction would be refused.
-  const onWorker = (globalThis as { navigator?: { userAgent?: string } }).navigator?.userAgent === "Cloudflare-Workers";
-  const adapter = onWorker ? new PrismaNeonHttp(connectionString, {}) : new PrismaNeon({ connectionString });
+  const adapter = new PrismaNeon({ connectionString });
   return withCacheBusting(new PrismaClient({ adapter }));
 }
 
@@ -102,5 +93,6 @@ function withCacheBusting(client: PrismaClient): PrismaClient {
 
 export const prisma = globalForPrisma.prisma ?? createClient();
 
-// Share the client across route bundles as well as development reloads.
+// Share the pool across production route bundles as well as development reloads.
 globalForPrisma.prisma = prisma;
+
