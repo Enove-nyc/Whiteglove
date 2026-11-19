@@ -2,7 +2,22 @@ import { toCanonicalAdminPath } from "@/lib/admin-host";
 
 // Six primary destinations. Specialized screens remain in their groups and search.
 
+/**
+ * The two dashboards inside the one admin (owner, 18 November 2026): the
+ * Itineraries one runs the live site — users, messages, money, settings — and
+ * the Kosher Travel one holds the closed site's archive — the directory, its
+ * pages and the listing review.
+ */
+export type AdminSide = "itineraries" | "kosher";
+
+export const ADMIN_SIDES: ReadonlyArray<{ side: AdminSide; label: string; href: string }> = [
+  { side: "itineraries", label: "Itineraries", href: "/admin" },
+  { side: "kosher", label: "Kosher Travel", href: "/admin/kosher-travel" },
+];
+
 export type AdminSection = {
+  /** Which of the two dashboards this section belongs to. */
+  side: AdminSide;
   /** The nav item's own path. */
   href: string;
   label: string;
@@ -23,6 +38,7 @@ export type AdminSection = {
 
 export const ADMIN_SECTIONS: AdminSection[] = [
   {
+    side: "itineraries",
     href: "/admin",
     label: "Dashboard",
     blurb: "What needs you today.",
@@ -30,6 +46,15 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     keywords: "dashboard overview start home",
   },
   {
+    side: "kosher",
+    href: "/admin/kosher-travel",
+    label: "Kosher Travel",
+    blurb: "The closed site's archive.",
+    icon: "◎",
+    keywords: "kosher travel archive closed directory listings site",
+  },
+  {
+    side: "kosher",
     href: "/admin/imports/needs-review",
     label: "Needs Review",
     blurb: "One candidate at a time.",
@@ -37,6 +62,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     keywords: "queue verify approve reject duplicate import candidate",
   },
   {
+    side: "kosher",
     href: "/admin/pages",
     label: "Pages",
     blurb: "Words, pictures and reports.",
@@ -53,6 +79,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     ],
   },
   {
+    side: "kosher",
     href: "/admin/directory",
     label: "Directory",
     blurb: "Places and listings.",
@@ -87,6 +114,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     ],
   },
   {
+    side: "itineraries",
     href: "/admin/advertisements",
     label: "Advertisements",
     blurb: "Banners and promotions.",
@@ -94,6 +122,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     keywords: "ads promotion banner popup sponsor campaign",
   },
   {
+    side: "itineraries",
     href: "/admin/settings",
     label: "Settings",
     blurb: "Access, money and connections.",
@@ -175,6 +204,11 @@ export function toAdminPath(pathname: string): string {
 export function adminHref(href: string, pathname: string): string {
   if (pathname.startsWith("/admin")) return href;
   return href.replace(/^\/admin/, "") || "/";
+}
+
+/** Which dashboard a screen belongs to. */
+export function sideOf(pathname: string): AdminSide {
+  return activeSection(pathname).side;
 }
 
 export function activeSection(pathname: string): AdminSection {

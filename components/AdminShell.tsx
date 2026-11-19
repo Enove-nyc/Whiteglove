@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import AdminSearch from "@/components/AdminSearch";
 import AdminTrail from "@/components/AdminTrail";
-import { ADMIN_SECTIONS, activeSection, adminHref, toAdminPath } from "@/lib/admin-nav";
+import { ADMIN_SECTIONS, ADMIN_SIDES, activeSection, adminHref, toAdminPath } from "@/lib/admin-nav";
 import { KOSHER_SITE_PREFIX } from "@/lib/kosher-site-archive";
 import { type AdminArea, canOpen } from "@/lib/admin-permissions";
 
@@ -48,12 +48,36 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
   // the settings front page itself is closed to them — so the section is
   // listed and points at the screen they can actually use rather than at a
   // refusal.
-  const sections = ADMIN_SECTIONS.map((s) => {
+  // Two dashboards in one admin (owner, 18 November 2026): the menu shows the
+  // sections of the one you are in, and the switch above it changes dashboard.
+  const side = section.side;
+  const sections = ADMIN_SECTIONS.filter((s) => s.side === side).map((s) => {
     const children = (s.children ?? []).filter((c) => canOpen(areas, c.href) && c.href !== "/admin/imports/needs-review");
     const own = canOpen(areas, s.href);
     if (!own && !children.length) return null;
     return { ...s, target: own ? s.href : children[0].href, children };
   }).filter((s) => s !== null);
+
+  const sideSwitch = (
+    <nav aria-label="Dashboards" className="mb-4 grid grid-cols-2 gap-1 rounded-lg border border-[var(--gold-light)] bg-white p-1">
+      {ADMIN_SIDES.map((item) => {
+        const current = item.side === side;
+        return (
+          <Link
+            key={item.side}
+            href={to(item.href)}
+            onClick={() => setNavOpen(false)}
+            aria-current={current ? "page" : undefined}
+            className={`flex min-h-11 items-center justify-center rounded-md px-2 text-center text-xs font-bold uppercase tracking-[0.08em] transition ${
+              current ? "bg-[var(--navy)] text-white" : "text-[var(--navy)] hover:bg-[var(--cream-deep)]"
+            }`}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
 
   const navLinks = (
     <nav aria-label="Admin sections" className="space-y-1">
@@ -172,6 +196,7 @@ export default function AdminShell({ areas = null, children }: { areas?: AdminAr
           id="admin-nav"
           className={`${navOpen ? "block" : "hidden"} w-full shrink-0 lg:sticky lg:top-20 lg:block lg:max-h-[calc(100vh-6rem)] lg:w-64 lg:overflow-y-auto`}
         >
+          {sideSwitch}
           {navLinks}
         </aside>
 

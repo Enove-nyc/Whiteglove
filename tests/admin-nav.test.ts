@@ -279,7 +279,10 @@ describe("every static admin page is reachable from nav or a hub", () => {
 
 
 test("six primary destinations retain specialized screens in their groups", () => {
-  assert.deepEqual(ADMIN_SECTIONS.map(s => s.label), ["Dashboard", "Needs Review", "Pages", "Directory", "Advertisements", "Settings"]);
+  assert.deepEqual(ADMIN_SECTIONS.map(s => s.label), ["Dashboard", "Kosher Travel", "Needs Review", "Pages", "Directory", "Advertisements", "Settings"]);
+  // Two dashboards in one admin (owner, 18 November 2026).
+  assert.deepEqual(ADMIN_SECTIONS.filter((s) => s.side === "itineraries").map((s) => s.label), ["Dashboard", "Advertisements", "Settings"]);
+  assert.deepEqual(ADMIN_SECTIONS.filter((s) => s.side === "kosher").map((s) => s.label), ["Kosher Travel", "Needs Review", "Pages", "Directory"]);
   for (const href of ["/admin/imports", "/admin/destinations", "/admin/vacation-destinations", "/admin/kevarim", "/admin/directory/businesses"]) assert.equal(activeSection(href).label, "Directory");
   for (const href of ["/admin/accounts", "/admin/history", "/admin/finances"]) assert.equal(activeSection(href).label, "Settings");
 });

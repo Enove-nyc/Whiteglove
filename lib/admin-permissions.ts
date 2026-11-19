@@ -64,6 +64,9 @@ const AREA_PATHS: Array<[string, AdminArea]> = [
   ["/admin/flight-itineraries", "money"],
   ["/admin/advertisements", "advertisements"],
   ["/admin/pages", "content"],
+  // The Kosher Travel dashboard is a front page of links into the archive;
+  // every screen it opens keeps its own gate.
+  ["/admin/kosher-travel", "content"],
   ["/admin/inventory", "content"],
   ["/admin/reports", "content"],
   ["/admin/growth", "content"],

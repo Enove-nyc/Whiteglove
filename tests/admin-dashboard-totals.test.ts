@@ -12,7 +12,9 @@ import { allAdminDestinations } from "@/lib/admin-nav";
  * rather than looking like furniture on the overview.
  */
 
-const DASHBOARD = readFileSync("app/admin/page.tsx", "utf8");
+// The archive totals moved to the Kosher Travel dashboard (owner, 18 November
+// 2026); the tile itself lives with the shared dashboard parts.
+const DASHBOARD = readFileSync("app/admin/kosher-travel/page.tsx", "utf8") + readFileSync("components/admin/DashboardParts.tsx", "utf8");
 const COUNTRIES_PAGE = readFileSync("app/admin/countries/page.tsx", "utf8");
 
 // Every tile now opens an admin editor: the flat-file sets that used to send

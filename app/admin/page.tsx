@@ -1,88 +1,19 @@
 import AdminNavLink from "@/components/AdminNavLink";
+import { QuickAction, TotalCard, cardClass } from "@/components/admin/DashboardParts";
 import AdminSignOut from "@/components/AdminSignOut";
 import { getAdminContent } from "@/lib/admin-content";
 import { currentAdmin } from "@/lib/admin-current";
-import { getEditableInventory } from "@/lib/admin-inventory";
-import { ADMIN_QUICK_ADD, ADMIN_SECTIONS } from "@/lib/admin-nav";
+import { ADMIN_SECTIONS } from "@/lib/admin-nav";
 import { canOpen, describeAreas } from "@/lib/admin-permissions";
-import { ADMIN_TOTAL_CARDS, contentTotals } from "@/lib/admin-overview";
 import { adsNeedingAttention } from "@/lib/ad-performance";
 import { describeAdmin } from "@/lib/admin-session";
 import { messagesAlert } from "@/lib/contact-messages";
 import { listContactMessages } from "@/lib/contact-store";
-import { listPagesForAdmin } from "@/lib/pages";
 import { listPlanRequests } from "@/lib/account-plan-store";
-import { getImportReviewQueue } from "@/lib/import-review-queue";
 import { getDashboardStats } from "@/lib/site-analytics";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
-
-const cardClass =
-  "rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] shadow-[0_1px_2px_rgba(23,45,82,.04)]";
-
-function QuickAction({ href, title, detail }: { href: string; title: string; detail: string }) {
-  return (
-    <AdminNavLink
-      href={href}
-      className={`${cardClass} group flex min-h-44 flex-col justify-between p-5 transition hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_10px_28px_rgba(23,45,82,.09)]`}
-    >
-      <span>
-        <span className="block font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-          {title}
-        </span>
-        <span className="mt-2 block text-sm leading-6 text-stone-600">{detail}</span>
-      </span>
-      <span className="mt-5 text-sm font-semibold text-[var(--navy)]">Open <span aria-hidden="true">→</span></span>
-    </AdminNavLink>
-  );
-}
-
-const totalCardClass =
-  "rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] p-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2";
-
-function TotalCard({
-  label,
-  value,
-  href,
-}: {
-  label: string;
-  value?: number;
-  href: string | null;
-}) {
-  const body = (
-    <>
-      <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--gold-ink)]">{label}</span>
-      {value !== undefined && (
-        <span className="mt-1 block font-[family-name:var(--font-display)] text-3xl tabular-nums text-[var(--navy)]">{value}</span>
-      )}
-    </>
-  );
-
-  if (!href) {
-    return (
-      <li className="min-w-0">
-        <div className={`${totalCardClass} w-full min-w-0`} aria-disabled="true">
-          {body}
-        </div>
-      </li>
-    );
-  }
-
-  return (
-    <li className="min-w-0">
-      {/* flex-col opts out of .wg-admin a[class*="border"] { inline-flex }, which
-          otherwise lays the label beside the count and spills into the next tile. */}
-      <AdminNavLink
-        href={href}
-        className={`${totalCardClass} flex w-full min-w-0 flex-col hover:-translate-y-0.5 hover:border-[var(--gold)] hover:shadow-[0_8px_22px_rgba(23,45,82,.08)]`}
-        aria-label={`${label}: ${value}. Open ${label.toLowerCase()}.`}
-      >
-        {body}
-      </AdminNavLink>
-    </li>
-  );
-}
 
 export default async function AdminHome() {
   const { identity: signedInAs, areas } = await currentAdmin();
@@ -91,30 +22,34 @@ export default async function AdminHome() {
   // them is worse than no tile: it reads as something broken.
   const may = (href: string) => canOpen(areas, href);
 
-  const [stats, inventory, content, pages, messages, importReviewQueue] = await Promise.all([
-    getDashboardStats(),
-    getEditableInventory(),
-    getAdminContent(),
-    listPagesForAdmin(),
-    listContactMessages(),
-    getImportReviewQueue(),
+  // THE ITINERARIES DASHBOARD (owner, 18 November 2026). The Kosher Travel
+  // archive — the directory, its pages, the listing review — has its own
+  // dashboard at /admin/kosher-travel, so none of it is loaded here.
+  //
+  // EACH READ STANDS ON ITS OWN. One failing used to take the whole page down
+  // to "Something went wrong" — on Cloudflare the listing review alone was
+  // enough. A read that fails now leaves its tile out and says so in the log.
+  const safe = <T,>(label: string, read: Promise<T>, fallback: T): Promise<T> =>
+    read.catch((error) => {
+      console.error(`[admin home] ${label} could not be read`, error);
+      return fallback;
+    });
+  const [stats, content, messages] = await Promise.all([
+    safe("site stats", getDashboardStats(), null),
+    safe("promotions", getAdminContent(), null),
+    safe("messages", listContactMessages(), []),
   ]);
 
-  // Counted from the built-in content, so the tiles survive the database being
-  // away — the same rule the completeness queue follows.
-  const totals = contentTotals();
-  const unfinished = inventory.items.filter((item) => item.status !== "complete");
-  const unpublishedPages = pages.filter((p) => p.status !== "PUBLISHED");
   const alerts: Array<{ text: string; href: string; label: string }> = [];
 
-  if (stats.siteLocked) {
+  if (stats?.siteLocked) {
     alerts.push({
       text: "The website is closed to the public. Visitors currently see the access screen.",
       href: "/admin/settings/website",
       label: "Review website access",
     });
   }
-  if (!stats.configured) {
+  if (stats && !stats.configured) {
     alerts.push({
       text: "The private store is not connected, so visitor numbers and some edits are not being saved.",
       href: "/admin/settings/connections",
@@ -123,7 +58,7 @@ export default async function AdminHome() {
   }
   // An advertisement that finished in March still reads as enabled in every
   // list. The owner would only find it by comparing eleven dates to today.
-  const adTrouble = adsNeedingAttention(content.bundle.promotions, new Date().toISOString().slice(0, 10));
+  const adTrouble = content ? adsNeedingAttention(content.bundle.promotions, new Date().toISOString().slice(0, 10)) : null;
   if (adTrouble) {
     alerts.push({ text: adTrouble.says, href: "/admin/advertisements", label: "Open advertisements" });
   }
@@ -142,7 +77,7 @@ export default async function AdminHome() {
   // to arrive in complete silence: written to the store, shown on
   // /admin/accounts, and announced nowhere — while the person who asked was
   // told "we have it, and we will be in touch".
-  const plansWaiting = (await listPlanRequests()).filter((r) => r.state === "asked").length;
+  const plansWaiting = (await safe("plan requests", listPlanRequests(), [])).filter((r) => r.state === "asked").length;
   // ONE PERSON IS ONE PERSON. "Account requests are waiting" read like a queue
   // whatever the number, and a queue is easier to leave until later than
   // somebody waiting. The number is said now, and said grammatically.
@@ -163,14 +98,6 @@ export default async function AdminHome() {
     });
   }
 
-  const reviewWaiting = importReviewQueue.error ? 0 : importReviewQueue.counts.awaitingVerification;
-  if (reviewWaiting > 0 && may("/admin/imports/needs-review")) {
-    alerts.push({
-      text: "Listing candidates need verification.",
-      href: "/admin/imports/needs-review",
-      label: "Open needs review",
-    });
-  }
   const visibleAlerts = alerts.filter((alert) => may(alert.href));
 
   /**
@@ -196,23 +123,18 @@ export default async function AdminHome() {
    * left out, and one quiet line when the whole thing is empty.
    */
   const waiting: Array<{ label: string; count: number; href: string }> = [
-    { label: "Listing candidates to verify", count: reviewWaiting, href: "/admin/imports/needs-review" },
-    {
-      label: "Possible duplicates",
-      count: importReviewQueue.error ? 0 : importReviewQueue.counts.duplicates,
-      href: "/admin/imports/needs-review",
-    },
-    { label: "Pages not published", count: unpublishedPages.length, href: "/admin/pages" },
-    { label: "Checklist items unfinished", count: unfinished.length, href: "/admin/inventory" },
+    { label: "Messages not answered", count: messages.filter((m) => !m.answeredAt).length, href: "/admin/messages" },
+    { label: "Plan requests", count: plansWaiting, href: "/admin/accounts" },
   ].filter((item) => item.count > 0 && may(item.href));
-  const quickAdd = ADMIN_QUICK_ADD.filter((item) => may(item.href));
   const quickActions = [
-    { href: "/admin/pages", title: "Edit a page", detail: "Words or pictures." },
-    { href: "/admin/directory", title: "Directory", detail: "Places and businesses." },
-    { href: "/admin/growth", title: "Growth", detail: "Searches and visits." },
-    { href: "/admin/advertisements", title: "Advertisements", detail: "Banners and promotions." },
+    { href: "/admin/accounts", title: "Users", detail: "Accounts and invitations." },
+    { href: "/admin/messages", title: "Messages", detail: "What people wrote in." },
+    { href: "/admin/travel", title: "Travel providers", detail: "Flights, hotels and cars." },
+    { href: "/admin/settings/earnings", title: "Earnings", detail: "Partners and placements." },
+    { href: "/admin/duffel", title: "Duffel", detail: "Book flights here." },
+    { href: "/admin/flight-itineraries", title: "Flight itineraries", detail: "Write up flights you sell." },
   ].filter((action) => may(action.href));
-  const sections = ADMIN_SECTIONS.filter((section) => section.href !== "/admin")
+  const sections = ADMIN_SECTIONS.filter((section) => section.side === "itineraries" && section.href !== "/admin")
     .map((section) => ({ ...section, children: (section.children ?? []).filter((child) => may(child.href)) }))
     .filter((section) => may(section.href) || section.children.length > 0);
 
@@ -220,7 +142,7 @@ export default async function AdminHome() {
     <div className="pb-12">
       <header className="flex flex-wrap items-start justify-between gap-5 border-b border-[var(--gold-light)] pb-7">
         <div>
-          <PageHeader eyebrow="Admin overview" title="Dashboard" />
+          <PageHeader eyebrow="White Glove Itineraries" title="Dashboard" />
         </div>
         <div className="text-right">
           {/* Who is actually signed in. Before this the answer was "somebody
@@ -269,24 +191,6 @@ export default async function AdminHome() {
         )}
       </section>
 
-      {/* The jobs somebody opens the admin to do, rather than a place to go
-          and then find the button. */}
-      {quickAdd.length > 0 && (
-      <section aria-labelledby="quick-heading" className="mt-7">
-        <h2 id="quick-heading" className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-ink)]">Add something</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {quickAdd.map((item) => (
-            <AdminNavLink
-              key={item.href}
-              href={item.href}
-              className="inline-flex min-h-11 items-center rounded-full border border-[var(--gold)] px-4 text-xs font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:border-[var(--navy)] hover:bg-[var(--navy)] hover:text-white"
-            >
-              + {item.label}
-            </AdminNavLink>
-          ))}
-        </div>
-      </section>
-      )}
 
       {quickActions.length > 0 && (
       <section aria-labelledby="quick-actions-heading" className="mt-9">
@@ -305,21 +209,6 @@ export default async function AdminHome() {
           writing a sentence when there was nothing to say. It is gone; its
           counts are in the one list above. */}
 
-      {/* Informational totals — what the site holds, not what needs doing.
-          Kept quiet and last among the summary sections on purpose. */}
-      <section aria-labelledby="totals-heading" className="mt-10 border-t border-[var(--gold-light)] pt-7">
-        <h2 id="totals-heading" className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">What the site holds</h2>
-        <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {ADMIN_TOTAL_CARDS.map((card) => (
-            <TotalCard
-              key={card.key}
-              label={card.label}
-              value={totals[card.key]}
-              href={may(card.href) ? card.href : null}
-            />
-          ))}
-        </ul>
-      </section>
 
       <section aria-labelledby="all-tools-heading" className="mt-10 border-t border-[var(--gold-light)] pt-9">
         <div>

@@ -52,7 +52,8 @@ describe("import needs-review queue", () => {
 
   it("is reachable from admin nav and the dashboard attention area", () => {
     const nav = readFileSync("lib/admin-nav.ts", "utf8");
-    const home = readFileSync("app/admin/page.tsx", "utf8");
+    // Linked from the Kosher Travel dashboard now (owner, 18 November 2026).
+    const home = readFileSync("app/admin/kosher-travel/page.tsx", "utf8");
     const directory = readFileSync("app/admin/directory/page.tsx", "utf8");
     assert.match(nav, /\/admin\/imports\/needs-review/);
     assert.match(nav, /Needs review/);
