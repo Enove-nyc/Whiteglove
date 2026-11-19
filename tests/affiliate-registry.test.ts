@@ -160,12 +160,13 @@ describe("who pays and where the traveler lands", () => {
     assert.doesNotMatch(resolved!.url, /tp\.media/);
   });
 
-  it("prefers Stay22 for hotels when it is on, and Booking.com when it is not", () => {
-    assert.equal(routeFor("hotel", CONNECTED).destinationLabel, "Stay22");
-    assert.match(resolveLink(HOTEL, CONNECTED)!.url, /^https:\/\/www\.stay22\.com\/allez\//);
-    const withoutStay22: AffiliateConfig = { ...CONNECTED, stay22: NO_STAY22 };
-    assert.equal(routeFor("hotel", withoutStay22).destinationLabel, "Booking.com");
-    assert.match(resolveLink(HOTEL, withoutStay22)!.url, /^https:\/\/tp\.media\//);
+  it("prefers Travelpayouts for hotels, and Stay22 only when Travelpayouts cannot take them", () => {
+    // Travelpayouts first (owner, 19 November 2026: "use one for most of the things").
+    assert.equal(routeFor("hotel", CONNECTED).destinationLabel, "Booking.com");
+    assert.match(resolveLink(HOTEL, CONNECTED)!.url, /^https:\/\/tp\.media\//);
+    const withoutTravelpayouts: AffiliateConfig = { ...CONNECTED, travelpayouts: { ...CONNECTED.travelpayouts, hotels: "" } };
+    assert.equal(routeFor("hotel", withoutTravelpayouts).destinationLabel, "Stay22");
+    assert.match(resolveLink(HOTEL, withoutTravelpayouts)!.url, /^https:\/\/www\.stay22\.com\/allez\//);
   });
 
   it("WRAPS THE SEARCH RATHER THAN REPLACING IT", () => {
@@ -177,7 +178,8 @@ describe("who pays and where the traveler lands", () => {
   });
 
   it("carries the dates and the travelers the partner accepts", () => {
-    const url = new URL(resolveLink(HOTEL, CONNECTED)!.url);
+    const wrapped = new URL(resolveLink(HOTEL, CONNECTED)!.url);
+    const url = new URL(wrapped.searchParams.get("u") ?? "");
     assert.equal(url.searchParams.get("checkin"), "2026-07-05");
     assert.equal(url.searchParams.get("checkout"), "2026-07-12");
     assert.equal(url.searchParams.get("adults"), "2");

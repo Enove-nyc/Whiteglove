@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import DateField from "@/components/DateField";
 import { Icon, type IconName } from "@/components/icons/Icon";
@@ -9,12 +8,11 @@ import { Icon, type IconName } from "@/components/icons/Icon";
 /**
  * The home page's partner search (the owner's own design, 18 November 2026).
  *
- * IT SEARCHES NOTHING ITSELF. Flights, hotels and car rentals open the Book
- * page with the fields already filled, so there is one search that behaves
- * one way, and the partner is still resolved on the server there. Things to do
- * goes through /go, which builds the GetYourGuide search for the place through
- * the owner's Stay22 desk. Nothing is stored and nothing is asked of the
- * visitor beyond the search itself.
+ * IT GOES STRAIGHT TO THE PARTNER (owner, 19 November 2026: the home search
+ * opening a second booking page was "an overloop"). Every tab hands off
+ * through /go, which picks the partner on the server — Travelpayouts first —
+ * records the click and opens the partner's results with the search filled in.
+ * Nothing is stored and nothing is asked of the visitor beyond the search.
  */
 
 type Tab = "flights" | "hotels" | "cars" | "activities";
@@ -40,8 +38,15 @@ const withPin = `${box} pl-10`;
 const pin = "pointer-events-none absolute left-3 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-stone-500";
 const label = "block text-sm font-semibold text-[var(--ink)]";
 
+/** "Milan (MXP)" or "MXP" → "MXP"; anything else → "". */
+function airportCode(value: string): string {
+  const v = value.trim().toUpperCase();
+  const inBrackets = /\(([A-Z]{3})\)\s*$/.exec(v);
+  if (inBrackets) return inBrackets[1];
+  return /^[A-Z]{3}$/.test(v) ? v : "";
+}
+
 export default function HomeTravelSearch() {
-  const router = useRouter();
   const [tab, setTab] = useState<Tab>("flights");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -53,24 +58,28 @@ export default function HomeTravelSearch() {
   function submit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
+    const query = new URLSearchParams({ page: "/", placement: "home-search" });
     if (tab === "activities") {
       if (!where.trim()) return setError("Enter a city or place.");
-      const query = new URLSearchParams({ product: "activity", destination: where.trim(), page: "/", placement: "home-search" });
-      window.open(`/go?${query.toString()}`, "_blank", "noopener");
-      return;
-    }
-    const query = new URLSearchParams({ type: tab });
-    if (tab === "flights") {
-      if (!from.trim() || !to.trim()) return setError("Choose where you are flying from and to.");
-      query.set("from", from.trim());
-      query.set("to", to.trim());
+      query.set("product", "activity");
+      query.set("destination", where.trim());
+    } else if (tab === "flights") {
+      // The airport picker fills "Milan (MXP)"; the partner wants the code.
+      const fromCode = airportCode(from);
+      const toCode = airportCode(to);
+      if (!fromCode || !toCode) return setError("Choose the airports you are flying from and to from the list.");
+      if (!start) return setError("Choose the day you fly out.");
+      query.set("product", "flight");
+      query.set("from", fromCode);
+      query.set("to", toCode);
     } else {
       if (!where.trim()) return setError(tab === "hotels" ? "Enter where you are staying." : "Enter where you are picking the car up.");
+      query.set("product", tab === "hotels" ? "hotel" : "car");
       query.set("destination", where.trim());
     }
-    if (start) query.set("depart", start);
-    if (end) query.set("return", end);
-    router.push(`/book?${query.toString()}`);
+    if (start) query.set("in", start);
+    if (end) query.set("out", end);
+    window.open(`/go?${query.toString()}`, "_blank", "noopener");
   }
 
   const showsDates = tab !== "activities";

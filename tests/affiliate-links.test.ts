@@ -276,13 +276,16 @@ describe("a link that names its own partner", () => {
     // owner's partners or his setting — never an address of the sender's.
     for (const name of ["evil.example.com", "https://evil.example.com", "expedia", "economybookings"]) {
       const resolved = resolve(goHref({ product: "flight", partner: name as never, legs }));
-      assert.match(resolved!.url, /^https:\/\/www\.kayak\.com\//, `${name} was obeyed`);
+      // Travelpayouts first (owner, 19 November 2026): the fallback is the
+      // owner's network, Aviasales under his marker — never the sender's address.
+      assert.match(resolved!.url, /^https:\/\/www\.(aviasales|kayak)\.com\//, `${name} was obeyed`);
     }
   });
 
   it("leaves a link that names nobody on the owner's setting", () => {
     assert.doesNotMatch(goHref({ product: "flight", legs }), /partner=/);
-    assert.match(resolve(goHref({ product: "flight", legs }))!.url, /^https:\/\/www\.kayak\.com\//);
+    // With a Travelpayouts marker set, an unnamed flight goes to Aviasales.
+    assert.match(resolve(goHref({ product: "flight", legs }))!.url, /^https:\/\/www\.(aviasales|kayak)\.com\//);
     const onAviasales = resolve(goHref({ product: "flight", legs }), {
       ...kayakConfig,
       partners: { flights: "aviasales" } as never,

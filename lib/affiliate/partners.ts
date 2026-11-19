@@ -260,6 +260,27 @@ function slotOf(product: TravelProduct): SearchSlot | null {
  * applies its own rule — a name that does not serve this search falls back to
  * the setting rather than throwing or being obeyed.
  */
+/**
+ * ONE NETWORK FOR MOST THINGS (owner, 19 November 2026): Travelpayouts. Flight
+ * searches go to Aviasales, which carries the Travelpayouts marker on its own
+ * address, whenever a marker is set — whatever partner was stored before. Car
+ * hire goes to the Travelpayouts partner when its redirect is pasted. A link
+ * that names its own partner still gets it, and anything Travelpayouts cannot
+ * serve falls back to the stored choice (and so to Stay22).
+ */
+function travelpayoutsFirstChoices(product: TravelProduct, config: AffiliateConfig, wanted?: PartnerKey): PartnerChoices | undefined {
+  const base = choicesFor(product, config, wanted);
+  if (isPartnerKey(wanted)) return base;
+  if (product === "flight" && markerOn(config)) return { ...base, flights: "aviasales" };
+  if (product === "car") {
+    for (const key of ["discovercars", "economybookings"] as const) {
+      const choice = { ...base, cars: key };
+      if (travelpayoutsEarns(config.travelpayouts, "cars", choice)) return choice;
+    }
+  }
+  return base;
+}
+
 function choicesFor(product: TravelProduct, config: AffiliateConfig, wanted?: PartnerKey): PartnerChoices | undefined {
   const slot = slotOf(product);
   if (!slot || !isPartnerKey(wanted)) return config.partners;
@@ -315,9 +336,20 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig, wanted
   if (config.paused?.includes(product)) {
     return { ...NOT_CONNECTED(product, product), note: "Paused by the owner." };
   }
-  const choices = choicesFor(product, config, wanted);
+  const choices = travelpayoutsFirstChoices(product, config, wanted);
 
   if (product === "hotel") {
+    // TRAVELPAYOUTS FIRST (owner, 19 November 2026: "use one for most of the
+    // things"). Stay22 only when Travelpayouts cannot take the hotel search.
+    if (travelpayoutsEarns(config.travelpayouts, "hotels", choices)) {
+      return {
+        product,
+        destinationLabel: "Booking.com",
+        network: "travelpayouts",
+        earns: true,
+        note: "Hotel searches go through Travelpayouts, then on to Booking.com.",
+      };
+    }
     if (stay22IsOn(config.stay22)) {
       return {
         product,
@@ -462,7 +494,7 @@ function people(value: number | undefined, fallback: number): number {
  */
 function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): string | null {
   const where = (request.destination ?? "").trim();
-  const choices = choicesFor(request.product, config, request.partner);
+  const choices = travelpayoutsFirstChoices(request.product, config, request.partner);
 
   if (request.product === "hotel") {
     if (stay22IsOn(config.stay22)) {
@@ -581,7 +613,7 @@ export function resolveLink(request: AffiliateRequest, config: AffiliateConfig):
   const url = destinationUrl(request, config);
   if (!url) return null;
 
-  const choices = choicesFor(request.product, config, request.partner);
+  const choices = travelpayoutsFirstChoices(request.product, config, request.partner);
 
   // The hotel search through Stay22 is BUILT with the aid already in it, so
   // there is nothing left to wrap. Landing-page essentials are already full
