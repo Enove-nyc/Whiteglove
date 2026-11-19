@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { startingPointsExcept } from "@/lib/starting-points";
+import { isPublicPage } from "@/lib/public-access";
 import { readBookingLink } from "@/lib/booking-access-store";
 
 /**
@@ -33,7 +34,9 @@ export default async function StartingPoints({
    */
   deemphasize?: string[];
 }) {
-  const points = startingPointsExcept(...omit);
+  // Only the doors a visitor can open: Get recommendations (/plan) is off the
+  // public site (owner, 18 November 2026), so it is not offered here.
+  const points = startingPointsExcept(...omit).filter((point) => isPublicPage(point.href));
   if (points.length === 0) return null;
 
   // /book can be locked, and middleware then sends a visitor pressing it to the

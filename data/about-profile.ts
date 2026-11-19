@@ -70,10 +70,13 @@ export const EMPTY_ABOUT_PROFILE: AboutProfile = {
  * no personal facts, nobody's name, nowhere it is based, and no offer to plan
  * anybody's trip for them.
  */
+// For everyone who travels (owner, 19 November 2026): "we are not focusing on
+// advisors anymore. We are here for everyone" — book anything, then make a
+// beautiful day-by-day itinerary out of it.
 export const ABOUT_INTRO_ITINERARIES: readonly string[] = [
-  "White Glove Itineraries brings travel itineraries and trip management together for travellers and advisers.",
-  "Organise itineraries, flights, accommodation, transport, documents and the day-by-day details of a trip in one connected place.",
-  "Plan your own trip or manage client itineraries, with the schedule and important details ready to carry with you.",
+  "White Glove Itineraries is for anyone planning a trip. Book your flights, hotels, car and things to do with our travel partners, then turn it all into one beautiful itinerary.",
+  "Lay the trip out day by day: what happens when, how long each drive takes, and how much free time is left in every day.",
+  "Use it without an account, print it or save it as a PDF, and carry it with you on the trip.",
 ];
 
 export const ABOUT_INTRO: readonly string[] = [
@@ -91,7 +94,7 @@ export const ABOUT_FALLBACK_INTRO = ABOUT_INTRO[0];
 /** The heading above each, so neither page opens with the other's promise. */
 export const ABOUT_HEADING: Record<"kosher" | "itineraries", string> = {
   kosher: "Travel information you can plan around.",
-  itineraries: "Your itinerary, together.",
+  itineraries: "Book the trip. Build the itinerary.",
 };
 
 /** Which opening a brand gets. */

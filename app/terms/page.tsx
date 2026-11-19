@@ -77,10 +77,10 @@ export default async function TermsOfUsePage() {
 
         <Section title="The Service">
           <p>
-            {siteName} provides tools for organising travel: an itinerary planner for building a trip day by day,
-            search links to booking partners for flights, hotels, car rentals, activities, transfers, eSIMs and travel
-            insurance, and a trip app that opens a shared itinerary from its trip code. The Service is provided for
-            your personal travel planning.
+            {siteName} is for anyone planning a trip. It offers search links to booking partners for flights,
+            hotels, car rentals, activities, transfers, eSIMs and travel insurance; an itinerary planner for laying
+            the trip out day by day; and a trip app that opens a shared itinerary from its trip code. The Service is
+            provided for your personal travel planning.
           </p>
           <p>
             You can use the itinerary planner without an account. A trip built without one is kept only in your own

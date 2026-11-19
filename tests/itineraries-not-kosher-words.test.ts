@@ -77,7 +77,7 @@ describe("a group trip on this site is not a Jewish group trip", () => {
 describe("the sign-in page does not promise to save kevarim", () => {
   it("says something true of this product instead", () => {
     const login = readFileSync("app/login/page.tsx", "utf8");
-    assert.match(login, /itineraries\s*\?\s*"Save the places you like/);
+    assert.match(login, /itineraries\s*\?\s*"Your itineraries, kept with your account/);
     assert.match(login, /"Save kevarim/, "the kosher site's own line should stay");
   });
 });

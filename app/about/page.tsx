@@ -90,7 +90,7 @@ export default async function AboutPage() {
           </div>
           <p className="mt-4 max-w-2xl leading-7 text-slate-200">
             {siteBrand === "itineraries"
-              ? "Ask about a plan, tell us something on the site is broken, or ask a question."
+              ? "Ask about your itinerary, tell us something on the site is broken, or ask a question."
               : "Write about a trip, tell us something on the site is wrong, or ask a question about a destination."}{" "}
             {words.replyPromise}
           </p>

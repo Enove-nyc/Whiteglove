@@ -31,7 +31,7 @@ describe("the terms page names whichever brand a visitor is actually on", () => 
     // Rewritten 19 November 2026: Kosher Travel has closed, so the terms
     // describe White Glove Itineraries alone and say what happened to a Kosher
     // Travel account. The guide wording went with the guides.
-    assert.match(TERMS, /an itinerary planner for building a trip day by day/);
+    assert.match(TERMS, /is for anyone planning a trip/);
     assert.match(TERMS, /White Glove Kosher Travel has closed/);
     assert.doesNotMatch(TERMS, /destination guides, cemetery and access information/);
     assert.doesNotMatch(TERMS, /saved routes/);

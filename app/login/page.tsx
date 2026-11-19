@@ -90,13 +90,23 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               door of a general-travel product on the other domain. */}
           <p className="mt-7 max-w-xl text-lg leading-8 text-stone-600">
             {itineraries
-              ? "Save the places you like, keep your travel notes together, and return to a trip you are part-way through whenever you are ready."
+              ? "Your itineraries, kept with your account and ready on every device."
               : "Save kevarim, keep your travel notes together, and return to a personalized itinerary whenever you are ready to plan."}
           </p>
           <div className="mt-10 space-y-4 border-t border-[var(--gold-light)] pt-7 text-stone-700">
-            <p>Save destinations and map links.</p>
-            <p>Keep hotel, driver, and food notes in one private place.</p>
-            <p>Build a trip without starting from scratch each time.</p>
+            {itineraries ? (
+              <>
+                <p>Pick up a trip on your phone where you left it on your computer.</p>
+                <p>Keep flights, hotels, plans and notes together, day by day.</p>
+                <p>No account? You can still build an itinerary in this browser.</p>
+              </>
+            ) : (
+              <>
+                <p>Save destinations and map links.</p>
+                <p>Keep hotel, driver, and food notes in one private place.</p>
+                <p>Build a trip without starting from scratch each time.</p>
+              </>
+            )}
           </div>
         </div>
       </section>
