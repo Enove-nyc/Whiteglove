@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import HomeTravelSearch from "@/components/HomeTravelSearch";
+import TravelSearch from "@/components/TravelSearch";
 import HomeStartItinerary from "@/components/HomeStartItinerary";
 import { Icon, type IconName } from "@/components/icons/Icon";
 
@@ -33,19 +33,24 @@ export default function ItinerariesHome() {
     <main className="wg-itineraries-home min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar brand="itineraries" />
 
-      <section className="relative">
-        <div className="mx-auto grid max-w-7xl lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-          <div className="px-5 pb-8 pt-10 sm:px-8 sm:pt-14 lg:pb-40 lg:pt-20">
-            <h1 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,5.4vw,4.1rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-[var(--navy-deep)]">
+      {/* ON A PHONE THE SEARCH COMES FIRST (owner, 19 November 2026: the
+          booking should be on the first screen, "you should not have to
+          scroll"). A short headline, then the search, then the photograph;
+          on a wide screen it is the owner's layout, the photograph beside the
+          headline and the search overlapping its foot. */}
+      <section className="relative flex flex-col lg:block">
+        <div className="contents lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <div className="order-1 px-5 pb-3 pt-3 sm:px-8 sm:pb-8 sm:pt-14 lg:order-none lg:pb-40 lg:pt-20">
+            <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.7rem,5.4vw,4.1rem)] font-semibold leading-[1.05] tracking-[-0.02em] text-[var(--navy-deep)]">
               Book the trip.
               <br />
               Build the itinerary.
             </h1>
-            <p className="mt-5 max-w-md text-lg leading-8 text-[#3D4766] sm:text-xl">
+            <p className="mt-5 hidden max-w-md text-lg leading-8 text-[#3D4766] sm:block sm:text-xl">
               Find flights, stays and more, then organise your whole trip in one place.
             </p>
           </div>
-          <figure className="relative h-64 sm:h-80 lg:absolute lg:inset-y-0 lg:right-0 lg:h-auto lg:w-[48%]">
+          <figure className="relative order-3 mt-6 h-56 sm:h-80 lg:absolute lg:inset-y-0 lg:right-0 lg:order-none lg:mt-0 lg:h-auto lg:w-[48%]">
             <Image
               src="/photos/home-lake-como.webp"
               alt="Bellagio's yellow lakeside villas on Lake Como, Italy"
@@ -67,8 +72,8 @@ export default function ItinerariesHome() {
           </figure>
         </div>
 
-        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:-mt-32">
-          <HomeTravelSearch />
+        <div className="relative z-10 order-2 mx-auto w-full max-w-6xl px-3 sm:px-6 lg:-mt-32">
+          <TravelSearch />
         </div>
       </section>
 

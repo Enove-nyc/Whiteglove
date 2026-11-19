@@ -236,6 +236,8 @@ export function aviasalesHomeUrl(marker?: string): string {
 export type CarQuery = {
   /** A city name, or an airport code. */
   where: string;
+  /** Where the car goes back, when it is not where it was picked up. */
+  dropoffWhere?: string;
   pickup?: string;
   dropoff?: string;
 };
@@ -387,7 +389,11 @@ export function carUrl(partner: TravelPartner, query: CarQuery): string | null {
     const pickup = iso(query.pickup);
     const dropoff = iso(query.dropoff);
     if (!pickup || !dropoff) return null;
-    return `https://www.kayak.com/cars/${encodeURIComponent(where)}/${pickup}/${dropoff}`;
+    const back = query.dropoffWhere?.trim();
+    // Kayak's own address carries a different return place between the two.
+    return back && back.toLowerCase() !== where.toLowerCase()
+      ? `https://www.kayak.com/cars/${encodeURIComponent(where)}/${encodeURIComponent(back)}/${pickup}/${dropoff}`
+      : `https://www.kayak.com/cars/${encodeURIComponent(where)}/${pickup}/${dropoff}`;
   }
 
   return null;

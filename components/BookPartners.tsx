@@ -114,8 +114,15 @@ export type PendingBooking = {
 export default function BookPartners({
   prefill,
   initialKind = "hotels",
+  milesOnly = false,
 }: {
   prefill?: Prefill;
+  /**
+   * Only the miles & points side. The cash searches are the shared
+   * TravelSearch box now, the same one the home page uses; this stays for the
+   * award tools, which that box does not have.
+   */
+  milesOnly?: boolean;
   /**
    * Which tab opens. HOTELS BY DEFAULT, not flights: accommodation is the one
    * product this site knows something a comparison site does not — which
@@ -131,7 +138,7 @@ export default function BookPartners({
    */
   initialKind?: Kind;
 }) {
-  const [pay, setPay] = useState<Pay>("cash");
+  const [pay, setPay] = useState<Pay>(milesOnly ? "miles" : "cash");
   const requireSignIn = useRequireSignIn();
   const [kind, setKind] = useState<Kind>(initialKind);
 
@@ -151,7 +158,8 @@ export default function BookPartners({
    */
   const chooseKind = (next: Kind) => {
     setKind(next);
-    if (typeof window === "undefined") return;
+    // The search box above owns ?type= on this page now.
+    if (milesOnly || typeof window === "undefined") return;
     const url = new URL(window.location.href);
     url.searchParams.set("type", next);
     window.history.replaceState(null, "", url);
@@ -230,7 +238,7 @@ export default function BookPartners({
     <div className="overflow-visible rounded-[2rem] border border-[var(--gold-light)] bg-white shadow-[0_24px_60px_rgba(23,45,82,.10)]">
       {/* ---- How are you paying? A segmented control, so the choice reads as
            one control with two settings rather than two competing panels. ---- */}
-      <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[var(--gold-light)] bg-[#FAF8F3] px-5 py-5 sm:px-8 sm:py-6">
+      {!milesOnly && <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[var(--gold-light)] bg-[#FAF8F3] px-5 py-5 sm:px-8 sm:py-6">
         <div className="relative grid h-14 w-full max-w-[21rem] min-w-0 grid-cols-2 overflow-hidden rounded-full border border-[var(--gold-light)] bg-white p-1.5 shadow-[0_4px_14px_rgba(23,45,82,.08)]">
           <span aria-hidden="true" className={`absolute bottom-1.5 left-1.5 top-1.5 w-[calc(50%-0.375rem)] rounded-full bg-[var(--navy)] shadow-sm transition-transform duration-300 ease-out ${pay === "miles" ? "translate-x-full" : "translate-x-0"}`} />
           <PayToggle active={pay === "cash"} onClick={() => setPay("cash")}>Cash</PayToggle>
@@ -241,7 +249,7 @@ export default function BookPartners({
             ? "Find the award, check the value, book it in your own program."
             : "Booking and payment happen with a trusted partner."}
         </p>
-      </div>
+      </div>}
 
       {/* ---- What are you booking? ---- */}
       <div className="grid grid-cols-3 gap-1.5 border-b border-[var(--gold-light)] bg-white px-5 py-4 sm:px-8">

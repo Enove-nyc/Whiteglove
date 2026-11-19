@@ -212,6 +212,8 @@ export type AffiliateRequest = {
   /** Airport codes, for flights and cars. */
   from?: string;
   to?: string;
+  /** A car returned somewhere other than where it was picked up. */
+  dropoffPlace?: string;
   /**
    * A multi-city flight, in the order it is flown.
    *
@@ -566,7 +568,7 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
 
   if (request.product === "car") {
     const partner = partnerFor("cars", choices);
-    const built = carUrl(partner, { where, pickup: isoDate(request.checkIn), dropoff: isoDate(request.checkOut) });
+    const built = carUrl(partner, { where, dropoffWhere: request.dropoffPlace, pickup: isoDate(request.checkIn), dropoff: isoDate(request.checkOut) });
     if (!built) return null;
     return partner.key === "kayak" ? withAffiliate(built, config.kayakParams) : built;
   }

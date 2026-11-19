@@ -112,6 +112,7 @@ export function readAffiliateRequest(params: URLSearchParams): AffiliateRequest 
     rooms: count(params.get("rooms"), 10),
     from: text(params.get("from"), 40),
     to: text(params.get("to"), 40),
+    dropoffPlace: text(params.get("dropoff"), 80),
     legs: legs(params.get("legs")),
     nonstop: params.get("nonstop") === "1",
     page: text(params.get("page"), 120),

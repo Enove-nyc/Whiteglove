@@ -64,7 +64,7 @@ describe("getting to the fields", () => {
   it("PUTS THE SEARCH ABOVE THE PROSE", () => {
     // A headline, the owner's notice and a heritage aside used to sit above
     // the panel: three blocks of reading before anybody could type a city.
-    const panel = PAGE.indexOf("<BookPartners");
+    const panel = PAGE.indexOf("<TravelSearch");
     const notice = PAGE.indexOf("{words.bookingNotice}");
     const heritage = PAGE.indexOf("Planning a heritage journey?");
     assert.ok(panel > 0 && notice > 0 && heritage > 0);
@@ -73,7 +73,7 @@ describe("getting to the fields", () => {
   });
 
   it("keeps one short line of heading over it", () => {
-    const beforePanel = PAGE.slice(PAGE.indexOf("<h1"), PAGE.indexOf("<BookPartners"));
+    const beforePanel = PAGE.slice(PAGE.indexOf("<h1"), PAGE.indexOf("<TravelSearch"));
     const paragraphs = beforePanel.match(/<p[\s>]/g) ?? [];
     assert.equal(paragraphs.length, 0, `${paragraphs.length} paragraphs still sit between the heading and the fields`);
   });

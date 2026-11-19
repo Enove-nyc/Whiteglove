@@ -7,6 +7,7 @@ import { readTravelEssentials } from "@/lib/travel-essentials-store";
 import TravelEssentials from "@/components/TravelEssentials";
 import TravelExtras from "@/components/TravelExtras";
 import BookPartners from "@/components/BookPartners";
+import TravelSearch from "@/components/TravelSearch";
 import StartingPoints from "@/components/StartingPoints";
 import Footer from "@/components/Footer";
 import GloveMark from "@/components/GloveMark";
@@ -153,6 +154,10 @@ export default async function BookPage({
   // Which tab opens. Resolved here so the link lands on the right search
   // painted correctly, rather than on Hotels for a frame — see BookPartners.
   const initialKind = q.type === "flights" || q.type === "cars" || q.type === "hotels" ? q.type : "hotels";
+  // The same search as the home page (owner, 19 November 2026: every booking
+  // screen replicates the other). Opens on what the link asked for, else Flights
+  // as the home page does.
+  const initialTab = q.type === "flights" || q.type === "cars" || q.type === "hotels" || q.type === "activities" ? q.type : "flights";
 
   // THE ACCOUNT NUMBERS ARE NOT READ HERE ANY MORE, and that is the point.
   //
@@ -172,13 +177,13 @@ export default async function BookPage({
           before anybody could type a city. Somebody arriving here has already
           decided to search — the page's job is to let them, and everything
           worth saying still gets said underneath. */}
-      <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-10 sm:px-8 sm:py-12">
+      <section className="wg-page-hero border-b border-[var(--gold-light)] px-3 py-5 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-6xl">
-          <h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3rem)] leading-[1.1] text-[var(--navy)]">
+          <h1 className="px-2 font-[family-name:var(--font-display)] text-[clamp(1.6rem,5vw,3rem)] leading-[1.1] text-[var(--navy)] sm:px-0">
             Search booking partners
           </h1>
-          <div className="mt-6">
-            <BookPartners prefill={prefill} initialKind={initialKind} />
+          <div className="mt-4 sm:mt-6">
+            <TravelSearch initialTab={initialTab} prefill={prefill} page="/book" placement="book-search" rememberTab disclosure={false} />
           </div>
           {/*
             One line, under the searches, always.
@@ -210,6 +215,16 @@ export default async function BookPage({
       </section>
 
       {/* Structured Travel Essentials first; free-form custom extras after. */}
+      {/* Paying with miles or points — the one thing the search above cannot
+          do, because an award is booked inside the traveller's own loyalty
+          account. Kept as its own section rather than a second booking form. */}
+      <section aria-labelledby="miles-heading" className="mx-auto max-w-6xl px-3 py-10 sm:px-8 sm:py-14">
+        <h2 id="miles-heading" className="px-2 font-[family-name:var(--font-display)] text-2xl text-[var(--navy)] sm:px-0 sm:text-3xl">Paying with miles or points?</h2>
+        <p className="mt-2 max-w-2xl px-2 leading-7 text-stone-600 sm:px-0">Find the award, check it is worth the points, then book it in your own programme.</p>
+        <div className="mt-5">
+          <BookPartners milesOnly initialKind={initialKind} />
+        </div>
+      </section>
       <TravelEssentials pageType="book" placement="book-essentials" destinationName={destination || undefined} />
       <TravelExtras extras={extras} />
 
