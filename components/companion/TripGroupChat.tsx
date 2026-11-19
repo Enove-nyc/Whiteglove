@@ -2,32 +2,83 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { TripGroupMessage } from "@/lib/trip-group-store";
-import { TRIP_CHAT_CHANNELS, type TripChatChannel } from "@/lib/trip-chat-channels";
+import { MAX_CHANNEL_LABEL, TRIP_CHAT_CHANNELS, type DefaultTripChatChannel, type TripChatChannel, type TripChatChannelInfo } from "@/lib/trip-chat-channels";
 
-type ChatReply = { messages?: TripGroupMessage[]; member?: { id: string; name: string }; needsName?: boolean; error?: string };
-function ChannelButtons({ channel, onChange }: { channel: TripChatChannel; onChange: (value: TripChatChannel) => void }) {
-  return <div role="group" aria-label="Chat channels" className="grid grid-cols-2 gap-2 px-4 pt-4 sm:grid-cols-4">
-    {TRIP_CHAT_CHANNELS.map(item => <button key={item.id} type="button" aria-pressed={channel === item.id}
+type ChatReply = { messages?: TripGroupMessage[]; member?: { id: string; name: string }; needsName?: boolean; error?: string; channels?: TripChatChannelInfo[]; channelGone?: boolean };
+const DEFAULT_CHANNELS: TripChatChannelInfo[] = TRIP_CHAT_CHANNELS.map(({ id, label }) => ({ id, label }));
+function ChannelButtons({ channels, channel, onChange, onAdd }: { channels: TripChatChannelInfo[]; channel: TripChatChannel; onChange: (value: TripChatChannel) => void; onAdd?: () => void }) {
+  return <div role="group" aria-label="Chat channels" className="flex flex-wrap gap-2 px-4 pt-4">
+    {channels.map(item => <button key={item.id} type="button" aria-pressed={channel === item.id}
       onClick={() => onChange(item.id)}
       className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-medium ${channel === item.id ? "border-[#15204A] bg-[#15204A] text-white" : "border-stone-300 bg-white text-[#15204A]"}`}>{item.label}</button>)}
+    {onAdd ? <button type="button" onClick={onAdd} className="min-h-11 rounded-xl border border-dashed border-stone-400 px-3 py-2 text-sm font-medium text-[#15204A]">+ New channel</button> : null}
   </div>;
+}
+async function chatRequest(code: string, action: string, extra: Record<string, string> = {}): Promise<ChatReply> {
+  const response = await fetch("/api/trip-group", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, action, ...extra }), cache: "no-store" });
+  const data = await response.json() as ChatReply;
+  if (!response.ok && !data.needsName) throw Object.assign(new Error(data.error || "Could not reach the trip chat."), { channelGone: Boolean(data.channelGone) });
+  return data;
 }
 function LiveTripGroupChat({ code }: { code: string }) {
+  const id = useId();
+  const [channels, setChannels] = useState<TripChatChannelInfo[]>(DEFAULT_CHANNELS);
   const [channel, setChannel] = useState<TripChatChannel>("general");
-  const [drafts, setDrafts] = useState<Partial<Record<TripChatChannel, string>>>({});
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [memberId, setMemberId] = useState<string>();
+  const [adding, setAdding] = useState(false);
+  const [label, setLabel] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const loadChannels = useCallback(async () => {
+    try {
+      const data = await chatRequest(code, "channels");
+      if (data.channels) setChannels(data.channels);
+      if (data.member) setMemberId(data.member.id);
+    } catch { /* the four standard channels still work */ }
+  }, [code]);
+  useEffect(() => { const first = window.setTimeout(() => void loadChannels(), 0); return () => clearTimeout(first); }, [loadChannels]);
+  const current = channels.find(item => item.id === channel) ?? channels[0];
+  async function addChannel() {
+    if (busy || !label.trim()) return;
+    setBusy(true); setError("");
+    try {
+      const data = await chatRequest(code, "add-channel", { label });
+      if (data.channels) { setChannels(data.channels); const made = data.channels.find(item => item.label.toLowerCase() === label.trim().replace(/\s+/g, " ").toLowerCase()); if (made) setChannel(made.id); }
+      if (data.needsName) setError("Join the conversation first, then add a channel.");
+      else { setLabel(""); setAdding(false); }
+    } catch (problem) { setError(problem instanceof Error ? problem.message : "Could not add the channel."); }
+    finally { setBusy(false); }
+  }
+  async function removeChannel() {
+    if (busy || !current || !window.confirm(`Remove “${current.label}” and its messages for everyone on this trip?`)) return;
+    setBusy(true); setError("");
+    try { const data = await chatRequest(code, "remove-channel", { channel: current.id }); if (data.channels) setChannels(data.channels); setChannel("general"); }
+    catch (problem) { setError(problem instanceof Error ? problem.message : "Could not remove the channel."); }
+    finally { setBusy(false); }
+  }
   return <div className="flex min-h-0 flex-1 flex-col">
-    <ChannelButtons channel={channel} onChange={setChannel} />
-    <ChannelTripGroupChat key={channel} code={code} channel={channel} draft={drafts[channel] ?? ""}
-      onDraftChange={draft => setDrafts(previous => ({ ...previous, [channel]: draft }))} />
+    <ChannelButtons channels={channels} channel={current.id} onChange={setChannel} onAdd={() => { setAdding(value => !value); setError(""); }} />
+    {adding ? <form onSubmit={(event) => { event.preventDefault(); void addChannel(); }} className="mx-4 mt-3 flex flex-wrap items-end gap-2 rounded-2xl bg-white p-3 text-[#15204A]">
+      <div className="min-w-0 flex-1"><label htmlFor={`${id}-channel`} className="block text-sm font-semibold">New channel name</label>
+        <input id={`${id}-channel`} value={label} onChange={(event) => setLabel(event.target.value)} maxLength={MAX_CHANNEL_LABEL} placeholder="e.g. Day trip to Bellagio" className="mt-1 min-h-11 w-full rounded-xl border border-stone-300 px-3" /></div>
+      <button disabled={busy || !label.trim()} className="min-h-11 rounded-xl bg-[#15204A] px-4 text-white disabled:opacity-50">Add</button>
+      <button type="button" onClick={() => setAdding(false)} className="min-h-11 px-3 underline">Cancel</button>
+    </form> : null}
+    {error ? <p role="alert" className="mx-4 mt-3 rounded-xl bg-white p-3 text-sm text-red-800">{error}</p> : null}
+    {current.createdBy && current.createdBy === memberId ? <div className="px-4 pt-2"><button type="button" onClick={() => void removeChannel()} disabled={busy} className="min-h-11 text-sm text-stone-600 underline">Remove this channel</button></div> : null}
+    <ChannelTripGroupChat key={current.id} code={code} channel={current.id} label={current.label} draft={drafts[current.id] ?? ""}
+      onJoined={(member) => { setMemberId(member.id); void loadChannels(); }}
+      onGone={() => { setChannel("general"); void loadChannels(); }}
+      onDraftChange={draft => setDrafts(previous => ({ ...previous, [current.id]: draft }))} />
   </div>;
 }
-function ChannelTripGroupChat({ code, channel, draft, onDraftChange }: { code: string; channel: TripChatChannel; draft: string; onDraftChange: (value: string) => void }) {
+function ChannelTripGroupChat({ code, channel, label, draft, onDraftChange, onJoined, onGone }: { code: string; channel: TripChatChannel; label: string; draft: string; onDraftChange: (value: string) => void; onJoined: (member: { id: string; name: string }) => void; onGone: () => void }) {
   const id = useId();
   const [messages, setMessages] = useState<TripGroupMessage[]>([]);
   const [member, setMember] = useState<ChatReply["member"]>();
   const [needsName, setNeedsName] = useState(false);
   const [name, setName] = useState("");
-  const label = TRIP_CHAT_CHANNELS.find(item => item.id === channel)!.label;
   const cursor = useRef<string | undefined>(undefined);
   const joined = useRef(false);
   const [busy, setBusy] = useState(false);
@@ -35,12 +86,7 @@ function ChannelTripGroupChat({ code, channel, draft, onDraftChange }: { code: s
   const [loading, setLoading] = useState(true);
   const sequence = useRef(0);
   const mutating = useRef(false);
-  const request = useCallback(async (action: string, extra: Record<string, string> = {}) => {
-    const response = await fetch("/api/trip-group", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, action, channel, ...extra }), cache: "no-store" });
-    const data = await response.json() as ChatReply;
-    if (!response.ok && !data.needsName) throw new Error(data.error || "Could not reach the trip chat.");
-    return data;
-  }, [code, channel]);
+  const request = useCallback((action: string, extra: Record<string, string> = {}) => chatRequest(code, action, { channel, ...extra }), [code, channel]);
   const refresh = useCallback(async () => {
     const current = ++sequence.current;
     try {
@@ -64,7 +110,7 @@ function ChannelTripGroupChat({ code, channel, draft, onDraftChange }: { code: s
   }, [refresh, invalidate]);
   async function join() {
     setBusy(true); setError(""); mutating.current = true;
-    try { const data = await request("join", { name }); setMember(data.member); setNeedsName(false); await refresh(); }
+    try { const data = await request("join", { name }); setMember(data.member); if (data.member) onJoined(data.member); setNeedsName(false); await refresh(); }
     catch (problem) { setError(problem instanceof Error ? problem.message : "Could not join the chat."); }
     finally { mutating.current = false; setBusy(false); }
   }
@@ -72,7 +118,7 @@ function ChannelTripGroupChat({ code, channel, draft, onDraftChange }: { code: s
     if (busy || !draft.trim()) return;
     const text = draft.trim(); setBusy(true); setError(""); mutating.current = true; ++sequence.current;
     try { const data = await request("send", { text }); if (data.needsName) { setNeedsName(true); return; } setMessages(data.messages ?? []); cursor.current = data.messages?.at(-1)?.id; onDraftChange(""); }
-    catch (problem) { setError(problem instanceof Error ? problem.message : "Your message was not sent. Try again."); }
+    catch (problem) { if ((problem as { channelGone?: boolean }).channelGone) { onGone(); return; } setError(problem instanceof Error ? problem.message : "Your message was not sent. Try again."); }
     finally { mutating.current = false; setBusy(false); }
   }
   return <section className="flex min-h-0 flex-1 flex-col gap-3 p-4 text-[#15204A]" aria-labelledby={`${id}-heading`}>
@@ -98,8 +144,8 @@ function ChannelTripGroupChat({ code, channel, draft, onDraftChange }: { code: s
 }
 
 function SampleTripGroupChat() {
-  const [channel, setChannel] = useState<TripChatChannel>("general");
-  const samples: Record<TripChatChannel, [string, string]> = {
+  const [channel, setChannel] = useState<DefaultTripChatChannel>("general");
+  const samples: Record<DefaultTripChatChannel, [string, string]> = {
     general: ["Let’s meet by the hotel entrance before we head out.", "On my way. I have the tickets in my wallet."],
     hotels: ["Our rooms are booked under the family name.", "I’ll ask reception about the connecting rooms."],
     flights: ["Our flight leaves at 10:30 tomorrow.", "Let’s meet at the check-in desk at 07:30."],
@@ -108,7 +154,7 @@ function SampleTripGroupChat() {
   return <section className="space-y-4 p-4 text-[#15204A]" aria-label="Sample trip group chat">
     <h2 className="text-lg font-semibold">Trip group chat</h2>
     <p className="text-sm leading-6 text-stone-600">Sample conversation between people on the same trip. Open your own trip code to send messages.</p>
-    <ChannelButtons channel={channel} onChange={setChannel} />
+    <ChannelButtons channels={DEFAULT_CHANNELS} channel={channel} onChange={value => setChannel(value as DefaultTripChatChannel)} />
     <h3 className="text-sm font-semibold">{TRIP_CHAT_CHANNELS.find(item => item.id === channel)!.label}</h3>
     <div className="rounded-2xl bg-white p-4"><p className="text-xs font-semibold">Miriam · Sample</p><p className="mt-1 text-sm leading-6">{samples[channel][0]}</p></div>
     <div className="ml-6 rounded-2xl bg-[#15204A] p-4 text-white"><p className="text-xs font-semibold">David · Sample</p><p className="mt-1 text-sm leading-6">{samples[channel][1]}</p></div>
