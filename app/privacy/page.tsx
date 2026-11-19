@@ -86,7 +86,7 @@ export default async function PrivacyPolicyPage() {
           <p>We collect only what we need to run the service:</p>
           <ul className="glove-list space-y-2">
             <li><strong className="text-[var(--navy)]">Account details</strong> — if you have an account, your email address, your name if you give it, and a password. Passwords are stored only in a salted, hashed form; we never store or see your plain password.</li>
-            <li><strong className="text-[var(--navy)]">Trips in your account</strong> — the itineraries you build while signed in: dates, flights, places to stay, plans, notes, travellers&rsquo; names you add, and any documents you attach.</li>
+            <li><strong className="text-[var(--navy)]">Trips in your account</strong> — the itineraries you build while signed in: dates, flights, places to stay, plans, notes, travellers&rsquo; names you add, and any documents you attach, including the files you keep in a tripand any documents you attach.</li>rsquo;s travel wallet while logged in, which only you can open.</li>
             <li><strong className="text-[var(--navy)]">Trips built without an account</strong> — kept only in your own browser on that device. We do not receive or store them.</li>
             <li><strong className="text-[var(--navy)]">Trip codes and group conversations</strong> — when a trip is shared, the messages and display names in its group conversation, so everyone on the trip can read them (more below).</li>
             <li><strong className="text-[var(--navy)]">Usage counts</strong> — totals such as page visits and which booking searches are used. They are counts, not a record of what any one person did.</li>

@@ -1,4 +1,6 @@
-export type PersonalTravelDocument = { id: string; scope: string; name: string; kind: string; savedAt: string; blob: Blob };
+/** `synced` is true once the file is also on the signed-in account; a synced
+ *  file that later disappears from the account was removed on another device. */
+export type PersonalTravelDocument = { id: string; scope: string; name: string; kind: string; savedAt: string; blob: Blob; synced?: boolean };
 const DATABASE = "wg-personal-travel-wallet";
 const STORE = "documents";
 export const MAX_PERSONAL_DOCUMENT_BYTES = 15 * 1024 * 1024;
