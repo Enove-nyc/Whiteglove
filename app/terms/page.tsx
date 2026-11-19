@@ -27,7 +27,7 @@ export async function generateMetadata() {
   });
 }
 
-const UPDATED = "August 10, 2026";
+const UPDATED = "November 19, 2026";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -55,7 +55,6 @@ export default async function TermsOfUsePage() {
   const [words, brand] = await Promise.all([readWords(), currentBrand()]);
   const { affiliateDisclosure } = words;
   const contactEmail = contactEmailFor(brand, words);
-  const itineraries = brand === "itineraries";
   const siteName = BRAND_NAME[brand];
   const siteDomain = BRAND_DOMAIN[brand];
   return (
@@ -77,66 +76,67 @@ export default async function TermsOfUsePage() {
         </p>
 
         <Section title="The Service">
-          {itineraries ? (
-            <p>White Glove Itineraries provides trip-planning tools — a day-by-day itinerary builder, saved routes, and flight and hotel search. The Service is provided for personal use, and, on a paid advisor plan, for planning travel on behalf of clients.</p>
-          ) : (
-            <p>White Glove provides informational travel guides and planning tools for kosher travel and Jewish heritage journeys, including destination guides, cemetery and access information, saved routes, and flight and hotel search. The Service is provided for personal, non-commercial use.</p>
-          )}
+          <p>
+            {siteName} provides tools for organising travel: an itinerary planner for building a trip day by day,
+            search links to booking partners for flights, hotels, car rentals, activities, transfers, eSIMs and travel
+            insurance, and a trip app that opens a shared itinerary from its trip code. The Service is provided for
+            your personal travel planning.
+          </p>
+          <p>
+            You can use the itinerary planner without an account. A trip built without one is kept only in your own
+            browser on that device; we do not receive or store it, and clearing your browser data removes it.
+          </p>
+          <p>
+            White Glove Kosher Travel has closed. If you had an account there, the same account, with the same email
+            and password, works here, and these terms now apply to it.
+          </p>
         </Section>
 
         <Section title="Your account">
-          <p>Some features require an account. You agree to provide accurate information, to keep your password confidential, and to be responsible for activity that happens under your account. Notify us promptly if you believe your account has been used without your permission.</p>
+          <p>Accounts are opened by invitation. If you have one, you agree to keep your sign-in details confidential and you are responsible for activity under your account. Tell us promptly if you believe someone else has used it.</p>
+        </Section>
+
+        <Section title="Trip codes and group conversations">
+          <p>A trip code opens one shared itinerary, and its group conversation where the trip has one. Anyone who has the code can open that trip, so share it only with the people travelling and keep it private. The person who shared a trip can withdraw its code at any time.</p>
+          <p>You are responsible for what you post in a group conversation. Display names are chosen by each traveller and are not verified. Do not post anything unlawful, abusive, or that you do not have the right to share, and do not post anyone else&rsquo;s personal or payment details.</p>
         </Section>
 
         <Section title="Acceptable use">
           <p>You agree not to misuse the Service. In particular, you will not:</p>
           <ul className="glove-list space-y-2">
             <li>use the Service for any unlawful purpose or in violation of these terms;</li>
-            <li>attempt to access accounts, data, or systems that are not yours;</li>
-            <li>scrape, copy, or redistribute our content in bulk without permission;</li>
+            <li>try to open accounts, trips, codes, data or systems that are not yours;</li>
+            <li>copy, scrape or redistribute the Service or its content in bulk without permission;</li>
             <li>interfere with or disrupt the Service or the networks it relies on.</li>
           </ul>
         </Section>
 
-        <Section title="Travel information — please verify">
-          {/* The kosher wording names minyan and mikvah times and cemetery
-              custodians, which are guides this deployment does not carry. The
-              obligation is the same on both sides; only the examples differ. */}
-          {itineraries ? (
-            <p>
-              An itinerary built here gathers details such as addresses, opening hours, transfer times, and travel
-              notices. This information can change, and travel conditions vary.{" "}
-              <strong className="text-[var(--navy)]">
-                Please confirm anything critical — bookings, opening hours, and current safety conditions — directly
-                with the supplier or authority before you or your client rely on it.
-              </strong>{" "}
-              White Glove is not responsible for outdated details or for the acts of third parties such as hotels,
-              airlines, drivers, or tour operators.
-            </p>
-          ) : (
-            <p>
-              Our guides gather details such as addresses, contacts, minyan and mikvah times, access notes, and safety notices to help
-              your planning. This information can change, and access and travel conditions vary. <strong className="text-[var(--navy)]">Please
-              confirm anything critical — access arrangements, hours, and current safety conditions — directly with the relevant contact
-              or authority before you rely on it.</strong> White Glove is not responsible for outdated details or for the acts of third
-              parties such as hotels, drivers, or cemetery custodians.
-            </p>
-          )}
+        <Section title="Travel information">
+          <p>
+            An itinerary gathers details such as addresses, opening hours, flight times, transfer times and travel
+            notices. These change, and travel conditions vary.{" "}
+            <strong className="text-[var(--navy)]">
+              Confirm anything that matters — bookings, times, entry requirements and current conditions — directly
+              with the airline, hotel, operator or relevant authority before you rely on it.
+            </strong>{" "}
+            {siteName} is not responsible for outdated details or for the acts of third parties such as airlines,
+            hotels, drivers or tour operators.
+          </p>
         </Section>
 
-        <Section title="Bookings and third-party services">
-          <p>Flight and hotel searches and any bookings are provided through third-party travel partners and are subject to those partners&rsquo; own terms, pricing, and cancellation policies. White Glove is not the seller of those travel services and is not a party to your booking.</p>
+        <Section title="Bookings and booking partners">
+          <p>Searches and bookings for flights, hotels, car rentals, activities, transfers, eSIMs and insurance are made with independent travel partners. Each booking is between you and that partner and is subject to its own terms, prices and cancellation rules. {siteName} does not sell those travel services and is not a party to your booking; questions about a booking go to the partner you booked with.</p>
           <p>
             <strong className="text-[var(--navy)]">How this site is paid.</strong> {affiliateDisclosure}
           </p>
         </Section>
 
         <Section title="Intellectual property">
-          <p>The Service, including its guides, text, design, and logo, is owned by {siteName} and protected by applicable laws. We grant you a personal, limited, non-transferable right to use the Service for your own travel planning. All other rights are reserved.</p>
+          <p>The Service, including its text, design and logo, is owned by {siteName} and protected by applicable laws. We grant you a personal, limited, non-transferable right to use it for your own travel planning. The trips you build and the messages you write remain yours; you give us permission to store and show them only so the Service can work for you and the people you share them with. All other rights are reserved.</p>
         </Section>
 
         <Section title="Disclaimer">
-          <p>The Service is provided &ldquo;as is&rdquo; and &ldquo;as available,&rdquo; without warranties of any kind, whether express or implied, including accuracy, fitness for a particular purpose, or uninterrupted availability. Your use of the Service and reliance on its information is at your own discretion and risk.</p>
+          <p>The Service is provided &ldquo;as is&rdquo; and &ldquo;as available,&rdquo; without warranties of any kind, whether express or implied, including accuracy, fitness for a particular purpose, or uninterrupted availability. Keep your own copy of anything you cannot travel without, such as tickets and confirmations. Your use of the Service and reliance on its information is at your own discretion and risk.</p>
         </Section>
 
         <Section title="Limitation of liability">

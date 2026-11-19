@@ -27,12 +27,14 @@ describe("the terms page names whichever brand a visitor is actually on", () => 
     assert.doesNotMatch(TERMS, /White Glove Kosher Travel will not be liable/);
   });
 
-  it("describes a different Service for itineraries — no guide content that doesn't exist there", () => {
-    assert.match(TERMS, /itineraries \? \(/);
-    assert.match(TERMS, /White Glove Itineraries provides trip-planning tools/);
-    // The kosher description (destination guides, cemetery and access info) is
-    // still there for the kosher branch — just no longer the only one.
-    assert.match(TERMS, /destination guides, cemetery and access information/);
+  it("describes the one site there is now — the planner, booking partners and the trip app", () => {
+    // Rewritten 19 November 2026: Kosher Travel has closed, so the terms
+    // describe White Glove Itineraries alone and say what happened to a Kosher
+    // Travel account. The guide wording went with the guides.
+    assert.match(TERMS, /an itinerary planner for building a trip day by day/);
+    assert.match(TERMS, /White Glove Kosher Travel has closed/);
+    assert.doesNotMatch(TERMS, /destination guides, cemetery and access information/);
+    assert.doesNotMatch(TERMS, /saved routes/);
   });
 
   it("keeps the affiliate disclosure section — a different finding, not this one", () => {
@@ -54,7 +56,9 @@ describe("the privacy policy names whichever brand a visitor is actually on", ()
     assert.doesNotMatch(PRIVACY, /import \{ SITE_DOMAIN \} from "@\/lib\/features"/);
   });
 
-  it("describes what it provides differently per brand, in the same sentence structure", () => {
-    assert.match(PRIVACY, /itineraries \? "trip-planning tools" : "travel guides and planning tools for kosher travel and Jewish heritage journeys"/);
+  it("describes the planning tools there are now, and what became of Kosher Travel accounts", () => {
+    assert.match(PRIVACY, /tools for planning and organising travel/);
+    assert.match(PRIVACY, /White Glove Kosher Travel has closed/);
+    assert.match(PRIVACY, /Trips built without an account/);
   });
 });
