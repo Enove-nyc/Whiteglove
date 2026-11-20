@@ -81,12 +81,39 @@ export default function ItinerariesHome({
         <div id="search" className="relative z-10 order-2 mx-auto w-full max-w-6xl scroll-mt-24 px-3 sm:px-6 lg:-mt-32">
           <TravelSearch key={initialTab ?? "flights"} initialTab={initialTab} prefill={prefill} />
           {/* After booking: the confirmation fills the trip in (Smart Import). */}
-          <p className="mt-3 px-1 text-sm leading-6 text-stone-700">
+          <p className="mt-3 inline-block rounded-lg bg-white/90 px-3 py-1.5 text-sm leading-6 text-stone-700 lg:shadow-sm">
             <strong className="text-[var(--navy)]">Booked?</strong> Paste or forward the confirmation email into{" "}
             <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">your itinerary</Link>
             {" "}and the flight or hotel is added for you.
           </p>
         </div>
+      </section>
+
+      {/* ASK THE AI, ON THE FRONT PAGE (owner, 20 November 2026: "why can I
+          still not see the AI anywhere?"). A plain form: it opens /assistant
+          with the question already asked, so this page stays static and cached. */}
+      <section aria-labelledby="ask-ai-heading" className="mx-auto max-w-6xl px-3 pt-10 sm:px-6">
+        <form action="/assistant" method="get" className="rounded-2xl border border-[#E6DCC8] bg-white p-4 shadow-[0_8px_26px_rgba(21,32,74,.06)] sm:p-6">
+          <h2 id="ask-ai-heading" className="flex items-center gap-2 font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--navy-deep)]">
+            <Icon name="sparkle" className="h-5 w-5 text-[var(--gold-ink)]" />
+            Ask the AI travel assistant
+          </h2>
+          <p className="mt-1 text-sm text-stone-600">Where to stay, how to get around, what to do — ask anything about a trip.</p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <label htmlFor="ask-ai" className="sr-only">Your travel question</label>
+            <input
+              id="ask-ai"
+              name="ask"
+              required
+              maxLength={500}
+              placeholder="e.g. Best area to stay in Lisbon with children?"
+              className="min-h-12 w-full min-w-0 rounded-lg border border-[#D9D2C4] bg-white px-3 text-[15px] outline-none focus:border-[var(--navy)] focus:ring-1 focus:ring-[var(--navy)]"
+            />
+            <button type="submit" className="min-h-12 shrink-0 rounded-lg bg-[var(--navy)] px-6 text-[15px] font-semibold text-white transition hover:bg-[var(--navy-deep)]">
+              Ask
+            </button>
+          </div>
+        </form>
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16">

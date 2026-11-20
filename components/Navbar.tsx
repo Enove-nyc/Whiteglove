@@ -416,6 +416,18 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
               )}
               {/* No Route on Itineraries: it came off at the owner's word (18 November 2026). */}
               {!isItineraries && <IconLink icon="route" label="Route" href="/my-route" />}
+              {/* THE AI, WHERE IT CAN BE SEEN (owner, 20 November 2026: "why can
+                  I still not see the AI anywhere?"). It sat only inside the My
+                  itineraries menu; a labelled button says it is there. */}
+              {isItineraries && (
+                <Link
+                  href="/assistant"
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[var(--gold)] px-3.5 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
+                >
+                  <Icon name="sparkle" className="h-4 w-4" />
+                  Ask AI
+                </Link>
+              )}
               <IconLink icon="suitcase" label="Itinerary" href="/itinerary" />
               {/* Signed in, the icon opens the four places an account has —
                   /account is a page holding all four, and somebody who wanted

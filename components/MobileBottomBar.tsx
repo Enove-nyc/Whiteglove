@@ -32,6 +32,8 @@ export default function MobileBottomBar({ signedIn, brand }: { signedIn: boolean
     // leads away is dropped rather than kept.
     // No search and no Route on Itineraries (Route came off at the owner's word, 18 November 2026).
     ...ITEMS.filter((item) => !((item.key === "search" || item.key === "route") && brand === "itineraries")),
+    // The travel assistant, on the phone too (owner, 20 November 2026).
+    ...(brand === "itineraries" ? [{ key: "assistant", icon: "sparkle" as IconName, label: "Ask AI", href: "/assistant" }] : []),
     {
       key: "account",
       icon: "account" as IconName,

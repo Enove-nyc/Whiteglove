@@ -42,3 +42,11 @@ describe("a public answer never touches the private directory", () => {
     assert.match(route, /if \(!question \|\| !includeDirectory\) return \{ block: "", sources: \[\] \};/);
   });
 });
+
+describe("the assistant can be seen, not only found in a menu", () => {
+  it("has a labelled Ask AI button in the header and the phone bar, and an ask box on the home page", () => {
+    assert.match(readFileSync("components/Navbar.tsx", "utf8"), /href="\/assistant"[\s\S]{0,400}Ask AI/);
+    assert.match(readFileSync("components/MobileBottomBar.tsx", "utf8"), /label: "Ask AI", href: "\/assistant"/);
+    assert.match(readFileSync("components/ItinerariesHome.tsx", "utf8"), /<form action="\/assistant" method="get"/);
+  });
+});
