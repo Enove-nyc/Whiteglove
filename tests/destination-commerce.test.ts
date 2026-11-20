@@ -35,6 +35,9 @@ const STICKY = readFileSync("components/DestinationStickyCta.tsx", "utf8");
  * against app/cars/page.tsx are made against these two instead.
  */
 const BOOK = readFileSync("app/book/page.tsx", "utf8");
+// The search moved to the home page (20 November 2026); /book only redirects.
+const HOME = readFileSync("app/page.tsx", "utf8");
+const SEARCH = readFileSync("components/TravelSearch.tsx", "utf8");
 const PARTNERS = readFileSync("components/BookPartners.tsx", "utf8");
 /** The bar without its comments, which explain why it is not a fixed one. */
 const STICKY_CODE = STICKY.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
@@ -116,17 +119,16 @@ describe("what the commercial links promise", () => {
     assert.match(PROSE, /bookingHref\(booking, \{ type: "cars", destination: destination\.name \}\)/);
     assert.match(PROSE, /carsHref=\{bookingHref\(booking, \{ type: "cars", destination: destination\.name \}\)\}/);
     assert.match(STICKY_CODE, /href=\{carsHref\}/);
-    // And the booking page reads both halves of that link.
-    assert.match(BOOK, /destination\?: string \| string\[\]/);
-    assert.match(BOOK, /initialKind=\{initialKind\}/);
-    assert.match(BOOK, /q\.type === "cars"/);
+    // /book carries both halves on to the home page, which reads them.
+    assert.match(BOOK, /"type", "from", "to", "depart", "return", "destination"/);
+    assert.match(HOME, /type === "cars"/);
+    assert.match(HOME, /destination: first\("destination"\)/);
     // …and the Cars tab opens with that place already in its own field. It
     // used to be handed to an embedded partner panel instead; that panel has
     // gone, because White Glove now has live car prices of its own and the
     // panel's inventory was both thinner and duplicated underneath them.
     assert.doesNotMatch(PARTNERS, /carsEmbedPath/);
-    assert.match(PARTNERS, /useState\(prefill\?\.destination \?\? ""\)/);
-    assert.match(PARTNERS, /prefill\?\.destination/);
+    assert.match(SEARCH, /useState\(prefill\?\.destination \?\? ""\)/);
   });
 
   it("PREFILLS NO AIRPORT CODE IT DOES NOT HAVE", () => {
@@ -153,7 +155,8 @@ describe("what the commercial links promise", () => {
     // It lands in a text field as though the visitor typed it, and a link is
     // not a trustworthy author.
     assert.match(BOOK, /\.slice\(0, 80\)/);
-    assert.match(BOOK, /Array\.isArray\(q\.destination\)/, "a repeated parameter would render as an array");
+    assert.match(BOOK, /Array\.isArray\(value\)/, "a repeated parameter would render as an array");
+    assert.match(HOME, /\.slice\(0, 80\)/);
   });
 });
 

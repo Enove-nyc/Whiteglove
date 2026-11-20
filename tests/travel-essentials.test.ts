@@ -186,7 +186,6 @@ describe("Travel Essentials surfaces", () => {
   it("is placed on destination, itinerary and book pages", () => {
     assert.match(readFileSync("app/destinations/[destination]/page.tsx", "utf8"), /TravelEssentials/);
     assert.match(readFileSync("app/itinerary/page.tsx", "utf8"), /TravelEssentials/);
-    assert.match(readFileSync("app/book/page.tsx", "utf8"), /TravelEssentials/);
   });
 
   it("hands landing products off through /go, with no city or dates form", () => {
@@ -205,10 +204,10 @@ describe("Travel Essentials surfaces", () => {
     }
   });
 
-  it("shows a visible disclosure, not tooltip-only", () => {
+  it("leaves the commission to Terms, not a line on every card", () => {
+    // Owner, 20 November 2026: it is said already in the terms.
     const component = readFileSync("components/TravelEssentials.tsx", "utf8");
-    assert.match(component, /We may earn a commission from qualifying bookings/);
-    assert.doesNotMatch(component, /title=\{[^}]*commission/i);
+    assert.doesNotMatch(component, /We may earn a commission/);
   });
 
   it("avoids misleading recommendation copy", () => {

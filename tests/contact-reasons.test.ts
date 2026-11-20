@@ -182,41 +182,16 @@ describe("what reaches the inbox", () => {
 });
 
 describe("the page", () => {
-  it("lists this front door's reasons above the form", () => {
-    // reasonsForBrand is CONTACT_REASONS filtered to the ones this front door
-    // can act on — see tests/contact-brand. Still the list, still from here.
-    assert.match(PAGE, /reasonsForBrand\(brand\)/);
-    assert.match(PAGE, /\{reasons\.map\(/);
+  it("IS ONE FORM, with no reasons to choose between", () => {
+    // Owner, 20 November 2026: "a single page not 3 separate tabs".
+    assert.match(PAGE, /<ContactForm reason="help"/);
+    assert.doesNotMatch(PAGE, /reasons\.map\(|aria-current/);
+    assert.match(PAGE, /mailto:\$\{contactEmail\}/);
   });
 
   it("HAS NO PLANNING FORM LEFT TO OPEN ON", () => {
     assert.doesNotMatch(PAGE, /PlanningRequestForm/);
     assert.doesNotMatch(PAGE, /reason === "trip"/);
-  });
-
-  it("MAKES THE REASONS LINKS, so the choice survives a refresh and works without scripts", () => {
-    assert.match(PAGE, /href=\{`\/contact\?reason=\$\{entry\.value\}`\}/);
-    // A server component. A client toggle would lose the deep link the footer
-    // and any advertising page need.
-    assert.doesNotMatch(PAGE, /"use client"/);
-  });
-
-  it("OPENS ON THE FORM WITH HELP CHOSEN, and still gives an address", () => {
-    // One contact page (owner, 19 November 2026: merge Contact and Support).
-    // It used to show no form until a reason was picked; help is now the open
-    // door, and a link may still name another reason this site offers.
-    assert.match(PAGE, /readReasonForBrand\(reasonParam, brand\) \|\| "help"/);
-    // Resolved by brand now, because the built-in address names the kosher
-    // domain and this deployment is not it.
-    assert.match(PAGE, /mailto:\$\{contactEmail\}/);
-  });
-
-  it("sends every reason to the one short form", () => {
-    assert.match(PAGE, /<ContactForm reason=\{reason\}/);
-  });
-
-  it("marks the chosen one for a screen reader, not only in colour", () => {
-    assert.match(PAGE, /aria-current=\{chosen \? "true" : undefined\}/);
   });
 });
 

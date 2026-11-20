@@ -249,7 +249,7 @@ export default async function SampleItineraryPage() {
                 Open the itinerary planner
               </Link>
               <Link
-                href={itineraries ? "/book" : "/plan"}
+                href={itineraries ? "/#search" : "/plan"}
                 className="inline-flex min-h-11 items-center rounded-md border border-[var(--gold)] px-6 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
               >
                 {itineraries ? "Book travel" : "Get recommendations"}

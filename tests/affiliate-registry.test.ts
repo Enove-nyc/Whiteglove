@@ -356,11 +356,14 @@ describe("what a click records", () => {
 });
 
 describe("the disclosure", () => {
-  it("IS ONE EDITABLE LINE, BESIDE THE ACTION", () => {
+  it("IS SAID ONCE, IN TERMS, NOT BESIDE EVERY LINK", () => {
+    // Owner, 20 November 2026: remove the commission line, "as it's said
+    // already in the terms".
     const component = readFileSync("components/BookingLink.tsx", "utf8");
-    assert.match(component, /words\.affiliateDisclosure/);
-    // Not the footer, and not a hardcoded sentence in nine components.
+    assert.doesNotMatch(component, /words\.affiliateDisclosure/);
     assert.doesNotMatch(component, /may earn a commission/i);
+    assert.match(readFileSync("app/terms/page.tsx", "utf8"), /words\.affiliateDisclosure\}/);
+    assert.doesNotMatch(readFileSync("components/TravelSearch.tsx", "utf8"), /may earn a commission/i);
   });
 
   it("warns that the link leaves, without naming who it leaves to", () => {

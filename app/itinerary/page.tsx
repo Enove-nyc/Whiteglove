@@ -101,7 +101,7 @@ export default async function ItineraryPage() {
           <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} assume={assume} templates={templates} itineraries={itineraries} kosher={kosher} guest={guest} />
         </div>
 
-        <ItineraryFooter promotion={footerPromotions[0] ?? null} />
+        <ItineraryFooter promotion={footerPromotions[0] ?? null} inPlanner />
       </section>
 
       {/* Booking partners remain on this site, after the traveller’s planner. */}

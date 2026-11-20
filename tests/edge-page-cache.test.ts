@@ -16,7 +16,7 @@ describe("what is served from the copy", () => {
   it("the public pages, keyed by deploy and by phone or desktop", () => {
     const key = edgeCacheKey(req("https://www.whitegloveitineraries.com/"), "v1");
     assert.equal(key, "https://www.whitegloveitineraries.com/?__edge=v1&__d=d");
-    assert.match(edgeCacheKey(req("https://www.whitegloveitineraries.com/book", { "user-agent": "iPhone Mobile" }), "v1")!, /__d=m$/);
+    assert.match(edgeCacheKey(req("https://www.whitegloveitineraries.com/itinerary", { "user-agent": "iPhone Mobile" }), "v1")!, /__d=m$/);
     assert.notEqual(edgeCacheKey(req("https://www.whitegloveitineraries.com/about"), "v1"), edgeCacheKey(req("https://www.whitegloveitineraries.com/about"), "v2"));
   });
   it("never for anybody carrying one of the site's cookies — signed in, admin, or past the password gate", () => {

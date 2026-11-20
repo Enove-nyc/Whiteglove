@@ -18,13 +18,16 @@ const params = (r: { href: string } | { error: string }) => {
 };
 
 describe("the home page and the Book page render the same search", () => {
-  it("both use TravelSearch, and the old home-only box is gone", () => {
-    assert.match(readFileSync("components/ItinerariesHome.tsx", "utf8"), /<TravelSearch \/>/);
-    assert.match(readFileSync("app/book/page.tsx", "utf8"), /<TravelSearch initialTab=\{initialTab\}/);
+  it("is one search, on the home page only (/book redirects there)", () => {
+    assert.match(readFileSync("components/ItinerariesHome.tsx", "utf8"), /<TravelSearch key=/);
+    assert.match(readFileSync("app/book/page.tsx", "utf8"), /permanentRedirect/);
     assert.throws(() => readFileSync("components/HomeTravelSearch.tsx", "utf8"));
   });
-  it("keeps miles and points on the Book page, without a second cash form", () => {
-    assert.match(readFileSync("app/book/page.tsx", "utf8"), /<BookPartners milesOnly/);
+  it("keeps one height for every tab, so switching does not move the page", () => {
+    assert.match(readFileSync("components/TravelSearch.tsx", "utf8"), /min-h-\[372px\][^"]*sm:min-h-\[388px\][^"]*md:min-h-\[246px\]/);
+  });
+  it("offers a dropdown of real places for the destination", () => {
+    assert.match(readFileSync("components/TravelSearch.tsx", "utf8"), /<AddressAutocomplete[\s\S]*?mode="city"/);
   });
   it("puts the search before the photograph on a phone", () => {
     const home = readFileSync("components/ItinerariesHome.tsx", "utf8");
@@ -125,8 +128,8 @@ describe("public sample itineraries", () => {
 });
 
 describe("booked already? the confirmation fills the trip", () => {
-  it("Book says so under the search, and opens Smart Import", () => {
-    assert.match(readFileSync("app/book/page.tsx", "utf8"), /href="\/itinerary\?import=1"/);
+  it("the home page says so under the search, and opens Smart Import", () => {
+    assert.match(readFileSync("components/ItinerariesHome.tsx", "utf8"), /href="\/itinerary\?import=1"/);
   });
   it("the planner opens Smart Import on ?import=1, and tells a guest to log in for it", () => {
     const BUILDER = readFileSync("components/ItineraryBuilder.tsx", "utf8");

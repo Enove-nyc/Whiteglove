@@ -53,7 +53,6 @@ export default async function TermsOfUsePage() {
     );
   }
   const [words, brand] = await Promise.all([readWords(), currentBrand()]);
-  const { affiliateDisclosure } = words;
   const contactEmail = contactEmailFor(brand, words);
   const siteName = BRAND_NAME[brand];
   const siteDomain = BRAND_DOMAIN[brand];
@@ -117,17 +116,17 @@ export default async function TermsOfUsePage() {
             notices. These change, and travel conditions vary.{" "}
             <strong className="text-[var(--navy)]">
               Confirm anything that matters — bookings, times, entry requirements and current conditions — directly
-              with the airline, hotel, operator or relevant authority before you rely on it.
+              with the airline, hotel or relevant authority before you rely on it.
             </strong>{" "}
             {siteName} is not responsible for outdated details or for the acts of third parties such as airlines,
-            hotels, drivers or tour operators.
+            hotels and booking partners.
           </p>
         </Section>
 
         <Section title="Bookings and booking partners">
           <p>Searches and bookings for flights, hotels, car rentals, activities, transfers, eSIMs and insurance are made with independent travel partners. Each booking is between you and that partner and is subject to its own terms, prices and cancellation rules. {siteName} does not sell those travel services and is not a party to your booking; questions about a booking go to the partner you booked with.</p>
           <p>
-            <strong className="text-[var(--navy)]">How this site is paid.</strong> {affiliateDisclosure}
+            <strong className="text-[var(--navy)]">How this site is paid.</strong> {words.affiliateDisclosure}
           </p>
         </Section>
 

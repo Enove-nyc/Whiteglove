@@ -88,7 +88,6 @@ const STATIC_PAGES: ReadonlyArray<{ path: string; priority: number; changeFreque
   { path: "/verification", priority: 0.5, changeFrequency: "yearly" },
   { path: "/sample-itinerary", priority: 0.7, changeFrequency: "yearly" },
   { path: "/sample-itineraries", priority: 0.7, changeFrequency: "monthly" },
-  { path: "/book", priority: 0.6, changeFrequency: "monthly" },
   { path: "/transfers", priority: 0.5, changeFrequency: "monthly" },
   { path: "/esim", priority: 0.5, changeFrequency: "monthly" },
   { path: "/travel-insurance", priority: 0.5, changeFrequency: "monthly" },

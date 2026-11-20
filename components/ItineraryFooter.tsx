@@ -22,7 +22,18 @@ import type { PublicPromotion } from "@/lib/admin-content";
 // out of an installed itineraries app entirely (Android drops a Trusted Web
 // Activity to an ordinary browser tab, address bar and all, the moment
 // navigation leaves the verified domain).
-export default function ItineraryFooter({ promotion }: { promotion: PublicPromotion | null }) {
+export default function ItineraryFooter({
+  promotion,
+  inPlanner = false,
+}: {
+  promotion: PublicPromotion | null;
+  /**
+   * Inside the planner itself there is no "Plan a trip" button: the traveller
+   * is already building one (owner, 20 November 2026). A shared trip, read by
+   * somebody else, still offers it.
+   */
+  inPlanner?: boolean;
+}) {
   // THROUGH THE SHARED HOOK, not an effect. This rendered "kosher", then
   // corrected itself after mount — a second render nobody asked for, which
   // React's lint rule refuses. useSiteBrand reads the same three sources in the
@@ -52,16 +63,16 @@ export default function ItineraryFooter({ promotion }: { promotion: PublicPromot
               {itineraries ? "whitegloveitineraries.com" : "whiteglovekoshertravel.com"}
             </p>
           </div>
-          <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:shrink-0">
-            <Link
+          <div className={`grid w-full gap-3 lg:w-auto lg:shrink-0 ${inPlanner ? "" : "sm:grid-cols-2"}`}>
+            {!inPlanner && <Link
               href={itineraries ? "/itinerary" : "/plan"}
               className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] lg:w-52"
             >
               Plan a trip
-            </Link>
+            </Link>}
             {itineraries ? (
               <Link
-                href="/book"
+                href="/#search"
                 className="inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap border border-[var(--gold)] px-5 py-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white lg:w-52"
               >
                 Book travel

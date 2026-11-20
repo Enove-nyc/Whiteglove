@@ -1,4 +1,3 @@
-import { AffiliateDisclosure } from "@/components/BookingLink";
 import { readAffiliateConfig } from "@/lib/affiliate/config";
 import {
   essentialsForContext,
@@ -16,9 +15,6 @@ import { readTravelEssentials } from "@/lib/travel-essentials-store";
  * products (flights, hotels, cars) still go through /go with what the trip
  * already knows. No invented partners, prices, or “recommended” claims.
  */
-
-const DISCLOSURE =
-  "We may earn a commission from qualifying bookings, at no additional cost to you.";
 
 export default async function TravelEssentials({
   pageType,
@@ -112,14 +108,7 @@ export default async function TravelEssentials({
           {title}
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{lead}</p>
-        {settings.showDisclosure ? (
-          <p className="mt-3 max-w-2xl text-xs leading-5 text-stone-500">
-            <span className="font-semibold text-[var(--navy)]">How this site is paid: </span>
-            {DISCLOSURE} Full details are in our Terms.
-          </p>
-        ) : (
-          <AffiliateDisclosure className="mt-3 max-w-2xl text-xs leading-5 text-stone-500" />
-        )}
+        {/* How the site is paid is said in Terms (owner, 20 November 2026). */}
 
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (

@@ -31,7 +31,8 @@ const LOCKED = ["/book"];
 describe("where a public booking link may go", () => {
   it("goes to the search when the search is open", () => {
     const link = bookingLink([]);
-    assert.equal(link.href, BOOKING_SEARCH_PATH);
+    // The search lives on the home page now; /book redirects there.
+    assert.equal(link.href, "/");
     assert.equal(link.searchIsPublic, true);
   });
 
@@ -57,8 +58,8 @@ describe("where a public booking link may go", () => {
 
   it("drops search parameters that the assistance page cannot use", () => {
     const open = bookingLink([]);
-    assert.equal(bookingHref(open, { type: "flights", to: "FCO" }), "/book?type=flights&to=FCO");
-    assert.equal(bookingHref(open, { to: undefined }), "/book");
+    assert.equal(bookingHref(open, { type: "flights", to: "FCO" }), "/?type=flights&to=FCO");
+    assert.equal(bookingHref(open, { to: undefined }), "/");
     // A URL carrying ?type=flights to a page with no search on it reads broken.
     assert.equal(bookingHref(bookingLink(LOCKED), { type: "flights", to: "FCO" }), BOOKING_HELP_PATH);
   });
@@ -79,7 +80,7 @@ describe("the booking links inside Travel", () => {
   it("offers Flights, Hotels and Cars when the search is open", () => {
     const category = travelCategoryFor(bookingLink([]));
     for (const label of ["Flights", "Hotels", "Cars"]) {
-      assert.ok(category.links.some((link) => link.label === label && link.href.startsWith(BOOKING_SEARCH_PATH)), `${label} missing from Travel`);
+      assert.ok(category.links.some((link) => link.label === label && link.href.startsWith("/?type=")), `${label} missing from Travel`);
     }
   });
 

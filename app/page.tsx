@@ -102,7 +102,11 @@ const HOME_CATEGORIES: ReadonlyArray<{ label: string; blurb: string; href: strin
   { label: "Local help", blurb: "Drivers, guides and agencies — their businesses, not ours.", href: "/directory", photo: "local-help" },
 ];
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const requestHeaders = await headers();
   // The itineraries domain gets its own front door; everything below is the
   // kosher site, unchanged. Read through the same helper generateMetadata uses,
@@ -112,9 +116,22 @@ export default async function Home() {
     // An adviser lands on the advisor dashboard; anyone else signed in lands
     // on their own trips. Signed out, the front door is unchanged. Read the
     // same way /app reads it, so the two agree on who is signed in.
+    // THE BOOKING SEARCH LIVES HERE NOW (/book redirects here, 20 November
+    // 2026). A link that carries a search — the menu's Flights, the planner's
+    // "Book the flights" — is somebody asking for the search, signed in or not,
+    // so it is shown rather than redirected to their trips.
+    const params = await searchParams;
+    const first = (key: string) => {
+      const value = params[key];
+      return (Array.isArray(value) ? value[0] : value)?.slice(0, 80) || undefined;
+    };
+    const type = first("type");
+    const initialTab = type === "flights" || type === "hotels" || type === "cars" || type === "activities" ? type : undefined;
+    const prefill = { from: first("from"), to: first("to"), depart: first("depart"), ret: first("return"), destination: first("destination") };
+    const askingForSearch = Boolean(initialTab || Object.values(prefill).some(Boolean));
     const cookie = (await cookies()).get(accountCookieName())?.value;
-    const account = await getCurrentAccountSummary(cookie);
-    const who = account?.email || readSessionEmail(cookie) || "";
+    const account = askingForSearch ? null : await getCurrentAccountSummary(cookie);
+    const who = askingForSearch ? "" : account?.email || readSessionEmail(cookie) || "";
     if (who) {
       const plan = await getPlan(who).catch(() => "free" as const);
       redirect(ADVISER_SCREENS_ARE_PUBLIC && mayServeCompanionClients(plan) ? "/advisor" : "/app");
@@ -123,7 +140,7 @@ export default async function Home() {
       <>
         <StandaloneAppRedirect />
         <StructuredData data={itinerariesStructuredData()} />
-        <ItinerariesHome />
+        <ItinerariesHome initialTab={initialTab} prefill={prefill} />
       </>
     );
   }

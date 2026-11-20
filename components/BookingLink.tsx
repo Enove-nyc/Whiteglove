@@ -36,7 +36,7 @@ export default async function BookingLink({
   label,
   className,
   variant = "primary",
-  showDisclosure = true,
+  showDisclosure: _showDisclosure = true,
   fallback = null,
 }: {
   request: AffiliateRequest;
@@ -56,7 +56,6 @@ export default async function BookingLink({
   const resolved = resolveLink(request, config);
   if (!resolved) return <>{fallback}</>;
 
-  const words = await readWords();
   const where = resolved.route.destinationLabel;
 
   const styles: Record<string, string> = {
@@ -90,9 +89,8 @@ export default async function BookingLink({
           Opens in a new tab
         </span>
       )}
-      {showDisclosure && (
-        <span className="max-w-[34ch] text-[11px] leading-4 text-stone-500">{words.affiliateDisclosure}</span>
-      )}
+      {/* No commission line beside the link: Terms says how the site is paid
+          (owner, 20 November 2026). */}
     </span>
   );
 }
@@ -105,12 +103,7 @@ export default async function BookingLink({
  * turn theirs off — never because the link is small, only because the sentence
  * is already within a line or two of it.
  */
-export async function AffiliateDisclosure({ className }: { className?: string }) {
-  const words = await readWords();
-  return (
-    <p className={className ?? "text-xs leading-5 text-stone-500"}>
-      <span className="font-semibold text-[var(--navy)]">How this site is paid: </span>
-      {words.affiliateDisclosure}
-    </p>
-  );
+export async function AffiliateDisclosure(_props: { className?: string }) {
+  // Said once, in Terms, rather than beside every search (owner, 20 November 2026).
+  return null;
 }

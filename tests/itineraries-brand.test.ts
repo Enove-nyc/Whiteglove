@@ -96,7 +96,7 @@ describe("a page body never hands out a bare guide link on the itineraries domai
     // one still links kevarim — and the choice happens before either href is
     // ever chosen, not after an unconditional render.
     const branch = src.slice(src.indexOf("itineraries ? ("), src.indexOf("</div>\n      </div>\n    </div>"));
-    assert.match(branch, /href="\/book"/);
+    assert.match(branch, /href="\/#search"/);
     assert.match(branch, /href="\/cemeteries"/);
   });
 
@@ -154,10 +154,10 @@ describe("a page body never hands out a bare guide link on the itineraries domai
     assert.match(band, /href="\/heritage"/);
   });
 
-  it("/book does not offer the heritage guide on the itineraries brand", () => {
+  it("/book offers nothing at all now — it redirects to the home search", () => {
     const src = readFileSync("app/book/page.tsx", "utf8");
-    assert.match(src, /const itineraries = \(await currentBrand\(\)\) === "itineraries"/);
-    assert.match(src, /\{!itineraries && \(\s*<p[^]*?href="\/heritage"/);
+    assert.doesNotMatch(src, /\/heritage/);
+    assert.match(src, /permanentRedirect/);
   });
 
   it("search offers neither the browse nor the no-result doors on the itineraries brand", () => {

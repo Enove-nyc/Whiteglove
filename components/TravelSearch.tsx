@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import DateField from "@/components/DateField";
 import { Icon, type IconName } from "@/components/icons/Icon";
@@ -134,7 +135,6 @@ export default function TravelSearch({
   placement = "home-search",
   page = "/",
   rememberTab = false,
-  disclosure = true,
 }: {
   initialTab?: TravelTab;
   prefill?: TravelSearchPrefill;
@@ -143,8 +143,6 @@ export default function TravelSearch({
   page?: string;
   /** Keep the open tab in the address (?type=), so a reload lands on it. */
   rememberTab?: boolean;
-  /** The "we may earn a commission" line; off where the page already says it. */
-  disclosure?: boolean;
 }) {
   const id = useId();
   const [tab, setTab] = useState<TravelTab>(initialTab);
@@ -182,11 +180,14 @@ export default function TravelSearch({
   const dateLabels = tab === "hotels" ? ["Check in", "Check out"] : tab === "cars" ? ["Pick-up date", "Drop-off date"] : ["Depart", "Return"];
   const showsEnd = !(tab === "flights" && oneWay);
 
+  // ONE HEIGHT FOR EVERY TAB (owner, 20 November 2026: switching tabs "shakes
+  // the whole page"). Things to do is a line shorter than the rest, so the box
+  // keeps the tallest tab's height at each width and nothing below it moves.
   return (
     <form
       onSubmit={submit}
       aria-label="Search travel partners"
-      className="rounded-2xl border border-[#E6DCC8] bg-white p-3 shadow-[0_18px_50px_rgba(21,32,74,.14)] sm:p-6"
+      className="min-h-[372px] rounded-2xl border border-[#E6DCC8] bg-white p-3 shadow-[0_18px_50px_rgba(21,32,74,.14)] sm:min-h-[388px] sm:p-6 md:min-h-[246px]"
     >
       <div role="tablist" aria-label="What are you booking?" className="-mx-1 grid grid-cols-4 border-b border-[#E6DCC8] px-1 sm:flex sm:gap-1">
         {TRAVEL_TABS.map((item) => (
@@ -271,13 +272,17 @@ export default function TravelSearch({
             </label>
             <span className="relative mt-1 block">
               <Icon name="map-pin" className={pin} />
-              <input
+              {/* A dropdown of real places as you type (owner, 20 November 2026:
+                  "the hotels should have a destination drop down"). Free
+                  OpenStreetMap suggestions; see AddressAutocomplete. */}
+              <AddressAutocomplete
+                key={tab}
                 id={`${id}-where`}
+                mode="city"
                 value={where}
-                onChange={(event) => setWhere(event.target.value)}
+                onChange={(value) => setWhere(value)}
                 placeholder={tab === "activities" ? "City or place, e.g. Lake Como" : tab === "cars" ? "City or airport" : "City or town"}
                 className={withPin}
-                autoComplete="off"
               />
             </span>
             {tab === "cars" ? (
@@ -299,13 +304,13 @@ export default function TravelSearch({
             <label className={label} htmlFor={`${id}-dropoff`}>Drop-off location</label>
             <span className="relative mt-1 block">
               <Icon name="map-pin" className={pin} />
-              <input
+              <AddressAutocomplete
                 id={`${id}-dropoff`}
+                mode="city"
                 value={dropoff}
-                onChange={(event) => setDropoff(event.target.value)}
+                onChange={(value) => setDropoff(value)}
                 placeholder="City or airport"
                 className={withPin}
-                autoComplete="off"
               />
             </span>
           </div>
@@ -342,7 +347,6 @@ export default function TravelSearch({
         <p className="mt-2 text-xs leading-5 text-stone-600">The partner&rsquo;s page opens at your pick-up place; confirm the drop-off there.</p>
       ) : null}
       {error ? <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
-      {disclosure ? <p className="mt-3 text-center text-xs text-stone-600 sm:text-sm">Book with our travel partners. We may earn a commission.</p> : null}
     </form>
   );
 }

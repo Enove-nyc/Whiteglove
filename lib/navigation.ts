@@ -30,7 +30,7 @@
  *      box.
  */
 
-import { BOOKING_SEARCH_PATH, type BookingLink } from "@/lib/booking-access";
+import { BOOKING_SEARCH_HREF, type BookingLink } from "@/lib/booking-access";
 
 export type NavLink = {
   /** The word on the link. Short — this is a dropdown, not a page. */
@@ -164,9 +164,9 @@ export function travelCategoryFor(booking: BookingLink): NavCategory {
   const travel = NAV_CATEGORIES.find((category) => category.label === "Travel")!;
   const bookingLinks: NavLink[] = booking.searchIsPublic
     ? [
-        { label: "Flights", href: `${BOOKING_SEARCH_PATH}?type=flights` },
-        { label: "Hotels", href: `${BOOKING_SEARCH_PATH}?type=hotels` },
-        { label: "Cars", href: `${BOOKING_SEARCH_PATH}?type=cars` },
+        { label: "Flights", href: `${BOOKING_SEARCH_HREF}?type=flights` },
+        { label: "Hotels", href: `${BOOKING_SEARCH_HREF}?type=hotels` },
+        { label: "Cars", href: `${BOOKING_SEARCH_HREF}?type=cars` },
       ]
     : [{ label: booking.label, href: booking.href, description: booking.description }];
   // Booking sits between Transport and Insurance — the searches beside the
@@ -229,9 +229,9 @@ export function itinerariesBookingCategoryFor(booking: BookingLink): NavCategory
   const book = ITINERARIES_CATEGORIES.find((category) => category.label === "Find travel")!;
   const bookingLinks: NavLink[] = booking.searchIsPublic
     ? [
-        { label: "Flights", href: `${BOOKING_SEARCH_PATH}?type=flights` },
-        { label: "Hotels", href: `${BOOKING_SEARCH_PATH}?type=hotels` },
-        { label: "Car rentals", href: `${BOOKING_SEARCH_PATH}?type=cars` },
+        { label: "Flights", href: `${BOOKING_SEARCH_HREF}?type=flights` },
+        { label: "Hotels", href: `${BOOKING_SEARCH_HREF}?type=hotels` },
+        { label: "Car rentals", href: `${BOOKING_SEARCH_HREF}?type=cars` },
         // GetYourGuide through the owner's Stay22 desk (app/go).
         { label: "Things to do", href: "/go?product=activity&page=%2F&placement=nav" },
       ]

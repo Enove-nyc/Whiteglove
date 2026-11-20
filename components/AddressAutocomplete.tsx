@@ -45,6 +45,7 @@ export default function AddressAutocomplete({
   name,
   mode = "address",
   required = false,
+  id,
 }: {
   value?: string;
   onChange?: (address: string, coordinates?: string) => void;
@@ -54,6 +55,8 @@ export default function AddressAutocomplete({
   mode?: "address" | "city";
   /** Passed straight to the input, so a starred label is actually enforced. */
   required?: boolean;
+  /** For a <label htmlFor> outside the component. */
+  id?: string;
 }) {
   const [query, setQuery] = useState(value);
   /**
@@ -100,7 +103,7 @@ export default function AddressAutocomplete({
     let active = true;
     const timer = setTimeout(async () => {
       try {
-        const layer = mode === "city" ? "&layer=city&layer=district&layer=locality&layer=county&layer=state" : "";
+        const layer = mode === "city" ? "&lang=en&layer=city&layer=district&layer=locality&layer=county&layer=state" : "";
         const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8${layer}`);
         const data = (await res.json()) as { features?: PhotonFeature[] };
         if (!active) return;
@@ -124,6 +127,7 @@ export default function AddressAutocomplete({
   return (
     <div ref={boxRef} className="relative">
       <input
+        id={id}
         name={name}
         value={query}
         onChange={(e) => { setQuery(e.target.value); onChange?.(e.target.value); remeasure(); setOpen(true); }}

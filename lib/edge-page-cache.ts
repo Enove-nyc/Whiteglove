@@ -33,7 +33,6 @@ export const EDGE_CACHE_HOST = "www.whitegloveitineraries.com";
 export const EDGE_CACHE_SECONDS = 300;
 export const EDGE_CACHED_PATHS = new Set([
   "/",
-  "/book",
   "/about",
   "/itinerary",
   "/privacy",

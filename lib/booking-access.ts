@@ -33,8 +33,14 @@
  * it through the layout, and the tests.
  */
 
-/** The self-service search: partner flights, stays and cars on /book. */
+/** The path the admin's lock is written against. Kept as /book, the old page. */
 export const BOOKING_SEARCH_PATH = "/book";
+/**
+ * Where the search lives now: the home page (owner, 20 November 2026: "I want
+ * the /book page to go, everything should be on the main page"). /book
+ * redirects here with its query, so old links still land on the right tab.
+ */
+export const BOOKING_SEARCH_HREF = "/";
 
 /**
  * The public page about the same thing, and the fallback.
@@ -72,9 +78,9 @@ export function pathIsLocked(path: string, lockedPaths: readonly string[]): bool
 }
 
 const PUBLIC_SEARCH: BookingLink = {
-  href: BOOKING_SEARCH_PATH,
+  href: BOOKING_SEARCH_HREF,
   label: "Flights, hotels & cars",
-  description: "Search and book your own travel, with cash or with points.",
+  description: "Search and book flights, hotels and cars with our travel partners.",
   searchIsPublic: true,
 };
 

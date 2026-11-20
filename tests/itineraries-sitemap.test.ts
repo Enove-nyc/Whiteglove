@@ -43,7 +43,7 @@ describe("the sitemap offers only what this domain actually serves", () => {
 
   it("still offers this domain's own pages", () => {
     const offered = new Set(publicPaths().map(({ path }) => path).filter((path) => !isGuidePath(path)));
-    for (const own of ["/", "/plan", "/sample-itinerary", "/book", "/pricing", "/about", "/contact"]) {
+    for (const own of ["/", "/plan", "/sample-itinerary", "/pricing", "/about", "/contact"]) {
       assert.ok(offered.has(own), `${own} is this domain's own page and is not in its sitemap`);
     }
   });

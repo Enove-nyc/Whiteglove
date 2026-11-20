@@ -139,7 +139,7 @@ export default async function TransfersPage() {
                   folded into it and is a redirect now, so linking the real
                   address saves the visitor a hop. */}
               <Link
-                href="/book?type=cars"
+                href="/?type=cars#search"
                 className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
               >
                 Search car hire

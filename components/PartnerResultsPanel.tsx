@@ -114,7 +114,7 @@ export function PartnerResultsPanel({
       </ul>
       ) : null}
       <p className="text-xs leading-5 text-stone-500">
-        Booking and payment happen with the partner. We may earn a commission when you book through these links.
+        Booking and payment happen with the partner.
       </p>
     </div>
   );

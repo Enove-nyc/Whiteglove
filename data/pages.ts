@@ -189,7 +189,8 @@ export const editablePages: PageDef[] = [
         // reason choices and the form — nothing else to read first.
         eyebrow: "",
         heading: "Contact us",
-        intro: "Help with your account or a trip, something that isn’t working, or any other question — send it here and a person will reply.",
+        // No line under it (owner, 20 November 2026).
+        intro: "",
       },
     ],
   },

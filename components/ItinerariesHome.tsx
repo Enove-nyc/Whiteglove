@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import TravelSearch from "@/components/TravelSearch";
+import TravelSearch, { type TravelSearchPrefill, type TravelTab } from "@/components/TravelSearch";
 import HomeStartItinerary from "@/components/HomeStartItinerary";
 import { Icon, type IconName } from "@/components/icons/Icon";
 
@@ -28,7 +28,13 @@ const SAMPLE_LINES: Array<{ icon: IconName; text: string }> = [
   { icon: "ticket", text: "Lake Como boat tour" },
 ];
 
-export default function ItinerariesHome() {
+export default function ItinerariesHome({
+  initialTab,
+  prefill,
+}: {
+  initialTab?: TravelTab;
+  prefill?: TravelSearchPrefill;
+} = {}) {
   return (
     <main className="wg-itineraries-home min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar brand="itineraries" />
@@ -72,8 +78,14 @@ export default function ItinerariesHome() {
           </figure>
         </div>
 
-        <div className="relative z-10 order-2 mx-auto w-full max-w-6xl px-3 sm:px-6 lg:-mt-32">
-          <TravelSearch />
+        <div id="search" className="relative z-10 order-2 mx-auto w-full max-w-6xl scroll-mt-24 px-3 sm:px-6 lg:-mt-32">
+          <TravelSearch key={initialTab ?? "flights"} initialTab={initialTab} prefill={prefill} />
+          {/* After booking: the confirmation fills the trip in (Smart Import). */}
+          <p className="mt-3 px-1 text-sm leading-6 text-stone-700">
+            <strong className="text-[var(--navy)]">Booked?</strong> Paste or forward the confirmation email into{" "}
+            <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">your itinerary</Link>
+            {" "}and the flight or hotel is added for you.
+          </p>
         </div>
       </section>
 

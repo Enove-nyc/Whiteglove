@@ -53,18 +53,18 @@ describe("the owner's words on top", () => {
 
   it("stores only what differs, so a later correction to the built-in wording still reaches him", () => {
     assert.deepEqual(onlyChangedWords(BUILT_IN_WORDS), {});
-    assert.deepEqual(onlyChangedWords(with_({ bookingNotice: "New" })), { bookingNotice: "New" });
-    assert.deepEqual(changedWords(with_({ bookingNotice: "New" })).map((f) => f.key), ["bookingNotice"]);
+    assert.deepEqual(onlyChangedWords(with_({ replyPromise: "New" })), { replyPromise: "New" });
+    assert.deepEqual(changedWords(with_({ replyPromise: "New" })).map((f) => f.key), ["replyPromise"]);
   });
 });
 
 describe("what cannot be saved", () => {
   it("refuses a blank, and names where the blank would be", () => {
-    const said = String(wordProblem(with_({ bookingNotice: "" })));
+    const said = String(wordProblem(with_({ replyPromise: "" })));
     assert.match(said, /cannot be empty/);
-    // Named by place — the booking page — so the owner knows where the
-    // blank would land, not just that one would.
-    assert.match(said, /booking page/, said);
+    // Named by place, so the owner knows where the blank would land, not just
+    // that one would.
+    assert.match(said, /after somebody presses send/, said);
   });
 
   it("refuses an address that is not an address, because mail would go nowhere", () => {
@@ -114,7 +114,8 @@ describe("what the old screen had saved", () => {
 describe("the screen describes each line", () => {
   it("gives every word a row, and every row a real word", () => {
     const onScreen = new Set(FIELDS.map((f) => f.key));
-    assert.deepEqual(WORD_KEYS.filter((k) => !onScreen.has(k)), [], "a word with no row is one nobody can change");
+    // bookingNotice retired with /book (20 November 2026); see below.
+    assert.deepEqual(WORD_KEYS.filter((k) => !onScreen.has(k) && k !== "bookingNotice"), [], "a word with no row is one nobody can change");
     const real = new Set<string>(WORD_KEYS);
     assert.deepEqual(FIELDS.filter((f) => !real.has(f.key)).map((f) => f.key), [], "a row for a word that does not exist");
   });
@@ -166,7 +167,10 @@ describe("nothing is editable and unread", () => {
     // and nobody could tell. A word on the screen that no page reads is a
     // promise the website does not keep.
     const used = wordsUsedInSource();
-    const unread = WORD_KEYS.filter((key) => !used.has(key));
+    // bookingNotice was the paragraph on /book, which is gone (20 November
+    // 2026); it is off the settings screen and kept only so old saved values
+    // still read.
+    const unread = WORD_KEYS.filter((key) => !used.has(key) && key !== "bookingNotice");
     assert.deepEqual(
       unread,
       [],

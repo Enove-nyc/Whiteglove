@@ -81,11 +81,10 @@ export default async function SampleItineraryPage({ params }: { params: Promise<
         <section aria-labelledby="book-heading" className="mt-8 rounded-2xl border border-[#E6DCC8] bg-white p-5">
           <h2 id="book-heading" className="text-lg font-semibold text-[var(--navy)]">Book this trip</h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            <Link href={`/book?type=flights&to=${encodeURIComponent(sample.airport)}`} className={linkButton}>Flights to {sample.city}</Link>
+            <Link href={`/?type=flights&to=${encodeURIComponent(sample.airport)}#search`} className={linkButton}>Flights to {sample.city}</Link>
             <a href={partner("hotel", sample.slug, { destination: sample.stayArea })} target="_blank" rel="noopener sponsored" className={linkButton}>Hotels in {sample.stayArea.split(",")[0]}</a>
             <a href={partner("activity", sample.slug, { destination: sample.city })} target="_blank" rel="noopener sponsored" className={linkButton}>Tours and tickets</a>
           </div>
-          <p className="mt-3 text-xs text-stone-600">Book with our travel partners. We may earn a commission.</p>
         </section>
 
         {stay ? (

@@ -174,7 +174,6 @@ export const WORD_GROUPS: Array<{ id: WordGroup; title: string; note: string }> 
     title: "Getting in touch",
     note: "Shown wherever the site asks somebody to write in. This is the address VISITORS ARE TOLD, and it is not the same setting as the inbox the site delivers its own forms to — that is CONTACT_INBOX, on the connections screen. Changing this one changes what is printed on the page; make sure somebody reads whatever you put here.",
   },
-  { id: "booking", title: "The booking page", note: "Under the heading on /book." },
   {
     id: "affiliate",
     title: "The commission disclosure",
@@ -211,8 +210,9 @@ export const FIELDS: WordField[] = [
     href: "/contact",
   },
   { key: "replyPromise", group: "contact", label: "What a form says once it is sent", where: "after somebody presses send", href: "/contact" },
-  { key: "bookingNotice", group: "booking", label: "The paragraph under the heading", where: "on the booking page", href: "/book", long: true },
-  { key: "affiliateDisclosure", group: "affiliate", label: "What is said beside a booking button", where: "beside every commercial action on the site", href: "/book", long: true },
+  // bookingNotice came off the screen with the /book page (20 November 2026):
+  // the search is on the home page now, with no paragraph under it.
+  { key: "affiliateDisclosure", group: "affiliate", label: "How the site is paid", where: "in the Terms, under How this site is paid", href: "/terms", long: true },
 ];
 
 /** Which words are no longer the ones the site ships with. */
