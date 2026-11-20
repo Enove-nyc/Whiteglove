@@ -1,3 +1,5 @@
+import { aiKeys } from "@/lib/ai-keys";
+
 /**
  * Multilingual itineraries — the same three providers packing-ai.ts,
  * itinerary-optimization-ai.ts and smart-import.ts use (Gemini, then
@@ -135,9 +137,9 @@ async function askOpenAI(key: string, text: string): Promise<string | null> {
  */
 export async function translateFields(language: string, fields: TranslationField[]): Promise<Map<string, string> | null> {
   if (fields.length === 0) return new Map();
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
-  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  // Free Gemini for everybody; the paid services only for the owner in his
+  // admin (lib/ai-keys.ts).
+  const { gemini: geminiKey, anthropic: anthropicKey, openai: openaiKey } = await aiKeys();
   const text = prompt(language, fields.slice(0, 200));
 
   try {

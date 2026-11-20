@@ -1,3 +1,5 @@
+import { aiKeys } from "@/lib/ai-keys";
+
 /**
  * Generating a packing list for a trip — the same three providers Smart
  * Import and the assistant use (Gemini, then Anthropic, then OpenAI,
@@ -153,9 +155,9 @@ export async function suggestPackingList(input: {
   endDate?: string;
   stops: string[];
 }): Promise<PackingSuggestion[] | null> {
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
-  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  // Free Gemini for everybody; the paid services only for the owner in his
+  // admin (lib/ai-keys.ts).
+  const { gemini: geminiKey, anthropic: anthropicKey, openai: openaiKey } = await aiKeys();
   const prompt = userPrompt(input);
 
   try {

@@ -1,3 +1,5 @@
+import { aiKeys } from "@/lib/ai-keys";
+
 /**
  * AI itinerary optimization — the same three providers packing-ai.ts and
  * smart-import.ts use (Gemini, then Anthropic, then OpenAI, whichever keys
@@ -133,9 +135,9 @@ async function askOpenAI(key: string, prompt: string): Promise<string | null> {
  * simply couldn't be checked right now.
  */
 export async function suggestItineraryOptimizations(daySummary: string): Promise<string[] | null> {
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
-  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  // Free Gemini for everybody; the paid services only for the owner in his
+  // admin (lib/ai-keys.ts).
+  const { gemini: geminiKey, anthropic: anthropicKey, openai: openaiKey } = await aiKeys();
 
   try {
     let raw: string | null = null;

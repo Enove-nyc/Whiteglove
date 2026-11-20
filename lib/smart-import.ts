@@ -3,6 +3,7 @@ import "server-only";
 import { emptySmartImportResult, type SmartImportResult } from "@/data/smart-import";
 import { parseModelJson } from "@/lib/smart-import-parse";
 import type { ImportFile } from "@/data/smart-import-files";
+import { aiKeys } from "@/lib/ai-keys";
 
 /**
  * Turning a pasted confirmation, or an uploaded confirmation PDF, into
@@ -161,9 +162,9 @@ async function askOpenAI(key: string, input: Provider): Promise<string | null> {
  * the caller can say "could not read that" without a special error path.
  */
 export async function extractSmartImport(input: { text?: string; file?: ImportFile }): Promise<SmartImportResult> {
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
-  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  // Free Gemini for everybody; the paid services only for the owner in his
+  // admin (lib/ai-keys.ts).
+  const { gemini: geminiKey, anthropic: anthropicKey, openai: openaiKey } = await aiKeys();
 
   const text = input.text?.slice(0, 12_000);
   const isPdf = input.file?.mediaType === "application/pdf";

@@ -27,6 +27,8 @@ export const PUBLIC_PAGE_PREFIXES = [
   "/travel-insurance",
   "/sample-itinerary",
   "/sample-itineraries",
+  // The general travel assistant, on free Gemini (owner, 20 November 2026).
+  "/assistant",
   "/packing",
   "/optimize",
   "/translate",

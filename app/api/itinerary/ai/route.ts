@@ -12,6 +12,7 @@ import { brandFromRequestHeaders, BRAND_NAME, type SiteBrand } from "@/lib/site-
 import { vacationDestinations } from "@/data/vacation-destinations";
 import { bulkDestinations } from "@/data/destinations-bulk";
 import { cityGuides } from "@/data/destinations-detailed";
+import { aiKeys } from "@/lib/ai-keys";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -276,10 +277,16 @@ const ASSISTANT_LIMIT = { limit: 12, windowSeconds: 60 };
  * Refusing here reads as "busy", not "you have done something wrong", because
  * from the visitor's side that is what it is.
  */
+// KEPT INSIDE GEMINI'S FREE ALLOWANCE (owner, 20 November 2026: the public
+// gets free Gemini only). Flash's free tier answers a couple of hundred
+// requests a day, shared with the site's other AI features, so the public
+// ceiling sits below it. The owner, signed in to the admin, is not counted.
 const ASSISTANT_CEILING = [
-  { key: "assistant:all:minute", limit: 90, windowSeconds: 60 },
-  { key: "assistant:all:day", limit: 2000, windowSeconds: 86_400 },
+  { key: "assistant:all:minute", limit: 10, windowSeconds: 60 },
+  { key: "assistant:all:day", limit: 200, windowSeconds: 86_400 },
 ];
+/** Per visitor, per day, on top of the per-minute limit. */
+const ASSISTANT_DAILY = { limit: 30, windowSeconds: 86_400 };
 const BUSY = "The assistant is busy right now. Please try again in a few minutes.";
 
 export async function POST(request: NextRequest) {
@@ -323,9 +330,20 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // The owner in his admin is not held to the public's free-tier ceilings.
+  const ownerInAdmin = (await aiKeys()).paidAllowed;
+  if (!ownerInAdmin) {
+    const today = await rateLimit(`assistant-day:${who}`, ASSISTANT_DAILY);
+    if (!today.ok) {
+      return NextResponse.json(
+        { available: false, reason: "You have asked a lot today. The assistant will be back for you tomorrow." },
+        { status: 429, headers: { ...limitHeaders, "retry-after": String(Math.max(1, today.retryAfter)) } },
+      );
+    }
+  }
   // The ceiling, checked after the per-visitor limit so a single script is
   // stopped by its own bucket before it can spend anybody else's headroom.
-  for (const ceiling of ASSISTANT_CEILING) {
+  for (const ceiling of ownerInAdmin ? [] : ASSISTANT_CEILING) {
     const room = await rateLimit(ceiling.key, ceiling);
     if (!room.ok) {
       console.warn("[assistant] site-wide ceiling reached", ceiling.key, `retry in ${room.retryAfter}s`);
@@ -343,9 +361,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
-  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  // Free Gemini for everybody; the paid services only for the owner in his
+  // admin (lib/ai-keys.ts).
+  const { gemini: geminiKey, anthropic: anthropicKey, openai: openaiKey } = await aiKeys();
   if (!geminiKey && !anthropicKey && !openaiKey) {
     // WHAT THE VISITOR READS, NOT WHAT THE OWNER HAS TO DO. This used to name
     // the environment variables to set — fine when the assistant lived behind
