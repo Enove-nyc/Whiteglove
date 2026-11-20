@@ -95,7 +95,7 @@ const COMPONENTS = walk("components", (path) => path.endsWith(".tsx")).filter(
  * explained the four checking labels on every page of the site and no walk
  * over .tsx files would ever have seen it.
  */
-const COPY_DATA = ["lib/beta-notice.ts", "data/site-words.ts", "lib/trust-status.ts"];
+const COPY_DATA = ["data/site-words.ts", "lib/trust-status.ts"];
 const FILES = [...PAGES, ...COMPONENTS, ...COPY_DATA];
 const AGENTS_MD = readFileSync("AGENTS.md", "utf8");
 
@@ -115,7 +115,7 @@ describe("what the customer-facing pages may say", () => {
     const norm = (path: string) => path.replace(/\\/g, "/");
     assert.ok(PAGES.some((path) => norm(path) === "app/page.tsx"));
     assert.ok(COMPONENTS.some((path) => norm(path) === "components/Footer.tsx"));
-    assert.ok(FILES.some((path) => norm(path) === "lib/beta-notice.ts"));
+    assert.ok(FILES.some((path) => norm(path) === "data/site-words.ts"));
   });
 
   it("EXPOSES NO INTERNAL WORKFLOW OR CONTENT STATUS", () => {
@@ -154,12 +154,11 @@ describe("the rules are written down where the next person reads them", () => {
     assert.match(AGENTS, /Do not make blanket payment promises/);
   });
 
-  it("KEEPS THE UNDER-PRODUCTION BANNER, which the rules say may not be removed", () => {
-    // "The banner may be polished, but not deleted or hidden."
-    assert.match(AGENTS, /under-production banner/);
-    const layout = readFileSync("app/layout.tsx", "utf8");
-    assert.match(layout, /NewSiteNotice/, "the site-wide notice is no longer rendered");
-    assert.ok(readFileSync("components/NewSiteNotice.tsx", "utf8").length > 500);
+  it("HAS NO SITE-WIDE POPUP, which the owner took off", () => {
+    // The "Before you travel" popup was the under-production banner the rules
+    // kept until the owner asked; he asked on 20 November 2026.
+    assert.match(AGENTS, /Before you travel/);
+    assert.doesNotMatch(readFileSync("app/layout.tsx", "utf8"), /NewSiteNotice/);
   });
 
   it("OFFERS PERSONAL ASSISTANCE NOWHERE AT ALL, which the rules also say", () => {

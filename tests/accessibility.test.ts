@@ -249,16 +249,6 @@ describe("dialogs", () => {
     }
   });
 
-  it("makes the travel notice a real dialog when it is a popup", () => {
-    // Same bar as every other modal on the site: labelled, modal, Escape,
-    // focus trap. A fixed overlay that skips any of those is worse than the
-    // old strip.
-    const notice = readFileSync("components/NewSiteNotice.tsx", "utf8");
-    assert.match(notice, /role="dialog"/);
-    assert.match(notice, /aria-modal="true"/);
-    assert.match(notice, /useFocusTrap/);
-    assert.match(notice, /aria-labelledby/);
-  });
 });
 
 /**

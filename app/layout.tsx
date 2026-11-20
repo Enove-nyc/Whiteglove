@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import NewSiteNotice from "@/components/NewSiteNotice";
 import SearchPalette from "@/components/SearchPalette";
 import SiteAssistant from "@/components/SiteAssistant";
 import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
@@ -14,7 +13,6 @@ import AppShellFlag from "@/components/AppShellFlag";
 import KosherSearchShell from "@/components/KosherSearchShell";
 import SiteTracker from "@/components/SiteTracker";
 import TravelpayoutsScript from "@/components/TravelpayoutsScript";
-import { getBetaNotice } from "@/lib/beta-notice-store";
 import { googleConfig } from "@/lib/google-signin";
 import { smsConfigured } from "@/lib/sms";
 import { siteOrigin } from "@/lib/seo";
@@ -85,13 +83,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Read here rather than in the notice, so the words come from the settings
-  // on the server and the browser is only deciding whether this visitor has
-  // already seen them.
   // Whether the self-service booking search is reachable by the public. Read
   // once here — cached, so it costs the prerendered pages nothing — and handed
   // to the client components that would otherwise have `/book` typed into them.
-  const [betaNotice, booking] = await Promise.all([getBetaNotice(), readBookingLink()]);
+  const booking = await readBookingLink();
   const googleAvailable = Boolean(googleConfig({ GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET }));
   const phoneSignupAvailable = smsConfigured();
   return (
@@ -102,10 +97,8 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         {/* First thing in the tab order, on every page. */}
         <a href="#main-content" className="wg-skip-link">Skip to content</a>
-        {/* "Check anything you are going to rely on." Once per visitor, never
-            over the admin or a sign-in box. A dismissible popup rather than a
-            strip that pushes the brand and the proposition down the page. */}
-        <NewSiteNotice notice={betaNotice} />
+        {/* The "Before you travel" popup came off at the owner's word
+            (20 November 2026). */}
         <SiteTracker />
         <TravelpayoutsScript />
         <RequiredFields />

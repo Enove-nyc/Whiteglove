@@ -20,8 +20,6 @@ import { describe, it } from "node:test";
  */
 
 const HOME = readFileSync("app/page.tsx", "utf8");
-const NOTICE = readFileSync("components/NewSiteNotice.tsx", "utf8");
-const LAYOUT = readFileSync("app/layout.tsx", "utf8");
 
 /**
  * The page with the comments and the Tailwind stripped out.
@@ -210,7 +208,7 @@ describe("the order of the page", () => {
     assert.doesNotMatch(points, /"Paid"/, "a starting point still claims to be paid work");
   });
 
-  it("LEAVES THE VERIFICATION CLAIM TO THE NOTICE", () => {
+  it("DOES NOT PUT THE VERIFICATION PARAGRAPH BACK ON THE FRONT PAGE", () => {
     // The one-sentence verification paragraph sat here as section eleven. The
     // site-wide notice already carries the door to /verification on every
     // page — the assertion lives in the notice block below — and a second
@@ -236,39 +234,3 @@ describe("the order of the page", () => {
   });
 });
 
-describe("the new-site notice", () => {
-  it("IS A DISMISSIBLE POPUP, not a page strip", () => {
-    // A strip under the top of every page pushed the brand down and read as
-    // chrome. The caution is a dialog: labelled, modal, escapable, and gone
-    // once per wording.
-    assert.match(NOTICE, /role="dialog"/);
-    assert.match(NOTICE, /aria-modal="true"/);
-    assert.match(NOTICE, /useFocusTrap/);
-    assert.match(NOTICE, /body\.style\.overflow/);
-  });
-
-  it("is dismissible, once per wording", () => {
-    assert.match(NOTICE, /DISMISS_KEY/);
-    assert.match(NOTICE, /notice\.version/);
-  });
-
-  it("OFFERS THE TWO ACTIONS THE NOTICE HAS TO CARRY", () => {
-    // Verification and Close — nothing else. The notice was cut to one line
-    // and two actions in the wording pass; a third button is it growing back.
-    assert.match(NOTICE, /href="\/verification"/);
-    assert.match(NOTICE, /onClick=\{close\}/);
-    assert.doesNotMatch(NOTICE, /feedbackLabel|feedbackHref/);
-  });
-
-  it("SHOWS EVERY LINE THE OWNER CAN EDIT", () => {
-    // The failure data/site-words.ts exists to end: a settings screen with a
-    // field on it that no page reads.
-    for (const field of ["heading", "body"]) {
-      assert.ok(NOTICE.includes(`notice.${field}`), `notice.${field} is editable and shown nowhere`);
-    }
-  });
-
-  it("is wired into the layout", () => {
-    assert.match(LAYOUT, /NewSiteNotice/);
-  });
-});

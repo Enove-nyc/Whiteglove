@@ -93,7 +93,7 @@ describe("everywhere else was already careful", () => {
   it("has no other unguarded store fetch in lib/", () => {
     // Checked once, so the next one added without a catch is caught here.
     // A fetch is guarded when there is a try before it inside its own function.
-    const files = ["admin-content", "site-analytics", "border-store", "site-words-store", "beta-notice-store", "planner-settings-store", "account-store", "hechsher-store", "directory-store"];
+    const files = ["admin-content", "site-analytics", "border-store", "site-words-store", "planner-settings-store", "account-store", "hechsher-store", "directory-store"];
     const unguarded: string[] = [];
     for (const name of files) {
       let src: string;

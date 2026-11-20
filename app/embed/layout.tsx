@@ -8,7 +8,7 @@ export const metadata: Metadata = {
  * Bare chrome for partner widgets iframed from /book.
  *
  * Root layout still wraps this (notice, skip link). The notice is skipped for
- * /embed in lib/beta-notice.ts so a full-screen popup does not sit inside the
+ * /embed (the old site popup, now removed) so nothing full-screen sits inside the
  * search form.
  */
 export default function EmbedLayout({ children }: { children: React.ReactNode }) {
