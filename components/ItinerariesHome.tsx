@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import TravelSearch, { type TravelSearchPrefill, type TravelTab } from "@/components/TravelSearch";
+import TravelSearch, { type TravelSearchPrefill } from "@/components/TravelSearch";
+import { TRAVEL_TABS, type TravelTab } from "@/lib/travel-tabs";
 import HomeStartItinerary from "@/components/HomeStartItinerary";
 import { Icon, type IconName } from "@/components/icons/Icon";
 
@@ -79,15 +80,40 @@ export default function ItinerariesHome({
         </div>
 
         <div id="search" className="relative z-10 order-2 mx-auto w-full max-w-6xl scroll-mt-24 px-3 sm:px-6 lg:-mt-32">
-          <TravelSearch key={initialTab ?? "flights"} initialTab={initialTab} prefill={prefill} />
-          {/* After booking: the confirmation fills the trip in (Smart Import). */}
-          <p className="mt-3 inline-block rounded-lg bg-white/90 px-3 py-1.5 text-sm leading-6 text-stone-700 lg:shadow-sm">
-            <strong className="text-[var(--navy)]">Booked?</strong> Paste or forward the confirmation email into{" "}
-            <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">your itinerary</Link>
-            {" "}and the flight or hotel is added for you.
-          </p>
+          {/* A computer gets the box with every "Find travel" search as a tab. */}
+          <div className="hidden md:block">
+            <TravelSearch key={initialTab ?? "flights"} initialTab={initialTab} prefill={prefill} />
+          </div>
+          {/* A PHONE GETS A LIST, NOT TABS (owner, 20 November 2026): each one
+              opens its own page with just that search. */}
+          <nav aria-label="Find travel" className="md:hidden">
+            <ul className="grid grid-cols-2 gap-2">
+              {TRAVEL_TABS.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    href={item.href}
+                    className="flex min-h-14 items-center gap-2.5 rounded-xl border border-[#E6DCC8] bg-white px-3 text-[15px] font-semibold text-[var(--navy)] shadow-[0_4px_14px_rgba(21,32,74,.06)]"
+                  >
+                    <Icon name={item.icon} className="h-5 w-5 shrink-0 text-[var(--gold-ink)]" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </section>
+
+      {/* After booking: the confirmation fills the trip in (Smart Import).
+          Below the hero, on the plain background (owner, 20 November 2026: over
+          the photograph it could not be read). */}
+      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+        <p className="text-sm leading-6 text-stone-700">
+          <strong className="text-[var(--navy)]">Booked?</strong> Paste or forward the confirmation email into{" "}
+          <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">your itinerary</Link>
+          {" "}and the flight or hotel is added for you.
+        </p>
+      </div>
 
       {/* ASK THE AI, ON THE FRONT PAGE (owner, 20 November 2026: "why can I
           still not see the AI anywhere?"). A plain form: it opens /assistant

@@ -167,6 +167,10 @@ export function publicPaths(
 ): SitemapEntry[] {
   const entries: SitemapEntry[] = [...STATIC_PAGES];
 
+  // One search per page (app/find/[slug]).
+  for (const slug of ["flights", "hotels", "car-rentals", "things-to-do"]) {
+    entries.push({ path: `/find/${slug}`, priority: 0.6, changeFrequency: "monthly" });
+  }
   // The public sample itineraries (data/sample-itineraries.ts).
   for (const sample of SAMPLE_ITINERARIES) {
     entries.push({ path: `/sample-itineraries/${sample.slug}`, priority: 0.7, changeFrequency: "monthly" });

@@ -28,6 +28,17 @@ export function isClosedKosherHost(headers: HeaderBag): boolean {
   return closed(bare(headers.get("x-forwarded-host"))) || closed(bare(headers.get("host")));
 }
 
+/**
+ * True for any subdomain of the closed domain other than www — admin. and the
+ * rest (owner, 20 November 2026: "keep www, delete the rest"). They answer
+ * "not found" rather than the notice, so nothing but the one address looks
+ * like a page; the owner deletes their DNS records in Cloudflare.
+ */
+export function isRetiredKosherSubdomain(headers: HeaderBag): boolean {
+  const retired = (host: string) => host.endsWith(".whiteglovekoshertravel.com") && !BRAND_HOSTS.kosher.includes(host);
+  return retired(bare(headers.get("x-forwarded-host"))) || retired(bare(headers.get("host")));
+}
+
 export type ClosureAction = { kind: "notice" };
 
 /**

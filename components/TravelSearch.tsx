@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import AirportAutocomplete from "@/components/AirportAutocomplete";
 import DateField from "@/components/DateField";
-import { Icon, type IconName } from "@/components/icons/Icon";
+import { Icon } from "@/components/icons/Icon";
 
 /**
  * THE booking search — the same box on the home page and on /book.
@@ -25,21 +25,17 @@ import { Icon, type IconName } from "@/components/icons/Icon";
  * choices (one way, travellers, rooms) sit in one short row above them.
  */
 
-export type TravelTab = "flights" | "hotels" | "cars" | "activities";
-
-/** `short` is what fits four across on a phone without being cut off. */
-export const TRAVEL_TABS: Array<{ id: TravelTab; label: string; short: string; icon: IconName }> = [
-  { id: "flights", label: "Flights", short: "Flights", icon: "plane" },
-  { id: "hotels", label: "Hotels", short: "Hotels", icon: "bed" },
-  { id: "cars", label: "Car rentals", short: "Cars", icon: "car" },
-  { id: "activities", label: "Things to do", short: "Activities", icon: "ticket" },
-];
+export { TRAVEL_TABS, type TravelTab } from "@/lib/travel-tabs";
+import { TRAVEL_TABS, type TravelTab } from "@/lib/travel-tabs";
 
 const SUBMIT: Record<TravelTab, string> = {
   flights: "Search flights",
   hotels: "Search hotels",
   cars: "Search cars",
   activities: "Find things to do",
+  transfers: "Find a transfer",
+  esim: "Find an eSIM",
+  insurance: "Get a quote",
 };
 
 export type TravelSearchPrefill = {
@@ -90,6 +86,16 @@ export type TravelSearchState = {
 };
 export function travelSearchHref(s: TravelSearchState): { href: string } | { error: string } {
   const query = new URLSearchParams({ page: s.page, placement: s.placement });
+  // The three partner pages from "Find travel": the partner opens with the
+  // place (and dates) where its link can carry them.
+  if (s.tab === "transfers" || s.tab === "esim" || s.tab === "insurance") {
+    if (!s.where.trim()) return { error: s.tab === "esim" ? "Enter the country you are visiting." : s.tab === "transfers" ? "Enter the airport or place you need a transfer from." : "Enter where you are travelling." };
+    query.set("product", s.tab === "transfers" ? "transfer" : s.tab);
+    query.set("destination", s.where.trim());
+    if (s.tab !== "esim" && s.start) query.set("in", s.start);
+    if (s.tab === "insurance" && s.end) query.set("out", s.end);
+    return { href: `/go?${query.toString()}` };
+  }
   if (s.tab === "activities") {
     if (!s.where.trim()) return { error: "Enter a city or place." };
     query.set("product", "activity");
@@ -135,6 +141,7 @@ export default function TravelSearch({
   placement = "home-search",
   page = "/",
   rememberTab = false,
+  lockedTab = false,
 }: {
   initialTab?: TravelTab;
   prefill?: TravelSearchPrefill;
@@ -143,6 +150,8 @@ export default function TravelSearch({
   page?: string;
   /** Keep the open tab in the address (?type=), so a reload lands on it. */
   rememberTab?: boolean;
+  /** One search only, no tabs — the page for a single product (/find/…). */
+  lockedTab?: boolean;
 }) {
   const id = useId();
   const [tab, setTab] = useState<TravelTab>(initialTab);
@@ -177,8 +186,33 @@ export default function TravelSearch({
     window.open(result.href, "_blank", "noopener");
   }
 
-  const dateLabels = tab === "hotels" ? ["Check in", "Check out"] : tab === "cars" ? ["Pick-up date", "Drop-off date"] : ["Depart", "Return"];
-  const showsEnd = !(tab === "flights" && oneWay);
+  const dateLabels =
+    tab === "hotels" ? ["Check in", "Check out"]
+      : tab === "cars" ? ["Pick-up date", "Drop-off date"]
+        : tab === "insurance" ? ["Trip starts", "Trip ends"]
+          : tab === "transfers" ? ["Date", ""]
+            : ["Depart", "Return"];
+  const showsDates = tab !== "activities" && tab !== "esim";
+  const showsEnd = showsDates && tab !== "transfers" && !(tab === "flights" && oneWay);
+  // Width of the place box on a wide screen, so each tab fills one row.
+  const whereSpan =
+    tab === "activities" || tab === "esim" ? "md:col-span-9"
+      : tab === "cars" ? "md:col-span-3"
+        : tab === "transfers" ? "md:col-span-8"
+          : "md:col-span-6";
+  const whereLabel =
+    tab === "hotels" ? "Destination"
+      : tab === "cars" ? "Pick-up location"
+        : tab === "transfers" ? "From (airport, station or address)"
+          : tab === "esim" ? "Country you are visiting"
+            : tab === "insurance" ? "Destination"
+              : "Where";
+  const wherePlaceholder =
+    tab === "activities" ? "City or place, e.g. Lake Como"
+      : tab === "cars" ? "City or airport"
+        : tab === "transfers" ? "e.g. Rome Fiumicino airport"
+          : tab === "esim" || tab === "insurance" ? "Country"
+            : "City or town";
 
   // ONE HEIGHT FOR EVERY TAB (owner, 20 November 2026: switching tabs "shakes
   // the whole page"). Things to do is a line shorter than the rest, so the box
@@ -187,9 +221,9 @@ export default function TravelSearch({
     <form
       onSubmit={submit}
       aria-label="Search travel partners"
-      className="min-h-[372px] rounded-2xl border border-[#E6DCC8] bg-white p-3 shadow-[0_18px_50px_rgba(21,32,74,.14)] sm:min-h-[388px] sm:p-6 md:min-h-[246px]"
+      className={`rounded-2xl border border-[#E6DCC8] bg-white p-4 shadow-[0_18px_50px_rgba(21,32,74,.14)] sm:p-6 ${lockedTab ? "" : "md:min-h-[246px]"}`}
     >
-      <div role="tablist" aria-label="What are you booking?" className="-mx-1 grid grid-cols-4 border-b border-[#E6DCC8] px-1 sm:flex sm:gap-1">
+      {!lockedTab && <div role="tablist" aria-label="What are you booking?" className="-mx-1 flex flex-wrap gap-x-1 border-b border-[#E6DCC8] px-1">
         {TRAVEL_TABS.map((item) => (
           <button
             key={item.id}
@@ -198,18 +232,17 @@ export default function TravelSearch({
             aria-selected={tab === item.id}
             aria-label={item.label}
             onClick={() => choose(item.id)}
-            className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-none border-b-2 px-1 text-[12px] leading-tight transition sm:flex-row sm:gap-2 sm:px-4 sm:text-[15px] ${
+            className={`flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-none border-b-2 px-3 text-[15px] leading-tight transition ${
               tab === item.id
                 ? "border-[var(--gold)] font-semibold text-[var(--navy)]"
                 : "border-transparent text-stone-600 hover:text-[var(--navy)]"
             }`}
           >
             <Icon name={item.icon} className="h-5 w-5 shrink-0" />
-            <span className="max-w-full truncate sm:hidden">{item.short}</span>
-            <span className="hidden sm:inline">{item.label}</span>
+            <span>{item.label}</span>
           </button>
         ))}
-      </div>
+      </div>}
 
       {/* The extra choices, in one short row, so the fields below stay two to a row. */}
       {tab === "flights" || tab === "hotels" ? (
@@ -266,9 +299,9 @@ export default function TravelSearch({
             </div>
           </>
         ) : (
-          <div className={`col-span-2 min-w-0 ${tab === "activities" ? "md:col-span-9" : tab === "cars" && !dropoffSame ? "md:col-span-3" : "md:col-span-6"}`}>
+          <div className={`col-span-2 min-w-0 ${whereSpan}`}>
             <label className={label} htmlFor={`${id}-where`}>
-              {tab === "hotels" ? "Destination" : tab === "cars" ? "Pick-up location" : "Where"}
+              {whereLabel}
             </label>
             <span className="relative mt-1 block">
               <Icon name="map-pin" className={pin} />
@@ -281,7 +314,7 @@ export default function TravelSearch({
                 mode="city"
                 value={where}
                 onChange={(value) => setWhere(value)}
-                placeholder={tab === "activities" ? "City or place, e.g. Lake Como" : tab === "cars" ? "City or airport" : "City or town"}
+                placeholder={wherePlaceholder}
                 className={withPin}
               />
             </span>
@@ -299,26 +332,29 @@ export default function TravelSearch({
           </div>
         )}
 
-        {tab === "cars" && !dropoffSame ? (
+        {/* ALWAYS THERE, greyed while "same place" is ticked (owner, 20
+            November 2026: ticking the box "still moves the whole page"). The
+            box no longer appears and disappears, so nothing below it moves. */}
+        {tab === "cars" ? (
           <div className="col-span-2 min-w-0 md:col-span-3">
-            <label className={label} htmlFor={`${id}-dropoff`}>Drop-off location</label>
-            <span className="relative mt-1 block">
+            <label className={`${label} ${dropoffSame ? "text-stone-400" : ""}`} htmlFor={`${id}-dropoff`}>Drop-off location</label>
+            <span className={`relative mt-1 block ${dropoffSame ? "pointer-events-none opacity-50" : ""}`} aria-disabled={dropoffSame || undefined}>
               <Icon name="map-pin" className={pin} />
               <AddressAutocomplete
                 id={`${id}-dropoff`}
                 mode="city"
-                value={dropoff}
+                value={dropoffSame ? "" : dropoff}
                 onChange={(value) => setDropoff(value)}
-                placeholder="City or airport"
+                placeholder={dropoffSame ? "Same as pick-up" : "City or airport"}
                 className={withPin}
               />
             </span>
           </div>
         ) : null}
 
-        {tab !== "activities" ? (
+        {showsDates ? (
           <>
-            <div className={`min-w-0 md:col-span-2 ${showsEnd ? "" : "col-span-2 md:col-span-4"}`}>
+            <div className={`min-w-0 md:col-span-2 ${showsEnd ? "" : tab === "transfers" ? "col-span-2" : "col-span-2 md:col-span-4"}`}>
               <span className={label}>{dateLabels[0]}</span>
               <div className="mt-1"><DateField value={start} onChange={setStart} ariaLabel={dateLabels[0]} className={box} /></div>
             </div>
@@ -331,7 +367,7 @@ export default function TravelSearch({
           </>
         ) : null}
 
-        <div className={`col-span-2 ${tab === "activities" ? "md:col-span-3" : "md:col-span-2"}`}>
+        <div className={`col-span-2 ${tab === "activities" || tab === "esim" ? "md:col-span-3" : "md:col-span-2"}`}>
           {/* An empty label's height, so the button lines up with the boxes on a wide screen. */}
           <span aria-hidden="true" className={`${label} hidden md:block`}>&nbsp;</span>
           <button
@@ -343,9 +379,6 @@ export default function TravelSearch({
         </div>
       </div>
 
-      {tab === "cars" && !dropoffSame ? (
-        <p className="mt-2 text-xs leading-5 text-stone-600">The partner&rsquo;s page opens at your pick-up place; confirm the drop-off there.</p>
-      ) : null}
       {error ? <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
     </form>
   );

@@ -19,7 +19,7 @@ import { guideAnswer } from "@/lib/guide-paths";
 import { isDirectoryApi, isPublicPage } from "@/lib/public-access";
 import { BRAND_HEADER, brandFromRequestHeaders } from "@/lib/site-brand-core";
 import { KOSHER_SITE_PREFIX, kosherSiteRoute, refererPath } from "@/lib/kosher-site-archive";
-import { CLOSURE_HTML, closureAction, isClosedKosherHost } from "@/lib/kosher-closure";
+import { CLOSURE_HTML, closureAction, isClosedKosherHost, isRetiredKosherSubdomain } from "@/lib/kosher-closure";
 import { isAndroidAppHeaders } from "@/lib/android-app";
 import { isMainstreamPath } from "@/lib/mainstream-property-check";
 import { prefersMarkdown } from "@/lib/markdown-request";
@@ -271,6 +271,10 @@ export async function middleware(request: NextRequest) {
   // of it, every address is the one closing notice — no admin, no API, no
   // forwarding (the owner's word, 18 November 2026). See lib/kosher-closure.ts.
   if (isClosedKosherHost(request.headers)) {
+    // Every subdomain but www is gone (owner, 20 November 2026).
+    if (isRetiredKosherSubdomain(request.headers)) {
+      return new NextResponse("Not found", { status: 404, headers: { "content-type": "text/plain; charset=utf-8", "x-robots-tag": "noindex" } });
+    }
     const action = closureAction(pathname);
     if (action.kind === "notice") {
       return new NextResponse(CLOSURE_HTML, {

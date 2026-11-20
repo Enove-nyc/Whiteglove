@@ -23,16 +23,27 @@ describe("the home page and the Book page render the same search", () => {
     assert.match(readFileSync("app/book/page.tsx", "utf8"), /permanentRedirect/);
     assert.throws(() => readFileSync("components/HomeTravelSearch.tsx", "utf8"));
   });
-  it("keeps one height for every tab, so switching does not move the page", () => {
-    assert.match(readFileSync("components/TravelSearch.tsx", "utf8"), /min-h-\[372px\][^"]*sm:min-h-\[388px\][^"]*md:min-h-\[246px\]/);
+  it("keeps one height for every tab on a computer, so switching does not move the page", () => {
+    assert.match(readFileSync("components/TravelSearch.tsx", "utf8"), /lockedTab \? "" : "md:min-h-\[246px\]"/);
+  });
+  it("carries everything under Find travel, each with its own page", async () => {
+    const { TRAVEL_TABS } = await import("@/components/TravelSearch");
+    assert.deepEqual(TRAVEL_TABS.map((t) => t.label), ["Flights", "Hotels", "Car rentals", "Things to do", "Transfers", "eSIMs", "Travel insurance"]);
+    for (const t of TRAVEL_TABS) assert.match(t.href, /^\/(find\/|transfers$|esim$|travel-insurance$)/);
+  });
+  it("on a phone shows a list of those pages instead of tabs", () => {
+    const home = readFileSync("components/ItinerariesHome.tsx", "utf8");
+    assert.match(home, /<div className="hidden md:block">\s*<TravelSearch/);
+    assert.match(home, /<nav aria-label="Find travel" className="md:hidden">/);
   });
   it("offers a dropdown of real places for the destination", () => {
     assert.match(readFileSync("components/TravelSearch.tsx", "utf8"), /<AddressAutocomplete[\s\S]*?mode="city"/);
   });
-  it("puts the search before the photograph on a phone", () => {
+  it("puts the search before the photograph on a phone, and the Booked line off the photo", () => {
     const home = readFileSync("components/ItinerariesHome.tsx", "utf8");
-    assert.match(home, /order-2[^"]*">\s*<TravelSearch/);
+    assert.match(home, /id="search" className="relative z-10 order-2/);
     assert.match(home, /<figure className="relative order-3/);
+    assert.ok(home.indexOf("<strong className=\"text-[var(--navy)]\">Booked?</strong>") > home.indexOf("</section>"), "Booked line sits after the hero, not over the photo");
   });
 });
 
@@ -48,11 +59,13 @@ describe("car rental: pick-up, then is drop-off the same place", () => {
     assert.ok("error" in r && /dropping the car off/.test(r.error));
     assert.equal(params(travelSearchHref({ ...base, dropoffSame: false, dropoff: "Milan" })).get("dropoff"), "Milan");
   });
-  it("the box starts ticked, and the drop-off field only appears when it is not", () => {
+  it("the box starts ticked, and the drop-off field is always there, greyed until unticked", () => {
+    // Owner, 20 November 2026: unticking it "still moves the whole page".
     const ui = readFileSync("components/TravelSearch.tsx", "utf8");
     assert.match(ui, /useState\(true\)/);
     assert.match(ui, /Drop off at the same place/);
-    assert.match(ui, /tab === "cars" && !dropoffSame \? \(/);
+    assert.doesNotMatch(ui, /tab === "cars" && !dropoffSame \? \(/);
+    assert.match(ui, /placeholder=\{dropoffSame \? "Same as pick-up" : "City or airport"\}/);
   });
   it("a partner whose address carries a return place gets it", () => {
     const kayak = TRAVEL_PARTNERS.find((p) => p.key === "kayak")!;
@@ -135,5 +148,30 @@ describe("booked already? the confirmation fills the trip", () => {
     const BUILDER = readFileSync("components/ItineraryBuilder.tsx", "utf8");
     assert.match(BUILDER, /get\("import"\) !== "1"/);
     assert.match(BUILDER, /\/login\?next=\$\{encodeURIComponent\("\/itinerary\?import=1"\)\}/);
+  });
+});
+
+describe("transfers, eSIMs and insurance from the same box", () => {
+  const base = { page: "/", placement: "home-search", from: "", to: "", dropoffSame: true, dropoff: "", oneWay: false, adults: 2, rooms: 1, start: "2027-05-01", end: "2027-05-08" };
+  it("sends each to its partner with the place", () => {
+    const q = (tab: "transfers" | "esim" | "insurance") => new URL((travelSearchHref({ ...base, tab, where: "Italy" }) as { href: string }).href, "https://x").searchParams;
+    assert.equal(q("transfers").get("product"), "transfer");
+    assert.equal(q("esim").get("product"), "esim");
+    assert.equal(q("esim").get("in"), null);
+    assert.equal(q("insurance").get("product"), "insurance");
+    assert.equal(q("insurance").get("out"), "2027-05-08");
+    assert.ok("error" in travelSearchHref({ ...base, tab: "esim", where: "" }));
+  });
+});
+
+describe("the closed Kosher Travel domain", () => {
+  it("answers only on its own address and www; every other subdomain is not found", async () => {
+    const { isRetiredKosherSubdomain } = await import("@/lib/kosher-closure");
+    const h = (host: string) => ({ get: (n: string) => (n === "host" ? host : null) });
+    assert.equal(isRetiredKosherSubdomain(h("admin.whiteglovekoshertravel.com")), true);
+    assert.equal(isRetiredKosherSubdomain(h("anything.whiteglovekoshertravel.com")), true);
+    assert.equal(isRetiredKosherSubdomain(h("www.whiteglovekoshertravel.com")), false);
+    assert.equal(isRetiredKosherSubdomain(h("whiteglovekoshertravel.com")), false);
+    assert.match(readFileSync("middleware.ts", "utf8"), /isRetiredKosherSubdomain\(request\.headers\)/);
   });
 });

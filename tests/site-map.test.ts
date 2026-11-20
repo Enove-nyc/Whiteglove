@@ -152,7 +152,9 @@ describe("the sitemap and the pages agree about indexing", () => {
           // Shabbos in one place — one [destination] route answering twenty.
           !entry.path.startsWith("/shabbos/") &&
           // The sample itineraries — one [slug] route answering each.
-          !entry.path.startsWith("/sample-itineraries/"),
+          !entry.path.startsWith("/sample-itineraries/") &&
+          // One search per page — one [slug] route answering each.
+          !entry.path.startsWith("/find/"),
       )
       // A city guide is served by the [city] route rather than a folder.
       .filter((entry) => !cityGuides.some((g) => `/${g.slug}` === entry.path))

@@ -231,11 +231,11 @@ export function itinerariesBookingCategoryFor(booking: BookingLink): NavCategory
   const book = ITINERARIES_CATEGORIES.find((category) => category.label === "Find travel")!;
   const bookingLinks: NavLink[] = booking.searchIsPublic
     ? [
-        { label: "Flights", href: `${BOOKING_SEARCH_HREF}?type=flights` },
-        { label: "Hotels", href: `${BOOKING_SEARCH_HREF}?type=hotels` },
-        { label: "Car rentals", href: `${BOOKING_SEARCH_HREF}?type=cars` },
-        // GetYourGuide through the owner's Stay22 desk (app/go).
-        { label: "Things to do", href: "/go?product=activity&page=%2F&placement=nav" },
+        // Each search on its own page (owner, 20 November 2026).
+        { label: "Flights", href: "/find/flights" },
+        { label: "Hotels", href: "/find/hotels" },
+        { label: "Car rentals", href: "/find/car-rentals" },
+        { label: "Things to do", href: "/find/things-to-do" },
       ]
     : [{ label: booking.label, href: booking.href, description: booking.description }];
   // The partner pages from the old Travel menu, back at the owner's word

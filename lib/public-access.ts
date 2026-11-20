@@ -27,6 +27,8 @@ export const PUBLIC_PAGE_PREFIXES = [
   "/travel-insurance",
   "/sample-itinerary",
   "/sample-itineraries",
+  // One search per page, for phones and the Find travel menu (20 November 2026).
+  "/find",
   // The general travel assistant, on free Gemini (owner, 20 November 2026).
   "/assistant",
   "/packing",

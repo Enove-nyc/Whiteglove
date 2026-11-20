@@ -42,7 +42,7 @@ export const EDGE_CACHED_PATHS = new Set([
   "/travel-insurance",
 ]);
 /** Pages under these prefixes are cached too (the public sample itineraries). */
-export const EDGE_CACHED_PREFIXES = ["/sample-itineraries"];
+export const EDGE_CACHED_PREFIXES = ["/sample-itineraries", "/find"];
 
 type RequestLike = { method: string; url: string; headers: { get(name: string): string | null } };
 
