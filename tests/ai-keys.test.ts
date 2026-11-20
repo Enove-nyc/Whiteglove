@@ -34,3 +34,11 @@ describe("the travel assistant is public, inside Gemini's free allowance", () =>
     assert.match(route, /ownerInAdmin \? \[\] : ASSISTANT_CEILING/);
   });
 });
+
+describe("a public answer never touches the private directory", () => {
+  it("searches the directory only for the owner, or if it is ever public again", () => {
+    const route = readFileSync("app/api/itinerary/ai/route.ts", "utf8");
+    assert.match(route, /publishedContext\(clean\(body\?\.question \|\| "", 500\), DIRECTORY_SEARCH_IS_PUBLIC \|\| ownerInAdmin\)/);
+    assert.match(route, /if \(!question \|\| !includeDirectory\) return \{ block: "", sources: \[\] \};/);
+  });
+});
