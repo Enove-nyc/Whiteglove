@@ -341,17 +341,13 @@ export function routeFor(product: TravelProduct, config: AffiliateConfig, wanted
   const choices = travelpayoutsFirstChoices(product, config, wanted);
 
   if (product === "hotel") {
-    // TRAVELPAYOUTS FIRST (owner, 19 November 2026: "use one for most of the
-    // things"). Stay22 only when Travelpayouts cannot take the hotel search.
-    if (travelpayoutsEarns(config.travelpayouts, "hotels", choices)) {
-      return {
-        product,
-        destinationLabel: "Booking.com",
-        network: "travelpayouts",
-        earns: true,
-        note: "Hotel searches go through Travelpayouts, then on to Booking.com.",
-      };
-    }
+    // STAY22 FIRST FOR HOTELS (20 November 2026). Travelpayouts runs flights,
+    // cars, tours and the extras, but for hotels Stay22 sends each visitor to
+    // whichever booking site (Booking.com, Expedia, Hotels.com, Vrbo…) is most
+    // likely to convert, at rates it negotiates — more than Booking.com alone
+    // through Travelpayouts. Travelpayouts takes hotels only when Stay22 is not
+    // configured. destinationUrl builds the Stay22 link first too, so the two
+    // can never disagree.
     if (stay22IsOn(config.stay22)) {
       return {
         product,
@@ -587,11 +583,39 @@ function destinationUrl(request: AffiliateRequest, config: AffiliateConfig): str
     // partner URL, no place in the request — opens what the owner pasted,
     // unchanged. See lib/stay22.ts for why this is the only landing product
     // that can do it, and for what has NOT been verified about it.
-    if (request.product === "activity") return tourSearchUrl(where, url) ?? url;
+    if (request.product === "activity") return tourSearchUrl(where, url) ?? travelpayoutsTourSearchUrl(where, url) ?? url;
     return url;
   }
 
   return null;
+}
+
+/**
+ * A Travelpayouts tours link that carries the place (20 November 2026).
+ *
+ * Tours are meant to go through Travelpayouts (GetYourGuide, or Viator), and a
+ * Travelpayouts link pasted from its dashboard wraps the partner's address in
+ * ?u=. When that address is GetYourGuide or Viator, it is swapped for that
+ * site's own search for the place the visitor asked about, so "Things to do in
+ * Rome" opens Rome rather than the front page. Anything else — a short tp.st
+ * link, another programme — is opened exactly as pasted.
+ */
+export function travelpayoutsTourSearchUrl(where: string, pasted: string): string | null {
+  const place = where.trim();
+  if (!place) return null;
+  let link: URL;
+  try { link = new URL(pasted.trim()); } catch { return null; }
+  const inner = link.searchParams.get("u");
+  if (!inner) return null;
+  let target: URL;
+  try { target = new URL(inner); } catch { return null; }
+  const host = target.hostname.replace(/^www\./, "");
+  let search: string | null = null;
+  if (host === "getyourguide.com" || host.endsWith(".getyourguide.com")) search = `https://www.getyourguide.com/s/?q=${encodeURIComponent(place)}`;
+  if (host === "viator.com" || host.endsWith(".viator.com")) search = `https://www.viator.com/searchResults/all?text=${encodeURIComponent(place)}`;
+  if (!search) return null;
+  link.searchParams.set("u", search);
+  return link.toString();
 }
 
 export type ResolvedLink = {

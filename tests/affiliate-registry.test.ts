@@ -160,13 +160,14 @@ describe("who pays and where the traveler lands", () => {
     assert.doesNotMatch(resolved!.url, /tp\.media/);
   });
 
-  it("prefers Travelpayouts for hotels, and Stay22 only when Travelpayouts cannot take them", () => {
-    // Travelpayouts first (owner, 19 November 2026: "use one for most of the things").
-    assert.equal(routeFor("hotel", CONNECTED).destinationLabel, "Booking.com");
-    assert.match(resolveLink(HOTEL, CONNECTED)!.url, /^https:\/\/tp\.media\//);
-    const withoutTravelpayouts: AffiliateConfig = { ...CONNECTED, travelpayouts: { ...CONNECTED.travelpayouts, hotels: "" } };
-    assert.equal(routeFor("hotel", withoutTravelpayouts).destinationLabel, "Stay22");
-    assert.match(resolveLink(HOTEL, withoutTravelpayouts)!.url, /^https:\/\/www\.stay22\.com\/allez\//);
+  it("prefers Stay22 for hotels, and Travelpayouts only when Stay22 is not set up", () => {
+    // 20 November 2026: Stay22 routes each hotel search to whichever booking
+    // site converts best; Travelpayouts runs the other products.
+    assert.equal(routeFor("hotel", CONNECTED).destinationLabel, "Stay22");
+    assert.match(resolveLink(HOTEL, CONNECTED)!.url, /^https:\/\/www\.stay22\.com\/allez\//);
+    const withoutStay22: AffiliateConfig = { ...CONNECTED, stay22: NO_STAY22 };
+    assert.equal(routeFor("hotel", withoutStay22).destinationLabel, "Booking.com");
+    assert.match(resolveLink(HOTEL, withoutStay22)!.url, /^https:\/\/tp\.media\//);
   });
 
   it("WRAPS THE SEARCH RATHER THAN REPLACING IT", () => {
@@ -178,8 +179,7 @@ describe("who pays and where the traveler lands", () => {
   });
 
   it("carries the dates and the travelers the partner accepts", () => {
-    const wrapped = new URL(resolveLink(HOTEL, CONNECTED)!.url);
-    const url = new URL(wrapped.searchParams.get("u") ?? "");
+    const url = new URL(resolveLink(HOTEL, CONNECTED)!.url);
     assert.equal(url.searchParams.get("checkin"), "2026-07-05");
     assert.equal(url.searchParams.get("checkout"), "2026-07-12");
     assert.equal(url.searchParams.get("adults"), "2");
@@ -389,5 +389,24 @@ describe("the disclosure", () => {
     const component = readFileSync("components/BookingLink.tsx", "utf8");
     assert.match(component, /href=\{goHref\(request\)\}/);
     assert.doesNotMatch(component, /resolved\.url/);
+  });
+});
+
+describe("tours through Travelpayouts carry the place", () => {
+  it("swaps a wrapped GetYourGuide or Viator address for that site's search", async () => {
+    const { travelpayoutsTourSearchUrl } = await import("@/lib/affiliate/partners");
+    const gyg = "https://tp.media/r?marker=123456&trs=1&p=1&u=https%3A%2F%2Fwww.getyourguide.com%2F&campaign_id=108";
+    const out = new URL(travelpayoutsTourSearchUrl("Rome", gyg)!);
+    assert.equal(out.searchParams.get("marker"), "123456");
+    assert.equal(out.searchParams.get("campaign_id"), "108");
+    assert.equal(out.searchParams.get("u"), "https://www.getyourguide.com/s/?q=Rome");
+    const viator = "https://tp.media/r?marker=1&u=https%3A%2F%2Fwww.viator.com%2F";
+    assert.match(new URL(travelpayoutsTourSearchUrl("Lake Como", viator)!).searchParams.get("u")!, /viator\.com\/searchResults\/all\?text=Lake%20Como/);
+  });
+  it("leaves anything else exactly as pasted", async () => {
+    const { travelpayoutsTourSearchUrl } = await import("@/lib/affiliate/partners");
+    assert.equal(travelpayoutsTourSearchUrl("Rome", "https://tp.st/abc123"), null);
+    assert.equal(travelpayoutsTourSearchUrl("Rome", "https://tp.media/r?u=https%3A%2F%2Fwww.airalo.com%2F"), null);
+    assert.equal(travelpayoutsTourSearchUrl("", "https://tp.media/r?u=https%3A%2F%2Fwww.getyourguide.com%2F"), null);
   });
 });
