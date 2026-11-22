@@ -22,6 +22,7 @@ import { KOSHER_SITE_PREFIX, kosherSiteRoute, refererPath } from "@/lib/kosher-s
 import { CLOSURE_HTML, closureAction, isClosedKosherHost, isRetiredKosherSubdomain } from "@/lib/kosher-closure";
 import { isAndroidAppHeaders } from "@/lib/android-app";
 import { isMainstreamPath } from "@/lib/mainstream-property-check";
+import { getBookingOrigin, hasBookingAccess } from "@/lib/private-booking";
 import { prefersMarkdown } from "@/lib/markdown-request";
 
 /*
@@ -266,6 +267,36 @@ async function isOwner(request: NextRequest): Promise<boolean> {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const bookingOrigin = getBookingOrigin(request.headers);
+  if (bookingOrigin) {
+    const login = "/private-booking/access";
+    const api = pathname.startsWith("/api/");
+    const headers = { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex, nofollow" };
+    const accessible = [login, "/api/private-booking/access"].includes(pathname);
+    const bookingRoutes = [
+      "/", "/private-booking", "/private-booking/review", "/api/airports",
+      "/api/flights/search", "/api/flights/book", "/api/duffel/component-key", "/api/private-booking/assistant",
+    ];
+    if (!accessible && !bookingRoutes.includes(pathname)) {
+      return new NextResponse("Not found", { status: 404, headers });
+    }
+    if (!accessible && !(await hasBookingAccess(request))) {
+      if (api) return NextResponse.json({ message: "Please unlock booking first." }, { status: 401, headers });
+      return NextResponse.redirect(new URL(login, bookingOrigin), { headers });
+    }
+    if (pathname === "/") {
+      const target = request.nextUrl.clone();
+      target.pathname = "/private-booking";
+      return NextResponse.rewrite(target, { headers });
+    }
+    return NextResponse.next({ headers });
+  }
+
+  if (pathname.startsWith("/private-booking") || pathname.startsWith("/api/private-booking")) {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
 
   // White Glove Kosher Travel has closed. On its own domain, and any subdomain
   // of it, every address is the one closing notice — no admin, no API, no
