@@ -5,39 +5,9 @@ import { BRAND_DOMAIN, BRAND_NAME, type SiteBrand } from "@/lib/site-brand-core"
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
-// Resend's shared sandbox sender. It can ONLY deliver to the email address that
-// owns the Resend account — anything else is rejected. A real domain sender
-// (e.g. no-reply@whiteglovekoshertravel.com, once the domain is verified in
-// Resend) is required for mail to reach the edits@/contact@ inboxes.
-//
-// Named "White Glove", not either brand's full name: this is the fallback for
-// EVERY email this file sends, from both brands, whenever RESEND_FROM_EMAIL is
-// unset — so it cannot say "Kosher Travel" without telling an itineraries
-// visitor's inbox which other site this one is.
-import { currentBrand } from "@/lib/site-brand";
-
+const SITE_EMAIL_SENDER = "White Glove Itineraries <no-reply@whitegloveitineraries.com>";
 const TEST_SENDER = "White Glove <onboarding@resend.dev>";
 
-/**
- * WHO THE MAIL COMES FROM, PER BRAND.
- *
- * One RESEND_FROM_EMAIL served both domains, which meant every email the
- * itineraries site sent — a sign-in code, a trip note, a reminder to somebody
- * else's client — arrived from an address at whiteglovekoshertravel.com. The
- * recipient never asked about kosher travel, has quite possibly never heard of
- * it, and is now being told there is another business behind the one they
- * signed up to. It also fails the plainest test of a brand: the name on the
- * envelope is not the name on the door.
- *
- * So the itineraries brand gets its own sender when one is configured, and
- * falls back to the shared one when it is not — a deployment that has not
- * verified a second domain in Resend keeps working exactly as it did rather
- * than silently sending nothing.
- *
- * THE BRAND COMES FROM THE REQUEST BEING SERVED. Mail sent from a background
- * job has no request and reads as kosher, which is the same default the rest
- * of the site uses and the right one: those jobs are the guide's.
- */
 /**
  * The domain part of a sender, or "" when there is not one.
  * Handles both `Name <a@b.com>` and a bare address.
@@ -73,29 +43,6 @@ export function senderMismatch(brand: SiteBrand, sender: string): string | null 
   const want = BRAND_DOMAIN[brand];
   if (from === want || from.endsWith(`.${want}`)) return null;
   return `${BRAND_NAME[brand]} is sending from ${from}, which is not ${want}.`;
-}
-
-export function senderForBrand(brand: SiteBrand): string {
-  // NAMED ONE BY ONE, never process.env[someVariable]. Next substitutes these
-  // by literal name at build time, so an indexed read is not the same thing —
-  // and tests/connections.test.ts, which reads the source to make sure no
-  // variable is invisible, cannot see one either. The first draft of this used
-  // an index and the guard caught it.
-  const shared = process.env.RESEND_FROM_EMAIL?.trim();
-  const own = brand === "itineraries" ? process.env.RESEND_FROM_EMAIL_ITINERARIES?.trim() : shared;
-  const sender = own || shared || TEST_SENDER;
-  const wrong = senderMismatch(brand, sender);
-  // Said once per send, in the log the owner can read, rather than swallowed.
-  // Not thrown: an email that arrives from the wrong name is still better than
-  // one that never arrives, and the admin's email panel carries the same
-  // warning where it will actually be seen.
-  if (wrong) console.error("[email] sender does not match the brand:", wrong);
-  return sender;
-}
-
-function resendConfig(from?: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  return apiKey ? { apiKey, from: from || process.env.RESEND_FROM_EMAIL?.trim() || TEST_SENDER } : null;
 }
 
 // Where notifications are delivered.
@@ -154,11 +101,8 @@ export function lastEmailFailure() {
 
 /** POST one email to Resend and report exactly what happened. Never throws. */
 async function postResend(payload: Record<string, unknown>, to: string, kind = "email"): Promise<SendResult> {
-  // Resolved here rather than threaded through twenty call sites: currentBrand
-  // reads the request being served and answers "kosher" when there is no
-  // request at all, so a background job keeps the behaviour it always had.
-  const config = resendConfig(senderForBrand(await currentBrand()));
-  if (!config) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     const result: SendResult = { ok: false, error: "RESEND_API_KEY is not set on the deployment, so no email can be sent." };
     lastFailure = { ...result, at: new Date().toISOString(), to };
     console.error("[email]", result.error);
@@ -168,18 +112,15 @@ async function postResend(payload: Record<string, unknown>, to: string, kind = "
   try {
     const response = await fetch(RESEND_API_URL, {
       method: "POST",
-      headers: { Authorization: `Bearer ${config.apiKey}`, "Content-Type": "application/json" },
-      // `from` inside the payload wins, so a caller can send as a different
-      // address on the same verified domain. Nobody but the blast does; see
-      // the note on senderForBlast below for why it is only that one.
-      body: JSON.stringify({ from: config.from, ...payload }),
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, from: SITE_EMAIL_SENDER }),
     });
     const bodyText = await response.text().catch(() => "");
     if (!response.ok) {
       // Resend rejects the sandbox sender for any recipient other than the
       // account owner — the most common reason owner mail never arrives.
       const sandboxRestricted =
-        config.from === TEST_SENDER && /own email address|testing emails|not verified|verify a domain/i.test(bodyText);
+        /own email address|testing emails|not verified|verify a domain/i.test(bodyText);
       const result: SendResult = {
         ok: false,
         status: response.status,
@@ -211,25 +152,12 @@ async function postResend(payload: Record<string, unknown>, to: string, kind = "
 /** Current delivery configuration, for the admin diagnostic panel. */
 export async function emailConfigStatus() {
   const apiKeySet = Boolean(process.env.RESEND_API_KEY);
-  const from = process.env.RESEND_FROM_EMAIL?.trim() || TEST_SENDER;
-  // What each front door actually sends as, and whether it belongs to that
-  // door — the one failure nothing else on this screen would mention.
-  const senderKosher = senderForBrand("kosher");
-  const senderItineraries = senderForBrand("itineraries");
-  const mismatch = [senderMismatch("kosher", senderKosher), senderMismatch("itineraries", senderItineraries)].filter(
-    (line): line is string => Boolean(line),
-  );
   const edits = editsInbox();
   const contactKosher = contactInbox("kosher");
   const contactItineraries = contactInbox("itineraries");
   return {
     apiKeySet,
-    from,
-    usingTestSender: from === TEST_SENDER,
-    senderKosher,
-    senderItineraries,
-    /** Empty when each brand sends from its own domain. */
-    senderMismatch: mismatch,
+    from: SITE_EMAIL_SENDER,
     editsInbox: edits,
     contactInboxKosher: contactKosher,
     contactInboxItineraries: contactItineraries,
@@ -703,7 +631,6 @@ export async function sendHealthChangeEmail(
 
 export async function sendBookingPasswordResetEmail(email: string, link: string) {
   const result = await postResend({
-    from: "White Glove Itineraries <no-reply@whitegloveitineraries.com>",
     to: email,
     subject: "Reset your White Glove booking password",
     html: `<p><a href="${escapeHtml(link)}">Reset booking password</a></p><p>This link expires in 30 minutes. If you did not request it, you can ignore this email.</p>`,
@@ -785,36 +712,10 @@ export async function sendSubscriptionNotification(note: SubscriptionNotificatio
  * request, but every one of them would then need the same unsubscribe link —
  * which is to say, the wrong one for 49 of them. The caller paces these.
  */
-/**
- * Who an update comes FROM, which is not who a verification code comes from.
- *
- * TWO KINDS OF MAIL, TWO ADDRESSES, AND THE DIFFERENCE MATTERS. A six-digit
- * code is from `noreply@` because there is nothing to reply to and a reply
- * would sit unread in a mailbox nobody opens. An update about a Pesach
- * programme is a letter: somebody WILL reply to it, to ask whether the hotel
- * takes a family of six, and that reply has to land somewhere a person reads.
- *
- * So the blast sender is its own setting. Blank means "whatever the rest of the
- * site uses", which is what it was before this existed.
- *
- * IT MUST BE ON THE VERIFIED DOMAIN. Resend will only send as a domain it has
- * been shown control of; anything else is refused at the API, or worse,
- * accepted and dropped into spam by the receiving server for failing DKIM. The
- * check lives in lib/email-blast.ts so the admin screen can refuse it at the
- * moment it is typed rather than at the moment 200 messages fail.
- */
-export function blastSender(configured: string): string {
-  const clean = configured.trim();
-  if (!clean) return resendConfig()?.from ?? "";
-  // Named, so it arrives as "White Glove Kosher Travel" rather than a bare
-  // address — which is most of the difference between a letter and a circular.
-  return clean.includes("<") ? clean : `White Glove Kosher Travel <${clean}>`;
-}
-
 export async function sendBlastEmail(input: {
   to: string;
   subject: string;
-  /** The address to send as. Blank uses the site-wide sender. */
+  /** Optional reply inbox for this blast. */
   from?: string;
   /** The message, as blocks. A pre-blocks draft still renders through blocksOf. */
   blast: { blocks?: BlastBlock[]; body?: string; subject?: string };
@@ -830,15 +731,12 @@ export async function sendBlastEmail(input: {
     becauseLine: input.becauseLine,
     unsubscribeUrl: input.unsubscribeUrl,
   };
-  const from = blastSender(input.from ?? "");
+  const replyTo = input.from?.trim();
   return postResend(
     {
       to: input.to,
       subject: input.subject,
-      ...(from ? { from } : {}),
-      // Replies go back to the same address it came from. An update somebody
-      // answers is the point of sending it from a mailbox rather than noreply@.
-      ...(from ? { reply_to: from } : {}),
+      ...(replyTo ? { reply_to: replyTo } : {}),
       headers: {
         // One-click unsubscribe, the way the mail clients want it offered.
         "List-Unsubscribe": `<${input.unsubscribeUrl}>`,
