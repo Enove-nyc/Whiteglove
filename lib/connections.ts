@@ -130,13 +130,13 @@ export const CONNECTIONS: Connection[] = [
     where: "Google Cloud console, under APIs & Services → Credentials → OAuth client ID (Web application). The redirect URI must be exactly https://www.whiteglovekoshertravel.com/api/account/google/callback — with the www. Google matches it as text, so the version without the www is a different address to it and sign-in fails with redirect_uri_mismatch. Keeping both listed costs nothing and covers an older deployment.",
   },
   {
-    vars: ["RESEND_API_KEY", "RESEND_FROM_EMAIL", "RESEND_FROM_EMAIL_ITINERARIES"],
+    vars: ["RESEND_API_KEY"],
     what: "Sending email.",
     without:
       "No verification code, no password reset, no share invitation, and nothing in your inbox when somebody writes in or leaves a note on a trip. Accounts still work; the emails simply never arrive. Messages sent from the website are still kept and counted on the dashboard — that half does not depend on this.",
     weight: "feature",
     where:
-      "Resend. RESEND_FROM_EMAIL_ITINERARIES is optional and only matters on the deployment serving whitegloveitineraries.com: without it that site's email arrives from the kosher travel address, which tells a recipient who never asked about kosher travel that there is another business behind the one they signed up to. It needs its own verified domain in Resend. Left unset, everything still sends — from the shared address.",
+      "Resend sends site email from White Glove Itineraries <no-reply@whitegloveitineraries.com>. The domain must be verified for sending in Resend.",
   },
   {
     vars: ["INBOUND_EMAIL_SECRET", "INBOUND_EMAIL_DOMAIN"],
