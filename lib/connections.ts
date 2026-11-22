@@ -218,6 +218,27 @@ export const CONNECTIONS: Connection[] = [
     where: "Duffel dashboard (duffel.com → Developers). A placeholder value is not a token.",
   },
   {
+    vars: ["PRIVATE_BOOKING_PASSWORD", "PRIVATE_BOOKING_SIGNING_SECRET"],
+    what: "The password on the private flight booking site, book.whitegloveitineraries.com, and the key that signs its sign-in cookie.",
+    without: "The booking site stays locked for everybody: every page asks for the password and none is accepted. The signing key falls back to the site's own session key.",
+    weight: "feature",
+    where: "Cloudflare → Workers → whiteglove → Settings → Variables and Secrets, as secrets. The password needs at least 20 characters; the signing key at least 24, and different from the password.",
+  },
+  {
+    vars: ["PRIVATE_BOOKING_PREVIEW_HOST"],
+    what: "A workers.dev preview address allowed to act as the booking site, for testing an undeployed version.",
+    without: "Nothing on the live site. A preview version cannot be tested as the booking site.",
+    weight: "nicety",
+    where: "Set only on a preview version, with wrangler versions upload --var. Never on production.",
+  },
+  {
+    vars: ["DUFFEL_ASSISTANT_LIVE"],
+    what: "Turns on Duffel's Assistant on the booking confirmation page with a live token.",
+    without: "With a live token the Assistant stays off; with a test token it is on.",
+    weight: "nicety",
+    where: "Set to 1 in Cloudflare only after Duffel has approved the account for production Assistant use.",
+  },
+  {
     vars: ["AERODATABOX_API_KEY"],
     what: "Live flight schedules — looking a flight up by its number.",
     without: "A traveller typing a flight number gets nothing back and has to enter the times by hand.",
