@@ -221,3 +221,12 @@ describe("flights: multi-city", () => {
     for (const leg of ["JFK-FCO", "FCO-ATH", "ATH-JFK"]) assert.ok(url.includes(leg), `${leg} reaches Kayak: ${url}`);
   });
 });
+
+describe("a short page keeps its footer at the bottom of the screen", () => {
+  it("lays main out as a column that pushes the footer down", () => {
+    const css = readFileSync("app/globals.css", "utf8");
+    assert.match(css, /main\.min-h-screen:has\(> footer:last-child\) \{\s*display: flex;\s*flex-direction: column;/);
+    assert.match(css, /> footer:last-child \{\s*margin-top: auto;/);
+    assert.match(readFileSync("components/FindTravelPage.tsx", "utf8"), /max-w-6xl/);
+  });
+});

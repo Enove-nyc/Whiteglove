@@ -14,7 +14,7 @@ export default function FindTravelPage({ tab, title, path, prefill }: { tab: Tra
   return (
     <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar />
-      <section className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
+      <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.8rem,5vw,2.6rem)] leading-tight text-[var(--navy-deep)]">{title}</h1>
         <div className="mt-5">
           <TravelSearch initialTab={tab} prefill={prefill} lockedTab page={path} placement={`find-${path.split("/").pop()}`} />

@@ -987,3 +987,22 @@ html[data-app-shell] nav[aria-label="Main"]::before {
 @media (max-height: 700px) {
   .wg-list-toolbar { position: static; }
 }
+
+/* THE FOOTER SITS AT THE BOTTOM OF THE SCREEN ON A SHORT PAGE (owner,
+   22 November 2026: on a large screen it floated halfway up, with empty space
+   under it). A page's <main> is at least a screen tall and ends with the
+   footer; as a flex column the footer's auto top margin takes up the slack.
+   `:where()` keeps the width rule at zero specificity, so any width a child
+   sets itself still wins — it only stops a centred, max-width section from
+   shrinking to its content inside the column. */
+main.min-h-screen:has(> footer:last-child) {
+  display: flex;
+  flex-direction: column;
+}
+:where(main.min-h-screen:has(> footer:last-child)) > * {
+  width: 100%;
+  flex-shrink: 0;
+}
+main.min-h-screen:has(> footer:last-child) > footer:last-child {
+  margin-top: auto;
+}
