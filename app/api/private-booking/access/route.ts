@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { rateLimit, tooManyMessage } from "@/lib/rate-limit";
 import {
   BOOKING_COOKIE, BOOKING_SESSION_SECONDS, bookingPassword,
   bookingSignature, equalBookingValue, getBookingOrigin,
@@ -8,6 +9,14 @@ export async function POST(request: NextRequest) {
   const origin = getBookingOrigin(request.headers);
   if (!origin || request.headers.get("origin") !== origin) {
     return new NextResponse(null, { status: 403 });
+  }
+  const address = request.headers.get("cf-connecting-ip") ?? "unknown";
+  const attempts = await rateLimit(`private-booking-access:${address}`, { limit: 8, windowSeconds: 900 });
+  if (!attempts.ok) {
+    return new NextResponse(tooManyMessage(attempts.retryAfter), {
+      status: 429,
+      headers: { "Retry-After": String(attempts.retryAfter), "Cache-Control": "no-store" },
+    });
   }
   const password = bookingPassword();
   const form = await request.formData().catch(() => null);

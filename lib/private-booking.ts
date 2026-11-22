@@ -1,6 +1,7 @@
 export const BOOKING_HOST = "book.whitegloveitineraries.com";
 export const BOOKING_ORIGIN = `https://${BOOKING_HOST}`;
 export const BOOKING_COOKIE = "__Host-wg-booking";
+export const BOOKING_PASSWORD_MIN_LENGTH = 12;
 export const BOOKING_SESSION_SECONDS = 12 * 60 * 60;
 
 type HeadersLike = { get(name: string): string | null };
@@ -30,7 +31,7 @@ export function bookingPreviewCanSearch(headers: HeadersLike) {
 
 export function bookingPassword() {
   const password = process.env.PRIVATE_BOOKING_PASSWORD;
-  return password && password.length >= 20 && signingSecret() ? password : null;
+  return password && password.length >= BOOKING_PASSWORD_MIN_LENGTH && signingSecret() ? password : null;
 }
 
 function signingSecret() {

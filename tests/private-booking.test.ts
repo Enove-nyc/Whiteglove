@@ -4,7 +4,7 @@ import { duffelRefusal } from "@/lib/duffel-guard";
 import { BOOKING_COOKIE, BOOKING_HOST, BOOKING_ORIGIN, bookingSignature, hasBookingAccess } from "@/lib/private-booking";
 
 test("invited sessions can book only on the booking hostname and only through opted-in endpoints", async (t) => {
-  const password = "test-password-for-invited-guests";
+  const password = "test-pass-12";
   t.mock.method(Date, "now", () => 1763760000000);
   const originalPassword = process.env.PRIVATE_BOOKING_PASSWORD;
   const originalSecret = process.env.PRIVATE_BOOKING_SIGNING_SECRET;
@@ -32,6 +32,9 @@ test("invited sessions can book only on the booking hostname and only through op
   assert.equal(await duffelRefusal(request(BOOKING_HOST), { privateBooking: true }), null);
   assert.equal((await duffelRefusal(request(BOOKING_HOST)))?.status, 404);
   assert.equal((await duffelRefusal(request(BOOKING_HOST, "https://example.org"), { privateBooking: true }))?.status, 403);
+
+  process.env.PRIVATE_BOOKING_PASSWORD = "short-pass";
+  assert.equal(await hasBookingAccess(request(BOOKING_HOST)), false);
 
   process.env.PRIVATE_BOOKING_PASSWORD = "a-different-long-booking-password";
   assert.equal(await hasBookingAccess(request(BOOKING_HOST)), false);
