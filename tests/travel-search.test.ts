@@ -175,3 +175,42 @@ describe("the closed Kosher Travel domain", () => {
     assert.match(readFileSync("middleware.ts", "utf8"), /isRetiredKosherSubdomain\(request\.headers\)/);
   });
 });
+
+describe("flights: multi-city", () => {
+  const future = (days: number) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+  const multi: TravelSearchState = {
+    ...base, tab: "flights", multi: true,
+    legs: [
+      { from: "New York (JFK)", to: "Rome (FCO)", date: future(40) },
+      { from: "Rome (FCO)", to: "Athens (ATH)", date: future(45) },
+      { from: "Athens (ATH)", to: "New York (JFK)", date: future(52) },
+    ],
+  };
+  it("sends every leg to Kayak, which takes a multi-city journey", () => {
+    const q = params(travelSearchHref(multi));
+    assert.equal(q.get("product"), "flight");
+    assert.equal(q.get("partner"), "kayak");
+    assert.equal(q.get("legs"), `JFK-FCO-${future(40)}_FCO-ATH-${future(45)}_ATH-JFK-${future(52)}`);
+  });
+  it("asks for two flights, both airports and a date on each, in date order", () => {
+    assert.ok("error" in travelSearchHref({ ...multi, legs: multi.legs!.slice(0, 1) }));
+    assert.ok("error" in travelSearchHref({ ...multi, legs: [multi.legs![0], { from: "Rome", to: "", date: future(45) }] }));
+    assert.ok("error" in travelSearchHref({ ...multi, legs: [multi.legs![1], multi.legs![0]] }));
+  });
+  it("arrives at Kayak with every leg, through the Stay22 Kayak link", async () => {
+    const { readAffiliateRequest } = await import("@/lib/affiliate/request");
+    const { resolveLink } = await import("@/lib/affiliate/partners");
+    const href = (travelSearchHref(multi) as { href: string }).href;
+    const request = readAffiliateRequest(new URL(href, "https://x").searchParams);
+    assert.ok(request);
+    const link = resolveLink(request, {
+      partners: { flights: "aviasales", cars: "economybookings" },
+      travelpayouts: { flights: "https://tp.media/r?marker=123456&trs=1&p=4114&u=https%3A%2F%2Fsearch.aviasales.com" },
+      stay22: { aid: "whiteglove", provider: "roam" },
+    });
+    assert.ok(link, "a link is built");
+    const url = decodeURIComponent(link.url);
+    assert.match(url, /kayak/);
+    for (const leg of ["JFK-FCO", "FCO-ATH", "ATH-JFK"]) assert.ok(url.includes(leg), `${leg} reaches Kayak: ${url}`);
+  });
+});

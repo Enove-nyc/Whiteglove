@@ -81,6 +81,9 @@ export type TravelSearchState = {
   start: string;
   end: string;
   oneWay: boolean;
+  /** A multi-city journey: two to six flights, in order. */
+  multi?: boolean;
+  legs?: Array<{ from: string; to: string; date: string }>;
   adults: number;
   rooms: number;
 };
@@ -100,6 +103,21 @@ export function travelSearchHref(s: TravelSearchState): { href: string } | { err
     if (!s.where.trim()) return { error: "Enter a city or place." };
     query.set("product", "activity");
     query.set("destination", s.where.trim());
+    return { href: `/go?${query.toString()}` };
+  }
+  if (s.tab === "flights" && s.multi) {
+    // MULTI-CITY (owner, 20 November 2026). Every leg needs both airports and
+    // a date. It goes to Kayak, which takes the whole journey (Aviasales takes
+    // one) and earns through the Stay22 Kayak wrap.
+    const legs = (s.legs ?? []).map((leg) => ({ from: airportCode(leg.from), to: airportCode(leg.to), date: leg.date }));
+    if (legs.length < 2) return { error: "Add at least two flights." };
+    const missing = legs.findIndex((leg) => !leg.from || !leg.to || !leg.date);
+    if (missing >= 0) return { error: `Flight ${missing + 1}: choose both airports from the list and a date.` };
+    if (legs.some((leg, i) => i > 0 && leg.date < legs[i - 1].date)) return { error: "Put the flights in date order." };
+    query.set("product", "flight");
+    query.set("partner", "kayak");
+    query.set("legs", legs.map((leg) => `${leg.from}-${leg.to}-${leg.date}`).join("_"));
+    query.set("adults", String(s.adults));
     return { href: `/go?${query.toString()}` };
   }
   if (s.tab === "flights") {
@@ -163,6 +181,13 @@ export default function TravelSearch({
   const [start, setStart] = useState(iso(prefill?.depart));
   const [end, setEnd] = useState(iso(prefill?.ret));
   const [oneWay, setOneWay] = useState(false);
+  const [multi, setMulti] = useState(false);
+  const [legs, setLegs] = useState<Array<{ from: string; to: string; date: string }>>([
+    { from: "", to: "", date: "" },
+    { from: "", to: "", date: "" },
+  ]);
+  const setLeg = (index: number, patch: Partial<{ from: string; to: string; date: string }>) =>
+    setLegs((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   const [adults, setAdults] = useState(2);
   const [rooms, setRooms] = useState(1);
   const [error, setError] = useState("");
@@ -180,7 +205,7 @@ export default function TravelSearch({
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    const result = travelSearchHref({ tab, page, placement, from, to, where, dropoffSame, dropoff, start, end, oneWay, adults, rooms });
+    const result = travelSearchHref({ tab, page, placement, from, to, where, dropoffSame, dropoff, start, end, oneWay, multi, legs, adults, rooms });
     if ("error" in result) return setError(result.error);
     setError("");
     window.open(result.href, "_blank", "noopener");
@@ -249,14 +274,18 @@ export default function TravelSearch({
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {tab === "flights" ? (
             <div role="radiogroup" aria-label="Trip type" className="inline-flex rounded-lg border border-[#D9D2C4] p-0.5">
-              {[{ v: false, t: "Return" }, { v: true, t: "One way" }].map((option) => (
+              {[
+                { t: "Return", on: !multi && !oneWay, pick: () => { setMulti(false); setOneWay(false); } },
+                { t: "One way", on: !multi && oneWay, pick: () => { setMulti(false); setOneWay(true); } },
+                { t: "Multi-city", on: multi, pick: () => { setMulti(true); setError(""); } },
+              ].map((option) => (
                 <button
                   key={option.t}
                   type="button"
                   role="radio"
-                  aria-checked={oneWay === option.v}
-                  onClick={() => setOneWay(option.v)}
-                  className={`min-h-10 rounded-md px-3 text-sm ${oneWay === option.v ? "bg-[var(--navy)] font-semibold text-white" : "text-[var(--ink)]"}`}
+                  aria-checked={option.on}
+                  onClick={option.pick}
+                  className={`min-h-10 rounded-md px-3 text-sm ${option.on ? "bg-[var(--navy)] font-semibold text-white" : "text-[var(--ink)]"}`}
                 >
                   {option.t}
                 </button>
@@ -280,6 +309,54 @@ export default function TravelSearch({
         </div>
       ) : null}
 
+      {tab === "flights" && multi ? (
+        <div className="mt-3 space-y-3">
+          {legs.map((leg, index) => (
+            <fieldset key={index} className="grid grid-cols-2 gap-x-2.5 gap-y-2 sm:gap-x-3 md:grid-cols-12 md:items-end">
+              <legend className="sr-only">Flight {index + 1}</legend>
+              <div className="min-w-0 md:col-span-4">
+                <span className={label}>Flight {index + 1} · From</span>
+                <div className="relative mt-1">
+                  <Icon name="map-pin" className={pin} />
+                  <AirportAutocomplete value={leg.from} onChange={(value) => setLeg(index, { from: value })} placeholder="Where from?" className={withPin} />
+                </div>
+              </div>
+              <div className="min-w-0 md:col-span-4">
+                <span className={label}>To</span>
+                <div className="relative mt-1">
+                  <Icon name="map-pin" className={pin} />
+                  <AirportAutocomplete value={leg.to} onChange={(value) => setLeg(index, { to: value })} placeholder="Where to?" className={withPin} />
+                </div>
+              </div>
+              <div className="min-w-0 md:col-span-3">
+                <span className={label}>Date</span>
+                <div className="mt-1"><DateField value={leg.date} onChange={(value) => setLeg(index, { date: value })} min={index > 0 ? legs[index - 1].date || undefined : undefined} ariaLabel={`Flight ${index + 1} date`} className={box} /></div>
+              </div>
+              <div className="flex min-w-0 items-end md:col-span-1">
+                {legs.length > 2 ? (
+                  <button type="button" onClick={() => setLegs((rows) => rows.filter((_, i) => i !== index))} className="min-h-12 px-2 text-sm text-stone-600 underline" aria-label={`Remove flight ${index + 1}`}>
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+            </fieldset>
+          ))}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {legs.length < 6 ? (
+              <button
+                type="button"
+                onClick={() => setLegs((rows) => [...rows, { from: rows[rows.length - 1]?.to ?? "", to: "", date: "" }])}
+                className="min-h-11 self-start rounded-lg border border-[#D9D2C4] px-4 text-sm font-semibold text-[var(--navy)]"
+              >
+                + Add another flight
+              </button>
+            ) : <span />}
+            <button type="submit" className="min-h-12 rounded-lg bg-[var(--navy)] px-6 text-[15px] font-semibold text-white transition hover:bg-[var(--navy-deep)]">
+              Search flights
+            </button>
+          </div>
+        </div>
+      ) : (
       <div className="mt-3 grid grid-cols-2 gap-x-2.5 gap-y-3 sm:gap-x-3 md:grid-cols-12 md:items-start">
         {tab === "flights" ? (
           <>
@@ -378,6 +455,7 @@ export default function TravelSearch({
           </button>
         </div>
       </div>
+      )}
 
       {error ? <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
     </form>
