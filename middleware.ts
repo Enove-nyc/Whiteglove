@@ -273,7 +273,8 @@ export async function middleware(request: NextRequest) {
     const login = "/private-booking/access";
     const api = pathname.startsWith("/api/");
     const headers = { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex, nofollow" };
-    const accessible = [login, "/api/private-booking/access"].includes(pathname);
+    const accessible = [login, "/api/private-booking/access", "/private-booking/reset",
+      "/api/private-booking/forgot", "/api/private-booking/reset"].includes(pathname);
     const bookingRoutes = [
       "/", "/private-booking", "/private-booking/review", "/api/airports",
       "/api/flights/search", "/api/flights/book", "/api/duffel/component-key", "/api/private-booking/assistant",

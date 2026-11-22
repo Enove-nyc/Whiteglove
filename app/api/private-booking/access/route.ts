@@ -1,8 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { recordFailedAttempt, tooManyAttempts } from "@/lib/access-attempts";
 import {
-  BOOKING_COOKIE, BOOKING_SESSION_SECONDS, bookingPassword,
-  bookingSignature, equalBookingValue, getBookingOrigin,
+  BOOKING_COOKIE, createBookingSession, getBookingOrigin,
 } from "@/lib/private-booking";
 
 export async function POST(request: NextRequest) {
@@ -15,19 +14,19 @@ export async function POST(request: NextRequest) {
   if (await tooManyAttempts(request, "booking")) {
     return NextResponse.redirect(new URL("/private-booking/access?locked=1", origin), 303);
   }
-  const password = bookingPassword();
   const form = await request.formData().catch(() => null);
   const submitted = form?.get("password");
-  if (!password || typeof submitted !== "string" || !equalBookingValue(submitted, password)) {
+  const session = typeof submitted === "string"
+    ? await createBookingSession(request.headers, submitted).catch(() => undefined)
+    : null;
+  if (session === undefined) return new NextResponse("Booking sign-in is temporarily unavailable.", { status: 503 });
+  if (!session) {
     await recordFailedAttempt(request, "booking");
     return NextResponse.redirect(new URL("/private-booking/access?invalid=1", origin), 303);
   }
-  const expires = Math.floor(Date.now() / 1000) + BOOKING_SESSION_SECONDS;
-  const signature = await bookingSignature(`access:${expires}:${password}`);
-  if (!signature) return new NextResponse(null, { status: 503 });
   const response = NextResponse.redirect(origin, 303);
-  response.cookies.set(BOOKING_COOKIE, `${expires}.${signature}`, {
-    httpOnly: true, secure: true, sameSite: "strict", path: "/", maxAge: BOOKING_SESSION_SECONDS,
+  response.cookies.set(BOOKING_COOKIE, session.value, {
+    httpOnly: true, secure: true, sameSite: "strict", path: "/", maxAge: session.maxAge,
   });
   return response;
 }

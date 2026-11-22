@@ -46,3 +46,59 @@ test("the booking password: 8 characters, 30 days unlocked, guessing limited —
     assert.match(route, /tooManyAttempts\(request, "booking"\)/);
     assert.match(route, /recordFailedAttempt\(request, "booking"\)/);
 });
+
+test("owner recovery is single-use and guest sessions end when the pass is replaced", async (t) => {
+  const {
+    createBookingResetToken, createBookingSession, createGuestPass, resetBookingPassword, validBookingResetToken,
+  } = await import("@/lib/private-booking");
+  const settings = {
+    OWNER_EMAIL: "owner@example.com",
+    PRIVATE_BOOKING_PASSWORD: "test-original-password",
+    PRIVATE_BOOKING_SIGNING_SECRET: "test-separate-signing-secret",
+    UPSTASH_REDIS_REST_URL: "https://redis.example.com",
+    UPSTASH_REDIS_REST_TOKEN: "test-local-only",
+  };
+  for (const [key, value] of Object.entries(settings)) {
+    const original = process.env[key];
+    process.env[key] = value;
+    t.after(() => {
+      if (original === undefined) delete process.env[key];
+      else process.env[key] = original;
+    });
+  }
+  const store = new Map<string, string>();
+  t.mock.method(globalThis, "fetch", async (_url: string, init: RequestInit) => {
+    const [command, arg, value, key, expected, replacement] = JSON.parse(String(init.body));
+    if (command === "GET") return Response.json({ result: store.get(arg) ?? null });
+    if (command === "SET") {
+      store.set(arg, value);
+      return Response.json({ result: "OK" });
+    }
+    assert.equal(command, "EVAL");
+    if ((store.get(key) ?? "") !== expected) return Response.json({ result: 0 });
+    store.set(key, replacement);
+    return Response.json({ result: 1 });
+  });
+
+  const headers = new Headers({ host: BOOKING_HOST });
+  const request = (value: string) => ({ headers, cookies: { get: () => ({ value }) } });
+  const ownerSession = await createBookingSession(headers, settings.PRIVATE_BOOKING_PASSWORD);
+  assert.ok(ownerSession);
+  const token = await createBookingResetToken();
+  assert.ok(token);
+  assert.equal(await validBookingResetToken(token), true);
+  assert.equal(await resetBookingPassword(token, "test-new-password"), true);
+  assert.equal(await validBookingResetToken(token), false);
+  assert.equal(await hasBookingAccess(request(ownerSession.value)), false);
+  assert.equal(await createBookingSession(headers, settings.PRIVATE_BOOKING_PASSWORD), null);
+  assert.ok(await createBookingSession(headers, "test-new-password"));
+
+  const guest = await createGuestPass(3600);
+  const guestSession = await createBookingSession(headers, guest.password);
+  assert.ok(guestSession);
+  assert.equal(guestSession.maxAge, 3600);
+  assert.equal(await hasBookingAccess(request(guestSession.value)), true);
+  await createGuestPass(86400);
+  assert.equal(await hasBookingAccess(request(guestSession.value)), false);
+  assert.equal(await createBookingSession(headers, guest.password), null);
+});
