@@ -43,7 +43,8 @@ async function redis<T>(path: string): Promise<T | null> {
  */
 function callerKey(request: { headers: { get(name: string): string | null } }, scope: string): string {
   const forwarded = request.headers.get("x-forwarded-for") || "";
-  const ip = forwarded.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
+  // On Cloudflare the visitor's address is cf-connecting-ip.
+  const ip = request.headers.get("cf-connecting-ip")?.trim() || forwarded.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
   return `white-glove:attempts:${scope}:${ip.replace(/[^a-zA-Z0-9.:_-]/g, "")}`;
 }
 

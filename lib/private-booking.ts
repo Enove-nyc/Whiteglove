@@ -1,7 +1,12 @@
 export const BOOKING_HOST = "book.whitegloveitineraries.com";
 export const BOOKING_ORIGIN = `https://${BOOKING_HOST}`;
 export const BOOKING_COOKIE = "__Host-wg-booking";
-export const BOOKING_SESSION_SECONDS = 12 * 60 * 60;
+// Unlocked for 30 days on a device, so the owner is not typing the password
+// every visit (owner, 22 November 2026). Changing the password in Cloudflare
+// signs every device out, because the cookie is signed over the password.
+export const BOOKING_SESSION_SECONDS = 30 * 24 * 60 * 60;
+/** Shortest password the gate accepts. Guessing is limited to 8 tries per 15 minutes. */
+export const BOOKING_PASSWORD_MIN = 8;
 
 type HeadersLike = { get(name: string): string | null };
 type BookingRequest = {
@@ -30,7 +35,7 @@ export function bookingPreviewCanSearch(headers: HeadersLike) {
 
 export function bookingPassword() {
   const password = process.env.PRIVATE_BOOKING_PASSWORD;
-  return password && password.length >= 20 && signingSecret() ? password : null;
+  return password && password.length >= BOOKING_PASSWORD_MIN && signingSecret() ? password : null;
 }
 
 function signingSecret() {

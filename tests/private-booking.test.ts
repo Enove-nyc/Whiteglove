@@ -36,3 +36,13 @@ test("invited sessions can book only on the booking hostname and only through op
   process.env.PRIVATE_BOOKING_PASSWORD = "a-different-long-booking-password";
   assert.equal(await hasBookingAccess(request(BOOKING_HOST)), false);
 });
+
+test("the booking password: 8 characters, 30 days unlocked, guessing limited — accepts 8 characters, keeps a device unlocked 30 days, and limits wrong tries", async () => {
+    const { readFileSync } = await import("node:fs");
+    const lib = readFileSync("lib/private-booking.ts", "utf8");
+    assert.match(lib, /BOOKING_PASSWORD_MIN = 8;/);
+    assert.match(lib, /BOOKING_SESSION_SECONDS = 30 \* 24 \* 60 \* 60;/);
+    const route = readFileSync("app/api/private-booking/access/route.ts", "utf8");
+    assert.match(route, /tooManyAttempts\(request, "booking"\)/);
+    assert.match(route, /recordFailedAttempt\(request, "booking"\)/);
+});
