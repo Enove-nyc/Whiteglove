@@ -15,6 +15,11 @@ import { blockedOrigin, parseViolations } from "@/lib/csp-reports";
 const CSP = contentSecurityPolicy("/api/csp-report");
 
 describe("the policy names what the site actually loads", () => {
+  it("allows Duffel airline logos in images", () => {
+    const images = CSP.split(";").find((directive) => directive.trim().startsWith("img-src "));
+    assert.match(images ?? "", /https:\/\/assets\.duffel\.com(?:\s|$)/);
+  });
+
   it("carries the hosts found by reading the app", () => {
     // Each of these is in the code: the map script, the OSM tiles, the address
     // autocomplete, the Travelpayouts snippet and widget, and the Duffel /

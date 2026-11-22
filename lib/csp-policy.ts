@@ -144,6 +144,7 @@ export function contentSecurityPolicy(reportPath: string): string {
       ...GOOGLE_STATIC,
       ...TRAVELPAYOUTS,
       "https://api.mapbox.com",
+      "https://assets.duffel.com",
     ]),
     "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
     "connect-src": dedupe([
