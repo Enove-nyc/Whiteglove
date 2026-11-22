@@ -222,7 +222,7 @@ export const CONNECTIONS: Connection[] = [
     what: "The password on the private flight booking site, book.whitegloveitineraries.com, and the key that signs its sign-in cookie.",
     without: "The booking site stays locked for everybody: every page asks for the password and none is accepted. The signing key falls back to the site's own session key.",
     weight: "feature",
-    where: "Cloudflare → Workers → whiteglove → Settings → Variables and Secrets, as secrets. The password needs at least 8 characters; the signing key at least 24, and different from the password.",
+    where: "Cloudflare → Workers → whiteglove → Settings → Variables and Secrets, as secrets. The initial password needs at least 8 characters. The signing key needs at least 24 and must differ from the password. A password saved through the booking recovery link takes priority over the initial password.",
   },
   {
     vars: ["PRIVATE_BOOKING_PREVIEW_HOST"],

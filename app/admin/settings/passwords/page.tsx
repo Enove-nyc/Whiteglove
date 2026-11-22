@@ -1,10 +1,15 @@
+import BookingGuestPassSettings from "@/components/BookingGuestPassSettings";
+import { BOOKING_GUEST_KEY, bookingStorage } from "@/lib/private-booking-storage";
 import PasswordSettings from "@/components/PasswordSettings";
 import { passwordStorageAvailable } from "@/lib/access-passwords";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
-export default function PasswordSettingsPage() {
+export default async function PasswordSettingsPage() {
+  const guest = await bookingStorage<string | null>("GET", BOOKING_GUEST_KEY).catch(() => null);
+  const expires = Number(guest?.split(".")[0]);
+  const activeUntil = Number.isFinite(expires) ? expires : null;
   return (
     <>
       <header>
@@ -17,6 +22,7 @@ export default function PasswordSettingsPage() {
 
       <div className="mt-8">
         <PasswordSettings available={passwordStorageAvailable()} />
+        <BookingGuestPassSettings activeUntil={activeUntil} />
       </div>
     </>
   );

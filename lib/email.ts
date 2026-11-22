@@ -701,6 +701,17 @@ export async function sendHealthChangeEmail(
   return result.ok;
 }
 
+export async function sendBookingPasswordResetEmail(email: string, link: string) {
+  const result = await postResend({
+    from: senderForBrand("itineraries"),
+    to: email,
+    subject: "Reset your White Glove booking password",
+    html: `<p><a href="${escapeHtml(link)}">Reset booking password</a></p><p>This link expires in 30 minutes. If you did not request it, you can ignore this email.</p>`,
+    text: `Reset your booking password: ${link}\n\nThis link expires in 30 minutes. If you did not request it, you can ignore this email.`,
+  }, email, "booking password reset");
+  return result.ok;
+}
+
 export async function sendPasswordResetEmail(email: string, code: string) {
   const result = await postResend(
     {
