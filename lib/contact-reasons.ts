@@ -73,10 +73,10 @@ export const CONTACT_REASONS: readonly ContactReasonSpec[] = [
     short: "Help with my account or a trip",
     label: "Get help",
     blurb: "A question about your account, a payment, a trip, or the app — we’ll help.",
-    heading: "How can we help?",
+    heading: "",
     subject: "Support request",
     fields: [],
-    messageLabel: "What can we help you with?",
+    messageLabel: "Message",
     messagePlaceholder: "",
   },
   {

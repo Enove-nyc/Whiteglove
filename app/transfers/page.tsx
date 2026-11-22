@@ -1,3 +1,4 @@
+import FindTravelPage from "@/components/FindTravelPage";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -74,6 +75,8 @@ const WHEN_TRANSFER: Array<[string, string]> = [
 ];
 
 export default async function TransfersPage() {
+  // White Glove Itineraries: a title and the search, nothing else (owner, 22 November 2026).
+  if ((await currentBrand()) === "itineraries") return <FindTravelPage tab="transfers" title="Airport transfers" path="/transfers" />;
   const itineraries = (await currentBrand()) === "itineraries";
   const reasons = itineraries ? [LATE_ARRIVAL, ...WHEN_TRANSFER.slice(1)] : WHEN_TRANSFER;
   const page = await resolvePage("transfers");
@@ -127,24 +130,6 @@ export default async function TransfersPage() {
         <div className="mx-auto max-w-7xl">
           <SectionHeading eyebrow={itineraries ? "The other answer" : "The other two answers"} title="When a transfer is not what you want" />
           <div className="mt-10 grid gap-5 md:grid-cols-2">
-            <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">
-              <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-                A week that needs a car
-              </h2>
-              <p className="mt-3 leading-7 text-stone-600">
-                An alpine valley, a route between towns, anywhere the days are spent somewhere other than where you
-                sleep.{itineraries ? "" : " Each destination page says which of the two it is before you book either."}
-              </p>
-              {/* The car search is the Cars tab on the booking page — /cars
-                  folded into it and is a redirect now, so linking the real
-                  address saves the visitor a hop. */}
-              <Link
-                href="/?type=cars#search"
-                className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-              >
-                Search car hire
-              </Link>
-            </article>
             {/* The provider directory is not on White Glove Itineraries. */}
             {!itineraries && (
             <article className="rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-6">

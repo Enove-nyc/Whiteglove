@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { byCategory, type PackingItem, type PackingList } from "@/data/packing-list";
 import { PACKING_BASICS } from "@/data/packing-basics";
 import { Button } from "@/components/ui/Button";
@@ -131,13 +130,6 @@ export default function PackingListPanel({ signedIn = false }: { signedIn?: bool
       <div className="flex flex-col gap-5">
         {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
         <Rows items={items} onToggle={(id, checked) => setTicked((t) => ({ ...t, [id]: checked }))} />
-        <p className="text-sm text-stone-600">
-          Build a trip in the{" "}
-          <Link href="/itinerary" className="font-semibold text-[var(--gold-ink)] underline underline-offset-2">
-            itinerary planner
-          </Link>{" "}
-          and this list is made for it — the countries, the season and what you have planned.
-        </p>
       </div>
     );
   }

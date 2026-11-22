@@ -72,12 +72,11 @@ export const EMPTY_ABOUT_PROFILE: AboutProfile = {
  */
 // For everyone who travels (owner, 19 November 2026): "we are not focusing on
 // advisors anymore. We are here for everyone" — book anything, then make a
-// beautiful day-by-day itinerary out of it.
+// beautiful day-by-day itinerary out of it. One line (owner, 22 November 2026:
+// "the least wording possible").
 export const ABOUT_INTRO_ITINERARIES: readonly string[] = [
-  "White Glove Itineraries is for anyone planning a trip. Book your flights, hotels, car and things to do with our travel partners, then turn it all into one beautiful itinerary.",
-  "Lay the trip out day by day: what happens when, how long each drive takes, and how much free time is left in every day.",
-  "Use it without an account, print it or save it as a PDF, and carry it with you on the trip.",
-];
+  "Book your trip with our travel partners, then lay it out day by day in one itinerary.",
+]
 
 export const ABOUT_INTRO: readonly string[] = [
   "White Glove Kosher Travel is built around the questions that decide a Jewish family's trip. Where the kosher food is, and who stands behind it. Which quarter keeps you within walking distance on Shabbos. How long the drive between two places really takes, and what Friday afternoon looks like when the clock is against you.",

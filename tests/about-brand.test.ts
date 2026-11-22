@@ -31,7 +31,7 @@ describe("each site's About says what that site is", () => {
     // another business behind it.
     const said = ABOUT_INTRO_ITINERARIES.join(" ");
     assert.doesNotMatch(said, /Kosher Travel/i);
-    assert.match(said, /White Glove Itineraries/);
+    assert.match(said, /itinerary/);
   });
 
   it("does not claim the kosher guide's job", () => {

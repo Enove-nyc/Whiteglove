@@ -24,3 +24,27 @@ export const TRAVEL_TABS: Array<{ id: TravelTab; label: string; short: string; i
   { id: "insurance", label: "Travel insurance", short: "Insurance", icon: "check", href: "/travel-insurance" },
 ];
 
+
+/** The query words a search link may carry (the same ones /book took). */
+export const SEARCH_LINK_KEYS = ["from", "to", "depart", "return", "destination"] as const;
+
+/**
+ * A link that opens one search, prefilled, and works on a phone too.
+ *
+ * Links used to point at the home page's box ("/?type=cars#search"), and on a
+ * phone the home page shows a list instead of the box — so "Search car hire"
+ * landed on a list and nothing happened (owner, 22 November 2026). Every such
+ * link goes to that search's own page instead.
+ */
+export function searchHref(tab: TravelTab, fill: Partial<Record<(typeof SEARCH_LINK_KEYS)[number], string>> = {}): string {
+  const page = TRAVEL_TABS.find((t) => t.id === tab)?.href ?? "/";
+  const query = new URLSearchParams();
+  for (const key of SEARCH_LINK_KEYS) if (fill[key]) query.set(key, fill[key]!.slice(0, 80));
+  const q = query.toString();
+  return q ? `${page}?${q}` : page;
+}
+
+/** "flights" / "hotels" / "cars" / "activities" from a link's ?type=. */
+export function tabFromType(type: string | undefined): TravelTab | undefined {
+  return type === "flights" || type === "hotels" || type === "cars" || type === "activities" ? type : undefined;
+}

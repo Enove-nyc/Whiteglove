@@ -48,7 +48,6 @@ export default function SampleItineraryViews({
   siteBrand: SiteBrand;
 }) {
   const [view, setView] = useState<View>("site");
-  const chosen = TABS.find((tab) => tab.value === view)!;
 
   return (
     <>
@@ -82,7 +81,6 @@ export default function SampleItineraryViews({
             );
           })}
         </div>
-        <p className="mt-3 text-sm leading-6 text-stone-700">{chosen.blurb}</p>
       </fieldset>
 
       <div className="mt-8">

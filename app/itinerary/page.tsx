@@ -1,16 +1,13 @@
-import Link from "next/link";
 import { getAppPrefs } from "@/lib/app-prefs-store";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { pageMetadata } from "@/lib/seo";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import Footer from "@/components/Footer";
-import ItineraryFooter from "@/components/ItineraryFooter";
 import ItineraryBuilder from "@/components/ItineraryBuilder";
 import Navbar from "@/components/Navbar";
 import SharedWithMe from "@/components/SharedWithMe";
 import TravelEssentials from "@/components/TravelEssentials";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { getActivePromotions } from "@/lib/admin-content";
 import { allCrossings } from "@/lib/border-store";
 import { readAssumptions } from "@/lib/planner-settings-store";
 import { currentBrand } from "@/lib/site-brand";
@@ -52,9 +49,6 @@ export default async function ItineraryPage() {
         return (await getAppPrefs(account.email).catch(() => ({ kosherFeatures: false }))).kosherFeatures;
       })()
     : true;
-  const userAgent = (await headers()).get("user-agent") || "";
-  const device = /Mobi|Android/i.test(userAgent) ? "mobile" : "desktop";
-  const footerPromotions = await getActivePromotions("itinerary-footer", "/itinerary", device);
   // Which crossings are on each border and what was found at them. Read here
   // because the planner runs in the browser and the crossings do not.
   const crossings = await allCrossings();
@@ -74,24 +68,7 @@ export default async function ItineraryPage() {
 
       <section className="border-b border-[var(--gold-light)] px-5 py-9 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
-          <PageHeader
-            eyebrow="Planner"
-            title="Itinerary planner"
-            description={
-              <>
-                Build and manage your own trip here, with flights, hotels and stops, day by day — see{" "}
-                <Link href="/sample-itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
-                  a sample itinerary
-                </Link>
-                .
-                {guest && (
-                  <>
-                    {" "}Your trip is kept in this browser, on this device only — use Preview to print it or save it as a PDF.
-                  </>
-                )}
-              </>
-            }
-          />
+          <PageHeader title="Itinerary planner" />
         </div>
       </section>
 
@@ -101,7 +78,6 @@ export default async function ItineraryPage() {
           <ItineraryBuilder crossings={crossings} today={new Date().toISOString().slice(0, 10)} assume={assume} templates={templates} itineraries={itineraries} kosher={kosher} guest={guest} />
         </div>
 
-        <ItineraryFooter promotion={footerPromotions[0] ?? null} inPlanner />
       </section>
 
       {/* Booking partners remain on this site, after the traveller’s planner. */}

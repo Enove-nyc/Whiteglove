@@ -1,3 +1,4 @@
+import FindTravelPage from "@/components/FindTravelPage";
 import Link from "next/link";
 import EsimOffers from "@/components/EsimOffers";
 import Footer from "@/components/Footer";
@@ -66,6 +67,8 @@ const BEFORE_YOU_BUY: Array<[string, string]> = [
 ];
 
 export default async function EsimPage() {
+  // White Glove Itineraries: a title and the search, nothing else (owner, 22 November 2026).
+  if ((await currentBrand()) === "itineraries") return <FindTravelPage tab="esim" title="eSIMs" path="/esim" />;
   const itineraries = (await currentBrand()) === "itineraries";
   // The heading and intro are editable in /admin/pages; the offers and the
   // "before you buy" cards below are a live component and stay in code.

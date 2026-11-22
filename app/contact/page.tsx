@@ -49,20 +49,11 @@ export default async function ContactPage() {
       <section className="mx-auto grid max-w-7xl gap-8 px-5 pb-16 pt-8 sm:px-8 sm:pt-10 lg:grid-cols-[minmax(0,44rem)_20rem] lg:items-start lg:gap-12">
         <ContactForm reason="help" words={{ ...words, contactEmail }} />
 
-        <aside className="rounded-xl border border-[var(--gold-light)] bg-[var(--surface)] p-6 text-sm leading-6 text-stone-700">
-          <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--navy)]">Prefer email?</h2>
-          <p className="mt-2">
-            Write to{" "}
-            <a
-              href={`mailto:${contactEmail}`}
-              className="break-words font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4"
-            >
-              {contactEmail}
-            </a>
-            .
-          </p>
-          <p className="mt-4">{words.replyPromise}</p>
-        </aside>
+        <p className="text-sm text-stone-700">
+          <a href={`mailto:${contactEmail}`} className="break-words font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">
+            {contactEmail}
+          </a>
+        </p>
       </section>
 
       <Footer />

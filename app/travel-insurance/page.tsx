@@ -1,3 +1,4 @@
+import FindTravelPage from "@/components/FindTravelPage";
 import { pageMetadata } from "@/lib/seo";
 import Footer from "@/components/Footer";
 import InsurancePanel from "@/components/InsurancePanel";
@@ -27,6 +28,8 @@ export async function generateMetadata() {
 }
 
 export default async function TravelInsurancePage() {
+  // White Glove Itineraries: a title and the search, nothing else (owner, 22 November 2026).
+  if ((await currentBrand()) === "itineraries") return <FindTravelPage tab="insurance" title="Travel insurance" path="/travel-insurance" />;
   const page = (await resolvePage("travel-insurance"))!;
   return (
     <main className="min-h-screen bg-[var(--cream)]">

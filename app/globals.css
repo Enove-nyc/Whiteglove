@@ -317,18 +317,15 @@ select {
  *
  * On a touch screen the native control is left alone. A hand-drawn popover is
  * worse than the one built into the phone when you are choosing with a thumb. */
-.wg-date-face { display: none; }
-
-@media (hover: hover) and (pointer: fine) {
-  .wg-date-native {
-    /* Kept in the layout so it still sizes the field, but invisible under the
-       face. Not `hidden`, which would take it out of form validation. */
-    color: transparent;
-  }
-  .wg-date-native::-webkit-calendar-picker-indicator,
-  .wg-date-native::-webkit-datetime-edit { opacity: 0; }
-  .wg-date-face { display: flex; }
+.wg-date-native {
+  /* Kept in the layout so it still sizes the field and validates, but
+     invisible under the site's own calendar face — on phones too (owner,
+     22 November 2026: our own calendar, in our own colours, everywhere). */
+  color: transparent;
 }
+.wg-date-native::-webkit-calendar-picker-indicator,
+.wg-date-native::-webkit-datetime-edit { opacity: 0; }
+.wg-date-face { display: flex; }
 
 select option { background-color: #FAF8F3; color: var(--navy); }
 input::placeholder, textarea::placeholder { color: #78716c; }

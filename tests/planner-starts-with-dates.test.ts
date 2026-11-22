@@ -40,7 +40,6 @@ describe("the setup panel asks for the dates itself", () => {
 
   it("cannot create a trip without both dates, and needs nothing else", () => {
     assert.match(src, /disabled=\{!draft\.startDate \|\| !draft\.endDate\}/);
-    assert.match(src, /none of them is required now/);
   });
 
   it("shows the start card even when the setup help is hidden", () => {

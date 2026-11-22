@@ -13,10 +13,10 @@ const HOME = readFileSync("app/page.tsx", "utf8");
 const HOME_VIEW = readFileSync("components/ItinerariesHome.tsx", "utf8");
 
 describe("/book only redirects", () => {
-  it("sends every visitor to the home search, keeping what the link carried", () => {
-    assert.match(BOOK, /permanentRedirect\(/);
-    assert.match(BOOK, /#search/);
-    for (const key of ["type", "from", "to", "depart", "return", "destination"]) assert.match(BOOK, new RegExp(`"${key}"`));
+  it("sends a typed link to that search's own page, keeping what it carried, and the rest to the home search", () => {
+    assert.match(BOOK, /permanentRedirect\(searchHref\(tab,/);
+    assert.match(BOOK, /permanentRedirect\("\/#search"\)/);
+    assert.match(BOOK, /SEARCH_LINK_KEYS/);
     assert.doesNotMatch(BOOK, /BookPartners|TravelSearch/);
   });
 });

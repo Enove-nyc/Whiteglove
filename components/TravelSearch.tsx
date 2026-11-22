@@ -178,6 +178,8 @@ export default function TravelSearch({
   const [where, setWhere] = useState(prefill?.destination ?? "");
   const [dropoffSame, setDropoffSame] = useState(true);
   const [dropoff, setDropoff] = useState("");
+  // Days already gone are greyed out on the calendar.
+  const [today] = useState(() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; });
   const [start, setStart] = useState(iso(prefill?.depart));
   const [end, setEnd] = useState(iso(prefill?.ret));
   const [oneWay, setOneWay] = useState(false);
@@ -330,7 +332,7 @@ export default function TravelSearch({
               </div>
               <div className="min-w-0 md:col-span-3">
                 <span className={label}>Date</span>
-                <div className="mt-1"><DateField value={leg.date} onChange={(value) => setLeg(index, { date: value })} min={index > 0 ? legs[index - 1].date || undefined : undefined} ariaLabel={`Flight ${index + 1} date`} className={box} /></div>
+                <div className="mt-1"><DateField value={leg.date} onChange={(value) => setLeg(index, { date: value })} min={index > 0 ? legs[index - 1].date || today : today} ariaLabel={`Flight ${index + 1} date`} className={box} /></div>
               </div>
               <div className="flex min-w-0 items-end md:col-span-1">
                 {legs.length > 2 ? (
@@ -433,12 +435,12 @@ export default function TravelSearch({
           <>
             <div className={`min-w-0 md:col-span-2 ${showsEnd ? "" : tab === "transfers" ? "col-span-2" : "col-span-2 md:col-span-4"}`}>
               <span className={label}>{dateLabels[0]}</span>
-              <div className="mt-1"><DateField value={start} onChange={setStart} ariaLabel={dateLabels[0]} className={box} /></div>
+              <div className="mt-1"><DateField value={start} onChange={setStart} min={today} ariaLabel={dateLabels[0]} className={box} /></div>
             </div>
             {showsEnd ? (
               <div className="min-w-0 md:col-span-2">
                 <span className={label}>{dateLabels[1]}</span>
-                <div className="mt-1"><DateField value={end} onChange={setEnd} min={start || undefined} ariaLabel={dateLabels[1]} className={box} /></div>
+                <div className="mt-1"><DateField value={end} onChange={setEnd} min={start || today} ariaLabel={dateLabels[1]} className={box} /></div>
               </div>
             ) : null}
           </>

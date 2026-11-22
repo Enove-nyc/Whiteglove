@@ -15,9 +15,9 @@ import { anchoredStyle, measureAnchor, useAnchorTracking, type AnchorBox } from 
 // `min` that greys out impossible days, arrow keys, typing a date straight in,
 // the same YYYY-MM-DD value going in and out — and adds nothing clever.
 //
-// On a phone it still uses the native control underneath, because a
-// hand-written popover is worse than the one built into the operating system
-// when you are choosing with a thumb.
+// Phones get this calendar too (owner, 22 November 2026: "our own calendar
+// design ... our own colours"). The native input stays underneath, invisible,
+// so a form still validates and submits the value.
 
 const ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -143,8 +143,7 @@ export default function DateField({
   return (
     <div ref={boxRef} className="relative">
       {/* The real value, so a form still validates and submits it. On a phone
-          this is the control people actually get — the OS picker beats
-          anything drawn here when you are choosing with a thumb. */}
+          it sits invisible under the face below. */}
       <input
         id={id}
         name={name}
@@ -159,7 +158,7 @@ export default function DateField({
         className={`${className} wg-date-native`}
       />
 
-      {/* The site's own calendar, over the top on anything with a pointer. */}
+      {/* The site's own calendar, over the top. */}
       <button
         type="button"
         disabled={disabled}
@@ -217,7 +216,7 @@ export default function DateField({
                   onClick={() => choose(iso)}
                   disabled={blocked(iso)}
                   aria-current={iso === value ? "date" : undefined}
-                  className={`min-h-[34px] text-sm transition ${
+                  className={`min-h-10 text-sm transition sm:min-h-[34px] ${
                     iso === value
                       ? "bg-[var(--navy)] font-bold text-white"
                       : blocked(iso)

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { searchHref } from "@/lib/travel-tabs";
 import { tripBarDates } from "@/lib/trip-bar";
 import { useDebouncedSearch } from "@/components/useDebouncedSearch";
 import { useOnValueChange } from "@/components/useOnValueChange";
@@ -646,15 +647,13 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             itself (Smart Import), so say so where the trip is being built. */}
         {guest ? (
           <p className="mt-3 text-xs leading-5 text-stone-600">
-            Booked already?{" "}
-            <Link href={`/login?next=${encodeURIComponent("/itinerary?import=1")}`} className="font-semibold text-[var(--navy)] underline underline-offset-4">Log in</Link>{" "}
-            and paste or forward the confirmation email — the flight or hotel is added to your trip for you.
+            Booked?{" "}
+            <Link href={`/login?next=${encodeURIComponent("/itinerary?import=1")}`} className="font-semibold text-[var(--navy)] underline underline-offset-4">Log in to add it from the confirmation</Link>
           </p>
         ) : itin.flights.length + itin.lodging.length === 0 && tab !== "import" ? (
           <p className="mt-3 text-xs leading-5 text-stone-600">
-            Booked already?{" "}
-            <button type="button" onClick={() => setTab("import")} className="min-h-8 font-semibold text-[var(--navy)] underline underline-offset-4">Paste or forward the confirmation</button>{" "}
-            and the flight or hotel is added for you.
+            Booked?{" "}
+            <button type="button" onClick={() => setTab("import")} className="min-h-8 font-semibold text-[var(--navy)] underline underline-offset-4">Add it from the confirmation</button>
           </p>
         ) : null}
 
@@ -2670,7 +2669,6 @@ function TravelersPanel({
  * them rather than asking for them a second time on the other side.
  */
 function BookFlightsPanel({ itin }: { itin: Itinerary }) {
-  const people = travelersOf(itin);
   const booking = useBookingLink();
 
   const params = new URLSearchParams();
@@ -2683,29 +2681,17 @@ function BookFlightsPanel({ itin }: { itin: Itinerary }) {
   // Never a bare `/book`: the owner can have that path behind an access code,
   // and a planner button that opens a password box is the same broken journey
   // as the one in the footer. See lib/booking-access.ts.
-  const href = bookingHref(booking, Object.fromEntries(params));
+  const href = booking.searchIsPublic ? searchHref("flights", Object.fromEntries(params)) : bookingHref(booking, Object.fromEntries(params));
 
   return (
-    <section className="mt-5 border border-[var(--gold-light)] bg-[#FAF8F3] p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Book the flights</h2>
-        {people.length > 0 && (
-          <p className="text-xs font-semibold text-stone-500">
-            {people.length} {people.length === 1 ? "seat" : "seats"}
-            {itin.startDate ? ` · ${itin.startDate}` : ""}
-            {itin.endDate ? ` → ${itin.endDate}` : ""}
-          </p>
-        )}
-      </div>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <Link
-          href={href}
-          className="min-h-[44px] border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
-        >
-          Book flights &amp; hotels
-        </Link>
-      </div>
-    </section>
+    <div className="mt-5">
+      <Link
+        href={href}
+        className="inline-flex min-h-[44px] items-center border border-[var(--navy)] bg-[var(--navy)] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)]"
+      >
+        Book flights
+      </Link>
+    </div>
   );
 }
 /**

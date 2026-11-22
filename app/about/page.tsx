@@ -80,6 +80,7 @@ export default async function AboutPage() {
       <AboutProfileSection profile={profile} siteBrand={siteBrand} />
       <PageBlocks blocks={blocks} />
 
+      {siteBrand !== "itineraries" && (<>
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <div className="rounded-2xl border border-[var(--navy)] bg-[var(--navy)] p-6 text-white sm:p-9">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
@@ -89,9 +90,7 @@ export default async function AboutPage() {
             </h2>
           </div>
           <p className="mt-4 max-w-2xl leading-7 text-slate-200">
-            {siteBrand === "itineraries"
-              ? "Ask about your itinerary, tell us something on the site is broken, or ask a question."
-              : "Write about a trip, tell us something on the site is wrong, or ask a question about a destination."}{" "}
+            Write about a trip, tell us something on the site is wrong, or ask a question about a destination.{" "}
             {words.replyPromise}
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -120,6 +119,7 @@ export default async function AboutPage() {
       <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
         <StartingPoints heading="Where to start" />
       </section>
+      </>)}
 
       <Footer />
     </main>

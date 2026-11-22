@@ -36,7 +36,7 @@ describe("the planner without an account", () => {
     assert.match(BUILDER, /guest \? \{ times: \{\}, sources: \{\}, engine: null, partial: false \} : await fetchRoadTimes/);
   });
 
-  it("tells the guest where the trip is kept", () => {
-    assert.match(PAGE, /kept in this browser, on this device only/);
+  it("says where a guest's trip is kept, in Terms (the planner itself stays wordless)", () => {
+    assert.match(readFileSync("app/terms/page.tsx", "utf8"), /kept only in your own\s+browser on that device/);
   });
 });

@@ -106,7 +106,7 @@ export default function ContactForm({
           Thank you — your message is on its way.
         </p>
         <p className="mt-3 text-sm leading-7 text-stone-600">
-          {words.replyPromise} For anything urgent, email us directly at {words.contactEmail}.
+          {words.replyPromise}
         </p>
         <button
           type="button"
@@ -121,11 +121,13 @@ export default function ContactForm({
 
   return (
     <form onSubmit={submit} className="wg-card border border-[var(--gold-light)] bg-[#FAF8F3] p-6 sm:p-8">
-      <h2 className="font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
-        {spec.heading}
-      </h2>
+      {spec.heading && (
+        <h2 className="mb-6 font-[family-name:var(--font-display)] text-2xl leading-tight text-[var(--navy)]">
+          {spec.heading}
+        </h2>
+      )}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {spec.fields.map((field) => (
           <label key={field.name} className={field.kind === "textarea" ? "block sm:col-span-2" : "block"}>
             <span className={caption}>

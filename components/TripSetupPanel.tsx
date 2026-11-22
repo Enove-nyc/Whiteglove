@@ -114,11 +114,6 @@ export default function TripSetupPanel({
           </h2>
           {/* No "N of 5 basics done" counter: the checklist below already says
               what is done and what is next, one card at a time. */}
-          {progress.next && (
-            <p aria-live="polite" className="mt-1 text-sm leading-6 text-stone-600">
-              Suggested next step: {progress.next.label.toLowerCase()}. You can add other details later.
-            </p>
-          )}
         </div>
         {datesDone && progress.next && <button type="button" onClick={() => onNext(progress.next!.id)} className="min-h-11 rounded-md bg-[var(--navy)] px-4 text-sm font-semibold text-white">{progress.next.id === "dates" ? "Set dates" : progress.next.id === "stay" ? "Add stay" : progress.next.id === "stops" ? "Add activity" : progress.next.id === "flights" ? "Add flight" : "Add travelers"}</button>}
         <button
@@ -149,10 +144,6 @@ export default function TripSetupPanel({
               <DateField ariaLabel="Trip end date" className={startInput} min={earliestEnd(draft.startDate)} value={draft.endDate} onChange={(endDate) => setDraft((d) => ({ ...d, endDate: correctedEnd(d.startDate, endDate) }))} />
             </label>
           </div>
-          <p className="mt-2 text-xs leading-5 text-stone-500">
-            That is all a trip needs to begin. Travellers, flights, hotels and the days themselves come afterwards, one at a
-            time, and none of them is required now.
-          </p>
           <button
             type="button"
             disabled={!draft.startDate || !draft.endDate}

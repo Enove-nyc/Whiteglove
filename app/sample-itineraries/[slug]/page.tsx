@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { searchHref } from "@/lib/travel-tabs";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -71,17 +72,15 @@ export default async function SampleItineraryPage({ params }: { params: Promise<
           <span className="text-stone-500"> · {sample.city}, {sample.country}</span>
         </p>
         <h1 className="mt-3 font-[family-name:var(--font-display)] text-[clamp(2rem,6vw,3.2rem)] leading-[1.05] text-[var(--navy-deep)]">{sample.title}</h1>
-        <p className="mt-4 text-lg leading-8 text-[#3D4766]">{sample.intro}</p>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <SampleCopyButton itinerary={itinerary} />
-          <span className="text-sm text-stone-600">Change anything once it is yours: days, times, stops.</span>
         </div>
 
         <section aria-labelledby="book-heading" className="mt-8 rounded-2xl border border-[#E6DCC8] bg-white p-5">
           <h2 id="book-heading" className="text-lg font-semibold text-[var(--navy)]">Book this trip</h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            <Link href={`/?type=flights&to=${encodeURIComponent(sample.airport)}#search`} className={linkButton}>Flights to {sample.city}</Link>
+            <Link href={searchHref("flights", { to: sample.airport })} className={linkButton}>Flights to {sample.city}</Link>
             <a href={partner("hotel", sample.slug, { destination: sample.stayArea })} target="_blank" rel="noopener sponsored" className={linkButton}>Hotels in {sample.stayArea.split(",")[0]}</a>
             <a href={partner("activity", sample.slug, { destination: sample.city })} target="_blank" rel="noopener sponsored" className={linkButton}>Tours and tickets</a>
           </div>
@@ -91,7 +90,7 @@ export default async function SampleItineraryPage({ params }: { params: Promise<
           <section aria-labelledby="stay-heading" className="mt-10">
             <h2 id="stay-heading" className="font-[family-name:var(--font-display)] text-2xl text-[var(--navy)]">Where to stay</h2>
             <p className="mt-2 leading-7 text-stone-700">
-              <strong className="text-[var(--navy)]">{sample.stayArea.split(",")[0]}</strong> — {nights} {nights === 1 ? "night" : "nights"}. {stay.notes?.replace(/ Your own itinerary names.*$/, "")}
+              <strong className="text-[var(--navy)]">{sample.stayArea.split(",")[0]}</strong> — {nights} {nights === 1 ? "night" : "nights"}
             </p>
           </section>
         ) : null}
@@ -124,14 +123,7 @@ export default async function SampleItineraryPage({ params }: { params: Promise<
           </ol>
         </section>
 
-        <section className="mt-10 rounded-2xl bg-[var(--cream-deep)] p-5">
-          <h2 className="text-lg font-semibold text-[var(--navy)]">Make it your own</h2>
-          <p className="mt-2 leading-7 text-stone-700">
-            Copy it into the planner and it becomes your trip: move stops between days, add your flights and hotel, and see the free time left in each day.
-          </p>
-          <div className="mt-4"><SampleCopyButton itinerary={itinerary} /></div>
-          <p className="mt-4 text-xs leading-5 text-stone-600">Opening hours and ticketing change; check each place before you go.</p>
-        </section>
+        <div className="mt-10"><SampleCopyButton itinerary={itinerary} /></div>
       </article>
       <Footer />
     </main>

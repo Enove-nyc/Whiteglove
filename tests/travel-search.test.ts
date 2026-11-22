@@ -31,10 +31,17 @@ describe("the home page and the Book page render the same search", () => {
     assert.deepEqual(TRAVEL_TABS.map((t) => t.label), ["Flights", "Hotels", "Car rentals", "Things to do", "Transfers", "eSIMs", "Travel insurance"]);
     for (const t of TRAVEL_TABS) assert.match(t.href, /^\/(find\/|transfers$|esim$|travel-insurance$)/);
   });
-  it("on a phone shows a list of those pages instead of tabs", () => {
+  it("on a phone shows a list of those pages instead of tabs — unless the link asked for a search", () => {
     const home = readFileSync("components/ItinerariesHome.tsx", "utf8");
-    assert.match(home, /<div className="hidden md:block">\s*<TravelSearch/);
-    assert.match(home, /<nav aria-label="Find travel" className="md:hidden">/);
+    assert.match(home, /<div className=\{asked \? "" : "hidden md:block"\}>\s*<TravelSearch/);
+    assert.match(home, /\{!asked && <nav aria-label="Find travel" className="md:hidden">/);
+  });
+  it("sends links that carry a search to that search's own page, which works on a phone", async () => {
+    const { searchHref } = await import("@/lib/travel-tabs");
+    assert.equal(searchHref("cars"), "/find/car-rentals");
+    assert.equal(searchHref("flights", { to: "FCO", depart: "2027-05-01" }), "/find/flights?to=FCO&depart=2027-05-01");
+    assert.equal(searchHref("esim"), "/esim");
+    assert.doesNotMatch(readFileSync("app/transfers/page.tsx", "utf8"), /Search car hire/);
   });
   it("offers a dropdown of real places for the destination", () => {
     assert.match(readFileSync("components/TravelSearch.tsx", "utf8"), /<AddressAutocomplete[\s\S]*?mode="city"/);

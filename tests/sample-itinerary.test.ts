@@ -143,12 +143,10 @@ describe("the sample itinerary", () => {
     assert.ok(WHAT_IS_IN_IT.length >= 5);
     const paths = new Set(publicPaths().map((entry) => entry.path));
     assert.ok(paths.has("/sample-itinerary"), "the sample is not in the sitemap");
-    // The header dropdowns are five short categories and the footer is five
-    // links — neither has room for every page. This one is linked directly
-    // from the itinerary planner, where somebody deciding whether to start
-    // building a trip would actually look for it.
-    const ITINERARY = readFileSync("app/itinerary/page.tsx", "utf8");
-    assert.match(ITINERARY, /href="\/sample-itinerary"/, "no way to the sample from the itinerary planner");
+    // Linked from the list of sample itineraries (which the footer and the
+    // home page link) — the planner itself carries no explanatory line now.
+    const LIST = readFileSync("app/sample-itineraries/page.tsx", "utf8");
+    assert.match(LIST, /href="\/sample-itinerary"/, "no way to the sample from the sample list");
   });
 });
 

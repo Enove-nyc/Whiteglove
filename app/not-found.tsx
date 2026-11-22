@@ -37,24 +37,14 @@ export default function NotFound() {
     <main className="min-h-screen bg-[var(--cream)]">
       <Navbar />
       <section className="mx-auto max-w-xl px-5 py-16 sm:px-8 sm:py-24">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold-ink)]">Page not found</p>
-        <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-          That page isn&rsquo;t here.
+        {/* No "Search the site": search is admin-only now, so it led nowhere (22 November 2026). */}
+        <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+          Page not found
         </h1>
-        <p className="mt-4 leading-7 text-stone-600">
-          The address may have changed, or it may have been typed a little differently. Search the site and you will
-          probably find what you were after.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/search"
-            className="inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:opacity-90"
-          >
-            Search the site
-          </Link>
+        <div className="mt-8">
           <Link
             href="/"
-            className="inline-flex min-h-11 items-center border border-[var(--gold)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--navy)] transition hover:bg-[var(--cream-deep)]"
+            className="inline-flex min-h-11 items-center border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:opacity-90"
           >
             Home
           </Link>

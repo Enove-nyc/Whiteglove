@@ -10,7 +10,7 @@ export default function OfflinePage() {
       <div className="w-full max-w-md">
         <EmptyState
           title="You're offline"
-          description="This page hasn't been saved on your phone yet, so it needs a connection to load. Anything you already opened on this trip — today's plan, your hotel, your driver's number — is still there if you go back to it."
+          description="Pages you already opened still work."
         />
       </div>
     </main>

@@ -80,7 +80,7 @@ describe("the booking links inside Travel", () => {
   it("offers Flights, Hotels and Cars when the search is open", () => {
     const category = travelCategoryFor(bookingLink([]));
     for (const label of ["Flights", "Hotels", "Cars"]) {
-      assert.ok(category.links.some((link) => link.label === label && link.href.startsWith("/?type=")), `${label} missing from Travel`);
+      assert.ok(category.links.some((link) => link.label === label && link.href.startsWith("/find/")), `${label} missing from Travel`);
     }
   });
 

@@ -58,11 +58,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         puts the pitch back on the left on a wide screen, where the two-column
         layout is unchanged.
       */}
-      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
+      <section className={itineraries ? "mx-auto max-w-md px-5 py-10 sm:py-16" : "mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[.9fr_1.1fr] lg:items-center"}>
         <div className="wg-card border border-[var(--gold-light)] bg-[#FAF8F3] p-6 sm:p-10 lg:col-start-2 lg:row-start-1">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Log in</p>
-          <h1 id="login-title" className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">Your personal travel book.</h1>
-          <p className="mt-2 text-sm text-stone-600">Log in to your account to keep your trip together on every device.</p>
+          {/* White Glove Itineraries: just "Log in" and the form (owner, 22 November 2026: "the least wording possible"). */}
+          {!itineraries && <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold-ink)]">Log in</p>}
+          <h1 id="login-title" className={`${itineraries ? "" : "mt-3 "}font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl`}>{itineraries ? "Log in" : "Your personal travel book."}</h1>
+          {!itineraries && <p className="mt-2 text-sm text-stone-600">Log in to your account to keep your trip together on every device.</p>}
           <LoginForm
             // This page is called log in. A returning visitor was landing on
             // the sign-up form and had to spot a tab to get to the one they
@@ -79,7 +80,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             googleProblem={googleSays?.slice(0, 300) || describeProblem(google) || undefined}
           />
         </div>
-        <div className="lg:col-start-1 lg:row-start-1">
+        {!itineraries && <div className="lg:col-start-1 lg:row-start-1">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">Your White Glove account</p>
           {/* h2, not a second h1. The page has one heading — the sign-in box's
               "Your personal travel book.", which the form is labelled by. This
@@ -108,7 +109,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               </>
             )}
           </div>
-        </div>
+        </div>}
       </section>
       <Footer minimal={itineraries} />
     </main>

@@ -47,7 +47,7 @@ describe("only the signed-in account reaches its files", () => {
 describe("the wallet screen", () => {
   const UI = readFileSync("components/companion/PersonalTravelWallet.tsx", "utf8");
   it("does not promise sync unless the account copy is really on", () => {
-    assert.match(UI, /mode === "account"\s*\? "Boarding passes, hotel confirmations and entry tickets\. Files are kept on this device/);
+    assert.match(UI, /mode === "account"\s*\? "Boarding passes, confirmations and tickets\. Private to you, offline on this phone and saved to your account\."\s*: "[^"]*kept on this phone only\."/);
   });
   it("treats a synced file that has left the account as removed elsewhere", () => {
     assert.match(UI, /document\.synced && !onAccount\.has\(document\.id\)/);

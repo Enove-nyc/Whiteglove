@@ -840,7 +840,7 @@ describe("the checkout hand-off leaves nothing on White Glove", () => {
   it("sends an expired quote back to search rather than explaining itself", () => {
     // Thirty minutes is all a handle lives, and an expired one is the ordinary
     // case: prices move and desks sell out.
-    assert.match(source, /\/book\?kind=cars&expired=1/);
+    assert.match(source, /"\/find\/car-rentals"/);
     assert.doesNotMatch(source, /handle (expired|not found)/i);
   });
 });

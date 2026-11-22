@@ -1,8 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
-import TravelSearch from "@/components/TravelSearch";
+import FindTravelPage from "@/components/FindTravelPage";
 import type { TravelTab } from "@/lib/travel-tabs";
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
@@ -38,26 +35,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   });
 }
 
-export default async function FindPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function FindPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params;
+  const query = await searchParams;
+  const first = (key: string) => { const v = query[key]; return (Array.isArray(v) ? v[0] : v)?.slice(0, 80) || undefined; };
+  const prefill = { from: first("from"), to: first("to"), depart: first("depart"), ret: first("return"), destination: first("destination") };
   const page = PAGES[slug];
   if (!page) notFound();
-  return (
-    <main className="min-h-screen bg-[var(--cream)] text-[var(--ink)]">
-      <Navbar />
-      <section className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-        <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.8rem,5vw,2.6rem)] leading-tight text-[var(--navy-deep)]">{page.title}</h1>
-        <p className="mt-2 text-[15px] leading-7 text-stone-600">{page.lead}</p>
-        <div className="mt-5">
-          <TravelSearch initialTab={page.tab} lockedTab page={`/find/${slug}`} placement={`find-${slug}`} />
-        </div>
-        <p className="mt-5 text-sm leading-6 text-stone-700">
-          <strong className="text-[var(--navy)]">Booked?</strong> Paste or forward the confirmation email into{" "}
-          <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">your itinerary</Link>
-          {" "}and it is added for you.
-        </p>
-      </section>
-      <Footer />
-    </main>
-  );
+  return <FindTravelPage tab={page.tab} title={page.title} path={`/find/${slug}`} prefill={prefill} />;
 }

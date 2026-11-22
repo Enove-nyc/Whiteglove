@@ -12,7 +12,7 @@ export function PageHeader({
   description,
   action,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: ReactNode;
   action?: ReactNode;
@@ -20,8 +20,8 @@ export function PageHeader({
   return (
     <div className="flex flex-wrap items-start justify-between gap-5">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">{eyebrow}</p>
-        <h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+        {eyebrow && <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">{eyebrow}</p>}
+        <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
           {title}
         </h1>
         {description && <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{description}</p>}

@@ -170,7 +170,7 @@ function SampleTripGroupChat() {
   };
   return <section className="space-y-4 p-4 text-[#15204A]" aria-label="Sample trip group chat">
     <h2 className="text-lg font-semibold">Trip group chat</h2>
-    <p className="text-sm leading-6 text-stone-600">Sample conversation between people on the same trip. Open your own trip code to send messages.</p>
+    <p className="text-sm leading-6 text-stone-600">Sample conversation.</p>
     <ChannelButtons channels={DEFAULT_CHANNELS} channel={channel} onChange={value => setChannel(value as DefaultTripChatChannel)} />
     <h3 className="text-sm font-semibold">{TRIP_CHAT_CHANNELS.find(item => item.id === channel)!.label}</h3>
     <div className="rounded-2xl bg-white p-4"><p className="text-xs font-semibold">Miriam · Sample</p><p className="mt-1 text-sm leading-6">{samples[channel][0]}</p></div>

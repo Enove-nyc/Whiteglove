@@ -111,9 +111,9 @@ export default function PersonalTravelWallet({ tripKey }: { tripKey: string }) {
   return <section aria-labelledby={`${inputId}-heading`} className="rounded-2xl border border-stone-200 bg-white p-4 text-[#15204A]">
     <h2 id={`${inputId}-heading`} className="text-lg font-semibold">Your personal wallet</h2>
     <p className="mt-2 text-sm leading-6 text-stone-600">{mode === "account"
-      ? "Boarding passes, hotel confirmations and entry tickets. Files are kept on this device, so they open offline, and on your account, so they appear on any phone where you log in. They are private to you and not shared with the trip group."
-      : "Boarding passes, hotel confirmations and entry tickets. Files stay on this device, work offline and are private to you. They are not shared with the trip group. Signing out or clearing app data removes them from this device."}</p>
-    {mode === "signed-out" ? <p className="mt-2 text-sm leading-6 text-stone-600"><a href={`/login?next=${encodeURIComponent(typeof window === "undefined" ? "/app" : window.location.pathname)}`} className="font-semibold underline underline-offset-4">Log in</a> to keep them on your account as well, so they reach your other phone.</p> : null}
+      ? "Boarding passes, confirmations and tickets. Private to you, offline on this phone and saved to your account."
+      : "Boarding passes, confirmations and tickets. Private to you, kept on this phone only."}</p>
+    {mode === "signed-out" ? <p className="mt-2 text-sm leading-6 text-stone-600"><a href={`/login?next=${encodeURIComponent(typeof window === "undefined" ? "/app" : window.location.pathname)}`} className="font-semibold underline underline-offset-4">Log in</a> to save them to your account.</p> : null}
     <label htmlFor={`${inputId}-kind`} className="mt-4 block text-sm font-semibold">Document type</label>
     <select id={`${inputId}-kind`} value={kind} onChange={(event) => setKind(event.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-stone-300 bg-white px-3">
       {["Boarding pass", "Hotel confirmation", "Entry ticket", "Other travel document"].map((label) => <option key={label}>{label}</option>)}
@@ -128,7 +128,7 @@ export default function PersonalTravelWallet({ tripKey }: { tripKey: string }) {
       <p className="text-xs font-semibold text-stone-600">{document.kind}</p>
       <div className="flex flex-wrap items-center justify-between gap-2 break-all"><button type="button" onClick={() => setPreview(document)} className="inline-flex min-h-11 items-center text-left font-semibold underline underline-offset-4">{document.name}</button><button type="button" disabled={busy} onClick={() => setRemoveId(document.id)} className="min-h-11 px-2 text-sm underline">Remove</button></div>
       {removeId === document.id ? <div className="mt-2 rounded-xl bg-stone-50 p-3 text-sm"><p>Remove this file from your wallet?</p><div className="mt-1 flex gap-4"><button type="button" disabled={busy} onClick={() => void remove(document.id)} className="min-h-11 font-semibold text-red-800">Remove file</button><button type="button" onClick={() => setRemoveId(null)} className="min-h-11">Keep it</button></div></div> : null}
-    </li>)}</ul> : ready ? <p className="mt-2 text-sm text-stone-600">{error ? "" : "No personal documents saved for this trip yet."}</p> : <p role="status" className="mt-2 text-sm text-stone-600">Opening your wallet…</p>}
+    </li>)}</ul> : ready ? <p className="mt-2 text-sm text-stone-600">{error ? "" : "Nothing saved yet."}</p> : <p role="status" className="mt-2 text-sm text-stone-600">Opening your wallet…</p>}
     {preview ? <TravelDocumentPreview key={preview.id} document={preview} onClose={() => setPreview(null)} /> : null}
   </section>;
 }

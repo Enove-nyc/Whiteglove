@@ -105,6 +105,8 @@ export default async function SampleItineraryPage() {
             <h1 className="mt-5 max-w-4xl font-[family-name:var(--font-display)] text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.08] text-[var(--navy)]">
               A week on Lake Como.
             </h1>
+            {/* White Glove Itineraries: the title, then the sample (owner, 22 November 2026). */}
+            {!itineraries && (<>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-700">
               {/* NOT "THE DOCUMENT" ANY MORE. The page shows the same week
                   three ways now — on the site, in the app, printed — and the
@@ -118,6 +120,7 @@ export default async function SampleItineraryPage() {
             <p className="mt-4 max-w-3xl rounded-lg border-l-4 border-[var(--gold)] bg-[#FAF8F3] px-5 py-3 leading-7 text-stone-700">
               <span className="font-semibold text-[var(--navy)]">{SAMPLE_NOTICE}</span>
             </p>
+            </>)}
           </div>
         </section>
       )}
@@ -127,6 +130,7 @@ export default async function SampleItineraryPage() {
           showing it. A visitor here wants to see it, not read about it. */}
       <section className="border-y border-[var(--gold-light)] bg-[var(--cream-deep)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-7xl">
+          {!itineraries && (<>
           <h2 className="font-[family-name:var(--font-display)] text-3xl leading-tight text-[var(--navy)] sm:text-4xl">
             The same week, three ways
           </h2>
@@ -135,6 +139,7 @@ export default async function SampleItineraryPage() {
               ? "Read on the site, opened as an app on your phone, or printed as a cover and a page per day. One trip behind all three, so you can move a day and print it again."
               : "Read on the site, opened as an app on your phone, or printed as a cover and a page per day. One trip behind all three — it arrives in your account too, where you can move a day and print it again."}
           </p>
+          </>)}
 
           {/* THREE VIEWS OF ONE WEEK, because a trip lives in three places and
               this page was showing one of them. The printable document is a
@@ -153,12 +158,19 @@ export default async function SampleItineraryPage() {
               whichever site is showing it. Left unset, the cover, the footer
               and every day's running head said White Glove Kosher Travel on
               the site that sells this. */}
-          <div className="mt-8">
+          <div className={itineraries ? "" : "mt-8"}>
             <SampleItineraryViews itin={SAMPLE_ITINERARY} companion={companion} siteBrand={brand} />
           </div>
         </div>
       </section>
 
+      {itineraries ? (
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
+          <Link href="/itinerary" className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}>
+            Open the itinerary planner
+          </Link>
+        </div>
+      ) : (<>
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <SectionHeading eyebrow="Contents" title="What is in it" />
         <dl className="mt-10 grid gap-x-10 gap-y-6 md:grid-cols-2 lg:grid-cols-3">
@@ -258,6 +270,8 @@ export default async function SampleItineraryPage() {
           </div>
         </div>
       </section>
+
+      </>)}
 
       <Footer />
     </main>

@@ -64,11 +64,12 @@ export default async function AssistantPage({
 
       <section className="wg-page-hero border-b border-[var(--gold-light)] px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">White Glove</p>
-          <h1 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
-            Ask the AI travel assistant
+          {!itineraries && <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[var(--gold-ink)]">White Glove</p>}
+          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">
+            {itineraries ? "Ask AI" : "Ask the AI travel assistant"}
           </h1>
-          <p className="mt-4 text-base leading-7 text-stone-600">
+          {/* White Glove Itineraries: the heading and the box (owner, 22 November 2026); the AI terms are in Terms. */}
+          {!itineraries && <p className="mt-4 text-base leading-7 text-stone-600">
             {itineraries
               ? "Ideas for a destination, somewhere to stay, or what to do somewhere with an afternoon. "
               : "Ideas for a destination, a kever, kosher food, or what to do somewhere with an afternoon. "}
@@ -91,20 +92,20 @@ export default async function AssistantPage({
                 .
               </>
             )}
-          </p>
+          </p>}
         </div>
       </section>
 
       <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-12">
-        <TravelAssistantBox initialAsk={initialAsk} labelledOutside />
+        <TravelAssistantBox initialAsk={initialAsk} labelledOutside embedded={itineraries} />
 
-        <p className="mt-8 text-sm leading-7 text-stone-600">
+        {!itineraries && <p className="mt-8 text-sm leading-7 text-stone-600">
           Ready to put it into a trip?{" "}
           <Link href="/itinerary" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-4">
             Build it in the itinerary planner
           </Link>
           .
-        </p>
+        </p>}
       </section>
 
       <Footer />

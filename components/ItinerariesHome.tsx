@@ -36,6 +36,7 @@ export default function ItinerariesHome({
   initialTab?: TravelTab;
   prefill?: TravelSearchPrefill;
 } = {}) {
+  const asked = Boolean(initialTab || (prefill && Object.values(prefill).some(Boolean)));
   return (
     <main className="wg-itineraries-home min-h-screen bg-[var(--cream)] text-[var(--ink)]">
       <Navbar brand="itineraries" />
@@ -53,9 +54,6 @@ export default function ItinerariesHome({
               <br />
               Build the itinerary.
             </h1>
-            <p className="mt-5 hidden max-w-md text-lg leading-8 text-[#3D4766] sm:block sm:text-xl">
-              Find flights, stays and more, then organise your whole trip in one place.
-            </p>
           </div>
           <figure className="relative order-3 mt-6 h-56 sm:h-80 lg:absolute lg:inset-y-0 lg:right-0 lg:order-none lg:mt-0 lg:h-auto lg:w-[48%]">
             <Image
@@ -80,13 +78,16 @@ export default function ItinerariesHome({
         </div>
 
         <div id="search" className="relative z-10 order-2 mx-auto w-full max-w-6xl scroll-mt-24 px-3 sm:px-6 lg:-mt-32">
-          {/* A computer gets the box with every "Find travel" search as a tab. */}
-          <div className="hidden md:block">
+          {/* A computer gets the box with every "Find travel" search as a tab.
+              A link that carries a search (the planner's "Book flights", an
+              old /book bookmark) opens the box on a phone too — otherwise it
+              landed on the list and nothing happened (22 November 2026). */}
+          <div className={asked ? "" : "hidden md:block"}>
             <TravelSearch key={initialTab ?? "flights"} initialTab={initialTab} prefill={prefill} />
           </div>
           {/* A PHONE GETS A LIST, NOT TABS (owner, 20 November 2026): each one
               opens its own page with just that search. */}
-          <nav aria-label="Find travel" className="md:hidden">
+          {!asked && <nav aria-label="Find travel" className="md:hidden">
             <ul className="grid grid-cols-2 gap-2">
               {TRAVEL_TABS.map((item) => (
                 <li key={item.id}>
@@ -100,7 +101,7 @@ export default function ItinerariesHome({
                 </li>
               ))}
             </ul>
-          </nav>
+          </nav>}
         </div>
       </section>
 
@@ -109,9 +110,8 @@ export default function ItinerariesHome({
           the photograph it could not be read). */}
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
         <p className="text-sm leading-6 text-stone-700">
-          <strong className="text-[var(--navy)]">Booked?</strong> Paste or forward the confirmation email into{" "}
-          <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">your itinerary</Link>
-          {" "}and the flight or hotel is added for you.
+          <strong className="text-[var(--navy)]">Booked?</strong>{" "}
+          <Link href="/itinerary?import=1" className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Add it to your itinerary</Link>
         </p>
       </div>
 
@@ -122,9 +122,8 @@ export default function ItinerariesHome({
         <form action="/assistant" method="get" className="rounded-2xl border border-[#E6DCC8] bg-white p-4 shadow-[0_8px_26px_rgba(21,32,74,.06)] sm:p-6">
           <h2 id="ask-ai-heading" className="flex items-center gap-2 font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--navy-deep)]">
             <Icon name="sparkle" className="h-5 w-5 text-[var(--gold-ink)]" />
-            Ask the AI travel assistant
+            Ask AI
           </h2>
-          <p className="mt-1 text-sm text-stone-600">Where to stay, how to get around, what to do — ask anything about a trip.</p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <label htmlFor="ask-ai" className="sr-only">Your travel question</label>
             <input
@@ -148,7 +147,6 @@ export default function ItinerariesHome({
             <h2 className="font-[family-name:var(--font-display)] text-4xl font-semibold leading-tight text-[var(--navy-deep)] sm:text-5xl">
               Start your itinerary
             </h2>
-            <p className="mt-3 text-lg leading-7 text-[#3D4766]">Give your trip a name and add the details when you&rsquo;re ready.</p>
             <HomeStartItinerary />
           </div>
 
@@ -187,7 +185,6 @@ export default function ItinerariesHome({
           </Link>
           <p className="text-sm lg:col-start-3">
             <Link href="/sample-itineraries" className="font-semibold text-[var(--navy)] underline underline-offset-4">More sample itineraries</Link>
-            <span className="text-stone-600"> — Rome, Paris, London and Barcelona, ready to copy into your planner.</span>
           </p>
         </div>
       </section>

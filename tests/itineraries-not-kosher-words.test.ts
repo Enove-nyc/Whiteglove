@@ -83,19 +83,8 @@ describe("the sign-in page does not promise to save kevarim", () => {
 });
 
 describe("the About page introduces this company, not the other one", () => {
-  it("has its own built-in blocks", () => {
-    assert.ok(ITINERARIES_ABOUT_BLOCKS.length >= 4);
-    const text = JSON.stringify(ITINERARIES_ABOUT_BLOCKS);
-    assert.doesNotMatch(text, FORBIDDEN);
-  });
-
-  it("keeps the shape worth keeping", () => {
-    // Why it exists, how it works, how the business is paid, what it will not
-    // do. The last one is the reason the kosher page is any good.
-    const ids = ITINERARIES_ABOUT_BLOCKS.map((block) => block.id);
-    for (const id of ["about-why", "about-how", "about-paid", "about-not"]) {
-      assert.ok(ids.includes(id), `the itineraries About is missing ${id}`);
-    }
+  it("is the heading and one line, no blocks (owner, 22 November 2026: the least wording possible)", () => {
+    assert.equal(ITINERARIES_ABOUT_BLOCKS.length, 0);
   });
 
   it("names no person, the same as the other one", () => {

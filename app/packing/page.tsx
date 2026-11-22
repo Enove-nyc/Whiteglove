@@ -38,9 +38,7 @@ export default async function PackingPage() {
       <Navbar />
       <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
         <PageHeader
-          eyebrow="Packing list"
           title="What to pack"
-          description="A starting list to check off as you pack. With a trip in the planner it is built from where you are going, when, and what you have planned."
         />
         <div className="mt-8">
           <PackingListPanel signedIn={signedIn} />

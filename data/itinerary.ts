@@ -1202,25 +1202,25 @@ export function buildDays(
     const overnightFlight = overnightFlightFor(itin, date, journeys);
     // Missing place to sleep (skip the last day — you usually fly home).
     if (!lodging && !isLastDay && !overnightFlight) {
-      warnings.push("No place to sleep this night — add a hotel, or mark an overnight bus/flight.");
+      warnings.push("No place to sleep this night.");
     }
     if (landedAt !== null && withDistance.length) {
       // Deliberately not folded into the clock: how long a border, baggage and
       // a car-hire desk take varies far too much to put a number on, and an
       // invented one would be worse than none.
       warnings.push(
-        `This day starts from the airport at ${minsToTime(dayStart)}, the moment the flight lands — it does not include clearing passport control, baggage, or collecting a car. Add that time yourself before relying on the arrival times below.`,
+        `Starts at the airport at ${minsToTime(dayStart)}, when the flight lands — passport control and baggage not included.`,
       );
     }
     if (withDistance.length) {
       const late = withDistance.filter((a) => a.arrivesLate);
       if (late.length) {
         warnings.push(
-          `Running late: leaving at ${minsToTime(dayStart)} you reach ${late[0].name} after its ${late[0].startTime} start. Start earlier, drop a stop, or move it to another day.`,
+          `Running late: you reach ${late[0].name} after its ${late[0].startTime} start.`,
         );
       } else if (dayEnd > lateFinishMins) {
         warnings.push(
-          `This day finishes around ${minsToTime(dayEnd)} — later than most kevarim and hotels expect. Consider starting earlier or moving a stop.`,
+          `Finishes late, around ${minsToTime(dayEnd)}.`,
         );
       }
     }
@@ -1238,8 +1238,6 @@ export function buildDays(
         ? null
         : usableDay;
 
-    const hasTransfer = travelLegs.some((l) => l.kind !== "stop");
-    const travelNote = travelHours >= 0.5 ? ` (after about ${travelHours} h of driving${hasTransfer ? ", including transfers" : " between stops"})` : "";
 
     // Per-leg checks first: a day whose timing already doesn't work must not
     // also be told it has room for another stop.
@@ -1255,10 +1253,10 @@ export function buildDays(
       if (nextStart - prevEnd < legMins) {
         // Not enough time to make it there — a scheduling conflict, not free time.
         hasTimingConflict = true;
-        legWarnings.push(`Tight timing: leaving ${timed[i - 1].name} and driving roughly ${formatDuration(legMins)} does not leave enough time before ${timed[i].name} starts at ${timed[i].startTime}.`);
+        legWarnings.push(`Tight timing: ${formatDuration(legMins)} from ${timed[i - 1].name} to ${timed[i].name}, which starts at ${timed[i].startTime}.`);
       } else if (gapHours >= assume.gapHoursWorthMentioning) {
         // A "gap" that is really a long drive is not offered as free time.
-        legWarnings.push(`About ${gapHours} free hours after ${timed[i - 1].name} (not counting the ~${formatDuration(legMins)} drive), with nothing planned until ${timed[i].name} — room for another stop.`);
+        legWarnings.push(`About ${gapHours} free hours after ${timed[i - 1].name} — room for another stop.`);
       }
     }
 
@@ -1269,7 +1267,7 @@ export function buildDays(
     if (dayActs.length > 1 && missingLocation.length > 0) {
       const names = missingLocation.slice(0, 3).map((a) => a.name).join(", ");
       warnings.push(
-        `Travel time is not counted for ${missingLocation.length} stop${missingLocation.length > 1 ? "s" : ""} (${names}${missingLocation.length > 3 ? "…" : ""}) because ${missingLocation.length > 1 ? "they have" : "it has"} no location yet — pick the address from the dropdown, or use "Plan my route" to look them up. Until then the free hours below are too high.`,
+        `Travel time is not counted for ${names}${missingLocation.length > 3 ? "…" : ""}: no address yet.`,
       );
     }
 
@@ -1288,7 +1286,7 @@ export function buildDays(
     }
     if (crossings.length) {
       warnings.push(
-        `This day crosses a border (${crossings.join(", ")}). The driving times below do not include waiting at the crossing, which can add anywhere from minutes to several hours — check the current wait before you commit to the day's timings.`,
+        `This day crosses a border (${crossings.join(", ")}). Waiting at the crossing is not included.`,
       );
     }
 
@@ -1299,17 +1297,17 @@ export function buildDays(
     // because it is the thing a client remembers about the trip.
     if (travelMins >= LONG_DRIVE_MINUTES && committed <= usableDay) {
       warnings.push(
-        `About ${formatDuration(travelMins)} of driving on this day. It fits, but it is most of the day in the car — worth checking that is what was wanted.`,
+        `About ${formatDuration(travelMins)} of driving on this day.`,
       );
     }
 
     if (isEmpty) {
-      warnings.push(`Nothing planned yet — about ${usableDay} hours open. Add stops, or get ideas for the free time below.`);
+      warnings.push(`Nothing planned yet — about ${usableDay} hours open.`);
     } else if (committed > usableDay) {
       const over = Math.round((committed - usableDay) * 10) / 10;
-      warnings.push(`This day is over-packed — about ${Math.round(scheduled * 10) / 10} h at the stops plus roughly ${travelHours} h of driving is about ${over} h more than a ${usableDay}-hour day. Consider moving a stop to another day.`);
+      warnings.push(`This day is over-packed by about ${over} h for a ${usableDay}-hour day.`);
     } else if (!hasTimingConflict && missingLocation.length === 0 && freeHours !== null && freeHours >= assume.freeHoursWorthMentioning) {
-      warnings.push(`About ${freeHours} free hours this day${travelNote} — room for another stop.`);
+      warnings.push(`About ${freeHours} free hours — room for another stop.`);
     }
     warnings.push(...legWarnings);
 

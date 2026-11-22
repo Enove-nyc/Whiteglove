@@ -1,12 +1,13 @@
 import { permanentRedirect } from "next/navigation";
+import { searchHref, tabFromType, SEARCH_LINK_KEYS } from "@/lib/travel-tabs";
 
 /**
  * /book is gone; the booking search is on the home page (owner, 20 November
  * 2026: "I want the /book page to go, everything should be on the main page").
  *
  * Old links — the planner's "Book the flights", bookmarks, search results —
- * still arrive here, so the query comes along: ?type=cars opens the car tab and
- * ?depart=…&return=… fills the dates, exactly as /book did.
+ * still arrive here: ?type=cars opens /find/car-rentals with the dates and
+ * places filled, and anything else opens the home page's search.
  */
 export default async function BookPage({
   searchParams,
@@ -14,12 +15,9 @@ export default async function BookPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const query = new URLSearchParams();
-  for (const key of ["type", "from", "to", "depart", "return", "destination"]) {
-    const value = params[key];
-    const first = Array.isArray(value) ? value[0] : value;
-    if (first) query.set(key, first.slice(0, 80));
-  }
-  const suffix = query.toString();
-  permanentRedirect(suffix ? `/?${suffix}#search` : "/#search");
+  const first = (key: string) => { const v = params[key]; return (Array.isArray(v) ? v[0] : v) || undefined; };
+  const tab = tabFromType(first("type") ?? (first("kind") === "cars" ? "cars" : undefined));
+  // A typed link opens that search's own page, which works on a phone too.
+  if (tab) permanentRedirect(searchHref(tab, Object.fromEntries(SEARCH_LINK_KEYS.map((k) => [k, first(k)]))));
+  permanentRedirect("/#search");
 }

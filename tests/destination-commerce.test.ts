@@ -119,8 +119,9 @@ describe("what the commercial links promise", () => {
     assert.match(PROSE, /bookingHref\(booking, \{ type: "cars", destination: destination\.name \}\)/);
     assert.match(PROSE, /carsHref=\{bookingHref\(booking, \{ type: "cars", destination: destination\.name \}\)\}/);
     assert.match(STICKY_CODE, /href=\{carsHref\}/);
-    // /book carries both halves on to the home page, which reads them.
-    assert.match(BOOK, /"type", "from", "to", "depart", "return", "destination"/);
+    // /book carries both halves on to the car search's own page, which reads them.
+    assert.match(BOOK, /SEARCH_LINK_KEYS/);
+    assert.match(readFileSync("lib/travel-tabs.ts", "utf8"), /SEARCH_LINK_KEYS = \["from", "to", "depart", "return", "destination"\]/);
     assert.match(HOME, /type === "cars"/);
     assert.match(HOME, /destination: first\("destination"\)/);
     // …and the Cars tab opens with that place already in its own field. It
@@ -154,8 +155,8 @@ describe("what the commercial links promise", () => {
   it("clamps what arrives on the car search rather than printing it", () => {
     // It lands in a text field as though the visitor typed it, and a link is
     // not a trustworthy author.
-    assert.match(BOOK, /\.slice\(0, 80\)/);
-    assert.match(BOOK, /Array\.isArray\(value\)/, "a repeated parameter would render as an array");
+    assert.match(readFileSync("lib/travel-tabs.ts", "utf8"), /\.slice\(0, 80\)/);
+    assert.match(BOOK, /Array\.isArray\(v\)/, "a repeated parameter would render as an array");
     assert.match(HOME, /\.slice\(0, 80\)/);
   });
 });

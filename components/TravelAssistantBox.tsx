@@ -139,7 +139,8 @@ export default function TravelAssistantBox({
 
   return (
     <div data-ai-assistant="">
-      <button
+      {/* Embedded, the panel is always open, so there is nothing to toggle. */}
+      {!embedded && <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -150,12 +151,12 @@ export default function TravelAssistantBox({
       >
         <Icon name="sparkle" className="h-4 w-4" />
         AI assistant
-      </button>
+      </button>}
 
       {open && (
         <div
           id="travel-assistant-panel"
-          className="mt-3 rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5 sm:p-6"
+          className={`${embedded ? "" : "mt-3 "}rounded-xl border border-[var(--gold-light)] bg-[#FAF8F3] p-5 sm:p-6`}
         >
           {labelledOutside ? null : (
             <>
@@ -163,6 +164,8 @@ export default function TravelAssistantBox({
               <p className="mt-2 text-sm leading-6 text-stone-600">{ASSISTANT_HOME_SUPPORT}</p>
             </>
           )}
+          {/* Kosher Travel only: White Glove Itineraries keeps the box to the box (owner, 22 November 2026). */}
+          {!itineraries && (<>
           <p className="mt-2 text-sm leading-6 text-stone-600">
             For White Glove&apos;s own checked listings, use the{" "}
             {/* THE FINDER IS THE GUIDE'S. On the itineraries domain /kosher is
@@ -221,6 +224,7 @@ export default function TravelAssistantBox({
               </li>
             </ul>
           </details>
+          </>)}
 
           <form
             onSubmit={(e) => {
@@ -246,7 +250,7 @@ export default function TravelAssistantBox({
           </form>
 
           {/* Beside the box they type into, not buried in the fold above it. */}
-          <p className="mt-3 text-xs leading-5 text-stone-500">{ASSISTANT_INPUT_NOTICE}</p>
+          {!itineraries && <p className="mt-3 text-xs leading-5 text-stone-500">{ASSISTANT_INPUT_NOTICE}</p>}
 
           <div className="mt-3 flex flex-wrap gap-2">
             {visible.map((ex) => (

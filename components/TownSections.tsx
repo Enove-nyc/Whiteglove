@@ -72,7 +72,7 @@ export function GettingThere({
           ))}
         </div>
         <div className="mt-8 flex flex-wrap gap-6">
-          <Link href="/book?type=cars" className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Search car hire →</Link>
+          <Link href="/find/car-rentals" className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Search car hire →</Link>
           <Link href={`/book?type=hotels&destination=${stayDestination}`} className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.15em] text-[var(--navy)] underline decoration-[var(--gold)] decoration-2 underline-offset-4">Search places to stay →</Link>
         </div>
         <p className="mt-6 text-sm leading-7 text-stone-500">Searches open with a booking partner, who takes the booking and the payment. Nothing is booked on this site.</p>

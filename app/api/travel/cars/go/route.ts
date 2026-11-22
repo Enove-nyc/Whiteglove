@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   // An expired quote is the ordinary case, not an error: prices move and desks
   // sell out, and thirty minutes is all a handle lives. So the traveler is sent
   // back to search again rather than shown anything about handles.
-  const searchAgain = publicUrl(request, "/book?kind=cars&expired=1");
+  const searchAgain = publicUrl(request, "/find/car-rentals");
   if (!chosen || kept?.provider !== "routestack") return NextResponse.redirect(searchAgain, 303);
 
   const config = routestackConfig();

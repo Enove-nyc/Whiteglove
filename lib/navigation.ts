@@ -30,7 +30,7 @@
  *      box.
  */
 
-import { BOOKING_SEARCH_HREF, type BookingLink } from "@/lib/booking-access";
+import { type BookingLink } from "@/lib/booking-access";
 
 export type NavLink = {
   /** The word on the link. Short — this is a dropdown, not a page. */
@@ -164,9 +164,9 @@ export function travelCategoryFor(booking: BookingLink): NavCategory {
   const travel = NAV_CATEGORIES.find((category) => category.label === "Travel")!;
   const bookingLinks: NavLink[] = booking.searchIsPublic
     ? [
-        { label: "Flights", href: `${BOOKING_SEARCH_HREF}?type=flights` },
-        { label: "Hotels", href: `${BOOKING_SEARCH_HREF}?type=hotels` },
-        { label: "Cars", href: `${BOOKING_SEARCH_HREF}?type=cars` },
+        { label: "Flights", href: "/find/flights" },
+        { label: "Hotels", href: "/find/hotels" },
+        { label: "Cars", href: "/find/car-rentals" },
       ]
     : [{ label: booking.label, href: booking.href, description: booking.description }];
   // Booking sits between Transport and Insurance — the searches beside the
@@ -209,7 +209,7 @@ export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
       // Public, copyable day-by-day trips (owner, 19 November 2026).
       { label: "Sample itineraries", href: "/sample-itineraries" },
       // Back for everyone, on free Gemini (owner, 20 November 2026).
-      { label: "Ask the travel assistant", href: "/assistant" },
+      { label: "Ask AI", href: "/assistant" },
       // "Your route" came off the menu at the owner's word (18 November 2026).
       // Get recommendations, the app pages, pricing and the adviser screens
       // came off the public site at the owner's word (18 November 2026). The
