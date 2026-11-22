@@ -167,9 +167,7 @@ export default async function SampleItineraryPage() {
 
       {itineraries ? (
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-          <Link href="/itinerary" className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}>
-            Open the itinerary planner
-          </Link>
+          <SampleCopyButton itinerary={SAMPLE_ITINERARY} />
         </div>
       ) : (<>
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
@@ -255,7 +253,6 @@ export default async function SampleItineraryPage() {
                 : "Build the same document yourself, for your own dates — or answer three short steps for destination ideas first. Sign in to start; it’s free."}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              {itineraries && <SampleCopyButton itinerary={SAMPLE_ITINERARY} />}
               <Link
                 href="/itinerary"
                 className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}
