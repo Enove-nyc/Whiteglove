@@ -50,10 +50,19 @@ export default function ItinerariesHome({
         <div className="contents lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           <div className="order-1 px-5 pb-3 pt-3 sm:px-8 sm:pb-8 sm:pt-14 lg:order-none lg:pb-40 lg:pt-20">
             <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.7rem,5.4vw,4.1rem)] font-semibold leading-[1.05] tracking-[-0.02em] text-[var(--navy-deep)]">
-              Book the trip.
-              <br />
-              Build the itinerary.
+              Plan your whole trip in one itinerary
             </h1>
+            <p className="mt-3 max-w-lg text-base text-stone-700">
+              Organise flights, hotels and daily plans. Start with a sample itinerary or build your own. No account needed to start.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+              <Link href="/itinerary" className="inline-flex min-h-11 items-center rounded-lg bg-[var(--navy)] px-4 font-semibold text-white">
+                Start an itinerary
+              </Link>
+              <Link href="/sample-itineraries" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline underline-offset-4">
+                Browse sample itineraries
+              </Link>
+            </div>
           </div>
           <figure className="relative order-3 mt-6 h-56 sm:h-80 lg:absolute lg:inset-y-0 lg:right-0 lg:order-none lg:mt-0 lg:h-auto lg:w-[48%]">
             <Image

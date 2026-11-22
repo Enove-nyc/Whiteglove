@@ -102,14 +102,8 @@ describe("the redirect off this domain is permanent", () => {
   });
 });
 
-describe("the sitemap dates itself once, not once per crawl", () => {
-  it("computes lastModified outside the handler", () => {
-    // This route reads Redis for the case studies and is therefore dynamic, so
-    // a date on the handler's first line is the moment the crawler asked, on
-    // every URL, every time. At module scope it is the deploy.
-    const SITEMAP = readFileSync("app/sitemap.ts", "utf8");
-    const handlerAt = SITEMAP.indexOf("export default async function sitemap");
-    const dateAt = SITEMAP.indexOf("const lastModified = new Date()");
-    assert.ok(dateAt >= 0 && dateAt < handlerAt, "lastModified is computed per request");
+describe("sitemap modification dates", () => {
+  it("omits lastModified until page-specific edit dates are available", () => {
+    assert.doesNotMatch(readFileSync("app/sitemap.ts", "utf8"), /lastModified/);
   });
 });

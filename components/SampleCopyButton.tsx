@@ -7,7 +7,7 @@ import { shiftItinerary } from "@/data/sample-itineraries";
 import { GUEST_TRIP_KEY } from "@/lib/guest-trip";
 
 /**
- * "Copy into my planner" on a sample itinerary.
+ * "Use this itinerary" on a sample itinerary.
  *
  * Signed in: the sample becomes a NEW trip on the account and opens — nothing
  * already there is touched (the trips route's "import"). Not signed in: it
@@ -69,7 +69,7 @@ export default function SampleCopyButton({ itinerary }: { itinerary: Itinerary }
         disabled={busy}
         className="inline-flex min-h-12 items-center rounded-lg bg-[var(--navy)] px-5 text-[15px] font-semibold text-white transition hover:bg-[var(--navy-deep)] disabled:opacity-60"
       >
-        {busy ? "Copying…" : "Copy into my planner"}
+        {busy ? "Copying…" : "Use this itinerary"}
       </button>
       {error ? <p role="alert" className="mt-2 text-sm text-red-700">{error}</p> : null}
     </div>

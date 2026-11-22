@@ -1,3 +1,4 @@
+import SampleCopyButton from "@/components/SampleCopyButton";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import GloveMark, { GloveList } from "@/components/GloveMark";
@@ -23,11 +24,11 @@ export async function generateMetadata() {
   return pageMetadata({
     title:
       brand === "itineraries"
-        ? `A sample itinerary — a week on Lake Como | ${BRAND_NAME.itineraries}`
+        ? `7-Day Lake Como Family Itinerary | ${BRAND_NAME.itineraries}`
         : `A sample itinerary — a week on Lake Como | ${BRAND_NAME.kosher}`,
     description:
       brand === "itineraries"
-        ? "A whole week on Lake Como for a family of five, as the itinerary is handed over: a day per page, real walking and driving times, and what is filled in on a live trip that is left blank here."
+        ? "Explore a family week on Lake Como with Bellagio, a lake boat trip and time to relax. Copy the day-by-day itinerary and make it your own."
         : "A whole week on Lake Como for a family of five, as the itinerary is delivered: a day per page, real walking and driving times, the kosher side per day, and a Shabbos with nothing scheduled on it.",
     path: "/sample-itinerary",
   });
@@ -254,6 +255,7 @@ export default async function SampleItineraryPage() {
                 : "Build the same document yourself, for your own dates — or answer three short steps for destination ideas first. Sign in to start; it’s free."}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
+              {itineraries && <SampleCopyButton itinerary={SAMPLE_ITINERARY} />}
               <Link
                 href="/itinerary"
                 className={`inline-flex min-h-11 items-center ${ACTION_BUTTON_CLASS.primary}`}

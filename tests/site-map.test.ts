@@ -164,38 +164,14 @@ describe("the sitemap and the pages agree about indexing", () => {
   });
 });
 
-describe("the sitemap dates itself once, not once per crawl", () => {
+describe("sitemap modification dates", () => {
   const SITEMAP = readFileSync("app/sitemap.ts", "utf8");
 
-  it("computes lastModified outside the handler", () => {
-    /**
-     * FOUND LIVE, on 804 URLs at once. The date was `new Date()` on the first
-     * line of the handler, under a comment saying it was the build — but this
-     * route reads Redis for the case studies, so it is dynamic and the handler
-     * runs per request. Every fetch of /sitemap.xml stamped all 804 URLs with
-     * the second the crawler asked, which tells Google the whole site changed
-     * since last night, every night. A crawler told that stops reading the
-     * field, and the pages that really did change lose the only signal they
-     * had.
-     *
-     * At module scope it is the moment the server started, which on this host
-     * is the deploy. That is the honest answer the file always meant to give.
-     */
-    const handlerAt = SITEMAP.indexOf("export default async function sitemap");
-    const dateAt = SITEMAP.indexOf("const lastModified = new Date()");
-    assert.ok(dateAt >= 0, "the sitemap still has to date itself");
-    assert.ok(
-      dateAt < handlerAt,
-      "lastModified is computed inside the handler, so it is the request time and not the deploy",
-    );
+  it("omits lastModified until page-specific edit dates are available", () => {
+    assert.doesNotMatch(SITEMAP, /lastModified/);
   });
 
-  it("gives every URL the same one", () => {
-    // Not a date per page: there is no real "when did this change" on these
-    // records, and inventing one per row would be a worse lie than one date.
-    assert.equal(SITEMAP.match(/new Date\(\)/g)?.length, 1);
-    assert.ok((SITEMAP.match(/^\s*lastModified,$/gm)?.length ?? 0) >= 1, "every entry takes the same date");
-  });
+
 });
 
 describe("robots.txt and the sitemap read one list", () => {

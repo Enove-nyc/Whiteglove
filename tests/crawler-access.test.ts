@@ -75,11 +75,10 @@ describe("public discovery and private crawler boundaries", () => {
 
   it("gives AI readers real public sources and accurate access and sample limitations", () => {
     const guide = readFileSync("public/llms.txt", "utf8");
-    for (const path of ["about", "sample-itinerary", "pricing", "contact", "privacy", "terms", "sitemap.xml"]) assert.ok(guide.includes(`https://www.whitegloveitineraries.com/${path}`));
+    for (const path of ["about", "sample-itinerary", "sample-itineraries", "contact", "privacy", "terms", "sitemap.xml"]) assert.ok(guide.includes(`https://www.whitegloveitineraries.com/${path}`));
     assert.match(guide, /fictional/);
-    assert.match(guide, /invitation/);
-    assert.match(guide, /Purchases are currently unavailable/);
-    assert.match(guide, /not cloud-synced/);
+    assert.match(guide, /Guest drafts stay in the current browser/);
+    assert.doesNotMatch(guide, /whitegloveitineraries\.com\/pricing/);
     assert.doesNotMatch(guide, /https:\/\/[^\s)]+\/(?:i|t|f|p|form)\//);
   });
 });

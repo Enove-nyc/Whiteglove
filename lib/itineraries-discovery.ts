@@ -1,7 +1,7 @@
 import { BRAND_CONTACT_EMAIL, BRAND_NAME, BRAND_ORIGIN } from "@/lib/site-brand-core";
 
-export const ITINERARIES_TITLE = "Your trip, together | White Glove Itineraries";
-export const ITINERARIES_DESCRIPTION = "Build your itinerary, organise trip details and share the journey with White Glove Itineraries.";
+export const ITINERARIES_TITLE = "Travel Itinerary Planner | White Glove Itineraries";
+export const ITINERARIES_DESCRIPTION = "Build a day-by-day travel itinerary with flights, hotels and activities. Start from scratch or copy a sample trip, then print it or save it as a PDF.";
 
 /** Public product facts only; never read sessions, trip stores or customer documents. */
 export function itinerariesStructuredData() {
