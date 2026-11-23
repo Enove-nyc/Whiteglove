@@ -6,9 +6,6 @@ import { BRAND_ORIGIN } from "@/lib/site-brand-core";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { accountCookieName, changeTravelerShare, resolveBusinessOwner, ensureTravelerShare, getCurrentAccountData, getAccountRecord, getSharedTraveler, publishTravelerItinerary, revokeTravelerShare } from "@/lib/account-store";
-import { getPlan } from "@/lib/account-plan-store";
-import { PLAN_LABELS } from "@/lib/account-plans";
-import { mayServeCompanionClients } from "@/lib/account-limits";
 import { currentBrand } from "@/lib/site-brand";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -29,10 +26,6 @@ export async function POST(request: NextRequest) {
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const privateInvite = (await currentBrand()) === "itineraries";
-  if (!privateInvite && !mayServeCompanionClients(await getPlan(account.email))) {
-    return NextResponse.json({ error: `Handing a trip to a client is part of ${PLAN_LABELS.starter} and up.` }, { status: 403 });
-  }
-
   const body = (await request.json().catch(() => null)) as { tripId?: string; travelerId?: string; action?: string } | null;
   const tripId = typeof body?.tripId === "string" ? body.tripId.trim() : "";
   const travelerId = typeof body?.travelerId === "string" ? body.travelerId.trim() : "";
@@ -80,7 +73,7 @@ export async function POST(request: NextRequest) {
         url = `${origin}/join#invite=${issued.token}`;
       }
       if (await sendFamilyTripInvitation(recipient.value, url, shared.ownerName ?? "", !record)) {
-        return NextResponse.json({ shareId, emailed: true });
+        return NextResponse.json({ shareId, emailed: true }, { headers: { "Cache-Control": "private, no-store" } });
       }
     } catch {
       // A failed delivery is reported without disclosing the recipient or token.

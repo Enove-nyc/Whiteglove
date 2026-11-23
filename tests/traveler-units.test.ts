@@ -166,7 +166,7 @@ describe("the traveler-scoped app page and its share route keep the same fences 
 
   it("allows regular accounts to create personal codes with an isolated wallet", () => {
     assert.doesNotMatch(ROUTE, /mayServeCompanionClients/);
-    assert.match(PAGE, /personalWalletKey=\{shared.walletKey\}/);
+    assert.match(PAGE, /personalWalletKey=\{shared.privateInvite \? undefined : shared.walletKey\}/);
     assert.match(PAGE, /individual: true/);
     assert.match(PAGE, /chat=\{hasClientFeatures \? chat : undefined\}/);
   });

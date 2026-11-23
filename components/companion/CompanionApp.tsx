@@ -2884,7 +2884,7 @@ function NotifyControl({ shareId, privateInvite, pushPublicKey }: { shareId: str
 
   if (status === "checking") return null;
   if (status === "unsupported") return privateInvite
-    ? <p className="text-sm leading-6">Push is unavailable on this device. You can still check family trip changes in Updates.</p>
+    ? <p className="text-sm leading-6">Push is unavailable in this browser. Check Updates here, or use Android Chrome with browser notifications enabled. iPhone Safari tabs can use Updates.</p>
     : null;
 
   const serif = "Georgia,'Times New Roman',serif";
