@@ -133,6 +133,18 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // account has asked for them. Never merely because a trip holds the data.
   const showZmanimHere = !itineraries || kosher;
   const [itin, setItin] = useState<Itinerary>(emptyItinerary());
+  const [draftStatus, setDraftStatus] = useState("");
+  const [browserDraft, setBrowserDraft] = useState<Itinerary | null>(null);
+  const [savingBrowserDraft, setSavingBrowserDraft] = useState(false);
+  useEffect(() => {
+    if (guest || !itineraries) return;
+    try {
+      const raw = localStorage.getItem(GUEST_TRIP_KEY);
+      if (raw) setBrowserDraft({ ...emptyItinerary(), ...JSON.parse(raw) });
+    } catch {
+      // Blocked or malformed storage leaves the saved account trips available.
+    }
+  }, [guest, itineraries]);
   const [tab, setTab] = useState<Tab>(null);
   // ?import=1 (the "Booked already?" links on Book and the samples) opens Smart
   // Import straight away for a signed-in traveller. After mount, so the server
@@ -274,11 +286,6 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     };
   }, [reloadKey, guest]);
 
-  // The one chokepoint every add, edit and reorder in this builder funnels
-  // through. Gated here rather than at each of the dozens of buttons that
-  // call it: the first attempt to change anything, signed out, opens the
-  // sign-in dialog instead of writing a change nowhere it can be got back
-  // from; once signed in, this and every later call go straight through.
   function persist(next: Itinerary): Promise<boolean> {
     if (loadedKey !== reloadKey) return Promise.resolve(false);
     if (guest) {
@@ -297,6 +304,47 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
       completion = saveQueue.enqueue({ itinerary: next, tripId: tripId ?? undefined });
     }, "Sign in to save");
     return completion;
+  }
+
+  async function saveBrowserDraft() {
+    if (!browserDraft || savingBrowserDraft) return;
+    setSavingBrowserDraft(true);
+    setDraftStatus("");
+    try {
+      const response = await fetch("/api/account/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "import", itinerary: browserDraft }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.activeId) throw new Error(result.error || "Could not save the browser draft.");
+      try { localStorage.removeItem(GUEST_TRIP_KEY); } catch { /* The account copy was saved. */ }
+      setBrowserDraft(null);
+      setMode("edit");
+      setReloadKey((key) => key + 1);
+      setDraftStatus("Browser draft saved to your account.");
+    } catch (error) {
+      setDraftStatus(error instanceof Error ? error.message : "Could not save the browser draft.");
+    } finally {
+      setSavingBrowserDraft(false);
+    }
+  }
+
+  async function publishChanges() {
+    if (!tripId) return;
+    setDraftStatus("Publishing…");
+    try {
+      const response = await fetch("/api/account/traveler-share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "publish", tripId }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not publish changes.");
+      setDraftStatus("Changes published. Travelers can keep using their original invites.");
+    } catch (error) {
+      setDraftStatus(error instanceof Error ? error.message : "Could not publish changes.");
+    }
   }
 
   const set = (patch: Partial<Itinerary>) => persist({ ...itin, ...patch });
@@ -482,6 +530,18 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const moveStopBy = (id: string, direction: -1 | 1) => persist(moveStop(itin, id, direction));
   const scheduleStop = (id: string, date: string) => persist({ ...itin, activities: itin.activities.map((a) => (a.id === id ? { ...a, date, order: undefined } : a)) });
 
+  if (browserDraft) {
+    return (
+      <section className="space-y-3 rounded-xl border border-[var(--gold-light)] bg-white p-5">
+        <h2 className="text-xl font-semibold">Continue your browser draft</h2>
+        <p>Save {browserDraft.title?.trim() || "your draft"} to your account to import bookings or invite travelers.</p>
+        <button type="button" disabled={savingBrowserDraft} onClick={() => void saveBrowserDraft()} className={toolbarButton(true)}>{savingBrowserDraft ? "Saving…" : "Save to your account"}</button>
+        <button type="button" disabled={savingBrowserDraft} onClick={() => { setBrowserDraft(null); setDraftStatus(""); }} className={toolbarButton(false)}>View saved trips</button>
+        {draftStatus && <p role="status">{draftStatus}</p>}
+      </section>
+    );
+  }
+
   // Until the first trips read lands, show nothing rather than flashing the
   // editor at somebody who is about to see the list.
   if (mode === null) {
@@ -526,6 +586,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
       </button>}
       <div id="itinerary-save-status" role="status" aria-live="polite" className="sticky top-16 z-30 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm">
         <span className="mr-auto font-semibold text-[var(--navy)]">{itin.title?.trim() || "Your trip"}{itin.startDate ? " · " + tripBarDates({ startDate: itin.startDate, endDate: itin.endDate }) : ""} · Editing</span>
+        {guest && <Link href="/login?next=%2Fitinerary" className="font-semibold underline">Sign in to save this browser draft</Link>}
+        {draftStatus && <span>{draftStatus}</span>}
         {saveState === "saving" && <span>Saving…</span>}
         {saveState === "saved" && <span className="text-emerald-800">{guest ? "Saved in this browser" : "Saved to your account"}</span>}
         {saveState === "error" && <><span className="text-red-800">Could not save. Your changes are still here.</span><button type="button" onClick={() => saveQueue.retry()} className="min-h-11 rounded-md border border-red-800 px-3 font-semibold text-red-800">Try again</button></>}
@@ -565,7 +627,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           }
         }}
         templates={templates}
-        signedIn={viewer === null ? null : Boolean(viewer.signedIn)}
+        signedIn={guest ? false : viewer === null ? null : Boolean(viewer.signedIn)}
         onApply={(patch, template) => {
           const base = { ...itin, ...patch };
           persist(template ? applyTemplate(base, template, uid) : base);
@@ -791,6 +853,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                   day={day}
                   units={units}
                   signedIn={Boolean(viewer?.signedIn)}
+                  walletTravelers={itineraries ? travelersOf(itin) : undefined}
                   isToday={day.date === todayInTrip}
                   adjustments={itin.adjustments ?? []}
                   zmanim={zmanimForToday?.[day.date]}
@@ -828,6 +891,10 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
             <span aria-hidden="true" className="text-lg text-[var(--gold-ink)] transition-transform group-open:rotate-180">⌄</span>
           </summary>
           <div className="border-t border-[var(--gold-light)] p-3">
+            {itineraries && tripId && !guest && <div className="mb-4 space-y-2 text-sm text-stone-600">
+              <p>Enter each traveler’s email and send an invitation. New travelers choose their own password. The first invite publishes your itinerary. Use Publish changes after editing. Everyone invited can chat together. Each traveler can open their own assigned documents.</p>
+              <button type="button" disabled={saveState === "saving" || saveState === "error" || draftStatus === "Publishing…"} onClick={() => void publishChanges()} className={toolbarButton(false)}>Publish changes to travelers</button>
+            </div>}
             <TravelersPanel
               travelers={travelersOf(itin)}
               onChange={(travelers) => set({ travelers, travelerName: travelers[0]?.name ?? "" })}
@@ -837,6 +904,8 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
                 set({ bookingFor, travelers, travelerName: travelers[0]?.name ?? "" });
               }}
               tripId={tripId}
+              privateInvites={itineraries}
+              tripSaving={saveState === "saving" || saveState === "error"}
             />
           </div>
         </details>
@@ -955,7 +1024,7 @@ function clockMins(t?: string): number | null {
 const OPENS_THE_DAY = -1;
 const CLOSES_THE_DAY = 100000;
 
-function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, itineraries = false, signedIn, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates, units }: {
+function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjustment, onClearAdjustments, burials, itineraries = false, signedIn, walletTravelers, onMove, onUpdate, onSetAttachments, onRemove, onAddStop, onSaveLodging, onRemoveLodging, onAddFlight, onUpdateFlight, onRemoveFlight, allDates, units }: {
   day: ReturnType<typeof buildDays>[number];
   /** Today, on the traveler's own device. Marked, and opened. */
   isToday?: boolean;
@@ -968,6 +1037,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
   defaultOpen?: boolean;
   /** Boarding passes need an account; without one there is nowhere to put them. */
   signedIn: boolean;
+  walletTravelers?: ItinTraveler[];
   burials: Record<string, string[]>;
   /** True on the White Glove Itineraries brand — no kosher tools here. */
   itineraries?: boolean;
@@ -1109,6 +1179,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
             key={legFlight.id}
             attachments={legFlight.attachments}
             signedIn={signedIn}
+            travelers={walletTravelers}
             onChange={(attachments) => onUpdateFlight({ ...legFlight, attachments })}
           />
         ))}
@@ -1206,6 +1277,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
           attachments={a.attachments}
           allowPhotos
           signedIn={signedIn}
+          travelers={walletTravelers}
           onChange={(attachments) => onSetAttachments(a.id, attachments)}
         />
         {/* No location means no driving time and an overstated free day.
@@ -1390,6 +1462,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
           attachments={day.lodging.attachments}
           allowPhotos
           signedIn={signedIn}
+          travelers={walletTravelers}
           onChange={(attachments) => onSaveLodging({ ...day.lodging!, attachments })}
         />
       )}
@@ -2462,7 +2535,7 @@ const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: s
   { value: "infant", label: "Infant" },
 ];
 
-function TravelerShareLink({ tripId, traveler }: { tripId: string | null; traveler: ItinTraveler }) {
+function LegacyTravelerShareLink({ tripId, traveler }: { tripId: string | null; traveler: ItinTraveler }) {
   const [code, setCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [hasCode, setHasCode] = useState(Boolean(traveler.hasOwnAccess));
@@ -2543,18 +2616,83 @@ function TravelerShareLink({ tripId, traveler }: { tripId: string | null; travel
   );
 }
 
+function TravelerShareLink({ tripId, traveler, privateInvites, tripSaving }: { tripId: string | null; traveler: ItinTraveler; privateInvites: boolean; tripSaving: boolean }) {
+  const [link, setLink] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [revoked, setRevoked] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [emailed, setEmailed] = useState(false);
+
+  async function invite(action: "invite" | "revoke") {
+    if (!tripId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/account/traveler-share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId, travelerId: traveler.id, action: privateInvites && action === "invite" ? "email" : action }),
+      });
+      const data = await res.json().catch(() => null);
+      if (action === "revoke" && res.ok) { setLink(""); setEmailed(false); setRevoked(true); return; }
+      if (!res.ok || !data?.shareId) {
+        setError(data?.error || "Could not create that link.");
+        return;
+      }
+      setRevoked(false);
+      setCopied(false);
+      setLink(`${window.location.origin}/t/${data.shareId}/app`);
+      setEmailed(data.emailed === true);
+    } catch {
+      setError("Could not reach the server. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (privateInvites && !tripId) return null;
+
+  return (
+    <div className="mt-1.5 w-full space-y-2 text-xs">
+      {privateInvites && emailed && <p role="status">Invitation email sent.</p>}
+      {privateInvites && link && <a href={link + "?screen=messages"} className="inline-flex min-h-11 items-center px-2 font-semibold underline">Open family chat</a>}
+      {link && !privateInvites ? (
+        <>
+          <input aria-label="Traveler invite link" readOnly value={link} className={inputClass} onFocus={(event) => event.target.select()} />
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="inline-flex min-h-11 items-center px-2 font-semibold underline underline-offset-4" onClick={() => void navigator.clipboard.writeText(link).then(() => setCopied(true)).catch(() => setError("Select the link to copy it."))}>{copied ? "Copied" : "Copy invite"}</button>
+
+          </div>
+        </>
+      ) : (
+        <button type="button" onClick={() => void invite("invite")} disabled={busy || !tripId || tripSaving || (privateInvites && !traveler.email?.includes("@"))} className="inline-flex min-h-11 items-center px-2 font-semibold underline underline-offset-4">
+          {privateInvites ? (emailed || traveler.hasOwnAccess && !revoked ? "Resend invitation email" : "Email invitation") : traveler.hasOwnAccess ? "Get invite link" : "Create access link"}
+        </button>
+      )}
+      {privateInvites && !revoked && (link || traveler.hasOwnAccess) && <button type="button" disabled={busy || tripSaving} onClick={() => void invite("revoke")} className="inline-flex min-h-11 items-center px-2 font-semibold underline underline-offset-4">Revoke invite</button>}
+      {revoked && <p role="status">Invite revoked.</p>}
+      {error && <p role="alert" className="text-red-700">{error}</p>}
+    </div>
+  );
+}
+
 function TravelersPanel({
   travelers,
   onChange,
   bookingFor,
   onBookingFor,
   tripId,
+  privateInvites = false,
+  tripSaving = false,
 }: {
   travelers: ItinTraveler[];
   onChange: (t: ItinTraveler[]) => void;
   bookingFor?: "self" | "someone-else";
   onBookingFor: (answer: "self" | "someone-else", traveler?: ItinTraveler) => void;
   tripId?: string | null;
+  privateInvites?: boolean;
+  tripSaving?: boolean;
 }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState<NonNullable<ItinTraveler["kind"]>>("adult");
@@ -2657,7 +2795,11 @@ function TravelersPanel({
                 placeholder="Family / group (optional)"
                 className="min-w-0 flex-1 border border-[var(--gold-light)] bg-[#FAF8F3] px-2 py-1 text-xs text-[var(--navy)] outline-none"
               />
-              <TravelerShareLink tripId={tripId ?? null} traveler={t} />
+              {privateInvites && <label className="w-full">
+                <span className={caption}>Traveler’s sign-in email</span>
+                <input type="email" value={t.email ?? ""} onChange={(event) => update(t.id, { email: event.target.value })} className={inputClass} />
+              </label>}
+              {privateInvites ? <TravelerShareLink tripId={tripId ?? null} traveler={t} privateInvites tripSaving={tripSaving} /> : <LegacyTravelerShareLink tripId={tripId ?? null} traveler={t} />}
             </li>
           ))}
         </ul>

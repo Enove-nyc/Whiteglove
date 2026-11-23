@@ -60,8 +60,8 @@ export default function ItinerariesHome({
               <Link href="/itinerary" className="inline-flex min-h-11 items-center rounded-lg bg-[var(--navy)] px-4 font-semibold text-white">
                 Start an itinerary
               </Link>
-              <Link href="/sample-itineraries" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline underline-offset-4">
-                Browse sample itineraries
+              <Link href="/sample-itinerary" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline underline-offset-4">
+                See a finished trip
               </Link>
             </div>
           </div>
