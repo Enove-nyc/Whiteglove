@@ -57,7 +57,7 @@ const ITINERARIES_LINKS = [
 // minimal footer so a sealed app surface has no tap-path out to the sales side.
 const FOOTER_MARKETING = new Set(["Pricing", "Advertise", "Sources"]);
 
-export default function Footer({ brand: brandProp, minimal = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean } = {}) {
+export default function Footer({ brand: brandProp, minimal = false, inApp = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean; inApp?: boolean } = {}) {
   /**
    * The same three answers as the navigation, in the same order: what the page
    * passed, what this deployment was BUILT as, then the hostname.
@@ -72,6 +72,18 @@ export default function Footer({ brand: brandProp, minimal = false }: { brand?: 
   // Inside the app, keep only support/legal (Contact, Terms, Privacy) — no
   // Pricing or other marketing. Contact/Terms/Privacy belong in an app.
   const links = minimal ? allLinks.filter((link) => !FOOTER_MARKETING.has(link.label)) : allLinks;
+
+  if (inApp) {
+    const supportLinks = links.filter(({ href }) => ["/contact", "/terms", "/privacy"].includes(href));
+    return (
+      <footer className="border-t border-stone-200 bg-white px-5 py-3 text-sm text-[#15204A]">
+        <p className="mt-1 font-semibold">White Glove {isItineraries ? "Itineraries" : "Kosher Travel"}</p>
+        <nav aria-label="Trip app footer" className="flex flex-wrap gap-x-5">
+          {supportLinks.map(({ href, label }) => <Link key={href} href={href} className="inline-flex min-h-11 items-center underline">{label}</Link>)}
+        </nav>
+      </footer>
+    );
+  }
 
   return (
     <footer id="contact" className="mt-auto border-t border-[var(--gold-light)] bg-[var(--navy-deep)] text-[#D5CEC3]">

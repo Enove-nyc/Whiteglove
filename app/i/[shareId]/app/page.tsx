@@ -1,4 +1,3 @@
-import Footer from "@/components/Footer";
 import { noteShareOpened } from "@/lib/share-open-recorder";
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
@@ -33,10 +32,10 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   });
   if (!trip) redirect(`/i/${encodeURIComponent(shareId)}`);
   if (shared.tripId) trip.liveAlerts = await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
-  return <><main>
+  return <main>
     <ClientCodeMemory path={`/i/${shareId}/app`} />
     <CompanionApp trip={trip} travelerGroupCode={shareId} personalWalletKey={`trip:${shareId}`} calendarHref={`/i/${encodeURIComponent(shareId)}/calendar`} />
-  </main><Footer minimal /></>;
+  </main>;
 }
 
 async function sampleApp() {
@@ -49,7 +48,7 @@ async function sampleApp() {
   if (!trip) redirect("/sample-itinerary");
 
   return (
-    <><main>
+    <main>
       {/* Above the app rather than over it: the app below owns every pixel of
           the screen, so a floating notice would sit on a control. Every one of
           these screens is a picture of somebody's private trip, and a sample
@@ -61,7 +60,7 @@ async function sampleApp() {
         </p>
       </div>
       <CompanionApp trip={trip} travelerPreview personalWalletKey="sample:rome" calendarHref={`/i/${SAMPLE_TRIP_CODE}/calendar`} />
-    </main><Footer minimal /></>
+    </main>
   );
 }
 

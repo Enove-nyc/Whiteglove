@@ -32,6 +32,7 @@
  * to be.
  */
 
+import Footer from "@/components/Footer";
 import { Fragment, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useOnValueChange } from "@/components/useOnValueChange";
 import { useRouter } from "next/navigation";
@@ -2371,6 +2372,10 @@ export default function CompanionApp({
   // trip, the bottom pill does it, the same as any other tab.
   // Embedded, the header always carries a back — on the home screen it exits the
   // trip (back to the advisor app), elsewhere it steps back a screen.
+  const screenContent = !embedded && (st.screen === "home" || st.screen === "profile")
+    ? <>{body}<Footer inApp /></>
+    : body;
+
   const canBack = embedded ? true : st.screen !== "home" && !(advisorInbox && st.screen === "messages");
 
   // ── the phone itself ────────────────────────────────────────────────────
@@ -2414,7 +2419,7 @@ export default function CompanionApp({
         </div>
       )}
       {/* content */}
-      <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{body}</div>
+      <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{screenContent}</div>
       {/* tabs — an icon over a label per tab, with one gold pill that slides to
           the active one (the messenger/travel-app bottom bar). Hidden while the
           message composer holds the keyboard, so it never rides up wedged
@@ -2536,7 +2541,7 @@ export default function CompanionApp({
           </div>
         )}
         <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
-          <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{body}</div>
+          <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{screenContent}</div>
         </div>
       </main>
     </div>

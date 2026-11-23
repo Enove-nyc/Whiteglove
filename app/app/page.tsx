@@ -73,7 +73,7 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
           </div>
         </div>
       </main>
-      <Footer minimal />
+      <Footer inApp />
     </>
   );
 }
