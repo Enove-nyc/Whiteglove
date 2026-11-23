@@ -172,7 +172,7 @@ export default function LoginForm({
       return;
     }
 
-    if (mode === "signup" && data?.verificationRequired !== false) {
+    if (mode === "signup") {
       if (!agreed) { setMessage("Please agree to the terms and the privacy policy to create an account."); setSaving(false); return; }
       const problem = passwordProblem(password);
       if (problem) { setMessage(problem); setSaving(false); return; }
