@@ -37,6 +37,9 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
         <div className="mx-auto max-w-5xl">
           <h1 className="font-[family-name:var(--font-display)] text-4xl sm:text-5xl">Open your trip</h1>
           <p className="mt-3 text-base text-stone-700">View your itinerary, travel wallet, and trip chat in your browser.</p>
+          {itineraries && process.env.NEXT_PUBLIC_ITINERARIES_PLAY_STORE_AVAILABLE === "1" && (
+            <a href="https://play.google.com/store/apps/details?id=com.whitegloveitineraries.family" className="mt-3 inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Get it on Google Play</a>
+          )}
 
           <div className="mt-8 grid items-start gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <section aria-labelledby="your-trips" className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
