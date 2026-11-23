@@ -39,13 +39,14 @@
  * commission on it is not, and both live in the same list.
  */
 
-export const ATTACHMENT_KINDS = ["boarding-pass", "ticket", "booking", "other"] as const;
+export const ATTACHMENT_KINDS = ["boarding-pass", "ticket", "booking", "photo", "other"] as const;
 export type AttachmentKind = (typeof ATTACHMENT_KINDS)[number];
 
 export const KIND_LABELS: Record<AttachmentKind, { label: string; hint: string }> = {
   "boarding-pass": { label: "Boarding pass", hint: "The pass itself, or the PDF the airline sent." },
   ticket: { label: "Ticket", hint: "An attraction, a museum, a train." },
   booking: { label: "Booking confirmation", hint: "A hotel, a car, a transfer." },
+  photo: { label: "Photo", hint: "Choose a photo from your device." },
   other: { label: "Something else", hint: "Anything else worth having on your phone." },
 };
 
@@ -131,6 +132,8 @@ export function attachmentProblem(input: {
       ? "SVG files are not accepted. Save it as a PDF or a picture."
       : "That has to be a PDF or a picture — PDF, PNG, JPEG or WebP.";
   }
+
+  if (input.kind === "photo" && !type.startsWith("image/")) return "Choose a JPEG, PNG or WebP photo.";
 
   const bytes = dataUrlBytes(input.dataUrl);
   if (bytes <= 0) return "That file came through empty.";

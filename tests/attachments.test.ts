@@ -99,9 +99,14 @@ describe("what may be attached", () => {
     assert.equal(attachmentProblem({ name: "x.pdf", dataUrl: pdf(100), existingCount: MAX_PER_ITEM - 1 }), null);
   });
 
+  it("accepts only a raster image for a photo attachment", () => {
+    assert.equal(attachmentProblem({ name: "hotel.jpg", kind: "photo", dataUrl: "data:image/jpeg;base64,AA==" }), null);
+    assert.match(attachmentProblem({ name: "hotel.pdf", kind: "photo", dataUrl: pdf(100) }) ?? "", /photo/);
+  });
+
   it("refuses a kind nobody offers", () => {
     assert.match(attachmentProblem({ name: "x.pdf", dataUrl: pdf(100), kind: "passport" }) ?? "", /what kind of thing/);
-    for (const kind of ATTACHMENT_KINDS) {
+    for (const kind of ATTACHMENT_KINDS.filter((kind) => kind !== "photo")) {
       assert.equal(attachmentProblem({ name: "x.pdf", dataUrl: pdf(100), kind }), null, kind);
     }
   });
