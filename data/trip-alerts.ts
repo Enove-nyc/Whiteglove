@@ -36,12 +36,15 @@ export type TripAlertKind =
   | "advisor_alert"
   | "departure_reminder";
 
+export type TripEventTarget = { kind: "flight" | "lodging" | "activity"; id: string };
+
 export type TripAlert = {
   id: string;
   kind: TripAlertKind;
   /** The flight a live-status alert is about. Absent on itinerary_update,
    *  which is about the plan rather than any one flight. */
   flightId?: string;
+  targets?: TripEventTarget[];
   title: string;
   note: string;
   createdAt: string; // ISO timestamp

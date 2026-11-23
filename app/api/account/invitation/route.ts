@@ -16,9 +16,10 @@ export async function POST(request: NextRequest) {
     const invitation = typeof body?.invitationToken === "string" ? await inspectAccountInvitation(body.invitationToken) : null;
     if (!invitation) return NextResponse.json({ error: "This invitation is not available. Contact White Glove for a new link." }, { status: 403, headers });
     const shareId = invitation.tripShareId;
-    if (shareId && !await getSharedTraveler(shareId, invitation.identity)) {
+    const trip = shareId ? await getSharedTraveler(shareId, invitation.identity) : null;
+    if (shareId && !trip?.privateInvite) {
       return NextResponse.json({ error: "This trip invitation is no longer available. Ask the person who invited you for a new link." }, { status: 403, headers });
     }
-    return NextResponse.json({ identity: invitation.identity, expiresAt: invitation.expiresAt, ...(shareId ? { next: `/t/${encodeURIComponent(shareId)}/app` } : {}) }, { headers });
+    return NextResponse.json({ identity: invitation.identity, expiresAt: invitation.expiresAt, ...(shareId ? { next: `/t/${encodeURIComponent(shareId)}/app`, tripTitle: trip?.itinerary.title } : {}) }, { headers });
   } catch { return NextResponse.json({ error: "The invitation could not be checked. Please try again." }, { status: 503, headers }); }
 }

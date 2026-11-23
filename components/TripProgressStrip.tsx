@@ -71,9 +71,16 @@ function getServerSnapshot(): string {
 }
 
 /** "YYYY-MM-DDTHH:MM" on the traveler's own device, or "" before hydration. */
-export function useDeviceClock(): { today: string; nowMinutes: number | null } {
+export function useDeviceClock(timeZone?: string): { today: string; nowMinutes: number | null } {
   const value = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   if (!value) return { today: "", nowMinutes: null };
+  if (timeZone) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(new Date());
+    const part = (type: string) => parts.find((item) => item.type === type)?.value;
+    return { today: `${part("year")}-${part("month")}-${part("day")}`, nowMinutes: minutesOfClock(`${part("hour")}:${part("minute")}`) };
+  }
   const [today, time] = value.split("T");
   return { today, nowMinutes: minutesOfClock(time) };
 }

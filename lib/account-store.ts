@@ -3981,11 +3981,11 @@ function coalesceItineraryChange(
     // leave a change they made after the client already read the entry looking
     // already-seen. A new id restores the unread signal; the feed still shows
     // one line, since the old entry is dropped.
-    return [...alerts.slice(0, -1), { id: idFor(), kind: "itinerary_update", title: change.title, note: change.note, createdAt: now, acknowledged: false }];
+    return [...alerts.slice(0, -1), { id: idFor(), kind: "itinerary_update", title: change.title, note: change.note, targets: change.targets, createdAt: now, acknowledged: false }];
   }
   return [
     ...alerts,
-    { id: idFor(), kind: "itinerary_update", title: change.title, note: change.note, createdAt: now, acknowledged: false },
+    { id: idFor(), kind: "itinerary_update", title: change.title, note: change.note, targets: change.targets, createdAt: now, acknowledged: false },
   ];
 }
 

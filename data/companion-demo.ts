@@ -30,6 +30,7 @@ import type { TripAlert } from "@/data/trip-alerts";
 export type CompanionKind = "travel" | "sight" | "meal" | "rest" | "shabbos";
 
 export type CompanionItem = {
+  event?: import("@/data/trip-alerts").TripEventTarget;
   time: string;
   title: string;
   place: string;

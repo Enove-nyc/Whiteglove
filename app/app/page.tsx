@@ -1,3 +1,4 @@
+import { SAMPLE_TRIP_CODE } from "@/data/sample-itinerary";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { currentBrand } from "@/lib/site-brand";
@@ -36,20 +37,23 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
         {remembered && !rememberedTrip && <ClientCodeMemory path={null} />}
         <div className="mx-auto max-w-5xl">
           <h1 className="font-[family-name:var(--font-display)] text-4xl sm:text-5xl">Open your trip</h1>
-          <p className="mt-3 text-base text-stone-700">View your itinerary, travel wallet, and trip chat in your browser.</p>
+          <p className="mt-3 text-base text-stone-700">Open the invitation from your trip organizer to see the itinerary, group chat, and your tickets.</p>
           {itineraries && process.env.NEXT_PUBLIC_ITINERARIES_PLAY_STORE_AVAILABLE === "1" && (
             <a href="https://play.google.com/store/apps/details?id=com.whitegloveitineraries.family" className="mt-3 inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Get it on Google Play</a>
           )}
 
           <div className="mt-8 grid items-start gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <section aria-labelledby="trip-code-title" className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
+              <h2 id="trip-code-title" className="text-xl font-semibold">Open an invitation</h2>
+              <p className="mb-4 mt-2 text-sm text-stone-600">Paste the link from your invitation or enter a trip code.</p>
+              <AppCodeEntry />
+            </section>
+
             <section aria-labelledby="your-trips" className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
-              <h2 id="your-trips" className="text-xl font-semibold">Your trips</h2>
-              {invites.length > 0 && <ul className="mt-3 space-y-2">{invites.map(({ shareId, title }) => <li key={shareId}><Link className="underline" href={`/t/${shareId}/app`}>{title}</Link></li>)}</ul>}
+              <h2 id="your-trips" className="text-xl font-semibold">{account ? "Your trips" : "Already have an account?"}</h2>
+              {invites.length > 0 && <ul className="mt-3 space-y-2">{invites.map(({ shareId, title }) => <li key={shareId}><Link className="inline-flex min-h-11 items-center underline" href={`/t/${shareId}/app`} prefetch={false}>{title}</Link></li>)}</ul>}
               {!account ? (
-                <>
-                  <p className="mt-2 text-stone-600">Sign in to see your saved itineraries.</p>
-                  <Link href="/login?next=%2Fapp%3Fenter%3D1" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-[#15204A] px-5 font-semibold text-white">Sign in</Link>
-                </>
+                <Link href="/login?next=%2Fapp%3Fenter%3D1" className="mt-2 inline-flex min-h-11 items-center font-semibold underline">Sign in</Link>
               ) : trips.length ? (
                 <ul className="mt-3 divide-y divide-stone-200">
                   {trips.map((trip) => (
@@ -59,21 +63,14 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
                     </li>
                   ))}
                 </ul>
-              ) : (
+              ) : invites.length === 0 ? (
                 <>
                   <p className="mt-2 text-stone-600">You don’t have any saved trips yet.</p>
                   <Link href="/itinerary" className="mt-4 inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Start an itinerary</Link>
                 </>
-              )}
+              ) : null}
             </section>
-
-            <div className="space-y-6">
-              <section aria-labelledby="trip-code-title" className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
-                <h2 id="trip-code-title" className="text-xl font-semibold">Have a trip code or link?</h2>
-                <p className="mb-4 mt-2 text-stone-600">Paste what you were given to open the itinerary.</p>
-                <AppCodeEntry />
-              </section>
-            </div>
+            {itineraries && <Link href={`/i/${SAMPLE_TRIP_CODE}/app`} className="inline-flex min-h-11 items-center self-start font-semibold underline">Try a sample</Link>}
           </div>
         </div>
       </main>

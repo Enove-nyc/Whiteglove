@@ -179,6 +179,7 @@ function itemsForDay(day: ItineraryDay, kosher: boolean): CompanionItem[] {
     items.push({
       time,
       title: a.name,
+      event: { kind: "activity", id: a.id },
       place: a.address || a.country || "",
       kind: STOP_KIND,
       note: a.notes || "",
@@ -192,12 +193,26 @@ function itemsForDay(day: ItineraryDay, kosher: boolean): CompanionItem[] {
     items.push({
       time: f.departTime ?? "",
       title: `${f.from} → ${f.to}`,
+      event: { kind: "flight", id: f.id },
       // The airline/flight, like an arriving leg — a landing time is not a
       // place, and doesn't belong in the "Where" row it used to sit in.
       place: f.airline ? `${f.airline}${f.flightNo ? " " + f.flightNo : ""}` : "By air",
       kind: "travel",
       note: f.confirmation ? `Reference ${f.confirmation}.` : "",
       ...(f.arriveTime ? { arriveNote: `Lands ${f.arriveTime}${f.arriveDate ? " next day" : ""}` } : {}),
+    });
+  }
+
+  const stay = day.lodging;
+  if (stay && stay.type !== "overnight-transit" && stay.checkIn === day.date) {
+    items.push({
+      time: "",
+      title: `Check in · ${stay.name || "Where you are staying"}`,
+      place: stay.address || "",
+      kind: "rest",
+      note: stay.notes || "",
+      phone: stay.phone,
+      event: { kind: "lodging", id: stay.id },
     });
   }
 

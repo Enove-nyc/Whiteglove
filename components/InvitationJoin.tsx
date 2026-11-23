@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import LoginForm from "@/components/LoginForm";
 
-type State = { phase: "loading" } | { phase: "ready"; token: string; identity: string; next?: string } | { phase: "error"; message: string };
+type State = { phase: "loading" } | { phase: "ready"; token: string; identity: string; next?: string; tripTitle?: string } | { phase: "error"; message: string };
 
 export default function InvitationJoin() {
   const [state, setState] = useState<State>({ phase: "loading" });
@@ -25,9 +25,9 @@ export default function InvitationJoin() {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ invitationToken: token }), signal: controller.signal, cache: "no-store",
         });
-        const data = await response.json() as { identity?: string; error?: string; next?: string };
+        const data = await response.json() as { identity?: string; error?: string; next?: string; tripTitle?: string };
         if (!response.ok || !data.identity) throw new Error(data.error || "This invitation could not be checked.");
-        if (!controller.signal.aborted) setState({ phase: "ready", token, identity: data.identity, next: data.next });
+        if (!controller.signal.aborted) setState({ phase: "ready", token, identity: data.identity, next: data.next, tripTitle: data.tripTitle });
       } catch (error) {
         if (!controller.signal.aborted) setState({ phase: "error", message: error instanceof Error ? error.message : "This invitation could not be checked." });
       }
@@ -37,6 +37,7 @@ export default function InvitationJoin() {
   if (state.phase === "loading") return <p role="status" className="mt-6 text-sm text-stone-700">Checking your invitation…</p>;
   if (state.phase === "error") return <p role="alert" className="mt-6 text-sm leading-7 text-stone-700">{state.message} <Link href="/login" className="font-semibold text-[var(--navy)] underline">Log in</Link></p>;
   return <>
+    {state.tripTitle && <h2 className="mt-4 text-xl font-semibold text-[var(--navy)]">{state.tripTitle}</h2>}
     <p className="mt-4 text-sm leading-7 text-stone-700">{state.next ? "Choose your password to join the family trip." : "Create your account using the details on your invitation."}</p>
     <LoginForm initialMode="signup" phoneSignupAvailable={state.identity.startsWith("+")} invitationToken={state.token} invitationIdentity={state.identity} next={state.next} />
     <p className="mt-6 text-sm text-stone-700">Already have an account? <Link href={state.next ? `/login?next=${encodeURIComponent(state.next)}` : "/login"} className="font-semibold text-[var(--navy)] underline">Log in</Link>.</p>

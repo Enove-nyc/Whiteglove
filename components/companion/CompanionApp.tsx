@@ -658,12 +658,14 @@ function WalletDocLink({
   url,
   fileId,
   name,
+  label,
   offlineCapable,
   explicitDownload = false,
 }: {
   url: string;
   fileId: string;
   name: string;
+  label?: string;
   offlineCapable: boolean;
   explicitDownload?: boolean;
 }) {
@@ -746,13 +748,13 @@ function WalletDocLink({
         target="_blank"
         rel="noreferrer noopener"
         onClick={(e) => void open(e)}
-        style={{ ...TAP_INLINE, fontSize: 12.5, fontWeight: 600, color: "#1F2E5C", textDecoration: "underline" }}
+        style={{ ...TAP_INLINE, ...(label ? { minHeight: 44, display: "inline-flex", alignItems: "center" } : {}), fontSize: 12.5, fontWeight: 600, color: "#1F2E5C", textDecoration: "underline" }}
       >
-        📎 {name}
+        {label ?? name}
       </a>
       {explicitDownload && <>
         <button type="button" disabled={busy} onClick={() => void changeOfflineCopy()} className="min-h-11 self-start text-left text-xs font-semibold underline">{busy ? "Working…" : saved ? "Remove offline copy" : "Save for offline"}</button>
-        {saved && <span className="text-xs">Available offline</span>}
+        {saved && <span className="text-xs">Saved offline</span>}
       </>}
       {document && <TravelDocumentPreview document={{ id: fileId, scope: "", name, kind: "", savedAt: "", blob: document }} onClose={() => setDocument(null)} />}
       {note && <span style={{ fontSize: 11, color: "#b42318" }}>{note}</span>}
@@ -1010,12 +1012,14 @@ export default function CompanionApp({
   const liveChat = chat ?? null;
   const groupCode = travelerGroupCode;
   const groupMode = Boolean(groupCode) || travelerPreview;
+  const familyNavigation = !embedded && !advisorInbox && (travelerInvite || travelerPreview);
   // A client on a per-trip code, as opposed to whoever is signed into the
   // account that owns the trip (an advisor, or a Gold member on their own).
   // Attachments are served only to the owning account (lib/attachments.ts),
   // so a client link could never open one anyway — the wallet's "add" control
   // is only ever offered to the side that can actually use it.
   const isClientViewer = groupMode || liveChat?.side === "client";
+  const screenScroll = useRef<HTMLDivElement>(null);
   const hasMessages = groupMode || Boolean(liveChat) || advisorInbox;
   // Held until the advisor opens a client's thread to put it in — cleared the
   // moment that happens, so going back to the inbox and opening someone else
@@ -1027,7 +1031,7 @@ export default function CompanionApp({
     // unused on the Trip tab until noticed.
     screen: initialScreen ?? (sharedDraft && advisorInbox ? "messages" : "home"),
     prev: null,
-    selDay: trip.todayIndex,
+    selDay: -1,
     actIdx: 0,
     actDay: trip.todayIndex,
     pick: null,
@@ -1234,9 +1238,13 @@ export default function CompanionApp({
       // A sandboxed webview may refuse pushState — the header ← still works.
     }
   }
+  useEffect(() => {
+    if (screenScroll.current) screenScroll.current.scrollTop = 0;
+  }, [st.screen, st.selDay, st.actDay, st.actIdx]);
+
   function go(screen: Screen) {
     if (st.screen === screen) return;
-    setSt((s) => ({ ...s, screen, prev: s.screen }));
+    setSt((s) => ({ ...s, screen, prev: s.screen, selDay: screen === "home" && familyNavigation ? -1 : s.selDay }));
     pushScreenHistory(screen);
   }
   function back() {
@@ -1305,7 +1313,7 @@ export default function CompanionApp({
    * on today's plan right now" (nowMinutes) and for which calendar day is
    * actually today where they are (deviceToday).
    */
-  const { nowMinutes, today: deviceToday } = useDeviceClock();
+  const { nowMinutes, today: deviceToday } = useDeviceClock(travelerInvite ? tripTimeZone : undefined);
   // The traveler's real today, by the clock where THEY are — not the server's
   // UTC date. trip.todayIndex is baked on the server from UTC; for an audience
   // mostly east of UTC that points at the wrong day for the hours between local
@@ -1313,7 +1321,7 @@ export default function CompanionApp({
   // and fall back to the server index only before the device clock has resolved
   // (first paint / SSR) or when no day matches today at all.
   const todayIdx = (() => {
-    if (travelerInvite) return trip.todayIndex;
+    if (travelerPreview) return trip.todayIndex;
     if (deviceToday) {
       const i = days.findIndex((d) => d.date === deviceToday);
       if (i >= 0) return i;
@@ -1321,10 +1329,8 @@ export default function CompanionApp({
     return trip.todayIndex;
   })();
   // The day the trip screen shows. Until the traveler taps a specific day it
-  // follows their real today; once they've picked another day (selDay is no
-  // longer the server default) it honours that pick. This opens the app on the
-  // right day without a state-syncing effect.
-  const curDay = st.selDay === trip.todayIndex ? todayIdx : st.selDay;
+  // follows their current date. An explicit day selection stays pinned.
+  const curDay = st.selDay < 0 ? todayIdx : st.selDay;
   // The CompanionTrip type permits a day index out of range (a refresh that
   // shrank the day list), so fall back rather than crash the whole app on
   // `sel.items` — the same guard the activity screen's actDay already carries.
@@ -1332,7 +1338,7 @@ export default function CompanionApp({
   const items = sel.items.map(decorate);
   // Whether the day on screen is the traveler's own today (device clock), which
   // gates the "happening now / next up" follow-along below.
-  const selIsToday = travelerInvite || !deviceToday ? Boolean(sel.today) : sel.date === deviceToday;
+  const selIsToday = !travelerPreview && (deviceToday ? sel.date === deviceToday : Boolean(sel.today));
   const offline = useSyncExternalStore(subscribeOnline, getIsOffline, getIsOfflineServer);
   const followStops: FollowStop[] = items.map((it, i) => ({ id: String(i), name: it.title, arrivalTime: it.time || undefined }));
   const follow = selIsToday ? followAlong({ stops: followStops, nowMinutes }) : null;
@@ -1438,25 +1444,30 @@ export default function CompanionApp({
   const advisorTrips = trip.advisorTrips ?? [];
   const advisorHome = hasConcierge && st.role === "advisor" && st.screen === "home";
 
+  const actDay = days[st.actDay] ?? days[trip.todayIndex] ?? days[0];
+  const act = actDay.items[st.actIdx] || actDay.items[0];
+  const actKind = (act ? COMPANION_KIND[act.kind] : undefined) || COMPANION_KIND.rest;
+
+
   const titles: Record<Screen, string> = {
     home: trip.homeTitle,
     day: sel.name,
     activity: "On the day",
     chat: advisor,
     messages: travelerInvite ? "Family trip chat" : groupMode ? "Trip group chat" : advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Advisor",
-    alerts: travelerInvite ? "Updates" : "Changes",
-    wallet: "Travel wallet",
-    profile: "You",
+    alerts: familyNavigation ? "Updates" : "Changes",
+    wallet: familyNavigation ? "Tickets" : "Travel wallet",
+    profile: familyNavigation ? "Account" : "You",
     pay: "Trip balance",
   };
   const kickers: Record<Screen, string> = {
     home: trip.homeKicker,
     day: `Day ${curDay + 1} of ${trip.days.length}`,
-    activity: sel.name,
+    activity: actDay.name,
     chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
     messages: travelerInvite ? "Everyone invited to this trip" : groupMode ? "Everyone on this trip" : advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
     alerts: open ? "One needs you" : unreadAlerts.length > 0 ? `${unreadAlerts.length} to see` : settled ? "All settled" : "Nothing right now",
-    wallet: "Kept offline",
+    wallet: familyNavigation ? "Travel documents" : "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
     pay: trip.payment?.label ?? "",
   };
@@ -1465,9 +1476,6 @@ export default function CompanionApp({
   // trip always has a placeholder item on every day, but the CompanionTrip type
   // permits a day index out of range or a day with no items, so fall back to a
   // real day and guard the kind lookup rather than crash the whole app on mount.
-  const actDay = days[st.actDay] ?? days[trip.todayIndex] ?? days[0];
-  const act = actDay.items[st.actIdx] || actDay.items[0];
-  const actKind = (act ? COMPANION_KIND[act.kind] : undefined) || COMPANION_KIND.rest;
 
   const seg = <T extends string>(list: [T, string][], cur: T, set: (id: T) => void) =>
     list.map(([id, label]) => ({
@@ -1519,22 +1527,22 @@ export default function CompanionApp({
   // the showcase's own — kosher and Shabbos content, hasConcierge only.
   const conciergeTabScreen: Screen = !isGuideMode && usesRealChat ? "messages" : "chat";
   const tabDefs: [Screen, string, IconName][] = [["home", travelerNav ? "Itinerary" : "Trip", "map-pin"]];
-  if (hasConcierge && !travelerInvite)
+  if (hasConcierge && !familyNavigation)
     tabDefs.push(
       trip.previewAsClient
         ? // Where a client's advisor thread sits, under the name a client sees.
           [conciergeTabScreen, "Advisor", "chat"]
         : [conciergeTabScreen, isGuideMode ? "Guide" : "Concierge", "sparkle"],
     );
-  if (travelerInvite) {
-    tabDefs.push(["messages", "Chat", "chat"], ["wallet", "Wallet", "wallet"], ["alerts", "Updates", "flag"]);
+  if (familyNavigation) {
+    tabDefs.push(["messages", "Chat", "chat"], ["wallet", "Tickets", "wallet"], ["alerts", "Updates", "flag"]);
   } else {
     if ((hasMessages || travelerNav) && conciergeTabScreen !== "messages") tabDefs.push(["messages", travelerNav || advisorInbox ? "Messages" : "Advisor", "chat"]);
     tabDefs.push(["wallet", "Wallet", "wallet"], ["profile", "You", "account"]);
   }
   const tabs = tabDefs.map(([id, label, icon]) => {
-    const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || (!travelerInvite && st.screen === "alerts")));
-    return { id, label, icon, on, badge: id === "messages" && unread && st.screen !== "messages" };
+    const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || (!familyNavigation && st.screen === "alerts")));
+    return { id, label, icon, on, badge: id === "messages" ? unread && st.screen !== "messages" : id === "alerts" && unreadAlerts.length > 0 && st.screen !== "alerts" };
   });
 
   const quickReplies = (
@@ -1564,37 +1572,47 @@ export default function CompanionApp({
   });
 
   // ── screens ─────────────────────────────────────────────────────────────
-  /**
-   * WHAT IS HAPPENING NEXT, AT THE TOP OF THE SCREEN.
-   *
-   * The planner is dense on purpose — an advisor is deciding things. The
-   * traveller's app is the opposite: somebody opens it standing on a pavement
-   * in a city they do not know, and the only question is what happens now and
-   * how do I reach it. That answer was on this screen already, but as a
-   * highlighted row part-way down a list, under a 196-pixel decorative
-   * panel — so the first thing the phone showed during a trip was a picture
-   * of a suitcase.
-   *
-   * So while a trip is actually running and there is something timed left in
-   * the day, that panel gives way to the thing itself, with the actions that
-   * belong to it — call it, walk to it, open its confirmation — on the same
-   * screen rather than one tap further in. Before the trip, after it, and on
-   * a day with no timed stops there is no "next", and the panel stays.
-   */
-  const nowOrNext = nowIdx !== null ? items[nowIdx] : nextIdx !== null ? items[nextIdx] : null;
-  const nowOrNextIsNow = nowIdx !== null;
-  const showNextCard = selIsToday && !trip.tripFinished && Boolean(nowOrNext);
+  const featuredIndex = travelerPreview ? items.findIndex((item) => Boolean(item.event)) : nextIdx ?? nowIdx ?? -1;
+  const nowOrNext = items[featuredIndex];
+  const nowOrNextIsNow = !travelerPreview && featuredIndex === nowIdx;
+  const showNextCard = (selIsToday || travelerPreview) && !trip.tripFinished && Boolean(nowOrNext);
+
+  const rowsByEvent = new Map(trip.walletGroups.flatMap((group) => group.rows).map((row) => [`${row.stopKind}:${row.id}`, row]));
+
+  function eventActions(item: CompanionItem) {
+    const event = item.event;
+    const row = event && rowsByEvent.get(`${event.kind}:${event.id}`);
+    const document = row?.attachments?.find((file) => file.kind === (event?.kind === "flight" ? "boarding-pass" : "ticket"));
+    const share = groupCode ?? liveChat?.shareId;
+    const url = document && (document.sampleUrl || (isClientViewer
+      ? share && `/api/trip-file/${encodeURIComponent(share)}?id=${encodeURIComponent(document.id)}`
+      : `/api/account/attachments?id=${encodeURIComponent(document.id)}`));
+    const address = event?.kind === "lodging" ? row?.address : item.kind !== "travel" ? item.place : "";
+    if (!address && (!document || !url)) return null;
+
+    return <div className="flex flex-wrap items-start gap-x-4 text-sm text-[#15204A]">
+      {address && <a className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4" href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`} target="_blank" rel="noreferrer">Directions</a>}
+      {document && url && <WalletDocLink
+        url={url}
+        fileId={travelerInvite ? `${liveChat?.shareId}:${document.id}` : document.id}
+        name={document.name}
+        label={event?.kind === "flight" ? "Open boarding pass" : "Open ticket"}
+        explicitDownload={travelerInvite}
+        offlineCapable={!document.sampleUrl}
+      />}
+    </div>;
+  }
 
   const nextCard = nowOrNext && (
     <button
       type="button"
-      onClick={() => openActivity(curDay, nowOrNextIsNow ? nowIdx! : nextIdx!)}
+      onClick={() => openActivity(curDay, featuredIndex)}
       className="wg-press"
       style={{ display: "block", width: "calc(100% - 28px)", textAlign: "left", margin: "14px 14px 0", padding: "18px 20px", borderRadius: 20, background: `linear-gradient(155deg, ${GOLD} 0%, #8f6c3a 100%)`, color: CREAM, border: 0, cursor: "pointer" }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ width: 9, height: 9, borderRadius: 14, background: CREAM, animation: nowOrNextIsNow ? "wgPulse 1.8s ease-in-out infinite" : "none" }} />
-        <span style={{ ...kicker(CREAM), opacity: 0.92 }}>{nowOrNextIsNow ? "Happening now" : "Next"}</span>
+        <span style={{ ...kicker(CREAM), opacity: 0.92 }}>{travelerPreview ? "First event" : nowOrNextIsNow ? "Happening now" : "Next"}</span>
       </div>
       <div style={{ marginTop: 10, display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
         {nowOrNext.time && <span style={{ font: `400 30px/1 ${serif}`, letterSpacing: "-.02em" }}>{nowOrNext.time}</span>}
@@ -1613,11 +1631,7 @@ export default function CompanionApp({
           Call
         </a>
       )}
-      {nowOrNext.place && nowOrNext.kind !== "travel" && (
-        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nowOrNext.place)}`} target="_blank" rel="noopener noreferrer" className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a", textDecoration: "none" }}>
-          Directions
-        </a>
-      )}
+      {eventActions(nowOrNext)}
       {nowOrNext.href && (
         <a href={nowOrNext.href} target="_blank" rel="noopener noreferrer" className="wg-warm" style={{ border: "1px solid rgba(38,50,58,.16)", background: "#ffffff", font: `400 13.5px/1 ${serif}`, padding: "12px 18px", borderRadius: 14, color: "#26323a", textDecoration: "none" }}>
           Confirmation
@@ -1628,24 +1642,10 @@ export default function CompanionApp({
 
   const homeScreen = (
     <div style={{ animation: "wgIn .28s ease both" }}>
-      {pictures?.cover && (
+      {showNextCard && <>{nextCard}{nextActions}</>}
+      {!showNextCard && pictures?.cover && (
         // eslint-disable-next-line @next/next/no-img-element -- trip-code-protected attachment
-        <img src={pictures.cover} alt="Trip cover photo" className="mx-auto mt-4 max-h-64 w-[calc(100%-2rem)] rounded-2xl object-cover" />
-      )}
-      {showNextCard ? (
-        <>
-          {nextCard}
-          {nextActions}
-        </>
-      ) : pictures?.cover ? null : (
-        <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: `linear-gradient(150deg, ${NAVY} 0%, #1F2E5C 55%, #1F2E5C 100%)`, color: CREAM }}>
-          {/* Gold on the navy rather than cream on the gold. The panel carried
-              the only gold on the opening screen and has become the only blue;
-              the mark is what keeps both of them there. */}
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: GOLD, opacity: 0.5 }}>
-            <Icon name="suitcase" className="h-20 w-20" strokeWidth={1.1} />
-          </div>
-        </div>
+        <img src={pictures.cover} alt="Trip cover photo" className="mx-auto mt-4 max-h-40 w-[calc(100%-2rem)] rounded-2xl object-cover" />
       )}
       {Boolean(pictures?.photos.length) && (
         <details className="mx-4 mt-4 rounded-xl border border-stone-200 bg-white p-3">
@@ -1665,14 +1665,14 @@ export default function CompanionApp({
         {/* Skipped when it would just repeat the header above it word for
             word — a trip with no name of its own reads as "Family trip" in
             both places otherwise. */}
-        {trip.tripTitle !== trip.homeTitle && (
+        {!familyNavigation && trip.tripTitle !== trip.homeTitle && (
           <h2 style={{ margin: 0, font: `400 29px/1.08 ${serif}`, letterSpacing: "-.02em" }}>{trip.tripTitle}</h2>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap", fontSize: 13, color: "#57534e" }}>
           <span>{trip.tripDates}</span>
           <span style={{ width: 4, height: 4, borderRadius: 14, background: "#a8a29e" }} />
           <span style={{ background: "#FAF8F3", color: "#1F2E5C", fontWeight: 600, padding: "4px 10px", borderRadius: 14, fontSize: 11.5 }}>
-            {trip.tripFinished ? "Trip finished" : `Day ${todayIdx + 1} of ${trip.days.length}`}
+            {trip.tripFinished ? "Trip finished" : selIsToday ? "Today" : `Day ${curDay + 1} of ${trip.days.length}`}
           </span>
         </div>
       </div>
@@ -1695,25 +1695,23 @@ export default function CompanionApp({
         </div>
       )}
 
-      <div style={{ marginTop: 22, paddingLeft: 20 }}>
-        {/* "1 days" read wrong for a one-day trip; the odd hardcoded eight-day
-            special case is gone with it. */}
-        <div style={kicker(NAVY)}>{`${trip.days.length} ${trip.days.length === 1 ? "day" : "days"}`}</div>
-      </div>
-      <div style={{ display: "flex", gap: 9, overflowX: "auto", padding: "12px 20px 4px", scrollbarWidth: "none" }}>
+      <details className="mx-4 mt-4 rounded-xl border border-stone-200 bg-white px-3">
+        <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">All days · {days.length}</summary>
+        <div className="grid grid-cols-3 gap-2 pb-3 sm:grid-cols-4">
         {days.map((d, i) => {
           const on = i === curDay;
           // "Today" by the traveler's own clock (see todayIdx), not the server's.
           const dToday = i === todayIdx;
           return (
-            <button key={i} onClick={() => { setSt((s) => ({ ...s, selDay: i, screen: "day", prev: "home" })); pushScreenHistory("day"); }} className="wg-press" style={{ flex: "none", width: 64, padding: "11px 0 12px", borderRadius: 16, border: `1px solid ${on ? GOLD : dToday ? GOLD : "rgba(21,32,74,.1)"}`, background: on ? GOLD : dToday ? "#FAF8F3" : "#ffffff", color: on ? ON_GOLD : INK, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <button key={i} aria-label={d.name} onClick={() => { setSt((s) => ({ ...s, selDay: i, screen: "day", prev: "home" })); pushScreenHistory("day"); }} className="wg-press" style={{ flex: "none", width: "100%", padding: "11px 0 12px", borderRadius: 16, border: `1px solid ${on ? GOLD : dToday ? GOLD : "rgba(21,32,74,.1)"}`, background: on ? GOLD : dToday ? "#FAF8F3" : "#ffffff", color: on ? ON_GOLD : INK, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
               <span style={{ font: "600 10px/1 Inter,sans-serif", letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.75 }}>{d.dow}</span>
               <span style={{ font: `400 20px/1 ${serif}` }}>{d.dom}</span>
               <span style={{ fontSize: 9.5, opacity: 0.75, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 56 }}>{d.short}</span>
             </button>
           );
         })}
-      </div>
+        </div>
+      </details>
 
       <div style={{ margin: "22px 14px 0", padding: "20px 18px", borderRadius: 20, background: "#ffffff", border: "1px solid rgba(21,32,74,.08)", display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
@@ -1733,8 +1731,8 @@ export default function CompanionApp({
           const isNext = selIsToday && i === nextIdx;
           const highlight = isNow || isNext;
           return (
+            <div key={i}>
             <button
-              key={i}
               onClick={() => openActivity(curDay, i)}
               className="wg-fade"
               style={{
@@ -1757,6 +1755,8 @@ export default function CompanionApp({
                 <span style={{ fontSize: 12.5, color: MUTED }}>{it.place}</span>
               </span>
             </button>
+            {(!showNextCard || i !== featuredIndex) && eventActions(it)}
+            </div>
           );
         })}
       </div>
@@ -1910,6 +1910,7 @@ export default function CompanionApp({
                 <span style={{ fontSize: 12.5, color: MUTED }}>{it.place}</span>
                 <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{it.note}</span>
               </button>
+              {eventActions(it)}
               {it.walk && <span style={{ font: "400 11px/1 ui-monospace,Menlo,monospace", color: FAINT, paddingLeft: 2 }}>{it.walk}</span>}
             </div>
           </div>
@@ -1942,11 +1943,13 @@ export default function CompanionApp({
 
   const activityScreen = (
     <div style={{ animation: "wgIn .28s ease both" }}>
-      <div style={{ position: "relative", margin: "14px 14px 0", height: 172, borderRadius: 20, overflow: "hidden", background: actKind.tint }}>
+      {!familyNavigation && (
+        <div style={{ position: "relative", margin: "14px 14px 0", height: 172, borderRadius: 20, overflow: "hidden", background: actKind.tint }}>
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: actKind.dot, opacity: 0.35 }}>
           <Icon name="map-pin" className="h-16 w-16" strokeWidth={1.1} />
         </div>
-      </div>
+        </div>
+      )}
       <div style={{ padding: "18px 20px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <span style={kicker("#6B4A1C")}>{act.time ? `${act.time} · ${actKind.label}` : actKind.label}</span>
@@ -1963,7 +1966,7 @@ export default function CompanionApp({
           ))}
         </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-          {actHasDirections && (
+          {act.event ? eventActions(act) : actHasDirections && (
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.place)}`}
               target="_blank"
@@ -2048,7 +2051,6 @@ export default function CompanionApp({
         {syncedAt && <p className="text-sm">Last synced <time dateTime={syncedAt}>{syncedAt.replace("T", " ").slice(0, 16)} UTC</time></p>}
         {unread && <button type="button" className="min-h-11 self-start text-sm font-semibold underline" onClick={() => go("messages")}>Read your new message</button>}
         {liveAlerts.length === 0 && !unread && <p className="text-sm">No trip updates yet.</p>}
-        <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" href="/account" prefetch={false}>Manage your account or sign out</Link>
       </>}
       {/* The advisor's own side of the trip: a way to send the traveler a line
           by hand. Shown only where the account actually serves clients
@@ -2061,6 +2063,13 @@ export default function CompanionApp({
         // the traveler asked for. Held to the open-time snapshot so a card does
         // not fade out from under them while they are still reading it.
         const unread = seenOnOpen ? seenOnOpen.has(a.id) : !isAlertRead(a);
+        const targets = a.targets ?? (a.flightId ? [{ kind: "flight", id: a.flightId }] : []);
+        const destinations = targets.flatMap((target) => {
+          const day = days.findIndex((entry) => entry.items.some((item) => item.event?.kind === target.kind && item.event.id === target.id));
+          if (day < 0) return [];
+          const index = days[day].items.findIndex((item) => item.event?.kind === target.kind && item.event.id === target.id);
+          return [{ day, index, title: days[day].items[index].title }];
+        });
         return (
           <div key={a.id} style={{ padding: "18px 18px", borderRadius: 20, background: unread ? "#FAF8F3" : "#ffffff", border: `1px solid ${unread ? "rgba(198, 161, 91,.28)" : "rgba(21,32,74,.08)"}`, display: "flex", flexDirection: "column", gap: 8 }}>
             <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -2069,7 +2078,10 @@ export default function CompanionApp({
             </span>
             <div style={{ font: `400 20px/1.15 ${serif}`, color: unread ? "#6B4A1C" : INK }}>{a.title}</div>
             <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: unread ? "#6B4A1C" : "#57534e", textWrap: "pretty" }}>{a.note}</p>
-            {travelerInvite && <button type="button" onClick={() => go("home")} className="min-h-11 self-start text-sm font-semibold underline">Open itinerary</button>}
+            {destinations.map(({ day, index, title }) => (
+              <button key={`${day}-${index}`} type="button" onClick={() => openActivity(day, index)} className="min-h-11 self-start text-left text-sm font-semibold underline">View {title}</button>
+            ))}
+            {travelerInvite && destinations.length === 0 && <button type="button" onClick={() => go("home")} className="min-h-11 self-start text-sm font-semibold underline">Open itinerary</button>}
           </div>
         );
       })}
@@ -2136,7 +2148,7 @@ export default function CompanionApp({
         </div>
       </div>
       )}
-      {travelerInvite && supportLinks}
+      {travelerPreview && liveAlerts.length === 0 && <p className="text-sm">No updates on this sample trip.</p>}
     </div>
   );
 
@@ -2225,11 +2237,15 @@ export default function CompanionApp({
   const att0Sample = (r: { attachments?: Array<{ sampleUrl?: string }> }) =>
     Boolean(r.attachments?.some((a) => a.sampleUrl));
 
+  const walletGroups = familyNavigation
+    ? trip.walletGroups.map((group) => ({ ...group, rows: group.rows.filter((row) => row.attachments?.length) })).filter((group) => group.rows.length)
+    : trip.walletGroups;
+
   const walletScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
-      {travelerInvite && <p className="text-xs leading-5 text-stone-600">Save individual files to use offline. Signing out clears copies held by this app. Revoking an invite blocks future downloads. Copies exported to your device stay there.</p>}
+      {travelerInvite && <p className="text-xs leading-5 text-stone-600">Save the tickets you need before you go offline.</p>}
       {personalWalletKey ? <PersonalTravelWallet key={personalWalletKey} tripKey={personalWalletKey} /> : null}
-      {(() => {
+      {!familyNavigation && (() => {
         // Only promise "works with no signal" when every document is actually
         // on the device. Until then, say plainly how many are kept and what to
         // do — never let a traveller reach the gate trusting a pass that was
@@ -2261,10 +2277,10 @@ export default function CompanionApp({
           </span>
         </button>
       )}
-      {trip.walletGroups.length === 0 && (
-        <p style={{ margin: "4px 4px 0", fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>Flights, where you are staying and anything held for you appear here as they are added to the trip.</p>
+      {walletGroups.length === 0 && (
+        <p style={{ margin: "4px 4px 0", fontSize: 13.5, lineHeight: 1.5, color: "#57534e", textWrap: "pretty" }}>{familyNavigation ? "Your boarding passes, tickets, and confirmations will appear here when they’re added." : "Flights, stays, and reservations appear here as they are added to the trip."}</p>
       )}
-      {trip.walletGroups.map((g, gi) => (
+      {walletGroups.map((g, gi) => (
         <div key={gi} style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <div style={{ ...kicker(NAVY), paddingLeft: 4 }}>{g.name}</div>
           {g.rows.map((r, i) => (
@@ -2457,6 +2473,11 @@ export default function CompanionApp({
           </div>
         )}
       </div>
+      {travelerInvite && <Link className="inline-flex min-h-11 items-center self-start text-sm font-semibold underline" href="/account" prefetch={false}>Manage your account or sign out</Link>}
+      {travelerInvite && <details className="rounded-xl border border-stone-200 bg-white p-3 text-sm">
+        <summary className="min-h-8 cursor-pointer font-semibold">Offline tickets</summary>
+        <p className="pt-2 text-stone-600">Signing out clears copies held by this app. Revoking an invite blocks future downloads. Copies exported to your device stay there.</p>
+      </details>}
       {supportLinks}
     </div>
   );
@@ -2545,7 +2566,7 @@ export default function CompanionApp({
           type="button"
           onClick={() => go(t.id)}
           aria-current={t.on ? "page" : undefined}
-          aria-label={t.badge ? `${t.label} (unread messages)` : undefined}
+          aria-label={t.badge ? `${t.label} (unread)` : undefined}
           style={{ position: "relative", zIndex: 1, flex: 1, border: 0, cursor: "pointer", background: "transparent", color: t.on ? ON_GOLD : MUTED, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "9px 3px", transition: "color .2s ease" }}
         >
           <span style={{ position: "relative", display: "inline-flex" }}>
@@ -2556,6 +2577,12 @@ export default function CompanionApp({
         </button>
       ))}
     </nav>
+  );
+
+  const accountButton = familyNavigation && (
+    <button type="button" aria-label="Account and help" aria-current={st.screen === "profile" ? "page" : undefined} onClick={() => go("profile")} className="wg-fade inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-current/25">
+      <Icon name="account" className="size-5" />
+    </button>
   );
 
   const phone = (
@@ -2578,15 +2605,15 @@ export default function CompanionApp({
         )}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
           <div style={{ font: "600 9.5px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: GOLD_ON_DARK }}>{kickers[st.screen]}</div>
-          <div style={{ font: `400 19px/1.15 ${serif}`, letterSpacing: "-.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titles[st.screen]}</div>
+          <div style={{ font: `400 19px/1.15 ${serif}`, letterSpacing: "-.01em", whiteSpace: familyNavigation && st.screen === "home" ? "normal" : "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titles[st.screen]}</div>
         </div>
-        <button onClick={() => go("alerts")} aria-label="Changes" title="Changes" className="wg-fade" style={{ position: "relative", border: "1px solid rgba(255,255,255,.22)", background: "rgba(255,255,255,.08)", width: 34, height: 34, borderRadius: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, color: CREAM }}>
+        {familyNavigation ? accountButton : <button onClick={() => go("alerts")} aria-label="Changes" title="Changes" className="wg-fade" style={{ position: "relative", border: "1px solid rgba(255,255,255,.22)", background: "rgba(255,255,255,.08)", width: 34, height: 34, borderRadius: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, color: CREAM }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.7 21a2 2 0 0 1-3.4 0" />
           </svg>
           {(open || unreadAlerts.length > 0) && <span style={{ position: "absolute", top: -3, right: -3, width: 11, height: 11, borderRadius: 14, background: GOLD, border: `2px solid ${NAVY}` }} />}
-        </button>
+        </button>}
       </div>
       {/* Offline, and working from the saved copy — say so plainly, so a blank
           messages thread or a slow document reads as "no signal", not "broken".
@@ -2599,7 +2626,7 @@ export default function CompanionApp({
         </div>
       )}
       {/* content */}
-      <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{body}</div>
+      <div ref={screenScroll} className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{body}</div>
       {bottomNav}
     </div>
   );
@@ -2625,7 +2652,7 @@ export default function CompanionApp({
             // right — here it would be two gold pills for one screen).
             const on = t.on && !(t.id === "home" && st.screen === "alerts");
             return (
-            <button key={t.id} onClick={() => go(t.id)} aria-current={on ? "page" : undefined} aria-label={t.badge ? `${t.label} (unread messages)` : undefined} style={railBtn(on)}>
+            <button key={t.id} onClick={() => go(t.id)} aria-current={on ? "page" : undefined} aria-label={t.badge ? `${t.label} (unread)` : undefined} style={railBtn(on)}>
               <span style={{ position: "relative", display: "inline-flex" }}>
                 <Icon name={t.icon} className="h-5 w-5" strokeWidth={on ? 2.1 : 1.7} />
                 {t.badge && <span aria-hidden="true" style={{ position: "absolute", top: -3, right: -4, width: 8, height: 8, borderRadius: 14, background: GOLD, border: `2px solid ${NAVY}` }} />}
@@ -2652,7 +2679,8 @@ export default function CompanionApp({
             <div style={{ font: "600 9.5px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#6B4A1C" }}>{kickers[st.screen]}</div>
             <div style={{ font: `400 20px/1.1 ${serif}`, letterSpacing: "-.01em" }}>{titles[st.screen]}</div>
           </div>
-          {travelerNav && (
+          {travelerNav && familyNavigation && <div className="ml-auto">{accountButton}</div>}
+          {travelerNav && !familyNavigation && (
             <button type="button" onClick={() => go("alerts")} aria-current={st.screen === "alerts" ? "page" : undefined} style={{ ...railBtn(st.screen === "alerts"), marginLeft: "auto", width: "auto", color: INK }}>
               {open || unreadAlerts.length > 0 ? "Changes •" : "Changes"}
             </button>
@@ -2663,7 +2691,7 @@ export default function CompanionApp({
             <span aria-hidden="true">✈️</span>Offline — showing your saved trip.
           </div>
         )}
-        <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
+        <div ref={screenScroll} className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
           <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{body}</div>
         </div>
         {travelerNav && bottomNav}

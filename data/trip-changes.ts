@@ -1,3 +1,4 @@
+import type { TripEventTarget } from "@/data/trip-alerts";
 // Turning an edit to the plan into something worth telling a traveler.
 //
 // The Changes screen already carries live flight-status alerts
@@ -18,7 +19,7 @@
 import type { Itinerary, ItinActivity, ItinFlight, ItinLodging } from "@/data/itinerary";
 import { flightRouteLabel } from "@/data/itinerary";
 
-export type ItineraryChange = { title: string; note: string };
+export type ItineraryChange = { title: string; note: string; targets?: TripEventTarget[] };
 
 /** "abc" → keyed lookup, tolerant of a missing list. */
 function byId<T extends { id: string }>(rows: T[] | undefined): Map<string, T> {
@@ -64,20 +65,22 @@ function diffList<T extends { id: string }>(
   next: T[] | undefined,
   changed: (a: T, b: T) => boolean,
   label: (row: T) => string,
-  noun: string,
+  kind: TripEventTarget["kind"],
   out: string[],
+  targets: TripEventTarget[],
 ): void {
   const before = byId(prev);
   const after = byId(next);
   for (const [id, row] of after) {
     const was = before.get(id);
-    if (!was) out.push(`${label(row)} added`);
-    else if (changed(was, row)) out.push(`${label(row)} updated`);
+    if (!was || changed(was, row)) {
+      out.push(`${label(row)} ${was ? "updated" : "added"}`);
+      targets.push({ kind, id });
+    }
   }
   for (const [id, row] of before) {
     if (!after.has(id)) out.push(`${label(row)} removed`);
   }
-  void noun;
 }
 
 function flightLabel(f: ItinFlight): string {
@@ -106,9 +109,10 @@ export function summarizeItineraryChange(
   if (!prev) return null;
 
   const phrases: string[] = [];
-  diffList(prev.flights, next.flights, flightChanged, flightLabel, "flight", phrases);
-  diffList(prev.lodging, next.lodging, lodgingChanged, (l) => l.name?.trim() || "A place to stay", "stay", phrases);
-  diffList(prev.activities, next.activities, activityMoved, (a) => a.name?.trim() || "A stop", "stop", phrases);
+  const targets: TripEventTarget[] = [];
+  diffList(prev.flights, next.flights, flightChanged, flightLabel, "flight", phrases, targets);
+  diffList(prev.lodging, next.lodging, lodgingChanged, (l) => l.name?.trim() || "A place to stay", "lodging", phrases, targets);
+  diffList(prev.activities, next.activities, activityMoved, (a) => a.name?.trim() || "A stop", "activity", phrases, targets);
 
   if (prev.startDate !== next.startDate || prev.endDate !== next.endDate) {
     phrases.push("Trip dates changed");
@@ -123,5 +127,5 @@ export function summarizeItineraryChange(
         ? `${phrases.map(upperFirst).join("; ")}.`
         : `${phrases.slice(0, 3).map(upperFirst).join("; ")}; and ${phrases.length - 3} more.`;
 
-  return { title: "Trip updated", note };
+  return { title: "Trip updated", note, ...(targets.length ? { targets: targets.slice(0, 3) } : {}) };
 }

@@ -89,10 +89,16 @@ export default async function TravelerAppPage({ params, searchParams }: { params
     kosher: prefs.kosherFeatures,
   });
   if (!trip) redirect("/app");
+  if (shared.privateInvite) trip.homeTitle = redacted.title || "Your trip";
   if (payment) trip.payment = payment;
   if (!shared.privateInvite) await checkTripFlightStatus(shared.ownerEmail, shared.tripId).catch(() => []);
   trip.liveAlerts = shared.privateInvite
-    ? shared.alerts
+    ? shared.alerts.map((alert) => {
+        if (!alert.targets?.length) return alert;
+        const visible = { flight: redacted.flights, lodging: redacted.lodging, activity: redacted.activities };
+        const targets = alert.targets.filter(({ kind, id }) => visible[kind]?.some((item) => item.id === id));
+        return targets.length === alert.targets.length ? alert : { ...alert, targets, note: "The organizer published changes to the trip." };
+      })
     : await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
 
   // THIS traveler's own token, never shared.internalChatKey — that field is

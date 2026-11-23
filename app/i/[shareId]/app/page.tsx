@@ -47,9 +47,19 @@ async function sampleApp() {
     kosher: brand !== "itineraries",
   }).catch(() => null);
   if (!trip) redirect("/sample-itinerary");
+  const outbound = trip.walletGroups.flatMap((group) => group.rows).find((row) => row.id === "sample-out");
+  if (outbound) outbound.attachments = [{
+    id: "lake-como-demo-pass",
+    kind: "boarding-pass",
+    name: "Sample boarding pass",
+    bytes: 0,
+    contentType: "image/svg+xml",
+    addedAt: "2026-01-01T00:00:00Z",
+    sampleUrl: "/samples/lake-como-boarding-pass.svg",
+  }];
 
   const topNotice = (
-    <div className="shrink-0 border-b border-[var(--gold)]/30 bg-[var(--cream)] px-5 py-2.5 sm:px-8">
+    <div key="sample-notice" className="shrink-0 border-b border-[var(--gold)]/30 bg-[var(--cream)] px-5 py-2.5 sm:px-8">
       <p className="mx-auto max-w-5xl text-xs leading-5 text-stone-700">
         <span className="font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Sample</span> — a made-up
         trip, for seeing how the app works. Nothing here is booked.
@@ -59,7 +69,7 @@ async function sampleApp() {
 
   return (
     <main>
-      <CompanionApp trip={trip} travelerPreview topNotice={topNotice} personalWalletKey="sample:rome" calendarHref={`/i/${SAMPLE_TRIP_CODE}/calendar`} />
+      <CompanionApp trip={trip} travelerPreview topNotice={topNotice} calendarHref={`/i/${SAMPLE_TRIP_CODE}/calendar`} />
     </main>
   );
 }

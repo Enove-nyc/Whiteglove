@@ -32,17 +32,17 @@ export default function AppCodeEntry() {
         autoComplete="off"
         autoCapitalize="none"
         spellCheck={false}
-        placeholder="Paste your code or link"
-        className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm font-semibold tracking-[0.14em] text-[var(--navy)] outline-none focus:border-[var(--gold)]"
+        placeholder="Paste your invitation link or trip code"
+        className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm text-[var(--navy)] outline-none focus:border-[var(--gold)]"
       />
       <button
         type="submit"
         disabled={busy || !code.trim()}
         className="inline-flex min-h-11 items-center rounded-md border border-[var(--navy)] bg-[var(--navy)] px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:border-[var(--gold)] hover:bg-[var(--gold)] disabled:opacity-50"
       >
-        {busy ? "Opening…" : "Open my trip"}
+        {busy ? "Opening…" : "Open trip"}
       </button>
-      {error && <p id="app-code-error" role="alert" className="w-full text-sm text-red-800">Enter a trip code or a White Glove Itineraries trip link.</p>}
+      {error && <p id="app-code-error" role="alert" className="w-full text-sm text-red-800">Enter a trip code or a White Glove invitation link.</p>}
     </form>
   );
 }
