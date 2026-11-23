@@ -13,7 +13,7 @@ import memoryQueue from "@opennextjs/cloudflare/overrides/queue/memory-queue";
  * what visitors see straight away, and an unchanged page costs no database
  * read at all.
  */
-export default defineCloudflareConfig({
+export default defineCloudflareConfig(process.env.WG_ISOLATED_PREVIEW === "1" ? {} : {
   incrementalCache: r2IncrementalCache,
   tagCache: d1NextTagCache,
   queue: memoryQueue,
