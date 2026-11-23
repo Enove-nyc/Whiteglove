@@ -272,7 +272,7 @@ export async function middleware(request: NextRequest) {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return new NextResponse(null, { status: 405, headers: { Allow: "GET, HEAD" } });
     }
-    const path = /^\/i\/[A-Za-z0-9_-]+\/app\/?$/.test(pathname) ? pathname : "/app";
+    const path = /^\/(?:i|t)\/[A-Za-z0-9_-]+\/app\/?$/.test(pathname) ? pathname : "/app";
     const target = new URL(path, "https://www.whitegloveitineraries.com");
     if (path === "/app" && request.nextUrl.searchParams.get("enter") === "1") {
       target.searchParams.set("enter", "1");

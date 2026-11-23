@@ -75,6 +75,12 @@ describe("what one traveler's own link may see of everyone else", () => {
     assert.equal(mate?.notes, "Passport A5678");
   });
 
+  it("keeps personal details private even from another traveler in the same family", () => {
+    const redacted = redactForTraveler(itin, "smith-1", { individual: true });
+    assert.equal(redacted.travelers?.find((t) => t.id === "smith-1")?.notes, "Passport A1234");
+    assert.equal(redacted.travelers?.find((t) => t.id === "smith-2")?.notes, undefined);
+  });
+
   it("strips another unit's notes, email and phone — but keeps their name and kind, since the roster is not secret", () => {
     const redacted = redactForTraveler(itin, "smith-1");
     const other = redacted.travelers?.find((t) => t.id === "green-1");
@@ -158,9 +164,11 @@ describe("the traveler-scoped app page and its share route keep the same fences 
     assert.ok(idx > -1 && idx < buildIdx, "redaction must happen before the companion trip is built");
   });
 
-  it("Business-gated, the same as handing a trip to a client at all", () => {
-    assert.match(PAGE, /mayServeCompanionClients/);
-    assert.match(ROUTE, /mayServeCompanionClients/);
+  it("allows regular accounts to create personal codes with an isolated wallet", () => {
+    assert.doesNotMatch(ROUTE, /mayServeCompanionClients/);
+    assert.match(PAGE, /personalWalletKey=\{`traveler:\$\{shareId\}`\}/);
+    assert.match(PAGE, /individual: true/);
+    assert.match(PAGE, /chat=\{hasClientFeatures \? chat : undefined\}/);
   });
 
   it("the share route checks same-origin and sign-in before creating a link", () => {

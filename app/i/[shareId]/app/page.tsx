@@ -2,7 +2,7 @@ import { noteShareOpened } from "@/lib/share-open-recorder";
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import ClientCodeMemory from "@/components/companion/ClientCodeMemory";
-import { getSharedItineraryByShareId, getTripAlerts } from "@/lib/account-store";
+import { getSharedItineraryByShareId, getSharedTraveler, getTripAlerts } from "@/lib/account-store";
 import { emptyItinerary } from "@/data/itinerary";
 import { SAMPLE_ITINERARY, SAMPLE_TRIP_CODE } from "@/data/sample-itinerary";
 import { buildCompanionFromItinerary } from "@/lib/companion-build";
@@ -21,7 +21,10 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   const { shareId } = await params;
   if (shareId === SAMPLE_TRIP_CODE) return sampleApp();
   const shared = await getSharedItineraryByShareId(shareId);
-  if (!shared) redirect(`/i/${encodeURIComponent(shareId)}`);
+  if (!shared) {
+    if (await getSharedTraveler(shareId)) redirect(`/t/${encodeURIComponent(shareId)}/app`);
+    redirect(`/i/${encodeURIComponent(shareId)}`);
+  }
   await noteShareOpened(shareId, shared.ownerEmail);
   const trip = await buildCompanionFromItinerary({ ...emptyItinerary(), ...shared.itinerary }, {
     today: new Date().toISOString().slice(0, 10),

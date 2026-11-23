@@ -404,9 +404,9 @@ export function unitMates(itin: Itinerary, travelerId: string): ItinTraveler[] {
  * reading as whichever travelers the planner put in the same family/unit
  * together, and whichever items the planner assigned to that unit.
  */
-export function redactForTraveler(itin: Itinerary, viewerTravelerId: string): Itinerary {
+export function redactForTraveler(itin: Itinerary, viewerTravelerId: string, { individual = false } = {}): Itinerary {
   const viewer = (itin.travelers ?? []).find((t) => t.id === viewerTravelerId);
-  const mine = new Set(unitMates(itin, viewerTravelerId).map((t) => t.id));
+  const mine = new Set(individual ? [viewerTravelerId] : unitMates(itin, viewerTravelerId).map((t) => t.id));
   const travelers = (itin.travelers ?? []).map((t) =>
     mine.has(t.id) ? t : { id: t.id, name: t.name, kind: t.kind, family: t.family },
   );

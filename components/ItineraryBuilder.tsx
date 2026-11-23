@@ -2460,7 +2460,8 @@ const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: s
 ];
 
 function TravelerShareLink({ tripId, traveler }: { tripId: string | null; traveler: ItinTraveler }) {
-  const [link, setLink] = useState("");
+  const [code, setCode] = useState("");
+  const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -2479,7 +2480,7 @@ function TravelerShareLink({ tripId, traveler }: { tripId: string | null; travel
         setError(data?.error || "Could not create that link.");
         return;
       }
-      setLink(`${window.location.origin}/t/${data.shareId}/app`);
+      setCode(data.shareId);
     } catch {
       // A network-level failure rejects before res.ok is read, so without this
       // the button just re-enabled with nothing said. Tell the advisor.
@@ -2489,20 +2490,26 @@ function TravelerShareLink({ tripId, traveler }: { tripId: string | null; travel
     }
   }
 
-  if (link) {
+  if (code) {
     return (
-      <div className="mt-1.5 flex w-full min-w-0 items-center gap-2 text-xs">
-        <input readOnly value={link} className="min-w-0 flex-1 truncate border border-[var(--gold-light)] bg-[#FAF8F3] px-2 py-1 text-[var(--navy)]" onFocus={(e) => e.target.select()} />
-        <button type="button" onClick={() => navigator.clipboard?.writeText(link)} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-          Copy
+      <div className="mt-1.5 flex w-full min-w-0 flex-wrap items-center gap-2 text-xs">
+        <input readOnly aria-label={`${traveler.name || "Traveler"}’s trip code`} value={code} className="min-w-0 flex-1 truncate border border-[var(--gold-light)] bg-[#FAF8F3] px-2 py-1 text-[var(--navy)]" onFocus={(e) => e.target.select()} />
+        <button type="button" onClick={async () => {
+          try { await navigator.clipboard.writeText(code); setCopied(true); }
+          catch { setError("Select the code to copy it."); }
+        }} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
+          {copied ? "Copied" : "Copy code"}
         </button>
+        <a href={`/t/${encodeURIComponent(code)}/app`} className="font-semibold underline">Open traveler app</a>
+        <p className="w-full text-stone-600">Give this code to {traveler.name || "this traveler"} to enter at app.whitegloveitineraries.com.</p>
+        {error && <p role="alert" className="w-full text-red-700">{error}</p>}
       </div>
     );
   }
   return (
     <div className="mt-1.5 w-full">
       <button type="button" onClick={create} disabled={busy || !tripId} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 disabled:opacity-40">
-        {traveler.hasOwnAccess ? "Get access link" : "Create access link"}
+        {traveler.hasOwnAccess ? "Show personal trip code" : "Create personal trip code"}
       </button>
       {error && <p className="mt-1 text-xs font-semibold text-red-700">{error}</p>}
     </div>
