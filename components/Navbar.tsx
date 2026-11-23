@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import DestinationSearch from "@/components/DestinationSearch";
 import SitePromotions from "@/components/SitePromotions";
+import { useOpenTravelAssistant } from "@/components/TravelAssistantPopup";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import { Icon } from "@/components/icons/Icon";
 import { IconLink } from "@/components/icons/IconAction";
@@ -78,6 +79,10 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
     return () => document.removeEventListener("keydown", onKey);
   }, [searchOpen]);
   const pathname = usePathname();
+  const openTravelAssistant = useOpenTravelAssistant();
+  const assistantNavigation = (event: { preventDefault: () => void }) => {
+    if (openTravelAssistant()) event.preventDefault();
+  };
   const router = useRouter();
   /**
    * WHICH MENU IS OPEN, AND WHICH ONE A PRESS OPENED.
@@ -357,6 +362,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
                                     key={link.href + link.label}
                                     role="menuitem"
                                     href={link.href}
+                                    onNavigate={link.href === "/assistant" ? assistantNavigation : undefined}
                                     aria-current={linkCurrent ? "page" : undefined}
                                     onClick={closeAll}
                                     className={`flex min-h-11 items-center rounded-md px-2 py-2 text-sm transition ${
@@ -376,6 +382,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
                             key={link.href + link.label}
                             role="menuitem"
                             href={link.href}
+                            onNavigate={link.href === "/assistant" ? assistantNavigation : undefined}
                             aria-current={linkCurrent ? "page" : undefined}
                             aria-description={link.description}
                             title={link.description}
@@ -422,6 +429,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
               {isItineraries && (
                 <Link
                   href="/assistant"
+                  onNavigate={assistantNavigation}
                   className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[var(--gold)] px-3.5 text-sm font-semibold text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white"
                 >
                   <Icon name="sparkle" className="h-4 w-4" />
@@ -504,7 +512,7 @@ export default function Navbar({ brand: brandProp, minimal = false, homeHref, bo
                       <ul id={`mobile-${key}`} className="pb-2">
                         {category.links.map((link) => (
                           <li key={link.href + link.label}>
-                            <Link href={link.href} onClick={() => setMobileOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 text-sm text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
+                            <Link href={link.href} onNavigate={link.href === "/assistant" ? assistantNavigation : undefined} onClick={() => setMobileOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-2 text-sm text-stone-600 hover:bg-[var(--cream-deep)] hover:text-[var(--navy)]">
                               {link.label}
                             </Link>
                           </li>

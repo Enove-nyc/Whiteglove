@@ -1,5 +1,6 @@
 "use client";
 
+import { useOpenTravelAssistant } from "@/components/TravelAssistantPopup";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/icons/Icon";
@@ -25,6 +26,7 @@ const ITEMS: Array<{ key: string; icon: IconName; label: string; href: string }>
 
 export default function MobileBottomBar({ signedIn, brand }: { signedIn: boolean; brand?: SiteBrand }) {
   const pathname = usePathname();
+  const openTravelAssistant = useOpenTravelAssistant();
   const openSignIn = useOpenSignIn();
   const items = [
     // The itineraries brand omits Search (the desktop header does too): every
@@ -76,7 +78,9 @@ export default function MobileBottomBar({ signedIn, brand }: { signedIn: boolean
           );
         }
         return (
-          <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined} className={shared}>
+          <Link key={item.key} href={item.href} onNavigate={item.key === "assistant" ? (event) => {
+            if (openTravelAssistant()) event.preventDefault();
+          } : undefined} aria-current={active ? "page" : undefined} className={shared}>
             {inner}
           </Link>
         );

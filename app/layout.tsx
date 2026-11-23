@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SearchPalette from "@/components/SearchPalette";
+import TravelAssistantPopup from "@/components/TravelAssistantPopup";
 import SiteAssistant from "@/components/SiteAssistant";
 import { DIRECTORY_SEARCH_IS_PUBLIC } from "@/lib/public-access";
 import { BookingLinkProvider } from "@/components/BookingLinkProvider";
@@ -121,7 +122,7 @@ export default async function RootLayout({
         <div id="main-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
           <BookingLinkProvider value={booking}>
             <SignInGateProvider googleAvailable={googleAvailable} phoneSignupAvailable={phoneSignupAvailable}>
-              {children}
+              <TravelAssistantPopup>{children}</TravelAssistantPopup>
             </SignInGateProvider>
           </BookingLinkProvider>
         </div>
