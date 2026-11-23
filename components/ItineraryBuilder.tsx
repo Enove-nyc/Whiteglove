@@ -1204,6 +1204,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
             open it; it is stripped from anything shared or printed. */}
         <StopAttachments
           attachments={a.attachments}
+          allowPhotos
           signedIn={signedIn}
           onChange={(attachments) => onSetAttachments(a.id, attachments)}
         />
@@ -1387,6 +1388,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
       {day.lodging && (
         <StopAttachments
           attachments={day.lodging.attachments}
+          allowPhotos
           signedIn={signedIn}
           onChange={(attachments) => onSaveLodging({ ...day.lodging!, attachments })}
         />
