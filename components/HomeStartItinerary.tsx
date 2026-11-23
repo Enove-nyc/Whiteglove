@@ -57,7 +57,7 @@ export default function HomeStartItinerary() {
         type="submit"
         className="min-h-12 shrink-0 rounded-lg bg-[var(--navy)] px-6 text-[15px] font-semibold text-white transition hover:bg-[var(--navy-deep)]"
       >
-        Create itinerary
+        Build from scratch
       </button>
     </form>
   );

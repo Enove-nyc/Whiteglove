@@ -194,7 +194,7 @@ export default function LoginForm({
       return;
     }
     const data = result.data;
-    if (mode === "signup") {
+    if (mode === "signup" && data?.verificationRequired !== false) {
       setMode("verify");
       setMessage(whereTheCodeWent(data, "verification code"));
       setSaving(false);

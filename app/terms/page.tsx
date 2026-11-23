@@ -55,6 +55,7 @@ export default async function TermsOfUsePage() {
   const [words, brand] = await Promise.all([readWords(), currentBrand()]);
   const contactEmail = contactEmailFor(brand, words);
   const siteName = BRAND_NAME[brand];
+  const itineraries = brand === "itineraries";
   const siteDomain = BRAND_DOMAIN[brand];
   return (
     <main className="min-h-screen bg-[var(--cream)]">
@@ -63,7 +64,7 @@ export default async function TermsOfUsePage() {
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--gold-ink)]">{siteName}</p>
           <h1 className="mt-5 font-[family-name:var(--font-display)] text-4xl leading-tight text-[var(--navy)] sm:text-5xl">Terms of Use</h1>
-          <p className="mt-4 text-sm text-stone-500">Last updated: {UPDATED}</p>
+          <p className="mt-4 text-sm text-stone-500">Last updated: {itineraries ? "November 22, 2026" : UPDATED}</p>
         </div>
       </section>
 
@@ -104,8 +105,9 @@ export default async function TermsOfUsePage() {
           <p>You agree not to misuse the Service. In particular, you will not:</p>
           <ul className="glove-list space-y-2">
             <li>use the Service for any unlawful purpose or in violation of these terms;</li>
-            <li>try to open accounts, trips, codes, data or systems that are not yours;</li>
-            <li>copy, scrape or redistribute the Service or its content in bulk without permission;</li>
+            <li>attempt to access accounts, data, or systems that are not yours;</li>
+            <li>scrape, copy, or redistribute our content in bulk without permission;</li>
+            {itineraries && <li>post harassment, threats, hate, sexual exploitation, scams, or another person’s private information without permission. Use the Report control beside a message to ask White Glove to review the message or traveler.</li>}
             <li>interfere with or disrupt the Service or the networks it relies on.</li>
           </ul>
         </Section>

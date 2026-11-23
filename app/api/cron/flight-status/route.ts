@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { runTravelerDepartureReminders } from "@/lib/account-store";
 import { runFlightStatusSweep } from "@/lib/cron-tasks";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Not authorized." }, { status: 401 });
   }
 
-  const result = await runFlightStatusSweep();
-  return NextResponse.json({ ok: true, ...result });
+  const [result, travelerReminders] = await Promise.all([
+    runFlightStatusSweep(),
+    runTravelerDepartureReminders().catch((error) => {
+      console.error("[cron] Could not process family trip reminders.", error instanceof Error ? error.message : "Unknown error");
+      return 0;
+    }),
+  ]);
+  return NextResponse.json({ ok: true, ...result, travelerReminders });
 }

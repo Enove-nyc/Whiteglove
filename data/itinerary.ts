@@ -33,6 +33,7 @@ export type ItinAttachment = {
    * and both live in the same list. See lib/attachments.ts.
    */
   shared?: boolean;
+  travelerId?: string;
 };
 
 export type LodgingType = "hotel" | "overnight-transit" | "other";

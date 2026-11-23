@@ -24,4 +24,3 @@ export async function encodePhoto(file: File, sizes = [1600, 1200, 900, 600]): P
     image.close();
   }
 }
-

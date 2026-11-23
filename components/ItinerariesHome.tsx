@@ -60,8 +60,8 @@ export default function ItinerariesHome({
               <Link href="/itinerary" className="inline-flex min-h-11 items-center rounded-lg bg-[var(--navy)] px-4 font-semibold text-white">
                 Start an itinerary
               </Link>
-              <Link href="/sample-itineraries" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline underline-offset-4">
-                Browse sample itineraries
+              <Link href="/sample-itinerary" className="inline-flex min-h-11 items-center font-semibold text-[var(--navy)] underline underline-offset-4">
+                See a finished trip
               </Link>
             </div>
           </div>
@@ -154,6 +154,11 @@ export default function ItinerariesHome({
             <h2 className="font-[family-name:var(--font-display)] text-4xl font-semibold leading-tight text-[var(--navy-deep)] sm:text-5xl">
               Start your itinerary
             </h2>
+            <p className="mt-3 text-sm leading-6 text-stone-700">You can start without an account. Your draft stays in this browser until you save it to your account.</p>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold text-[var(--navy)]">
+              <Link className="inline-flex min-h-11 items-center underline" href="/itinerary?import=1">Import a booking</Link>
+              <Link className="inline-flex min-h-11 items-center underline" href="/sample-itinerary">Use a sample itinerary</Link>
+            </div>
             <HomeStartItinerary />
           </div>
 

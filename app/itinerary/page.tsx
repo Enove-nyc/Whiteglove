@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getAppPrefs } from "@/lib/app-prefs-store";
 import { accountCookieName, getCurrentAccountData } from "@/lib/account-store";
 import { pageMetadata } from "@/lib/seo";
@@ -69,6 +70,7 @@ export default async function ItineraryPage() {
       <section className="border-b border-[var(--gold-light)] px-5 py-9 sm:px-8 sm:py-12">
         <div className="mx-auto max-w-7xl">
           <PageHeader title="Itinerary planner" />
+          {!guest && itineraries && <Link className="mt-3 inline-flex min-h-11 items-center font-semibold underline" href="/itinerary/inbox">Family trip chats</Link>}
         </div>
       </section>
 

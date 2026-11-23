@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAttachmentFor } from "@/lib/attachment-store";
-import { getSharedItineraryByShareId, getSharedTraveler } from "@/lib/account-store";
+import { cookies } from "next/headers";
+import { accountCookieName, getCurrentAccountSummary, getSharedTraveler, getSharedItineraryByShareId } from "@/lib/account-store";
 import { sharedAttachmentIds, sharedTripPictures } from "@/lib/attachments";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 
@@ -41,15 +42,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const id = request.nextUrl.searchParams.get("id");
   if (!shareId || !id) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
-  const shared = await getSharedItineraryByShareId(shareId);
-  const traveler = shared ? null : await getSharedTraveler(shareId);
-  const pictures = shared ? sharedTripPictures(shared.itinerary) : traveler?.pictures;
-  const isPicture = pictures?.cover === id || pictures?.photos.some((photo) => photo.id === id);
-  if (!isPicture && !(shared && sharedAttachmentIds(shared.itinerary).has(id))) {
-    return NextResponse.json({ error: "Not found." }, { status: 404 });
-  }
+  const wholeTrip = await getSharedItineraryByShareId(shareId);
+  const legacyTraveler = wholeTrip ? null : await getSharedTraveler(shareId);
+  const viewer = wholeTrip || legacyTraveler ? null : await getCurrentAccountSummary((await cookies()).get(accountCookieName())?.value);
+  const invite = viewer ? await getSharedTraveler(shareId, viewer.email) : null;
+  const shared = wholeTrip ?? legacyTraveler ?? invite;
+  if (!shared) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
-  const file = shared ? await getAttachmentFor(id, shared.ownerEmail) : traveler ? await getAttachmentFor(id, traveler.ownerEmail) : null;
+  const pictures = wholeTrip ? sharedTripPictures(wholeTrip.itinerary) : (legacyTraveler ?? invite)?.pictures;
+  const isPicture = pictures?.cover === id || pictures?.photos.some((photo) => photo.id === id);
+  const travelerId = invite?.privateInvite ? invite.traveler.id : undefined;
+  const isDocument = sharedAttachmentIds(shared.itinerary, travelerId).has(id) &&
+    (!invite || sharedAttachmentIds(invite.currentItinerary, travelerId).has(id));
+  if (!isPicture && !isDocument) return NextResponse.json({ error: "Not found." }, { status: 404 });
+
+  const file = await getAttachmentFor(id, shared.ownerEmail);
   if (!file || (isPicture && (file.kind !== "photo" || !file.contentType.startsWith("image/")))) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }

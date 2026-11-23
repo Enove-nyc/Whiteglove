@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
-import type { ItinAttachment } from "@/data/itinerary";
+import type { ItinAttachment, ItinTraveler } from "@/data/itinerary";
 import {
   ALLOWED_TYPES,
   ATTACHMENT_KINDS,
@@ -22,12 +22,14 @@ const smallButton =
 export default function StopAttachments({
   attachments = [],
   signedIn,
+  travelers,
   onChange,
   allowPhotos = false,
 }: {
   attachments?: ItinAttachment[];
   signedIn: boolean;
   allowPhotos?: boolean;
+  travelers?: ItinTraveler[];
   onChange: (next: ItinAttachment[]) => void | Promise<boolean | void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -60,7 +62,10 @@ export default function StopAttachments({
         setError(data?.error ?? "Could not keep that file. Try again.");
         return;
       }
-      onChange([...attachments, data.attachment]);
+      if (await onChange([...attachments, data.attachment]) === false) {
+        setError("The file uploaded but the trip could not be saved. Retry saving the trip.");
+        return;
+      }
       setOpen(false);
     } catch (cause) {
       setError(kind === "photo" && cause instanceof Error ? cause.message : "Could not read that file.");
@@ -171,6 +176,16 @@ export default function StopAttachments({
                   Take off
                 </button>
               </span>
+              {travelers && <label className="flex items-center gap-2">
+                <span>Visible to</span>
+                <select aria-label={`Traveler for ${a.name}`} className="min-h-11 rounded-md border border-stone-300 bg-white px-2" value={a.travelerId ?? ""} onChange={(event) => {
+                  const travelerId = event.target.value || undefined;
+                  onChange(attachments.map((file) => file.id === a.id ? { ...file, shared: false, travelerId } : file));
+                }}>
+                  <option value="">Organizer only</option>
+                  {travelers.map((traveler) => <option key={traveler.id} value={traveler.id}>{traveler.name}</option>)}
+                </select>
+              </label>}
             </li>
           ))}
         </ul>

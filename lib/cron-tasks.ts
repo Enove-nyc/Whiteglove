@@ -1,7 +1,7 @@
 import { getPlan } from "@/lib/account-plan-store";
 import { mayServeCompanionClients } from "@/lib/account-limits";
 import { appendChat, type CompanionChatMessage } from "@/lib/companion-chat-store";
-import { checkTripFlightStatus, getAccountData, listAllAccounts, markReminderSent, pushToTripSubscribers, withTrips } from "@/lib/account-store";
+import { checkTripFlightStatus, getAccountData, listAllAccounts, markReminderSent, runTravelerDepartureReminders, pushToTripSubscribers, withTrips } from "@/lib/account-store";
 import {
   balanceDueReminderDue,
   balanceDueReminderText,
@@ -68,7 +68,7 @@ export async function runFlightStatusSweep(): Promise<{ checked: number; alerted
  * lapsed subscription cannot still send. `today` is a YYYY-MM-DD date.
  */
 export async function runTripReminders(today: string): Promise<{ sent: number; pushed: number }> {
-  let sent = 0;
+  let sent = await runTravelerDepartureReminders().catch(() => 0);
   let pushed = 0;
   // THE THREAD IS THE DELIVERY; THE PUSH IS THE NUDGE. Stored and marked sent
   // first, pushed only after, so a phone that is off never costs the client
