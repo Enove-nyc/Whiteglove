@@ -206,14 +206,14 @@ export const ITINERARIES_CATEGORIES: readonly NavCategory[] = [
     label: "My itineraries",
     links: [
       { label: "Build a trip", href: "/itinerary" },
+      { label: "Open trip app", href: "/app" },
       // Public, copyable day-by-day trips (owner, 19 November 2026).
       { label: "Sample itineraries", href: "/sample-itineraries" },
       // Back for everyone, on free Gemini (owner, 20 November 2026).
       { label: "Ask AI", href: "/assistant" },
       // "Your route" came off the menu at the owner's word (18 November 2026).
-      // Get recommendations, the app pages, pricing and the adviser screens
-      // came off the public site at the owner's word (18 November 2026). The
-      // trip app still opens from a trip code; it is just not advertised.
+      // Get recommendations, pricing and the adviser screens came off the
+      // public site at the owner's word (18 November 2026).
     ],
   },
 ] as const;

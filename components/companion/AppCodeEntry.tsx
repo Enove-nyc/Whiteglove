@@ -1,43 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { tripAppEntryPath } from "@/lib/trip-app-entry";
 
-/**
- * A traveler's way into the app: the code for their trip.
- *
- * The code is the trip's share token. Entering it opens that one trip as the app
- * at /i/<code>/app — no account, no other trip reachable. An unknown code lands
- * on the shared-trip page's own "not available" notice rather than an error, so
- * this can navigate optimistically without a round-trip to check first.
- */
 export default function AppCodeEntry() {
   const router = useRouter();
   const [code, setCode] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, startNavigation] = useTransition();
+  const [error, setError] = useState(false);
 
   function open(event: React.FormEvent) {
     event.preventDefault();
-    const value = code.trim();
-    if (!value) return;
-    setBusy(true);
-    router.push(`/i/${encodeURIComponent(value)}/app`);
+    const path = tripAppEntryPath(code);
+    setError(!path);
+    if (path) startNavigation(() => router.push(path));
   }
 
   return (
     <form onSubmit={open} className="flex flex-wrap items-center gap-2">
       <label htmlFor="app-code" className="sr-only">
-        Trip code
+        Trip code or link
       </label>
       <input
         id="app-code"
         value={code}
-        onChange={(e) => setCode(e.target.value)}
-        maxLength={128}
+        onChange={(e) => { setCode(e.target.value); setError(false); }}
+        aria-invalid={error || undefined}
+        aria-describedby={error ? "app-code-error" : undefined}
+        maxLength={512}
         autoComplete="off"
         autoCapitalize="none"
         spellCheck={false}
-        placeholder="Enter your code"
+        placeholder="Paste your code or link"
         className="min-w-0 flex-1 rounded-md border border-[var(--gold-light)] bg-white px-3 py-2.5 text-sm font-semibold tracking-[0.14em] text-[var(--navy)] outline-none focus:border-[var(--gold)]"
       />
       <button
@@ -47,6 +42,7 @@ export default function AppCodeEntry() {
       >
         {busy ? "Opening…" : "Open my trip"}
       </button>
+      {error && <p id="app-code-error" role="alert" className="w-full text-sm text-red-800">Enter a trip code or a White Glove Itineraries trip link.</p>}
     </form>
   );
 }
