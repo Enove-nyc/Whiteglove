@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { getShareOwnerEmail, getSharedItineraryByShareId } from "@/lib/account-store";
+import { getShareOwnerEmail, getSharedItineraryByShareId, getSharedTraveler } from "@/lib/account-store";
 import { sameOrigin } from "@/lib/secure-access";
 import { rateLimit } from "@/lib/rate-limit";
 import { groupKey, memberCookieName, readMember, signMember } from "@/lib/trip-group-identity";
@@ -27,26 +27,29 @@ export async function POST(request: NextRequest) {
   if (!isTripChatChannel(channel)) return reply({ error: "Choose a chat channel." }, 400);
   const after = body.after;
   if (after !== undefined && (typeof after !== "string" || !/^[a-f0-9-]{36}$/.test(after))) return reply({ error: "Reload the conversation." }, 400);
-  const group = groupKey(code);
+  const credentialKey = groupKey(code);
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const writes = action === "add-channel" || action === "remove-channel";
-  const limited = await rateLimit(`trip-group:${action}:${group}:${groupKey(ip)}`, { limit: writes ? 10 : action === "send" ? 40 : 120, windowSeconds: 60 });
+  const limited = await rateLimit(`trip-group:${action}:${credentialKey}:${groupKey(ip)}`, { limit: writes ? 10 : action === "send" ? 40 : 120, windowSeconds: 60 });
   if (!limited.ok) return reply({ error: "Please wait a moment before trying again." }, 429);
   // Always resolve against the live trip. Revoking sharing closes chat too;
   // a stale cookie, raw trip id, or guessed neighboring id grants no access.
   // Joining reads the whole trip once. Everything after only needs the code's
   // own key, which revoking the code or deleting the trip removes — so a poll
   // costs one small read instead of loading the trip owner's whole account.
-  const live = action === "join" ? Boolean(await getSharedItineraryByShareId(code)) : Boolean(await getShareOwnerEmail(code));
-  if (!live) return reply({ error: "That trip code is not active." }, 404);
+  const wholeTrip = action === "join" ? await getSharedItineraryByShareId(code) : await getShareOwnerEmail(code);
+  const traveler = wholeTrip ? null : await getSharedTraveler(code);
+  const groupCode = wholeTrip ? code : traveler?.internalChatKey;
+  if (!groupCode) return reply({ error: "That trip code is not active." }, 404);
+  const group = groupKey(groupCode);
   const secret = process.env.WHITE_GLOVE_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim();
   if (!secret) return reply({ error: "Trip chat is unavailable. Please try again later." }, 503);
   const cookie = memberCookieName(code);
-  let member = readMember(request.cookies.get(cookie)?.value, code, secret);
+  let member = readMember(request.cookies.get(cookie)?.value, code, secret, group);
   if (action === "join") {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name || name.length > 60) return reply({ error: "Enter your name, up to 60 characters." }, 400);
-    member = { id: member?.id ?? randomUUID(), name, group };
+    member = { id: member?.id ?? randomUUID(), name, group, credential: credentialKey };
     const response = reply({ member: { id: member.id, name: member.name } });
     response.cookies.set(cookie, signMember(member, secret), {
       httpOnly: true, secure: process.env.NODE_ENV === "production" || request.nextUrl.protocol === "https:", sameSite: "lax", path: "/api/trip-group", maxAge: 60 * 60 * 24 * 180,

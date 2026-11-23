@@ -1,3 +1,4 @@
+import { tripPictureUrls } from "@/lib/attachments";
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import ClientCodeMemory from "@/components/companion/ClientCodeMemory";
@@ -98,7 +99,7 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   return (
     <main>
       <ClientCodeMemory path={`/t/${shareId}/app`} />
-      <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={shared.walletKey} calendarHref={`/t/${encodeURIComponent(shareId)}/calendar`} />
+      <CompanionApp trip={trip} travelerGroupCode={shared.internalChatKey ? shareId : undefined} pictures={tripPictureUrls(shared.pictures, shareId)} chat={hasClientFeatures ? chat : undefined} personalWalletKey={shared.walletKey} calendarHref={`/t/${encodeURIComponent(shareId)}/calendar`} />
     </main>
   );
 }

@@ -236,6 +236,7 @@ export type DayAdjustment = {
 
 export type Itinerary = {
   title: string;
+  coverPhoto?: ItinAttachment;
   /** Superseded by `travelers`; kept so older saved trips still read. */
   travelerName?: string;
   travelers?: ItinTraveler[];
