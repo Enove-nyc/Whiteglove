@@ -1198,6 +1198,7 @@ export default function CompanionApp({
   }
 
   const hasConcierge = trip.concierge;
+  const travelerNav = !embedded && !advisorInbox && (!hasConcierge || groupMode);
   /**
    * The Concierge/Guide and Traveler/Advisor switches, and the "Concierge" tab
    * name, are a demonstration of a tier that is not built — `concierge` is true
@@ -1361,7 +1362,7 @@ export default function CompanionApp({
     day: sel.name,
     activity: "On the day",
     chat: advisor,
-    messages: groupMode ? "Trip group chat" : advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Advisor",
+    messages: groupMode ? "Trip group chat" : advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : travelerNav ? "Messages" : "Advisor",
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
@@ -1372,7 +1373,7 @@ export default function CompanionApp({
     day: `Day ${curDay + 1} of ${trip.days.length}`,
     activity: sel.name,
     chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
-    messages: groupMode ? "Everyone on this trip" : advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
+    messages: groupMode ? "Everyone on this trip" : advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : travelerNav && !liveChat ? "" : "Your advisor · replies when they can",
     alerts: open ? "One needs you" : unreadAlerts.length > 0 ? `${unreadAlerts.length} to see` : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
@@ -1436,10 +1437,7 @@ export default function CompanionApp({
   // one and a dead scripted one side by side. This "Guide/Concierge" tab is
   // the showcase's own — kosher and Shabbos content, hasConcierge only.
   const conciergeTabScreen: Screen = !isGuideMode && usesRealChat ? "messages" : "chat";
-  // The bottom nav is capped at four on a real trip — Trip, Advisor, Wallet,
-  // You — so a real trip's Guide notes live inside the You tab (see
-  // guideSection below) rather than getting a tab of their own.
-  const tabDefs: [Screen, string, IconName][] = [["home", "Trip", "map-pin"]];
+  const tabDefs: [Screen, string, IconName][] = [["home", travelerNav ? "Itinerary" : "Trip", "map-pin"]];
   if (hasConcierge)
     tabDefs.push(
       trip.previewAsClient
@@ -1447,7 +1445,7 @@ export default function CompanionApp({
           [conciergeTabScreen, "Advisor", "chat"]
         : [conciergeTabScreen, isGuideMode ? "Guide" : "Concierge", "sparkle"],
     );
-  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", groupMode ? "Chat" : advisorInbox ? "Messages" : "Advisor", "chat"]);
+  if ((hasMessages || travelerNav) && conciergeTabScreen !== "messages") tabDefs.push(["messages", travelerNav || advisorInbox ? "Messages" : "Advisor", "chat"]);
   tabDefs.push(["wallet", "Wallet", "wallet"], ["profile", "You", "account"]);
   const tabs = tabDefs.map(([id, label, icon]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
@@ -2358,6 +2356,8 @@ export default function CompanionApp({
       />
     ) : liveChat ? (
       <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} places={shareablePlaces} onComposerFocus={setComposerUp} />
+    ) : travelerNav ? (
+      <p style={{ padding: "24px 20px", fontSize: 14, color: MUTED }}>Messaging is unavailable for this trip link.</p>
     ) : (
       guideChat
     );
@@ -2378,7 +2378,48 @@ export default function CompanionApp({
 
   const canBack = embedded ? true : st.screen !== "home" && !(advisorInbox && st.screen === "messages");
 
-  // ── the phone itself ────────────────────────────────────────────────────
+  // Leave room for the keyboard while a message composer has focus.
+  const bottomNav = !embedded && (desktopWeb || !(composerUp && st.screen === "messages")) && (
+    <nav aria-label="Trip navigation" style={{ flexShrink: 0, position: "relative", padding: "8px 10px calc(8px + env(safe-area-inset-bottom))", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
+      {(() => {
+        const idx = tabs.findIndex((t) => t.on);
+        if (idx < 0) return null; // a screen with no tab of its own (pay) — no pill
+        return (
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 8,
+              bottom: "calc(8px + env(safe-area-inset-bottom))",
+              left: `calc(10px + ${idx} * (100% - 20px) / ${tabs.length})`,
+              width: `calc((100% - 20px) / ${tabs.length})`,
+              background: GOLD,
+              borderRadius: 16,
+              boxShadow: "0 3px 10px rgba(198, 161, 91,.34)",
+              transition: "left .28s cubic-bezier(.4,0,.2,1)",
+            }}
+          />
+        );
+      })()}
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => go(t.id)}
+          aria-current={t.on ? "page" : undefined}
+          aria-label={t.badge ? `${t.label} (unread messages)` : undefined}
+          style={{ position: "relative", zIndex: 1, flex: 1, border: 0, cursor: "pointer", background: "transparent", color: t.on ? ON_GOLD : MUTED, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "9px 3px", transition: "color .2s ease" }}
+        >
+          <span style={{ position: "relative", display: "inline-flex" }}>
+            <Icon name={t.icon} className="h-5 w-5" strokeWidth={t.on ? 2.1 : 1.7} />
+            {t.badge && <span aria-hidden="true" style={{ position: "absolute", top: -3, right: -5, width: 8, height: 8, borderRadius: 14, background: t.on ? CREAM : GOLD, border: `2px solid ${t.on ? GOLD : "#C7BFB1"}` }} />}
+          </span>
+          <span style={{ font: `${t.on ? 600 : 500} 10.5px/1 Inter,sans-serif`, letterSpacing: ".01em" }}>{t.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+
   const phone = (
     <div className="wg-phone" style={{ display: "flex", flexDirection: "column", background: CREAM, fontFamily: "Inter,system-ui,sans-serif", overflow: "hidden", ...(embedded ? { height: "100%", flex: 1, minHeight: 0 } : {}) }}>
       {/* header */}
@@ -2420,72 +2461,10 @@ export default function CompanionApp({
       )}
       {/* content */}
       <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{screenContent}</div>
-      {/* tabs — an icon over a label per tab, with one gold pill that slides to
-          the active one (the messenger/travel-app bottom bar). Hidden while the
-          message composer holds the keyboard, so it never rides up wedged
-          between the input and the keyboard. */}
-      {!embedded && !(composerUp && st.screen === "messages") && (
-      <div style={{ flexShrink: 0, position: "relative", padding: "8px 10px", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
-        {(() => {
-          const idx = tabs.findIndex((t) => t.on);
-          if (idx < 0) return null; // a screen with no tab of its own (pay) — no pill
-          return (
-            <span
-              aria-hidden="true"
-              style={{
-                position: "absolute",
-                top: 8,
-                bottom: 8,
-                left: `calc(10px + ${idx} * (100% - 20px) / ${tabs.length})`,
-                width: `calc((100% - 20px) / ${tabs.length})`,
-                background: GOLD,
-                borderRadius: 16,
-                boxShadow: "0 3px 10px rgba(198, 161, 91,.34)",
-                transition: "left .28s cubic-bezier(.4,0,.2,1)",
-              }}
-            />
-          );
-        })()}
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => go(t.id)}
-            aria-current={t.on ? "page" : undefined}
-            aria-label={t.badge ? `${t.label} (unread messages)` : undefined}
-            style={{ position: "relative", zIndex: 1, flex: 1, border: 0, cursor: "pointer", background: "transparent", color: t.on ? ON_GOLD : MUTED, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "9px 3px", transition: "color .2s ease" }}
-          >
-            {/* THE WORD UNDER THE ICON, WHICH WAS NOT THERE.
-                The bar was icon-only, with the label kept as the button's
-                accessible name and nothing on the screen — a map pin, a speech
-                bubble, a wallet and a person, standing for Trip, Advisor,
-                Wallet and You. Two of those four are not guessable: a person
-                glyph reads as a profile rather than "You", and a pin reads as
-                the map rather than the trip. Every phone puts the word under
-                the glyph for that reason.
-                It also made the bar invisible to anything reading the screen
-                by its text: an outside scan of this page reported that the
-                tabs did not switch, having found no control by any of their
-                names. They did switch, and do — all four, at 390 and at 1280.
-                The name is one element now instead of two facts that could
-                disagree, so the label and the accessible name cannot drift. */}
-            <span style={{ position: "relative", display: "inline-flex" }}>
-              <Icon name={t.icon} className="h-5 w-5" strokeWidth={t.on ? 2.1 : 1.7} />
-              {t.badge && <span aria-hidden="true" style={{ position: "absolute", top: -3, right: -5, width: 8, height: 8, borderRadius: 14, background: t.on ? CREAM : GOLD, border: `2px solid ${t.on ? GOLD : "#C7BFB1"}` }} />}
-            </span>
-            <span style={{ font: `${t.on ? 600 : 500} 10.5px/1 Inter,sans-serif`, letterSpacing: ".01em" }}>{t.label}</span>
-          </button>
-        ))}
-      </div>
-      )}
+      {bottomNav}
     </div>
   );
 
-  // ── the same app, as a web page on a computer ───────────────────────────
-  // Not the phone stretched wide (its screens are a column) and not a phone in
-  // a frame, but the app re-laid as software you sit at: a navy side rail with
-  // the trip and its tabs down the left, and the chosen screen in a wide
-  // content column. Chat and the inbox fill that column; reading screens sit in
-  // a comfortable measure and scroll. Same screens, same tabs, same actions.
   const chatty = st.screen === "messages" || st.screen === "chat";
   const railBtn = (on: boolean): React.CSSProperties => ({
     display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 14,
@@ -2494,8 +2473,7 @@ export default function CompanionApp({
   });
   const webShell = (
     <div style={{ display: "flex", height: "100dvh", background: "#FAF8F3", fontFamily: "Inter,system-ui,sans-serif", color: INK }}>
-      {/* side rail — the trip, its tabs, and Changes at the foot */}
-      <aside style={{ width: 268, flexShrink: 0, background: NAVY, color: CREAM, display: "flex", flexDirection: "column", padding: "26px 16px 18px" }}>
+      {!travelerNav && <aside style={{ width: 268, flexShrink: 0, background: NAVY, color: CREAM, display: "flex", flexDirection: "column", padding: "26px 16px 18px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 5, padding: "0 8px 22px" }}>
           <div style={{ font: "600 10px/1 Inter,sans-serif", letterSpacing: ".16em", textTransform: "uppercase", color: GOLD_ON_DARK }}>{kickers.home}</div>
           <div style={{ font: `400 21px/1.2 ${serif}`, letterSpacing: "-.01em" }}>{titles.home}</div>
@@ -2525,7 +2503,7 @@ export default function CompanionApp({
           </span>
           Changes
         </button>
-      </aside>
+      </aside>}
       {/* content — a slim per-screen bar over the screen itself */}
       <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "17px 30px", borderBottom: "1px solid rgba(21,32,74,.09)", background: "#FAF8F3" }}>
@@ -2534,6 +2512,11 @@ export default function CompanionApp({
             <div style={{ font: "600 9.5px/1 Inter,sans-serif", letterSpacing: ".14em", textTransform: "uppercase", color: "#6B4A1C" }}>{kickers[st.screen]}</div>
             <div style={{ font: `400 20px/1.1 ${serif}`, letterSpacing: "-.01em" }}>{titles[st.screen]}</div>
           </div>
+          {travelerNav && (
+            <button type="button" onClick={() => go("alerts")} aria-current={st.screen === "alerts" ? "page" : undefined} style={{ ...railBtn(st.screen === "alerts"), marginLeft: "auto", width: "auto", color: INK }}>
+              {open || unreadAlerts.length > 0 ? "Changes •" : "Changes"}
+            </button>
+          )}
         </div>
         {offline && (
           <div style={{ flexShrink: 0, padding: "7px 30px", background: "#FAF8F3", borderBottom: "1px solid rgba(21,32,74,.08)", display: "flex", alignItems: "center", gap: 7, font: "600 11.5px/1.3 Inter,sans-serif", color: "#6B4A1C" }}>
@@ -2543,6 +2526,7 @@ export default function CompanionApp({
         <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
           <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{screenContent}</div>
         </div>
+        {travelerNav && bottomNav}
       </main>
     </div>
   );
