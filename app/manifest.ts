@@ -17,9 +17,10 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     name: itineraries ? "White Glove Itineraries" : "White Glove Kosher Travel",
     short_name: "White Glove",
     description: itineraries
-      ? "The trip you plan, in your client's pocket — the itinerary a day at a time, a travel wallet for when there is no signal, and a line to their advisor."
+      ? "Open your itinerary, travel wallet, and trip group chat."
       : "Kosher food, destinations, shuls and practical travel information while you travel.",
-    start_url: itineraries ? "/" : "/travel",
+    ...(itineraries ? { id: "/" } : {}),
+    start_url: itineraries ? "/app" : "/travel",
     display: "standalone",
     background_color: "#15204A",
     theme_color: "#15204A",

@@ -268,6 +268,18 @@ async function isOwner(request: NextRequest): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  if (request.nextUrl.hostname === "app.whitegloveitineraries.com") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return new NextResponse(null, { status: 405, headers: { Allow: "GET, HEAD" } });
+    }
+    const path = /^\/i\/[A-Za-z0-9_-]+\/app\/?$/.test(pathname) ? pathname : "/app";
+    const target = new URL(path, "https://www.whitegloveitineraries.com");
+    if (path === "/app" && request.nextUrl.searchParams.get("enter") === "1") {
+      target.searchParams.set("enter", "1");
+    }
+    return NextResponse.redirect(target, 307);
+  }
+
   const bookingOrigin = getBookingOrigin(request.headers);
   if (bookingOrigin) {
     const login = "/private-booking/access";
