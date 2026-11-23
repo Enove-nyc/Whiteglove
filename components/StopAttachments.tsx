@@ -10,36 +10,11 @@ import {
   MAX_ATTACHMENT_BYTES,
   MAX_PER_ITEM,
   type AttachmentKind,
-  dataUrlBytes,
   describeSize,
   opensInTheBrowser,
 } from "@/lib/attachments";
+import { encodePhoto, photoTypes } from "@/lib/browser-trip-photo";
 import { PreviewDialog } from "@/components/PreviewDialog";
-
-const photoTypes = Object.keys(ALLOWED_TYPES).filter((type) => type.startsWith("image/")).join(",");
-
-async function encodePhoto(file: File): Promise<string> {
-  if (!photoTypes.split(",").includes(file.type)) throw new Error("Choose a JPEG, PNG or WebP photo.");
-  const image = await createImageBitmap(file);
-  try {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("Could not prepare that photo.");
-    for (const maxSide of [1600, 1200, 900, 600]) {
-      const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
-      canvas.width = Math.max(1, Math.round(image.width * scale));
-      canvas.height = Math.max(1, Math.round(image.height * scale));
-      context.fillStyle = "white";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-      if (dataUrlBytes(dataUrl) <= MAX_ATTACHMENT_BYTES) return dataUrl;
-    }
-    throw new Error("Could not make that photo small enough. Try a smaller picture.");
-  } finally {
-    image.close();
-  }
-}
 
 const smallButton =
   "inline-flex min-h-11 items-center rounded-full border border-[var(--gold-light)] bg-white px-3.5 text-xs font-bold text-[var(--navy)] transition hover:border-[var(--gold)] hover:bg-[var(--cream-deep)] disabled:opacity-60";
@@ -53,7 +28,7 @@ export default function StopAttachments({
   attachments?: ItinAttachment[];
   signedIn: boolean;
   allowPhotos?: boolean;
-  onChange: (next: ItinAttachment[]) => void;
+  onChange: (next: ItinAttachment[]) => void | Promise<boolean | void>;
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -169,6 +144,24 @@ export default function StopAttachments({
                     )}
                   </PreviewDialog>
                 )}
+                {a.kind === "photo" && allowPhotos && signedIn && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className="min-h-11 font-semibold text-[var(--navy)] underline"
+                    onClick={async () => {
+                      setBusy(true);
+                      setError("");
+                      try {
+                        if (await onChange(attachments.map((photo) => photo.id === a.id ? { ...photo, shared: !a.shared } : photo)) === false) {
+                          setError("Could not update who can see this photo.");
+                        }
+                      } finally { setBusy(false); }
+                    }}
+                  >
+                    {a.shared ? "Make private" : "Share with this trip"}
+                  </button>
+                )}
                 <button
                   type="button"
                   disabled={busy}
@@ -237,7 +230,7 @@ export default function StopAttachments({
             </button>
           </div>
           <p className="text-xs leading-5 text-stone-500">
-            {KIND_LABELS[kind].hint} {kind === "photo" ? "JPEG, PNG or WebP photos are resized for the itinerary." : `PDF or a picture, up to ${describeSize(MAX_ATTACHMENT_BYTES)}.`} Files added here are private.{" "}
+            {KIND_LABELS[kind].hint} {kind === "photo" ? "JPEG, PNG or WebP photos are resized for the itinerary." : `PDF or a picture, up to ${describeSize(MAX_ATTACHMENT_BYTES)}.`} New photos are private until you share them.{" "}
             <strong className="font-semibold text-stone-600">Not for passports or identity documents.</strong>
           </p>
           {busy && <p className="text-xs font-semibold text-[var(--navy)]">Keeping it…</p>}

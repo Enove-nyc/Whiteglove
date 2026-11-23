@@ -100,14 +100,14 @@ export async function putAttachment(input: {
 export async function getAttachmentFor(
   id: string,
   asker: string,
-): Promise<{ contentType: string; name: string; data: string } | null> {
+): Promise<Pick<Stored, "contentType" | "name" | "data" | "kind"> | null> {
   if (!attachmentStoreAvailable() || !id || !asker) return null;
   const raw = await redis<string>(`get/${key(id)}`);
   if (!raw) return null;
   try {
     const stored = JSON.parse(raw) as Stored;
     if (!stored?.owner || stored.owner !== normalize(asker)) return null;
-    return { contentType: stored.contentType, name: stored.name, data: stored.data };
+    return { contentType: stored.contentType, name: stored.name, data: stored.data, kind: stored.kind };
   } catch {
     return null;
   }

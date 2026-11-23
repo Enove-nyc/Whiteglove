@@ -1,8 +1,8 @@
 import { createInvitedAccount } from "@/lib/account-invitations";
 import { createHash, createHmac, pbkdf2Sync, randomBytes, randomInt } from "crypto";
 import { type AccountPlan, planOf } from "@/lib/account-plans";
-import { travelerAttachments, withoutAttachments } from "@/lib/attachments";
-import { buildDays, emptyItinerary, flightRouteLabel, type Itinerary } from "@/data/itinerary";
+import { sharedTripPictures, travelerAttachments, withoutAttachments } from "@/lib/attachments";
+import { buildDays, emptyItinerary, flightRouteLabel, redactForTraveler, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
 import { formatCents, type PaymentRecord, type TripBalance } from "@/data/trip-payments";
@@ -2571,6 +2571,7 @@ export async function getSharedTraveler(shareId: string) {
     traveler,
     walletKey: `traveler:${trip.travelerWalletKeys?.[traveler.id] ?? shareId}`,
     itinerary: withoutAttachments(trip.itinerary),
+    pictures: sharedTripPictures(redactForTraveler(trip.itinerary, traveler.id, { individual: true })),
     internalChatKey: trip.shareId,
     ownerName: record?.name,
     advisor: trip.advisor?.trim() ?? "",
