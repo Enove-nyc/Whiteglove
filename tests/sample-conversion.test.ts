@@ -24,6 +24,6 @@ test("only public sample paths can increment aggregate conversion counts", async
   assert.equal(await trackSampleCopy("/sample-itinerary?email=private"), false);
   assert.equal(fetchMock.mock.callCount(), 0);
   assert.equal(await trackSampleCopy("/sample-itinerary"), true);
-  assert.match(fetchMock.mock.calls[0].arguments[0], /zincrby\/white-glove:sample-copies\/1\/%2Fsample-itinerary$/);
+  assert.match(String(fetchMock.mock.calls[0].arguments[0]), /zincrby\/white-glove:sample-copies\/1\/%2Fsample-itinerary$/);
   assert.deepEqual((await getSampleTemplateStats())?.[0], { title: "A week on Lake Como", views: 12, copies: 3 });
 });
