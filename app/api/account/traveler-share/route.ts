@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { accountCookieName, ensureTravelerShare, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
+import { accountCookieName, changeTravelerShare, getCurrentAccountData, resolveBusinessOwner } from "@/lib/account-store";
 import { rateLimit } from "@/lib/rate-limit";
 import { sameOrigin } from "@/lib/secure-access";
 
@@ -14,14 +14,18 @@ export async function POST(request: NextRequest) {
   const account = await getCurrentAccountData(cookie);
   if (!account?.email) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
   const owner = await resolveBusinessOwner(account.email);
-  const body = (await request.json().catch(() => null)) as { tripId?: unknown; travelerId?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { tripId?: unknown; travelerId?: unknown; action?: unknown } | null;
   const tripId = typeof body?.tripId === "string" ? body.tripId.trim() : "";
   const travelerId = typeof body?.travelerId === "string" ? body.travelerId.trim() : "";
   if (!tripId || !travelerId) return NextResponse.json({ error: "Choose a saved trip and traveler." }, { status: 400 });
   const allowed = await rateLimit(`traveler-share:${account.email}`, { limit: 30, windowSeconds: 60 });
   if (!allowed.ok) return NextResponse.json({ error: "Please wait a moment before making another code." }, { status: 429 });
 
-  const shareId = await ensureTravelerShare(owner, tripId, travelerId);
-  if (!shareId) return NextResponse.json({ error: "Could not create that link." }, { status: 503 });
-  return NextResponse.json({ shareId }, { headers: { "Cache-Control": "private, no-store" } });
+  const action = body?.action ?? "ensure";
+  if (action !== "ensure" && action !== "replace" && action !== "revoke") {
+    return NextResponse.json({ error: "Choose a code action." }, { status: 400 });
+  }
+  const result = await changeTravelerShare(owner, tripId, travelerId, action);
+  if (!result) return NextResponse.json({ error: "Could not update that traveler’s code." }, { status: 503 });
+  return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
 }

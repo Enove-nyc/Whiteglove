@@ -202,6 +202,8 @@ export type SavedTrip = {
    * Most trips never use this; it stays empty.
    */
   travelerShares?: Record<string, string>;
+  /** Original wallet identifiers kept when a traveler’s access code changes. */
+  travelerWalletKeys?: Record<string, string>;
   /**
    * The pre-trip form a client fills out — legal name, passport, emergency
    * contact, preferences, whatever the planner asks for. The template (which
@@ -413,12 +415,14 @@ function redisConfig() {
   return url && token ? { url: url.replace(/\/$/, ""), token } : null;
 }
 
-async function redis<T>(command: string) {
+async function redis<T>(command: string | (string | number)[]) {
   const config = redisConfig();
   if (!config) return undefined;
   try {
-    const response = await fetch(`${config.url}/${command}`, {
-      headers: { Authorization: `Bearer ${config.token}` },
+    const restCommand = typeof command === "string";
+    const response = await fetch(restCommand ? `${config.url}/${command}` : config.url, {
+      ...(restCommand ? {} : { method: "POST", body: JSON.stringify(command) }),
+      headers: { Authorization: `Bearer ${config.token}`, ...(restCommand ? {} : { "Content-Type": "application/json" }) },
       cache: "no-store",
     });
     if (!response.ok) return undefined;
@@ -1172,11 +1176,9 @@ export async function setTripCommission(email: string, id: string, cents: number
  * so the open trip is mirrored there on every write. Get that wrong and the
  * print view or a share link quietly shows a different trip than the builder.
  */
-async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
-  const normalized = normalizeId(email);
-  const current = await getAccountData(normalized);
+function accountWithTrips(current: AccountData, trips: SavedTrip[], activeId: string): AccountData {
   const open = trips.find((t) => t.id === activeId) ?? trips[0];
-  const next: AccountData = {
+  return {
     ...current,
     trips,
     activeTripId: open?.id,
@@ -1186,8 +1188,13 @@ async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
     itineraryCollaborators: open?.collaborators ?? [],
     updatedAt: new Date().toISOString(),
   };
+}
+
+async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
+  const normalized = normalizeId(email);
+  const next = accountWithTrips(await getAccountData(normalized), trips, activeId);
   const ok = await writeJson(dataKey(normalized), next);
-  return ok ? summarize(trips, open?.id ?? activeId) : null;
+  return ok ? summarize(trips, next.activeTripId ?? activeId) : null;
 }
 
 
@@ -2404,46 +2411,67 @@ function travelerShareKey(shareId: string) {
   return `white-glove:traveler-share:${shareId}`;
 }
 
-/** One traveler's own link — created once, reused after. */
-export async function ensureTravelerShare(email: string, tripId: string, travelerId: string): Promise<string | null> {
-  if (!hasAccountStorage()) return null;
-  const normalized = normalizeId(email);
-  const data = await getAccountData(normalized);
-  const { trips, activeId } = withTrips(data);
-  const trip = trips.find((t) => t.id === tripId);
-  const traveler = trip?.itinerary.travelers?.find((p) => p.id === travelerId);
-  if (!trip || !traveler) return null;
+type TravelerShareAction = "ensure" | "replace" | "revoke";
 
-  const existing = trip.travelerShares?.[travelerId];
-  if (existing) {
-    await writeJson(travelerShareKey(existing), { ownerEmail: normalized, tripId, travelerId, createdAt: new Date().toISOString() });
-    // A trip that already had per-traveler links from before this was added
-    // may still have no trip-wide share — ensure one now, since the chat
-    // thread a traveler's link opens is keyed by the TRIP's own share token.
-    await ensureTripShare(normalized, tripId);
-    return existing;
+/** Update the traveler code and its reverse lookup in one Redis transaction. */
+export async function changeTravelerShare(email: string, tripId: string, travelerId: string, action: TravelerShareAction) {
+  if (!hasAccountStorage()) return null;
+  const ownerEmail = normalizeId(email);
+  const key = dataKey(ownerEmail);
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const raw = (await redis<string>(`get/${encodeURIComponent(key)}`))?.result;
+    if (!raw) return null;
+    const data = JSON.parse(raw) as AccountData;
+    const { trips, activeId } = withTrips(data);
+    const trip = trips.find((t) => t.id === tripId);
+    if (!trip?.itinerary.travelers?.some((person) => person.id === travelerId)) return null;
+    const previous = trip.travelerShares?.[travelerId];
+    if (action === "revoke" && !previous) return { shareId: null };
+
+    const shareId = action === "revoke" ? null : (action === "ensure" && previous ? previous : shareToken());
+    const groupCode = trip.shareId ?? (shareId ? shareToken() : undefined);
+    const now = new Date().toISOString();
+    const travelerShares = { ...trip.travelerShares };
+    if (shareId) travelerShares[travelerId] = shareId;
+    else delete travelerShares[travelerId];
+
+    const walletCode = trip.travelerWalletKeys?.[travelerId] ?? previous ?? shareId;
+    const revoked = Boolean(previous && previous !== shareId);
+    const updated: SavedTrip = {
+      ...trip,
+      shareId: groupCode,
+      travelerShares,
+      travelerWalletKeys: walletCode ? { ...trip.travelerWalletKeys, [travelerId]: walletCode } : trip.travelerWalletKeys,
+      itinerary: {
+        ...trip.itinerary,
+        travelers: trip.itinerary.travelers.map((person) => person.id === travelerId
+          ? { ...person, hasOwnAccess: Boolean(shareId) } : person),
+      },
+      revokedShareIds: revoked ? [...new Set([previous!, ...(trip.revokedShareIds ?? [])])].slice(0, 10) : trip.revokedShareIds,
+      updatedAt: now,
+    };
+    const next = accountWithTrips(data, trips.map((entry) => entry.id === tripId ? updated : entry), activeId);
+    const result = await redis<number>([
+      "EVAL",
+      "if redis.call('GET',KEYS[1]) ~= ARGV[1] then return 0 end " +
+      "redis.call('SET',KEYS[1],ARGV[2]) " +
+      "if ARGV[3] ~= '' then redis.call('SET',KEYS[2],ARGV[3]) end " +
+      "if ARGV[4] ~= '' then redis.call('SET',KEYS[3],ARGV[4]) end " +
+      "if ARGV[5] == '1' then redis.call('DEL',KEYS[4]) end return 1",
+      4, key, travelerShareKey(shareId ?? ""), shareKey(groupCode ?? ""), travelerShareKey(previous ?? ""),
+      raw, JSON.stringify(next),
+      shareId ? JSON.stringify({ ownerEmail, tripId, travelerId, createdAt: now }) : "",
+      groupCode && !trip.shareId ? JSON.stringify({ ownerEmail, kind: "client", createdAt: now }) : "",
+      revoked ? "1" : "0",
+    ]);
+    if (!result) return null;
+    if (result.result === 1) {
+      if (revoked) await markShareRevoked(previous!);
+      return { shareId };
+    }
   }
-  const token = shareToken();
-  const wrote = await writeJson(travelerShareKey(token), { ownerEmail: normalized, tripId, travelerId, createdAt: new Date().toISOString() });
-  if (!wrote) return null;
-  const nextTravelers = (trip.itinerary.travelers ?? []).map((p) => (p.id === travelerId ? { ...p, hasOwnAccess: true } : p));
-  const next = trips.map((t) =>
-    t.id === tripId
-      ? {
-          ...t,
-          itinerary: { ...t.itinerary, travelers: nextTravelers },
-          travelerShares: { ...(t.travelerShares ?? {}), [travelerId]: token },
-          updatedAt: new Date().toISOString(),
-        }
-      : t,
-  );
-  const saved = await writeTrips(normalized, next, activeId);
-  if (!saved) return null;
-  // Same reason as above: guarantee a trip-wide share exists so this
-  // traveler's app has a chat thread to open, even if the planner never
-  // created a whole-trip client link.
-  await ensureTripShare(normalized, tripId);
-  return token;
+  return null;
 }
 
 /**
@@ -2473,6 +2501,7 @@ export async function getSharedTraveler(shareId: string) {
     ownerEmail: rec.ownerEmail,
     tripId: rec.tripId,
     traveler,
+    walletKey: `traveler:${trip.travelerWalletKeys?.[traveler.id] ?? shareId}`,
     itinerary: withoutAttachments(trip.itinerary),
     internalChatKey: trip.shareId,
     ownerName: record?.name,
@@ -3003,6 +3032,7 @@ export async function stopTripShare(email: string, tripId: string): Promise<bool
           ...t,
           shareId: undefined,
           travelerShares: {},
+          travelerWalletKeys: { ...trip.travelerShares, ...trip.travelerWalletKeys },
           revokedShareIds: remembered,
           collaborators: [],
           pushSubscriptions: [],

@@ -2462,56 +2462,79 @@ const TRAVELER_KINDS: Array<{ value: NonNullable<ItinTraveler["kind"]>; label: s
 function TravelerShareLink({ tripId, traveler }: { tripId: string | null; traveler: ItinTraveler }) {
   const [code, setCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [hasCode, setHasCode] = useState(Boolean(traveler.hasOwnAccess));
+  const [pendingAction, setPendingAction] = useState<"replace" | "revoke" | null>(null);
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function create() {
+  async function updateCode(action: "ensure" | "replace" | "revoke" = "ensure") {
     if (!tripId) return;
     setBusy(true);
     setError("");
+    setNotice("");
+    setCopied(false);
     try {
       const res = await fetch("/api/account/traveler-share", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripId, travelerId: traveler.id }),
+        body: JSON.stringify({ tripId, travelerId: traveler.id, action }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.shareId) {
-        setError(data?.error || "Could not create that link.");
+      if (!res.ok || (action !== "revoke" && !data?.shareId)) {
+        setError(data?.error || "Could not update this code.");
         return;
       }
-      setCode(data.shareId);
+      setCode(data.shareId ?? "");
+      setHasCode(Boolean(data.shareId));
+      setPendingAction(null);
+      if (action === "revoke") setNotice("Code revoked.");
+      if (action === "replace") setNotice("Old code revoked. Copy the new code to share it.");
     } catch {
       // A network-level failure rejects before res.ok is read, so without this
       // the button just re-enabled with nothing said. Tell the advisor.
-      setError("Could not create that link. Check your connection and try again.");
+      setError("Could not update this code. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
   }
 
-  if (code) {
-    return (
-      <div className="mt-1.5 flex w-full min-w-0 flex-wrap items-center gap-2 text-xs">
-        <input readOnly aria-label={`${traveler.name || "Traveler"}’s trip code`} value={code} className="min-w-0 flex-1 truncate border border-[var(--gold-light)] bg-[#FAF8F3] px-2 py-1 text-[var(--navy)]" onFocus={(e) => e.target.select()} />
-        <button type="button" onClick={async () => {
-          try { await navigator.clipboard.writeText(code); setCopied(true); }
-          catch { setError("Select the code to copy it."); }
-        }} className="font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2">
-          {copied ? "Copied" : "Copy code"}
-        </button>
-        <a href={`/t/${encodeURIComponent(code)}/app`} className="font-semibold underline">Open traveler app</a>
-        <p className="w-full text-stone-600">Give this code to {traveler.name || "this traveler"} to enter at app.whitegloveitineraries.com.</p>
-        {error && <p role="alert" className="w-full text-red-700">{error}</p>}
-      </div>
-    );
-  }
   return (
-    <div className="mt-1.5 w-full">
-      <button type="button" onClick={create} disabled={busy || !tripId} className="text-xs font-semibold text-[var(--navy)] underline decoration-[var(--gold)] underline-offset-2 disabled:opacity-40">
-        {traveler.hasOwnAccess ? "Show personal trip code" : "Create personal trip code"}
-      </button>
-      {error && <p className="mt-1 text-xs font-semibold text-red-700">{error}</p>}
+    <div className="mt-2 flex w-full min-w-0 flex-wrap items-center gap-3 text-sm">
+      {code ? (
+        <>
+          <input readOnly aria-label={`${traveler.name || "Traveler"}’s trip code`} value={code}
+            className="min-w-0 flex-1 truncate border border-[var(--gold-light)] bg-[#FAF8F3] px-2 py-1 text-[var(--navy)]"
+            onFocus={(event) => event.target.select()} />
+          <button type="button" onClick={async () => {
+            try { await navigator.clipboard.writeText(code); setCopied(true); }
+            catch { setError("Select the code to copy it."); }
+          }} className="font-semibold underline">{copied ? "Copied" : "Copy code"}</button>
+          <a href={`/t/${encodeURIComponent(code)}/app`} className="font-semibold underline">Open traveler app</a>
+          <p className="w-full text-stone-600">Give this code to {traveler.name || "this traveler"} to enter at app.whitegloveitineraries.com.</p>
+        </>
+      ) : (
+        <button type="button" onClick={() => void updateCode()} disabled={busy || !tripId} className="font-semibold underline disabled:opacity-40">
+          {hasCode ? "Show personal trip code" : "Create personal trip code"}
+        </button>
+      )}
+      {hasCode && !pendingAction && (
+        <>
+          <button type="button" disabled={busy} onClick={() => setPendingAction("replace")} className="underline">Replace code</button>
+          <button type="button" disabled={busy} onClick={() => setPendingAction("revoke")} className="text-red-800 underline">Revoke code</button>
+        </>
+      )}
+      {pendingAction && (
+        <div className="w-full rounded border border-stone-300 p-3">
+          <p>{pendingAction === "replace" ? "The old code will stop working. Share the new code with this traveler." : "This traveler’s code will stop working."}</p>
+          <button type="button" disabled={busy} onClick={() => void updateCode(pendingAction)} className="mr-4 mt-2 font-semibold underline">
+            {pendingAction === "replace" ? "Confirm replacement" : "Confirm revocation"}
+          </button>
+          <button type="button" disabled={busy} onClick={() => setPendingAction(null)} className="underline">Cancel</button>
+        </div>
+      )}
+      {notice && <p role="status" className="w-full">{notice}</p>}
+      {error && <p role="alert" className="w-full text-red-700">{error}</p>}
     </div>
   );
 }
