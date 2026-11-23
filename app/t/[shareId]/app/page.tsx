@@ -98,7 +98,7 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   return (
     <main>
       <ClientCodeMemory path={`/t/${shareId}/app`} />
-      <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={`traveler:${shareId}`} />
+      <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={shared.walletKey} calendarHref={`/t/${encodeURIComponent(shareId)}/calendar`} />
     </main>
   );
 }

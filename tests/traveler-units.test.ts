@@ -166,7 +166,7 @@ describe("the traveler-scoped app page and its share route keep the same fences 
 
   it("allows regular accounts to create personal codes with an isolated wallet", () => {
     assert.doesNotMatch(ROUTE, /mayServeCompanionClients/);
-    assert.match(PAGE, /personalWalletKey=\{`traveler:\$\{shareId\}`\}/);
+    assert.match(PAGE, /personalWalletKey=\{shared.walletKey\}/);
     assert.match(PAGE, /individual: true/);
     assert.match(PAGE, /chat=\{hasClientFeatures \? chat : undefined\}/);
   });
@@ -184,7 +184,7 @@ describe("the traveler-scoped app page and its share route keep the same fences 
   });
 
   it("ensures the trip's own share exists so the traveler's link has a chat thread to open", () => {
-    const fn = STORE.slice(STORE.indexOf("export async function ensureTravelerShare"), STORE.indexOf("export async function getSharedTraveler"));
-    assert.match(fn, /ensureTripShare/);
+    const fn = STORE.slice(STORE.indexOf("export async function changeTravelerShare"), STORE.indexOf("export async function getSharedTraveler"));
+    assert.match(fn, /shareKey\(groupCode/);
   });
 });

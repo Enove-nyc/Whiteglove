@@ -117,7 +117,7 @@ export type CompanionChatMessage = {
   poll?: CompanionPoll;
   /**
    * WHO on the client side wrote this, when they came in by their own
-   * per-traveler link (lib/account-store.ts, ensureTravelerShare). Several
+   * per-traveler link (lib/account-store.ts, changeTravelerShare). Several
    * travellers on one trip are all the "client" side, so the side alone can't
    * tell a family apart — this is what lets the advisor (and other travellers)
    * see who said what. Absent on advisor messages and on a whole-trip link that

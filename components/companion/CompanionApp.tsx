@@ -908,6 +908,7 @@ export default function CompanionApp({
   travelerGroupCode,
   travelerPreview = false,
   personalWalletKey,
+  calendarHref,
   trip = COMPANION_DEMO_TRIP,
   chat,
   advisorInbox = false,
@@ -921,6 +922,7 @@ export default function CompanionApp({
   travelerGroupCode?: string;
   travelerPreview?: boolean;
   personalWalletKey?: string;
+  calendarHref?: string;
   trip?: CompanionTrip;
   chat?: CompanionChat;
   /** The advisor's own side: a Messages tab that lists every client's chat. */
@@ -2260,6 +2262,11 @@ export default function CompanionApp({
           <span style={{ fontSize: 13, color: "#57534e" }}>{trip.familyMeta}</span>
         </div>
       </div>
+      {calendarHref && (
+        <a href={calendarHref} download className="inline-flex min-h-11 items-center self-start rounded-lg border border-stone-300 bg-white px-4 text-sm font-semibold text-[#15204A]">
+          Download trip calendar
+        </a>
+      )}
       {trip.prefs.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <div style={{ ...kicker(NAVY), paddingLeft: 4 }}>From your planning answers</div>

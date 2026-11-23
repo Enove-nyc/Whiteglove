@@ -34,7 +34,7 @@ export default async function SharedAppPage({ params }: { params: Promise<{ shar
   if (shared.tripId) trip.liveAlerts = await getTripAlerts(shared.ownerEmail, shared.tripId).catch(() => []);
   return <main>
     <ClientCodeMemory path={`/i/${shareId}/app`} />
-    <CompanionApp trip={trip} travelerGroupCode={shareId} personalWalletKey={`trip:${shareId}`} />
+    <CompanionApp trip={trip} travelerGroupCode={shareId} personalWalletKey={`trip:${shareId}`} calendarHref={`/i/${encodeURIComponent(shareId)}/calendar`} />
   </main>;
 }
 
@@ -59,7 +59,7 @@ async function sampleApp() {
           trip, for seeing how the app works. Nothing here is booked.
         </p>
       </div>
-      <CompanionApp trip={trip} travelerPreview personalWalletKey="sample:rome" />
+      <CompanionApp trip={trip} travelerPreview personalWalletKey="sample:rome" calendarHref={`/i/${SAMPLE_TRIP_CODE}/calendar`} />
     </main>
   );
 }
