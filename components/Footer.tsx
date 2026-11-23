@@ -57,7 +57,7 @@ const ITINERARIES_LINKS = [
 // minimal footer so a sealed app surface has no tap-path out to the sales side.
 const FOOTER_MARKETING = new Set(["Pricing", "Advertise", "Sources"]);
 
-export default function Footer({ brand: brandProp, minimal = false, inApp = false, compact = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean; inApp?: boolean; compact?: boolean } = {}) {
+export default function Footer({ brand: brandProp, minimal = false, inApp = false }: { brand?: "kosher" | "itineraries"; minimal?: boolean; inApp?: boolean } = {}) {
   /**
    * The same three answers as the navigation, in the same order: what the page
    * passed, what this deployment was BUILT as, then the hostname.
@@ -76,9 +76,9 @@ export default function Footer({ brand: brandProp, minimal = false, inApp = fals
   if (inApp) {
     const supportLinks = links.filter(({ href }) => ["/contact", "/terms", "/privacy"].includes(href));
     return (
-      <footer className={`border-t border-stone-200 bg-white px-5 text-sm text-[#15204A] ${compact ? "" : "py-3"}`}>
-        <p className={compact ? "sr-only" : "mt-1 font-semibold"}>White Glove {isItineraries ? "Itineraries" : "Kosher Travel"}</p>
-        <nav aria-label="Trip app footer" className={`flex flex-wrap gap-x-5 ${compact ? "justify-center" : ""}`}>
+      <footer className="border-t border-stone-200 bg-white px-5 py-3 text-sm text-[#15204A]">
+        <p className="mt-1 font-semibold">White Glove {isItineraries ? "Itineraries" : "Kosher Travel"}</p>
+        <nav aria-label="Trip app footer" className="flex flex-wrap gap-x-5">
           {supportLinks.map(({ href, label }) => <Link key={href} href={href} className="inline-flex min-h-11 items-center underline">{label}</Link>)}
         </nav>
       </footer>

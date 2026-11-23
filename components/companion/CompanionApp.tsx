@@ -33,7 +33,6 @@
  */
 
 import { TravelerProfilePhoto } from "@/components/TripPictureEditor";
-import Footer from "@/components/Footer";
 import { Fragment, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useOnValueChange } from "@/components/useOnValueChange";
 import { useRouter } from "next/navigation";
@@ -2026,6 +2025,17 @@ export default function CompanionApp({
     };
   }, [router, travelerInvite]);
 
+  const supportLinks = !embedded && (
+    <section className="rounded-2xl border border-stone-200 bg-white px-4" aria-labelledby="trip-support-heading">
+      <h2 id="trip-support-heading" className="pt-4 text-sm font-semibold">Help and legal</h2>
+      <ul className="divide-y divide-stone-100 text-sm">
+        <li><Link className="flex min-h-11 items-center underline underline-offset-4" href="/contact">Contact</Link></li>
+        <li><Link className="flex min-h-11 items-center underline underline-offset-4" href="/terms">Terms</Link></li>
+        <li><Link className="flex min-h-11 items-center underline underline-offset-4" href="/privacy">Privacy</Link></li>
+      </ul>
+    </section>
+  );
+
   const alertsScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 14, animation: "wgIn .28s ease both" }}>
       {/* Only where a client is looking at their own trip through a real
@@ -2126,6 +2136,7 @@ export default function CompanionApp({
         </div>
       </div>
       )}
+      {travelerInvite && supportLinks}
     </div>
   );
 
@@ -2446,6 +2457,7 @@ export default function CompanionApp({
           </div>
         )}
       </div>
+      {supportLinks}
     </div>
   );
 
@@ -2506,7 +2518,7 @@ export default function CompanionApp({
 
   // Leave room for the keyboard while a message composer has focus.
   const bottomNav = !embedded && (desktopWeb || !(composerUp && st.screen === "messages")) && (
-    <nav aria-label="Trip navigation" style={{ flexShrink: 0, position: "relative", padding: "8px 10px", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
+    <nav aria-label="Trip navigation" style={{ flexShrink: 0, position: "relative", padding: "8px 10px calc(8px + env(safe-area-inset-bottom))", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
       {(() => {
         const idx = tabs.findIndex((t) => t.on);
         if (idx < 0) return null; // a screen with no tab of its own (pay) — no pill
@@ -2516,7 +2528,7 @@ export default function CompanionApp({
             style={{
               position: "absolute",
               top: 8,
-              bottom: 8,
+              bottom: "calc(8px + env(safe-area-inset-bottom))",
               left: `calc(10px + ${idx} * (100% - 20px) / ${tabs.length})`,
               width: `calc((100% - 20px) / ${tabs.length})`,
               background: GOLD,
@@ -2545,14 +2557,6 @@ export default function CompanionApp({
       ))}
     </nav>
   );
-
-  const bottomChrome = (showTabs: boolean) =>
-    !embedded && (desktopWeb || !(composerUp && st.screen === "messages")) && (
-      <div className="wg-trip-bottom">
-        {showTabs && bottomNav}
-        <Footer inApp compact />
-      </div>
-    );
 
   const phone = (
     <div className="wg-phone" style={{ display: "flex", flexDirection: "column", background: CREAM, fontFamily: "Inter,system-ui,sans-serif", overflow: "hidden", ...(embedded ? { height: "100%", flex: 1, minHeight: 0 } : {}) }}>
@@ -2596,7 +2600,7 @@ export default function CompanionApp({
       )}
       {/* content */}
       <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{body}</div>
-      {bottomChrome(true)}
+      {bottomNav}
     </div>
   );
 
@@ -2662,7 +2666,7 @@ export default function CompanionApp({
         <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
           <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{body}</div>
         </div>
-        {bottomChrome(travelerNav)}
+        {travelerNav && bottomNav}
       </main>
     </div>
   );
@@ -5469,7 +5473,6 @@ export const COMPANION_CSS = `
  * bottom stays inside it and never chains to the document, so the fixed header
  * and tab bar do not bounce. */
 .wg-scroll { min-height: 0; overscroll-behavior: contain; }
-.wg-trip-bottom { flex: none; background: white; padding-bottom: env(safe-area-inset-bottom); }
 .wg-scroll::-webkit-scrollbar, .wg-toolbar::-webkit-scrollbar { display: none; }
 /* The per-message "⋯": nothing to see on a phone, where holding the bubble
  * opens the same actions — that is how WhatsApp and Signal read. On a hover
