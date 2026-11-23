@@ -42,7 +42,7 @@ export const dynamic = "force-dynamic";
  * family, sharing a `family` label) is handed their own door in. Mirrors
  * app/i/[shareId]/app/page.tsx exactly, with one difference: the itinerary is
  * passed through redactForTraveler (data/itinerary.ts) first, so this
- * traveler's own unit's notes stay, and every other traveler's notes,
+ * traveler's notes stay, and every other traveler's notes,
  * email and phone are stripped before the trip is even built. Attachments
  * are already stripped for every client link, traveler-scoped or not — see
  * getSharedTraveler in lib/account-store.ts.
@@ -53,8 +53,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function TravelerAppPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = await params;
-  // A dead or downgraded traveller link (revoked, dates removed, advisor plan
-  // lapsed, or the trip lost its days) must not dump the family on the
+  // A dead or downgraded traveller link (revoked, dates removed, or the trip lost its days) must not dump the family on the
   // marketing homepage with no way back in. Send them to /app, which shows a
   // "have a code?" field they can retry from — the same recovery /i uses.
   const shared = await getSharedTraveler(shareId);
@@ -65,19 +64,20 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   await noteShareOpened(shareId, shared.ownerEmail);
 
   const plan = await getPlan(shared.ownerEmail);
-  if (!mayServeCompanionClients(plan)) redirect("/app");
+  const hasClientFeatures = mayServeCompanionClients(plan);
 
   const label = shared.traveler.family?.trim() || shared.traveler.name;
   const [brand, prefs, payment] = await Promise.all([
     readBrand(shared.ownerEmail).catch(() => null),
     getAppPrefs(shared.ownerEmail).catch(() => ({ kosherFeatures: false })),
-    paymentForUnit(shared.ownerEmail, shared.tripId, travelerUnitKey(shared.traveler), label, shareId).catch(() => undefined),
+    hasClientFeatures ? paymentForUnit(shared.ownerEmail, shared.tripId, travelerUnitKey(shared.traveler), label, shareId).catch(() => undefined) : undefined,
   ]);
-  const redacted = redactForTraveler({ ...emptyItinerary(), ...shared.itinerary }, shared.traveler.id);
+  const itinerary = { ...emptyItinerary(), ...shared.itinerary };
+  const redacted = redactForTraveler(itinerary, shared.traveler.id, { individual: true });
   const trip = await buildCompanionFromItinerary(redacted, {
     today: new Date().toISOString().slice(0, 10),
     advisorName: shared.advisor || (brand?.enabled ? brand.name : undefined) || shared.ownerName,
-    client: label,
+    client: shared.traveler.name,
     kosher: prefs.kosherFeatures,
   });
   if (!trip) redirect("/app");
@@ -98,7 +98,7 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   return (
     <main>
       <ClientCodeMemory path={`/t/${shareId}/app`} />
-      <CompanionApp trip={trip} chat={chat} />
+      <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={`traveler:${shareId}`} />
     </main>
   );
 }

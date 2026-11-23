@@ -2468,7 +2468,7 @@ export async function getSharedTraveler(shareId: string) {
   const [data, record] = await Promise.all([getAccountData(rec.ownerEmail), getAccountRecord(rec.ownerEmail)]);
   const trip = withTrips(data).trips.find((t) => t.id === rec.tripId);
   const traveler = trip?.itinerary.travelers?.find((p) => p.id === rec.travelerId);
-  if (!trip || !traveler) return null;
+  if (!trip || !traveler || trip.travelerShares?.[rec.travelerId] !== shareId) return null;
   return {
     ownerEmail: rec.ownerEmail,
     tripId: rec.tripId,

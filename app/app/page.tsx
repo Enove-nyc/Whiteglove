@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import AppCodeEntry from "@/components/companion/AppCodeEntry";
 import ClientCodeMemory from "@/components/companion/ClientCodeMemory";
 import TripCompanionCode from "@/components/companion/TripCompanionCode";
-import { accountCookieName, getCurrentAccountSummary, getSharedItineraryByShareId, getTrips } from "@/lib/account-store";
+import { accountCookieName, getCurrentAccountSummary, getSharedItineraryByShareId, getSharedTraveler, getTrips } from "@/lib/account-store";
 import { SAMPLE_TRIP_CODE } from "@/data/sample-itinerary";
 import { pageMetadata } from "@/lib/seo";
 
@@ -22,14 +22,17 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
   const jar = await cookies();
   const account = await getCurrentAccountSummary(jar.get(accountCookieName())?.value);
   const remembered = jar.get("wg-app-path")?.value ?? "";
-  const match = /^\/i\/([A-Za-z0-9_-]+)\/app$/.exec(remembered);
-  if (params.enter !== "1" && match && await getSharedItineraryByShareId(match[1])) redirect(remembered);
+  const match = /^\/(i|t)\/([A-Za-z0-9_-]+)\/app$/.exec(remembered);
+  const rememberedTrip = match && (match[1] === "t"
+    ? await getSharedTraveler(match[2])
+    : await getSharedItineraryByShareId(match[2]));
+  if (params.enter !== "1" && rememberedTrip) redirect(remembered);
   const trips = account ? await getTrips(account.email) : [];
   return (
     <>
       <Navbar minimal homeHref="/app?enter=1" bottomBar={false} />
       <main className="flex-1 bg-[#FAF8F3] px-5 pb-16 pt-[calc(2rem+env(safe-area-inset-top))] text-[#15204A] sm:px-8">
-        {remembered && !match && <ClientCodeMemory path={null} />}
+        {remembered && !rememberedTrip && <ClientCodeMemory path={null} />}
         <div className="mx-auto max-w-5xl">
           <h1 className="font-[family-name:var(--font-display)] text-4xl sm:text-5xl">Open your trip</h1>
           <p className="mt-3 text-base text-stone-700">View your itinerary, travel wallet, and trip chat in your browser.</p>
