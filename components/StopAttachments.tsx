@@ -28,7 +28,7 @@ export default function StopAttachments({
   attachments?: ItinAttachment[];
   signedIn: boolean;
   allowPhotos?: boolean;
-  onChange: (next: ItinAttachment[]) => void | Promise<boolean>;
+  onChange: (next: ItinAttachment[]) => void | Promise<boolean | void>;
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
