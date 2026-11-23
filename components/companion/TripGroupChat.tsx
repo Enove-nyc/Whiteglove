@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { TripGroupMessage } from "@/lib/trip-group-store";
-import { MAX_CHANNEL_LABEL, TRIP_CHAT_CHANNELS, type DefaultTripChatChannel, type TripChatChannel, type TripChatChannelInfo } from "@/lib/trip-chat-channels";
+import { MAX_CHANNEL_LABEL, TRIP_CHAT_CHANNELS, type TripChatChannel, type TripChatChannelInfo } from "@/lib/trip-chat-channels";
 
 const DEFAULT_CHANNELS: TripChatChannelInfo[] = TRIP_CHAT_CHANNELS.map(({ id, label }) => ({ id, label }));
 type ChatReply = { messages?: TripGroupMessage[]; member?: { id: string; name: string }; needsName?: boolean; error?: string; channels?: TripChatChannelInfo[]; channelGone?: boolean };

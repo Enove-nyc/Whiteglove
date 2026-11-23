@@ -33,7 +33,6 @@ import { describeIdentity, isPhoneIdentity } from "@/lib/identity";
 
 import { pageMetadata } from "@/lib/seo";
 import { currentBrand } from "@/lib/site-brand";
-import { BRAND_ORIGIN } from "@/lib/site-brand-core";
 import { ADVISER_SCREENS_ARE_PUBLIC } from "@/lib/public-access";
 
 // Private to one person. Nothing here belongs in a search result. Brand-aware

@@ -140,12 +140,15 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   const [savingBrowserDraft, setSavingBrowserDraft] = useState(false);
   useEffect(() => {
     if (guest || !itineraries) return;
-    try {
-      const raw = localStorage.getItem(GUEST_TRIP_KEY);
-      if (raw) setBrowserDraft({ ...emptyItinerary(), ...JSON.parse(raw) });
-    } catch {
-      // Blocked or malformed storage leaves the saved account trips available.
-    }
+    const load = window.setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(GUEST_TRIP_KEY);
+        if (raw) setBrowserDraft({ ...emptyItinerary(), ...JSON.parse(raw) });
+      } catch {
+        // Blocked or malformed storage leaves the saved account trips available.
+      }
+    }, 0);
+    return () => window.clearTimeout(load);
   }, [guest, itineraries]);
   const [tab, setTab] = useState<Tab>(null);
   // ?import=1 (the "Booked already?" links on Book and the samples) opens Smart
