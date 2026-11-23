@@ -48,20 +48,18 @@ async function sampleApp() {
   }).catch(() => null);
   if (!trip) redirect("/sample-itinerary");
 
+  const topNotice = (
+    <div className="shrink-0 border-b border-[var(--gold)]/30 bg-[var(--cream)] px-5 py-2.5 sm:px-8">
+      <p className="mx-auto max-w-5xl text-xs leading-5 text-stone-700">
+        <span className="font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Sample</span> — a made-up
+        trip, for seeing how the app works. Nothing here is booked.
+      </p>
+    </div>
+  );
+
   return (
     <main>
-      {/* Above the app rather than over it: the app below owns every pixel of
-          the screen, so a floating notice would sit on a control. Every one of
-          these screens is a picture of somebody's private trip, and a sample
-          that does not say so invites exactly the wrong reading. */}
-      <div className="border-b border-[var(--gold)]/30 bg-[var(--cream)] px-5 py-2.5 sm:px-8">
-        <p className="mx-auto max-w-5xl text-xs leading-5 text-stone-700">
-          <span className="font-bold uppercase tracking-[0.14em] text-[var(--gold-ink)]">Sample</span> — a made-up
-          trip, for seeing how the app works. Nothing here is booked.
-        </p>
-      </div>
-      <CompanionApp trip={trip} travelerPreview personalWalletKey="sample:rome" calendarHref={`/i/${SAMPLE_TRIP_CODE}/calendar`} />
+      <CompanionApp trip={trip} travelerPreview topNotice={topNotice} personalWalletKey="sample:rome" calendarHref={`/i/${SAMPLE_TRIP_CODE}/calendar`} />
     </main>
   );
 }
-

@@ -954,6 +954,7 @@ export default function CompanionApp({
   tripTimeZone,
   pushPublicKey,
   travelerPreview = false,
+  topNotice,
   personalWalletKey,
   pictures,
   calendarHref,
@@ -974,6 +975,7 @@ export default function CompanionApp({
   tripTimeZone?: string;
   pushPublicKey?: string;
   travelerPreview?: boolean;
+  topNotice?: React.ReactNode;
   personalWalletKey?: string;
   pictures?: { cover?: string; photos: { src: string; label: string }[] };
   calendarHref?: string;
@@ -2500,15 +2502,11 @@ export default function CompanionApp({
   // trip, the bottom pill does it, the same as any other tab.
   // Embedded, the header always carries a back — on the home screen it exits the
   // trip (back to the advisor app), elsewhere it steps back a screen.
-  const screenContent = !embedded && (st.screen === "home" || st.screen === "profile")
-    ? <>{body}<Footer inApp /></>
-    : body;
-
   const canBack = embedded ? true : st.screen !== "home" && !(advisorInbox && st.screen === "messages");
 
   // Leave room for the keyboard while a message composer has focus.
   const bottomNav = !embedded && (desktopWeb || !(composerUp && st.screen === "messages")) && (
-    <nav aria-label="Trip navigation" style={{ flexShrink: 0, position: "relative", padding: "8px 10px calc(8px + env(safe-area-inset-bottom))", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
+    <nav aria-label="Trip navigation" style={{ flexShrink: 0, position: "relative", padding: "8px 10px", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
       {(() => {
         const idx = tabs.findIndex((t) => t.on);
         if (idx < 0) return null; // a screen with no tab of its own (pay) — no pill
@@ -2518,7 +2516,7 @@ export default function CompanionApp({
             style={{
               position: "absolute",
               top: 8,
-              bottom: "calc(8px + env(safe-area-inset-bottom))",
+              bottom: 8,
               left: `calc(10px + ${idx} * (100% - 20px) / ${tabs.length})`,
               width: `calc((100% - 20px) / ${tabs.length})`,
               background: GOLD,
@@ -2548,8 +2546,17 @@ export default function CompanionApp({
     </nav>
   );
 
+  const bottomChrome = (showTabs: boolean) =>
+    !embedded && (desktopWeb || !(composerUp && st.screen === "messages")) && (
+      <div className="wg-trip-bottom">
+        {showTabs && bottomNav}
+        <Footer inApp compact />
+      </div>
+    );
+
   const phone = (
     <div className="wg-phone" style={{ display: "flex", flexDirection: "column", background: CREAM, fontFamily: "Inter,system-ui,sans-serif", overflow: "hidden", ...(embedded ? { height: "100%", flex: 1, minHeight: 0 } : {}) }}>
+      {topNotice}
       {/* header */}
       {/* THE BAR AT THE TOP IS THE DARK ONE NOW.
           It was cream, on a cream page, above white cards — so every screen
@@ -2588,8 +2595,8 @@ export default function CompanionApp({
         </div>
       )}
       {/* content */}
-      <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{screenContent}</div>
-      {bottomNav}
+      <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>{body}</div>
+      {bottomChrome(true)}
     </div>
   );
 
@@ -2634,6 +2641,7 @@ export default function CompanionApp({
       </aside>}
       {/* content — a slim per-screen bar over the screen itself */}
       <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {topNotice}
         <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "17px 30px", borderBottom: "1px solid rgba(21,32,74,.09)", background: "#FAF8F3" }}>
           {canBack && <button onClick={back} aria-label="Back" className="wg-fade" style={{ border: "1px solid rgba(21,32,74,.16)", background: "#fff", width: 34, height: 34, borderRadius: 12, cursor: "pointer", fontSize: 15, color: INK, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>←</button>}
           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -2652,9 +2660,9 @@ export default function CompanionApp({
           </div>
         )}
         <div className="wg-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
-          <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{screenContent}</div>
+          <div style={{ width: "100%", maxWidth: chatty ? "none" : 880, margin: "0 auto", ...(chatty ? { flex: 1, minHeight: 0 } : {}), display: "flex", flexDirection: "column" }}>{body}</div>
         </div>
-        {travelerNav && bottomNav}
+        {bottomChrome(travelerNav)}
       </main>
     </div>
   );
@@ -5460,7 +5468,8 @@ export const COMPANION_CSS = `
 /* The app's own scroll region owns its overscroll: a pull past the top or
  * bottom stays inside it and never chains to the document, so the fixed header
  * and tab bar do not bounce. */
-.wg-scroll { overscroll-behavior: contain; }
+.wg-scroll { min-height: 0; overscroll-behavior: contain; }
+.wg-trip-bottom { flex: none; background: white; padding-bottom: env(safe-area-inset-bottom); }
 .wg-scroll::-webkit-scrollbar, .wg-toolbar::-webkit-scrollbar { display: none; }
 /* The per-message "⋯": nothing to see on a phone, where holding the bubble
  * opens the same actions — that is how WhatsApp and Signal read. On a hover
