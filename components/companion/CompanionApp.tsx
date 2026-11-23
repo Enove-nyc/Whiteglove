@@ -1198,6 +1198,7 @@ export default function CompanionApp({
   }
 
   const hasConcierge = trip.concierge;
+  const travelerNav = !embedded && !advisorInbox && (!hasConcierge || groupMode);
   /**
    * The Concierge/Guide and Traveler/Advisor switches, and the "Concierge" tab
    * name, are a demonstration of a tier that is not built — `concierge` is true
@@ -1361,7 +1362,7 @@ export default function CompanionApp({
     day: sel.name,
     activity: "On the day",
     chat: advisor,
-    messages: groupMode ? "Trip group chat" : advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : "Advisor",
+    messages: groupMode ? "Trip group chat" : advisorInbox ? "Messages" : liveChat ? (liveChat.side === "advisor" ? "Your client" : liveChat.advisorName) : travelerNav ? "Messages" : "Advisor",
     alerts: "Changes",
     wallet: "Travel wallet",
     profile: "You",
@@ -1372,7 +1373,7 @@ export default function CompanionApp({
     day: `Day ${curDay + 1} of ${trip.days.length}`,
     activity: sel.name,
     chat: hasConcierge || usesRealChat ? "Your advisor" : "On your own",
-    messages: groupMode ? "Everyone on this trip" : advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : "Your advisor · replies when they can",
+    messages: groupMode ? "Everyone on this trip" : advisorInbox ? "Your clients" : liveChat?.side === "advisor" ? "Their trip, and yours to move" : travelerNav && !liveChat ? "" : "Your advisor · replies when they can",
     alerts: open ? "One needs you" : unreadAlerts.length > 0 ? `${unreadAlerts.length} to see` : settled ? "All settled" : "Nothing right now",
     wallet: "Kept offline",
     profile: hasConcierge ? "The trip is in your name" : "This trip, and you",
@@ -1436,7 +1437,6 @@ export default function CompanionApp({
   // one and a dead scripted one side by side. This "Guide/Concierge" tab is
   // the showcase's own — kosher and Shabbos content, hasConcierge only.
   const conciergeTabScreen: Screen = !isGuideMode && usesRealChat ? "messages" : "chat";
-  const travelerNav = !embedded && !advisorInbox && (!hasConcierge || groupMode);
   const tabDefs: [Screen, string, IconName][] = [["home", travelerNav ? "Itinerary" : "Trip", "map-pin"]];
   if (hasConcierge)
     tabDefs.push(
@@ -1445,7 +1445,7 @@ export default function CompanionApp({
           [conciergeTabScreen, "Advisor", "chat"]
         : [conciergeTabScreen, isGuideMode ? "Guide" : "Concierge", "sparkle"],
     );
-  if (hasMessages && conciergeTabScreen !== "messages") tabDefs.push(["messages", travelerNav || advisorInbox ? "Messages" : "Advisor", "chat"]);
+  if ((hasMessages || travelerNav) && conciergeTabScreen !== "messages") tabDefs.push(["messages", travelerNav || advisorInbox ? "Messages" : "Advisor", "chat"]);
   tabDefs.push(["wallet", "Wallet", "wallet"], ["profile", "You", "account"]);
   const tabs = tabDefs.map(([id, label, icon]) => {
     const on = st.screen === id || (id === "home" && (st.screen === "day" || st.screen === "activity" || st.screen === "alerts"));
@@ -2356,6 +2356,8 @@ export default function CompanionApp({
       />
     ) : liveChat ? (
       <LiveChat chat={liveChat} subject={st.chatSubject} onSubjectUsed={() => setSt((s) => ({ ...s, chatSubject: null }))} places={shareablePlaces} onComposerFocus={setComposerUp} />
+    ) : travelerNav ? (
+      <p style={{ padding: "24px 20px", fontSize: 14, color: MUTED }}>Messaging is unavailable for this trip link.</p>
     ) : (
       guideChat
     );
@@ -2376,47 +2378,46 @@ export default function CompanionApp({
 
   const canBack = embedded ? true : st.screen !== "home" && !(advisorInbox && st.screen === "messages");
 
-  // ── the phone itself ────────────────────────────────────────────────────
   // Leave room for the keyboard while a message composer has focus.
-  const bottomNav = !embedded && !(composerUp && st.screen === "messages") && (
-      <nav aria-label="Trip navigation" style={{ flexShrink: 0, position: "relative", padding: "8px 10px calc(8px + env(safe-area-inset-bottom))", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
-        {(() => {
-          const idx = tabs.findIndex((t) => t.on);
-          if (idx < 0) return null; // a screen with no tab of its own (pay) — no pill
-          return (
-            <span
-              aria-hidden="true"
-              style={{
-                position: "absolute",
-                top: 8,
-                bottom: "calc(8px + env(safe-area-inset-bottom))",
-                left: `calc(10px + ${idx} * (100% - 20px) / ${tabs.length})`,
-                width: `calc((100% - 20px) / ${tabs.length})`,
-                background: GOLD,
-                borderRadius: 16,
-                boxShadow: "0 3px 10px rgba(198, 161, 91,.34)",
-                transition: "left .28s cubic-bezier(.4,0,.2,1)",
-              }}
-            />
-          );
-        })()}
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => go(t.id)}
-            aria-current={t.on ? "page" : undefined}
-            aria-label={t.badge ? `${t.label} (unread messages)` : undefined}
-            style={{ position: "relative", zIndex: 1, flex: 1, border: 0, cursor: "pointer", background: "transparent", color: t.on ? ON_GOLD : MUTED, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "9px 3px", transition: "color .2s ease" }}
-          >
-            <span style={{ position: "relative", display: "inline-flex" }}>
-              <Icon name={t.icon} className="h-5 w-5" strokeWidth={t.on ? 2.1 : 1.7} />
-              {t.badge && <span aria-hidden="true" style={{ position: "absolute", top: -3, right: -5, width: 8, height: 8, borderRadius: 14, background: t.on ? CREAM : GOLD, border: `2px solid ${t.on ? GOLD : "#C7BFB1"}` }} />}
-            </span>
-            <span style={{ font: `${t.on ? 600 : 500} 10.5px/1 Inter,sans-serif`, letterSpacing: ".01em" }}>{t.label}</span>
-          </button>
-        ))}
-      </nav>
+  const bottomNav = !embedded && (desktopWeb || !(composerUp && st.screen === "messages")) && (
+    <nav aria-label="Trip navigation" style={{ flexShrink: 0, position: "relative", padding: "8px 10px calc(8px + env(safe-area-inset-bottom))", background: "var(--color-surface-muted)", borderTop: "1px solid rgba(21,32,74,.08)", display: "flex" }}>
+      {(() => {
+        const idx = tabs.findIndex((t) => t.on);
+        if (idx < 0) return null; // a screen with no tab of its own (pay) — no pill
+        return (
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 8,
+              bottom: "calc(8px + env(safe-area-inset-bottom))",
+              left: `calc(10px + ${idx} * (100% - 20px) / ${tabs.length})`,
+              width: `calc((100% - 20px) / ${tabs.length})`,
+              background: GOLD,
+              borderRadius: 16,
+              boxShadow: "0 3px 10px rgba(198, 161, 91,.34)",
+              transition: "left .28s cubic-bezier(.4,0,.2,1)",
+            }}
+          />
+        );
+      })()}
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => go(t.id)}
+          aria-current={t.on ? "page" : undefined}
+          aria-label={t.badge ? `${t.label} (unread messages)` : undefined}
+          style={{ position: "relative", zIndex: 1, flex: 1, border: 0, cursor: "pointer", background: "transparent", color: t.on ? ON_GOLD : MUTED, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, padding: "9px 3px", transition: "color .2s ease" }}
+        >
+          <span style={{ position: "relative", display: "inline-flex" }}>
+            <Icon name={t.icon} className="h-5 w-5" strokeWidth={t.on ? 2.1 : 1.7} />
+            {t.badge && <span aria-hidden="true" style={{ position: "absolute", top: -3, right: -5, width: 8, height: 8, borderRadius: 14, background: t.on ? CREAM : GOLD, border: `2px solid ${t.on ? GOLD : "#C7BFB1"}` }} />}
+          </span>
+          <span style={{ font: `${t.on ? 600 : 500} 10.5px/1 Inter,sans-serif`, letterSpacing: ".01em" }}>{t.label}</span>
+        </button>
+      ))}
+    </nav>
   );
 
   const phone = (
