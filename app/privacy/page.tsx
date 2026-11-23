@@ -124,6 +124,7 @@ export default async function PrivacyPolicyPage() {
             <li><strong className="text-[var(--navy)]">Hosting, storage and databases</strong> — the companies that host the website and store accounts, trips, attachments and messages on our behalf.</li>
             <li><strong className="text-[var(--navy)]">Email</strong> — to send account and trip emails, and to receive confirmations you forward to your trip.</li>
             <li><strong className="text-[var(--navy)]">Maps and address search</strong> — when you look up an address, what you type is sent from your browser to the mapping provider to suggest matches.</li>
+            <li><strong className="text-[var(--navy)]">Itinerary support</strong> — if you choose to share a saved trip with support, a read-only copy of its schedule is available with a single-use code for up to one hour. Access is logged. The copy excludes notes, booking references, documents and chat.</li>
             <li><strong className="text-[var(--navy)]">Flight status</strong> — for flights you follow in a saved trip, the flight number and date are sent to a flight-data provider to check for changes.</li>
           </ul>
         </Section>

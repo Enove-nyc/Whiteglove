@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { createInvitedAccount } from "@/lib/account-invitations";
-import { createHmac, pbkdf2Sync, randomBytes, randomInt } from "crypto";
+import { createHash, createHmac, pbkdf2Sync, randomBytes, randomInt } from "crypto";
 import { type AccountPlan, planOf } from "@/lib/account-plans";
 import { travelerAttachments, withoutAttachments } from "@/lib/attachments";
 import { buildDays, emptyItinerary, flightRouteLabel, type Itinerary } from "@/data/itinerary";
@@ -24,7 +24,7 @@ import { tripTimeZone } from "@/lib/trip-timezone";
 import { checkFlightStatus } from "@/lib/flight-status";
 import type { LibraryItem, LibraryPack } from "@/data/library";
 import type { ClientFormResponse, ClientFormTemplate } from "@/data/client-form";
-import { limitsFor, newTripProblem } from "@/lib/account-limits";
+import { limitsFor } from "@/lib/account-limits";
 import { getLimitOverrides } from "@/lib/account-limits-store";
 import { getPlan } from "@/lib/account-plan-store";
 import { inviteProblem, readTeam, type TeamMember } from "@/data/team";
@@ -521,7 +521,7 @@ export type AdminAccountSummary = {
   verifiedAt?: string;
   routeCount: number;
   favoriteCount: number;
-  hasItinerary: boolean;
+  itineraryCount: number;
   /** Traveler, Gold or Business. See lib/account-plans.ts — nothing is behind one yet. */
   plan: AccountPlan;
 };
@@ -562,7 +562,7 @@ export async function listAllAccounts(): Promise<AdminAccountSummary[]> {
         verifiedAt: record.verifiedAt,
         routeCount: data.route?.length ?? 0,
         favoriteCount: data.favorites?.length ?? 0,
-        hasItinerary: Boolean(data.itinerary),
+        itineraryCount: savedItineraryCount(data),
         plan: planOf(record),
       };
     }),
@@ -1199,48 +1199,74 @@ async function writeTrips(email: string, trips: SavedTrip[], activeId: string) {
 }
 
 
-/**
- * Why this account may not start another trip, or null.
- *
- * ONE PLACE, called by all three doors into a new trip — starting one, adding a
- * shared one, and copying one. The hard 25 that used to sit inline in each of
- * them is still here as the ceiling nobody is meant to reach; the plan limit
- * sits under it and is the one anybody will actually meet.
- *
- * FAILS OPEN. If the plan cannot be read the trip is allowed: refusing somebody
- * their own trip because a store blinked is a worse outcome than one extra
- * trip on a free account.
- */
-async function cannotAddTrip(email: string, existing: number): Promise<string | null> {
-  if (existing >= 25) return "That is 25 trips already. Delete one first.";
-  try {
-    const plan = await getPlan(email);
-    return newTripProblem(plan, existing, limitsFor(plan, await getLimitOverrides()));
-  } catch {
-    return null;
+const MAX_SAVED_ITINERARIES = 2;
+
+function savedItineraryCount(data: AccountData) {
+  const existing = data.trips?.filter((trip) => trip && trip.id).length ?? 0;
+  return existing || Number(Boolean(data.itinerary || data.itineraryShareId || data.route?.length));
+}
+
+// Compare the exact record read before adding a trip. A concurrent write
+// forces a fresh count and retry instead of overwriting the other change.
+const ADD_TRIP = `
+  local current = redis.call('GET', KEYS[1])
+  if (current or '') ~= ARGV[1] then return 0 end
+  redis.call('SET', KEYS[1], ARGV[2])
+  return 1
+`;
+
+async function addAccountTrip(
+  email: string,
+  build: (trips: SavedTrip[], activeId: string) =>
+    { trip: SavedTrip; activeId: string } | { error: string },
+  saveError: string,
+) {
+  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
+  const key = dataKey(normalizeId(email));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const record = await redis<string | null>(["GET", key]);
+    if (!record || (record.result !== null && typeof record.result !== "string")) break;
+    const raw = record.result;
+    let data: AccountData;
+    try {
+      data = raw === null ? { route: [], favorites: [] } : JSON.parse(raw);
+    } catch {
+      break;
+    }
+    const count = savedItineraryCount(data);
+    if (count >= MAX_SAVED_ITINERARIES) {
+      return { ok: false as const, error: "You can keep two itineraries at a time. Delete one before adding another." };
+    }
+    const { trips, activeId } = count ? withTrips(data) : { trips: [], activeId: "" };
+    const addition = build(trips, activeId);
+    if ("error" in addition) return { ok: false as const, error: addition.error };
+    const nextTrips = [...trips, addition.trip];
+    const nextId = addition.activeId || addition.trip.id;
+    const next = accountWithTrips(data, nextTrips, nextId);
+    const saved = await redis<number>(["EVAL", ADD_TRIP, 1, key, raw ?? "", JSON.stringify(next)]);
+    if (saved?.result === 1) {
+      return { ok: true as const, trips: summarize(nextTrips, nextId), activeId: nextId };
+    }
+    if (saved?.result !== 0) break;
   }
+  return { ok: false as const, error: saveError };
 }
 
 export async function createTrip(email: string, name?: string) {
-  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const data = await getAccountData(email);
-  const { trips } = withTrips(data);
-  const refused = await cannotAddTrip(email, trips.length);
-  if (refused) return { ok: false as const, error: refused };
-  const now = new Date().toISOString();
-  const clean = name?.trim() || `Trip ${trips.length + 1}`;
-  const trip: SavedTrip = {
-    id: tripId(),
-    name: clean,
-    itinerary: { ...emptyItinerary(), title: clean },
-    route: [],
-    collaborators: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-  const saved = await writeTrips(email, [...trips, trip], trip.id);
-  if (!saved) return { ok: false as const, error: "Could not start the trip." };
-  return { ok: true as const, trips: saved, activeId: trip.id };
+  return addAccountTrip(email, (trips) => {
+    const now = new Date().toISOString();
+    const clean = name?.trim() || `Trip ${trips.length + 1}`;
+    const trip: SavedTrip = {
+      id: tripId(),
+      name: clean,
+      itinerary: { ...emptyItinerary(), title: clean },
+      route: [],
+      collaborators: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    return { trip, activeId: trip.id };
+  }, "Could not start the trip.");
 }
 
 /**
@@ -1256,29 +1282,23 @@ export async function createTrip(email: string, name?: string) {
  * switcher.
  */
 export async function importTrip(email: string, itinerary: Itinerary, name?: string) {
-  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const data = await getAccountData(email);
-  const { trips } = withTrips(data);
-  const refused = await cannotAddTrip(email, trips.length);
-  if (refused) return { ok: false as const, error: refused };
-
-  const now = new Date().toISOString();
-  const clean = (name?.trim() || itinerary.title?.trim() || "Shared trip").slice(0, 80);
-  const trip: SavedTrip = {
-    id: tripId(),
-    name: clean,
-    // The copy is theirs. No share link and no collaborators come across — a
-    // link handed to them is not a link they may hand on.
-    itinerary: { ...itinerary, title: clean, updatedAt: now },
-    route: [],
-    shareId: undefined,
-    collaborators: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-  const saved = await writeTrips(email, [...trips, trip], trip.id);
-  if (!saved) return { ok: false as const, error: "Could not add the trip." };
-  return { ok: true as const, trips: saved, activeId: trip.id };
+  return addAccountTrip(email, () => {
+    const now = new Date().toISOString();
+    const clean = (name?.trim() || itinerary.title?.trim() || "Shared trip").slice(0, 80);
+    const trip: SavedTrip = {
+      id: tripId(),
+      name: clean,
+      // The copy is theirs. No share link and no collaborators come across — a
+      // link handed to them is not a link they may hand on.
+      itinerary: { ...itinerary, title: clean, updatedAt: now },
+      route: [],
+      shareId: undefined,
+      collaborators: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    return { trip, activeId: trip.id };
+  }, "Could not add the trip.");
 }
 
 export async function renameTrip(email: string, id: string, name: string) {
@@ -1309,34 +1329,29 @@ export async function switchTrip(email: string, id: string) {
 }
 
 export async function duplicateTrip(email: string, id: string) {
-  if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const data = await getAccountData(email);
-  const { trips, activeId } = withTrips(data);
-  const source = trips.find((t) => t.id === id);
-  if (!source) return { ok: false as const, error: "That trip is gone." };
-  const refused = await cannotAddTrip(email, trips.length);
-  if (refused) return { ok: false as const, error: refused };
-  const now = new Date().toISOString();
-  const name = `${source.name} (copy)`;
-  const copy: SavedTrip = {
-    id: tripId(),
-    name,
-    // The client comes across. A copy is a copy — an agent duplicating a trip
-    // for a different family renames both, and having to retype the name they
-    // meant to keep is the more annoying of the two mistakes.
-    client: source.client,
-    itinerary: { ...source.itinerary, title: name },
-    route: [...(source.route ?? [])],
-    // A copy is not shared. Handing someone a link to one trip should not
-    // hand them every copy of it made afterwards.
-    shareId: undefined,
-    collaborators: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-  const saved = await writeTrips(email, [...trips, copy], activeId);
-  if (!saved) return { ok: false as const, error: "Could not copy the trip." };
-  return { ok: true as const, trips: saved, activeId };
+  return addAccountTrip(email, (trips, activeId) => {
+    const source = trips.find((t) => t.id === id);
+    if (!source) return { error: "That trip is gone." };
+    const now = new Date().toISOString();
+    const name = `${source.name} (copy)`;
+    const copy: SavedTrip = {
+      id: tripId(),
+      name,
+      // The client comes across. A copy is a copy — an agent duplicating a trip
+      // for a different family renames both, and having to retype the name they
+      // meant to keep is the more annoying of the two mistakes.
+      client: source.client,
+      itinerary: { ...source.itinerary, title: name },
+      route: [...(source.route ?? [])],
+      // A copy is not shared. Handing someone a link to one trip should not
+      // hand them every copy of it made afterwards.
+      shareId: undefined,
+      collaborators: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    return { trip: copy, activeId: activeId };
+  }, "Could not copy the trip.");
 }
 
 export async function deleteTrip(email: string, id: string) {
@@ -1451,28 +1466,23 @@ export async function deleteTemplate(email: string, id: string) {
  */
 export async function startTripFromTemplate(email: string, templateId: string, name: string, startDate: string) {
   if (!hasAccountStorage()) return { ok: false as const, error: "Connect the private database first." };
-  const data = await getAccountData(email);
   const template = (await currentTemplates(email)).find((t) => t.id === templateId);
   if (!template) return { ok: false as const, error: "That template is gone." };
-  const { trips } = withTrips(data);
-  const refused = await cannotAddTrip(email, trips.length);
-  if (refused) return { ok: false as const, error: refused };
-
-  const now = new Date().toISOString();
-  const clean = (name.trim() || template.name).slice(0, 80);
-  const itinerary = tripFromTemplate(template.itinerary, clean, startDate, tripId);
-  const trip: SavedTrip = {
-    id: tripId(),
-    name: clean,
-    itinerary: { ...itinerary, updatedAt: now },
-    route: [],
-    collaborators: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-  const saved = await writeTrips(email, [...trips, trip], trip.id);
-  if (!saved) return { ok: false as const, error: "Could not start the trip." };
-  return { ok: true as const, trips: saved, activeId: trip.id };
+  return addAccountTrip(email, () => {
+    const now = new Date().toISOString();
+    const clean = (name.trim() || template.name).slice(0, 80);
+    const itinerary = tripFromTemplate(template.itinerary, clean, startDate, tripId);
+    const trip: SavedTrip = {
+      id: tripId(),
+      name: clean,
+      itinerary: { ...itinerary, updatedAt: now },
+      route: [],
+      collaborators: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    return { trip, activeId: trip.id };
+  }, "Could not start the trip.");
 }
 
 /** Save an itinerary into one trip, or into the open one. */
@@ -1501,6 +1511,64 @@ export async function saveAccountItinerary(email: string, itinerary: Itinerary, 
     return withPlan;
   });
   return Boolean(await writeTrips(normalized, next, activeId));
+}
+
+const SUPPORT_TRIP_SECONDS = 3600;
+
+export type SupportTripSnapshot = {
+  startDate: string;
+  endDate: string;
+  flights: Pick<Itinerary["flights"][number], "from" | "to" | "date" | "departTime" | "arriveTime">[];
+  lodging: Pick<Itinerary["lodging"][number], "name" | "checkIn" | "checkOut">[];
+  activities: Pick<Itinerary["activities"][number], "name" | "date" | "startTime">[];
+};
+
+function supportTripKey(code: string) {
+  return `white-glove:support-trip:${createHash("sha256").update(code).digest("hex")}`;
+}
+
+export async function createSupportTripCode(email: string, id: string) {
+  const owner = normalizeId(email);
+  const trip = (await getAccountData(owner)).trips?.find((item) => item.id === id);
+  if (!trip) return null;
+  const { startDate, endDate, flights, lodging, activities } = trip.itinerary;
+  const snapshot: SupportTripSnapshot = {
+    startDate,
+    endDate,
+    flights: flights.map(({ from, to, date, departTime, arriveTime }) => ({ from, to, date, departTime, arriveTime })),
+    lodging: lodging.map(({ name, checkIn, checkOut }) => ({ name, checkIn, checkOut })),
+    activities: activities.map(({ name, date, startTime }) => ({ name, date, startTime })),
+  };
+  const code = randomBytes(18).toString("base64url");
+  const saved = await redis<string>([
+    "SET", supportTripKey(code), JSON.stringify({ owner, snapshot }), "EX", SUPPORT_TRIP_SECONDS, "NX",
+  ]);
+  return saved?.result === "OK" ? code : null;
+}
+
+export async function revokeSupportTripCode(email: string, code: string) {
+  if (!/^[A-Za-z0-9_-]{24}$/.test(code)) return false;
+  const result = await redis<number>(["EVAL", `
+    local value = redis.call('GET', KEYS[1])
+    if not value then return 1 end
+    if cjson.decode(value).owner ~= ARGV[1] then return 0 end
+    return redis.call('DEL', KEYS[1])
+  `, 1, supportTripKey(code), normalizeId(email)]);
+  return result?.result === 1;
+}
+
+export async function openSupportTripCode(code: string, staff: string) {
+  if (!/^[A-Za-z0-9_-]{24}$/.test(code)) return null;
+  const key = supportTripKey(code);
+  const result = await redis<string | null>(["EVAL", `
+    local value = redis.call('GET', KEYS[1])
+    if not value then return false end
+    redis.call('DEL', KEYS[1])
+    return value
+  `, 1, key]);
+  if (typeof result?.result !== "string") return null;
+  console.info("[support-trip] opened", { staff, grant: key.slice(-16), at: new Date().toISOString() });
+  return (JSON.parse(result.result) as { snapshot: SupportTripSnapshot }).snapshot;
 }
 
 // ---- Proposals ----------------------------------------------------------

@@ -31,6 +31,7 @@ import type { ZmanimDay } from "@/lib/zmanim-day";
 import { borderCostForLegs } from "@/lib/border-legs";
 import { documentsForDay, tripDocuments } from "@/lib/trip-documents";
 import { borderIsWorthSaying, formatWait } from "@/lib/border-time";
+import ShareTripWithSupport from "@/components/ShareTripWithSupport";
 import TripSwitcher from "@/components/TripSwitcher";
 import type { AttractionResult } from "@/lib/attraction-search";
 import type { KeverResult } from "@/lib/kever-search";
@@ -573,6 +574,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   return (
     <GuestContext.Provider value={guest}>
     <div className="space-y-5">
+      {!guest && tripId && <ShareTripWithSupport key={tripId} tripId={tripId} />}
       {/* Back to the index — the planner is a CRM now, one itinerary at a time.
           Always here in edit mode: even with a single itinerary it is the way
           to the list, where a new one is started and the others are managed. */}

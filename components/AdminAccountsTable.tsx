@@ -99,7 +99,7 @@ export default function AdminAccountsTable({ accounts }: { accounts: AdminAccoun
             <th className="px-4 py-3">Plan</th>
             <th className="px-4 py-3">Joined</th>
             <th className="px-4 py-3">Verified</th>
-            <th className="px-4 py-3">Saved</th>
+            <th className="px-4 py-3">Itineraries</th>
             <th className="px-4 py-3 text-right">Edit</th>
           </tr>
         </thead>
@@ -115,7 +115,7 @@ export default function AdminAccountsTable({ accounts }: { accounts: AdminAccoun
                 <td className="px-4 py-3"><PlanCell account={a.email} plan={a.plan} /></td>
                 <td className="px-4 py-3 whitespace-nowrap text-stone-400">{fmtDate(a.createdAt)}</td>
                 <td className="px-4 py-3">{a.verifiedAt ? <span className="text-emerald-700">Yes</span> : <span className="text-stone-400">No</span>}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-xs text-stone-500">{a.routeCount} route · {a.favoriteCount} fav{a.hasItinerary ? " · itinerary" : ""}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-xs text-stone-500">{a.itineraryCount}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2 whitespace-nowrap">
                     <button type="button" disabled={busy} onClick={() => save(a.email)} className="border border-[var(--navy)] bg-[var(--navy)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[var(--gold)] hover:border-[var(--gold)] disabled:opacity-60">{busy ? "Saving…" : "Save"}</button>
@@ -131,7 +131,7 @@ export default function AdminAccountsTable({ accounts }: { accounts: AdminAccoun
                 <td className="px-4 py-3"><PlanCell account={a.email} plan={a.plan} /></td>
                 <td className="px-4 py-3 whitespace-nowrap">{fmtDate(a.createdAt)}</td>
                 <td className="px-4 py-3">{a.verifiedAt ? <span className="text-emerald-700">Yes</span> : <span className="text-stone-400">No</span>}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-xs text-stone-500">{a.routeCount} route · {a.favoriteCount} fav{a.hasItinerary ? " · itinerary" : ""}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-xs text-stone-500">{a.itineraryCount}</td>
                 <td className="px-4 py-3 text-right"><button type="button" onClick={() => startEdit(a)} className="border border-[var(--gold)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--navy)] transition hover:bg-[var(--navy)] hover:text-white">Edit</button></td>
               </tr>
             ),
