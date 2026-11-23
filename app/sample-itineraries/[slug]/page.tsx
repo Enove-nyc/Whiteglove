@@ -74,7 +74,7 @@ export default async function SampleItineraryPage({ params }: { params: Promise<
         <h1 className="mt-3 font-[family-name:var(--font-display)] text-[clamp(2rem,6vw,3.2rem)] leading-[1.05] text-[var(--navy-deep)]">{sample.title}</h1>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <SampleCopyButton itinerary={itinerary} />
+          <SampleCopyButton itinerary={itinerary} templatePath={`/sample-itineraries/${sample.slug}`} />
         </div>
 
         <section aria-labelledby="book-heading" className="mt-8 rounded-2xl border border-[#E6DCC8] bg-white p-5">
@@ -123,7 +123,7 @@ export default async function SampleItineraryPage({ params }: { params: Promise<
           </ol>
         </section>
 
-        <div className="mt-10"><SampleCopyButton itinerary={itinerary} /></div>
+        <div className="mt-10"><SampleCopyButton itinerary={itinerary} templatePath={`/sample-itineraries/${sample.slug}`} /></div>
       </article>
       <Footer />
     </main>

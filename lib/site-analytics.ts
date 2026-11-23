@@ -1,3 +1,10 @@
+import { SAMPLE_ITINERARIES } from "@/data/sample-itineraries";
+
+const samplePaths = [
+  { path: "/sample-itinerary", title: "A week on Lake Como" },
+  ...SAMPLE_ITINERARIES.map(({ slug, title }) => ({ path: `/sample-itineraries/${slug}`, title })),
+];
+
 type RedisResult<T> = { result?: T };
 
 export type DashboardStats = {
@@ -316,6 +323,29 @@ export async function getTopVisitedPaths(limit = 40): Promise<Array<{ path: stri
   if (!analyticsIsConfigured()) return [];
   const pages = await redis<unknown>(`zrevrange/white-glove:pages/0/${Math.max(0, limit - 1)}/WITHSCORES`);
   return pairs(pages?.result).map(({ label, count }) => ({ path: label, count }));
+}
+
+export async function trackSampleCopy(path: string) {
+  if (!samplePaths.some((sample) => sample.path === path)) return false;
+  await redis(`zincrby/white-glove:sample-copies/1/${encodeURIComponent(path)}`);
+  return true;
+}
+
+export async function getSampleTemplateStats() {
+  if (!analyticsIsConfigured()) return null;
+  const members = samplePaths.map(({ path }) => encodeURIComponent(path)).join("/");
+  const [views, copies] = await Promise.all([
+    redis<Array<number | string | null>>(`zmscore/white-glove:pages/${members}`),
+    redis<Array<number | string | null>>(`zmscore/white-glove:sample-copies/${members}`),
+  ]);
+  if (!Array.isArray(views?.result) || !Array.isArray(copies?.result)) return null;
+  const viewCounts = views.result;
+  const copyCounts = copies.result;
+  return samplePaths.map(({ title }, index) => ({
+    title,
+    views: Number(viewCounts[index] ?? 0),
+    copies: Number(copyCounts[index] ?? 0),
+  }));
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

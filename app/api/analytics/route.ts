@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, requesterKey } from "@/lib/rate-limit";
-import { trackDestinationOpen, trackPageView, trackSearch, trackSearchSelection } from "@/lib/site-analytics";
+import { trackDestinationOpen, trackPageView, trackSampleCopy, trackSearch, trackSearchSelection } from "@/lib/site-analytics";
 import { recordPromotionEvent } from "@/lib/admin-content";
 
 // Longest string this endpoint will record. A real page path, search term,
@@ -36,6 +36,11 @@ export async function POST(request: NextRequest) {
     // showed none is recorded separately — it is somebody asking for something
     // this site has never heard of.
     else await trackSearch(body.value, typeof body.found === "number" ? body.found : undefined);
+  }
+  else if (body.type === "sample_copy") {
+    if (typeof raw.value !== "string" || !(await trackSampleCopy(raw.value))) {
+      return NextResponse.json({ ok: false }, { status: 400 });
+    }
   }
   else if (body.type === "search_select") {
     // Kind only — never the query — so selected-result analytics carry no PII.

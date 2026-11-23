@@ -2,17 +2,18 @@ import Link from "next/link";
 import AccessLog from "@/components/AccessLog";
 import LockedSectionsControl from "@/components/LockedSectionsControl";
 import SiteLockControl from "@/components/SiteLockControl";
-import { getDashboardStats, getLockedPaths } from "@/lib/site-analytics";
+import { getDashboardStats, getLockedPaths, getSampleTemplateStats } from "@/lib/site-analytics";
 import { readSignIns, signInLogAvailable } from "@/lib/signin-log";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
 export default async function WebsiteAccessSettings() {
-  const [stats, lockedPaths, signIns] = await Promise.all([
+  const [stats, lockedPaths, signIns, templates] = await Promise.all([
     getDashboardStats(),
     getLockedPaths(),
     readSignIns(100),
+    getSampleTemplateStats(),
   ]);
 
   return (
@@ -66,6 +67,25 @@ export default async function WebsiteAccessSettings() {
               </dd>
             </div>
           </dl>
+        </section>
+
+        <section className="border border-[var(--gold-light)] bg-[#FAF8F3] p-6">
+          <h2 className="text-xl font-semibold text-[var(--navy)]">Sample itinerary conversions</h2>
+          {templates ? (
+            <>
+              <p className="mt-2 text-sm text-stone-600">
+                Views include earlier traffic. Copies count successful saves since tracking began.
+              </p>
+              <ul className="mt-4 divide-y divide-[var(--gold-light)]">
+                {templates.map(({ title, views, copies }) => (
+                  <li key={title} className="flex flex-wrap justify-between gap-2 py-2 text-sm">
+                    <span>{title}</span>
+                    <span>{views} views · {copies} copies</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : <p className="mt-2 text-sm text-stone-600">Template analytics are unavailable.</p>}
         </section>
 
         <AccessLog entries={signIns} available={signInLogAvailable()} />

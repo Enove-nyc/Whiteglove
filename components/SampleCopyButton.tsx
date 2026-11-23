@@ -17,10 +17,20 @@ import { GUEST_TRIP_KEY } from "@/lib/guest-trip";
  * The dates move to start a month from today, so the copy is a plan for a
  * trip that can still happen rather than a week in the past.
  */
-export default function SampleCopyButton({ itinerary }: { itinerary: Itinerary }) {
+export default function SampleCopyButton({ itinerary, templatePath }: { itinerary: Itinerary; templatePath: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  function openCopiedTrip() {
+    void fetch("/api/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "sample_copy", value: templatePath }),
+      keepalive: true,
+    }).catch(() => undefined);
+    router.push("/itinerary");
+  }
 
   async function copy() {
     setBusy(true);
@@ -34,7 +44,7 @@ export default function SampleCopyButton({ itinerary }: { itinerary: Itinerary }
         body: JSON.stringify({ action: "import", itinerary: trip, name: trip.title }),
       });
       if (response.ok) {
-        router.push("/itinerary");
+        openCopiedTrip();
         return;
       }
       if (response.status !== 401) {
@@ -54,7 +64,7 @@ export default function SampleCopyButton({ itinerary }: { itinerary: Itinerary }
         return;
       }
       window.localStorage.setItem(GUEST_TRIP_KEY, JSON.stringify(trip));
-      router.push("/itinerary");
+      openCopiedTrip();
     } catch {
       setError("This browser could not save the trip. Check that site storage is allowed.");
       setBusy(false);

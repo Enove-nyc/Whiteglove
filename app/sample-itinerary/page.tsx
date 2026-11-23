@@ -167,7 +167,7 @@ export default async function SampleItineraryPage() {
 
       {itineraries ? (
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-          <SampleCopyButton itinerary={SAMPLE_ITINERARY} />
+          <SampleCopyButton itinerary={SAMPLE_ITINERARY} templatePath="/sample-itinerary" />
         </div>
       ) : (<>
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
