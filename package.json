@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:host": "npm run db:migrate && tsx scripts/sync-import-packs.ts && next build",
-    "build:cloudflare": "if [ -z \"$WORKERS_CI_BRANCH\" ] || [ \"$WORKERS_CI_BRANCH\" = ccr-91e8849e-yfbij3 ]; then npm run db:migrate && tsx scripts/sync-import-packs.ts || exit $?; fi; opennextjs-cloudflare build",
+    "build:cloudflare": "npm run db:migrate && tsx scripts/sync-import-packs.ts && opennextjs-cloudflare build",
     "deploy:cloudflare": "opennextjs-cloudflare deploy",
     "start": "node scripts/start.mjs",
     "lint": "eslint",
