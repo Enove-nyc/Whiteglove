@@ -64,8 +64,8 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
 
             <div className="space-y-6">
               <section aria-labelledby="trip-code-title" className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6">
-                <h2 id="trip-code-title" className="text-xl font-semibold">Have a trip code?</h2>
-                <p className="mb-4 mt-2 text-stone-600">Enter the code you were given to open a shared itinerary.</p>
+                <h2 id="trip-code-title" className="text-xl font-semibold">Have a trip code or link?</h2>
+                <p className="mb-4 mt-2 text-stone-600">Paste what you were given to open the itinerary.</p>
                 <AppCodeEntry />
               </section>
               <Link href={`/i/${SAMPLE_TRIP_CODE}/app`} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Try the app with a sample trip</Link>
