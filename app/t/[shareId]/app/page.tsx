@@ -1,4 +1,3 @@
-import Footer from "@/components/Footer";
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
 import ClientCodeMemory from "@/components/companion/ClientCodeMemory";
@@ -97,9 +96,9 @@ export default async function TravelerAppPage({ params }: { params: Promise<{ sh
   };
 
   return (
-    <><main>
+    <main>
       <ClientCodeMemory path={`/t/${shareId}/app`} />
       <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={shared.walletKey} calendarHref={`/t/${encodeURIComponent(shareId)}/calendar`} />
-    </main><Footer minimal /></>
+    </main>
   );
 }

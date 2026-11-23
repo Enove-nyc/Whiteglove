@@ -1,5 +1,6 @@
 "use client";
 
+import TravelerLinkShare from "@/components/companion/TravelerLinkShare";
 import Link from "next/link";
 import { searchHref } from "@/lib/travel-tabs";
 import { tripBarDates } from "@/lib/trip-bar";
@@ -2511,7 +2512,8 @@ function TravelerShareLink({ tripId, traveler }: { tripId: string | null; travel
             catch { setError("Select the code to copy it."); }
           }} className="font-semibold underline">{copied ? "Copied" : "Copy code"}</button>
           <a href={`/t/${encodeURIComponent(code)}/app`} className="font-semibold underline">Open traveler app</a>
-          <p className="w-full text-stone-600">Give this code to {traveler.name || "this traveler"} to enter at app.whitegloveitineraries.com.</p>
+          <TravelerLinkShare key={code} code={code} disabled={busy || Boolean(pendingAction)} />
+          <p className="w-full text-stone-600">Share this link or code only with {traveler.name || "this traveler"}.</p>
         </>
       ) : (
         <button type="button" onClick={() => void updateCode()} disabled={busy || !tripId} className="font-semibold underline disabled:opacity-40">
