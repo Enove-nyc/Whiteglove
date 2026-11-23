@@ -219,6 +219,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // and opening their only itinerary's editor instead would ignore what they
   // pressed.
   const askedForList = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("list");
+  const openedImport = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("import");
   const openedSample = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("fromSample");
   const [mode, setMode] = useState<"list" | "edit" | null>(guest ? "edit" : null);
   useEffect(() => {
@@ -233,7 +234,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           setMode((m) => m ?? "edit");
           return;
         }
-        setMode((m) => (m === null ? (askedForList || (d.trips.length >= 2 && !openedSample) ? "list" : "edit") : m));
+        setMode((m) => (m === null ? (askedForList || (d.trips.length >= 2 && !openedSample && !openedImport) ? "list" : "edit") : m));
       })
       .catch(() => {
         if (active) setMode((m) => m ?? "edit");
@@ -241,7 +242,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     return () => {
       active = false;
     };
-  }, [reloadKey, askedForList, guest, openedSample]);
+  }, [reloadKey, askedForList, guest, openedSample, openedImport]);
 
   // Load. A signed-in traveller's trip comes from their account and nowhere
   // else. A guest's comes from their own browser (GUEST_TRIP_KEY) — the owner's
@@ -638,6 +639,18 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           persist(template ? applyTemplate(base, template, uid) : base);
         }}
       />
+
+      {!hasDates && itineraries && (
+        <section className="rounded-xl border border-[var(--gold-light)] bg-white p-4">
+          {guest ? (
+            <Link href="/login?next=%2Fitinerary%3Fimport%3D1" className="inline-flex min-h-11 items-center font-semibold underline">Sign in to import a booking</Link>
+          ) : tab === "import" ? (
+            <SmartImportPanel onImport={importSmartImportItems} onCancel={() => setTab(null)} />
+          ) : (
+            <button type="button" className={toolbarButton(false)} onClick={() => setTab("import")}>Import a booking</button>
+          )}
+        </section>
+      )}
 
       {/* Trip header */}
       {/* …and everything an advisor adds to a trip. Not before the dates
