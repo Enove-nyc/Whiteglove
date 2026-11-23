@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAttachmentFor } from "@/lib/attachment-store";
 import { cookies } from "next/headers";
 import { accountCookieName, getCurrentAccountSummary, getSharedTraveler, getSharedItineraryByShareId } from "@/lib/account-store";
-import { sharedAttachmentIds } from "@/lib/attachments";
+import { sharedAttachmentIds, sharedTripPictures } from "@/lib/attachments";
 import { rateLimit, requesterKey, tooManyMessage } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -43,21 +43,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!shareId || !id) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
   const wholeTrip = await getSharedItineraryByShareId(shareId);
-  const viewer = wholeTrip ? null : await getCurrentAccountSummary((await cookies()).get(accountCookieName())?.value);
+  const legacyTraveler = wholeTrip ? null : await getSharedTraveler(shareId);
+  const viewer = wholeTrip || legacyTraveler ? null : await getCurrentAccountSummary((await cookies()).get(accountCookieName())?.value);
   const invite = viewer ? await getSharedTraveler(shareId, viewer.email) : null;
-  const shared = wholeTrip ?? invite;
+  const shared = wholeTrip ?? legacyTraveler ?? invite;
   if (!shared) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
-  // The itinerary this hands back has already had everything unshared removed,
-  // so this set is exactly the files the traveler was given.
+  const pictures = wholeTrip ? sharedTripPictures(wholeTrip.itinerary) : (legacyTraveler ?? invite)?.pictures;
+  const isPicture = pictures?.cover === id || pictures?.photos.some((photo) => photo.id === id);
   const travelerId = invite?.privateInvite ? invite.traveler.id : undefined;
-  if (!sharedAttachmentIds(shared.itinerary, travelerId).has(id) ||
-      (invite && !sharedAttachmentIds(invite.currentItinerary, travelerId).has(id))) {
-    return NextResponse.json({ error: "Not found." }, { status: 404 });
-  }
+  const isDocument = sharedAttachmentIds(shared.itinerary, travelerId).has(id) &&
+    (!invite || sharedAttachmentIds(invite.currentItinerary, travelerId).has(id));
+  if (!isPicture && !isDocument) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
   const file = await getAttachmentFor(id, shared.ownerEmail);
-  if (!file) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  if (!file || (isPicture && (file.kind !== "photo" || !file.contentType.startsWith("image/")))) {
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
 
   const buffer = Buffer.from(file.data, "base64");
   return new NextResponse(new Uint8Array(buffer), {
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       // PDF renderer and no new-tab model, so an inline PDF opened as a blank
       // page or nothing at all. As an attachment the OS hands it to the system
       // viewer / download manager, which every phone has.
-      "content-disposition": `attachment; filename="${file.name.replace(/["\\\r\n]/g, "")}"`,
+      "content-disposition": `${isPicture ? "inline" : "attachment"}; filename="${file.name.replace(/[^\x20-\x7e]|["\\]/g, "_")}"`,
       "x-content-type-options": "nosniff",
       // A PDF that could run script would run it on this origin. Nothing in a
       // boarding pass needs to.

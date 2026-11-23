@@ -1,6 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
-export type TripGroupMember = { id: string; name: string; group: string };
+export type TripGroupMember = { id: string; name: string; group: string; credential?: string };
 export function groupKey(code: string): string {
   return createHash("sha256").update(code).digest("hex");
 }
@@ -11,7 +11,7 @@ export function signMember(member: TripGroupMember, secret: string): string {
   const payload = Buffer.from(JSON.stringify(member)).toString("base64url");
   return `${payload}.${createHmac("sha256", secret).update(payload).digest("base64url")}`;
 }
-export function readMember(value: string | undefined, code: string, secret: string): TripGroupMember | null {
+export function readMember(value: string | undefined, code: string, secret: string, expectedGroup = groupKey(code)): TripGroupMember | null {
   if (!value || value.length > 1024 || !secret) return null;
   const [payload, signature, extra] = value.split(".");
   if (!payload || !signature || extra || !/^[A-Za-z0-9_-]{43}$/.test(signature)) return null;
@@ -19,7 +19,7 @@ export function readMember(value: string | undefined, code: string, secret: stri
   if (signature.length !== expected.length || !timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return null;
   try {
     const member = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as TripGroupMember;
-    return member.group === groupKey(code) && typeof member.id === "string" && /^[a-f0-9-]{36}$/.test(member.id)
+    return member.group === expectedGroup && (member.credential ?? member.group) === groupKey(code) && typeof member.id === "string" && /^[a-f0-9-]{36}$/.test(member.id)
       && typeof member.name === "string" && member.name.trim().length > 0 && member.name.length <= 60 ? member : null;
   } catch { return null; }
 }

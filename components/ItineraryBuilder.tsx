@@ -42,6 +42,7 @@ import { moveStop, planRoute } from "@/lib/route-plan";
 import { applyTemplate, setupProgress, setupSteps, type TripTemplate } from "@/lib/trip-setup";
 import { BUILT_IN_ASSUMPTIONS, type PlannerAssumptions } from "@/data/planner-assumptions";
 import { correctedEnd, earliestEnd, rangeIsBackwards } from "@/lib/date-range";
+import { TripCoverEditor } from "@/components/TripPictureEditor";
 import StopAttachments from "@/components/StopAttachments";
 import { PreviewDialog } from "@/components/PreviewDialog";
 import PrintableItinerary from "@/components/PrintableItinerary";
@@ -672,6 +673,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
               <label className="block"><span className={caption} title="What time you set off each morning. Arrival times are worked out from this.">Day starts</span><input type="time" className={inputClass} value={itin.dayStartTime ?? "08:00"} onChange={(e) => set({ dayStartTime: e.target.value })} /></label>
             </div>
           </div>
+          {!guest && <div className="mt-4"><TripCoverEditor key={reloadKey} cover={itin.coverPhoto} signedIn={Boolean(viewer?.signedIn)} onSave={(coverPhoto) => set({ coverPhoto })} /></div>}
           {/* Somewhere to put the things a trip has that no field asks about:
               who has the key, which pharmacy was open late, the driver's brother's
               number, what to do differently next time.
@@ -1055,7 +1057,7 @@ function DayCard({ day, isToday, defaultOpen, adjustments, zmanim, onRecordAdjus
    * writing one back would store the arithmetic as if the traveller had typed
    * it.
    */
-  onSetAttachments: (id: string, attachments: ItinAttachment[]) => void;
+  onSetAttachments: (id: string, attachments: ItinAttachment[]) => void | Promise<boolean>;
   onRemove: (id: string) => void;
   /** Add straight onto this day, so a gap is filled where it is noticed. */
   onAddStop: (a: ItinActivity) => Promise<boolean | void> | void;

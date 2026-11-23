@@ -187,8 +187,10 @@ export function withoutAttachments<T extends { flights?: unknown[]; lodging?: un
       return rest as R;
     });
 
+  const copy = { ...itinerary } as T & { coverPhoto?: unknown };
+  delete copy.coverPhoto;
   return {
-    ...itinerary,
+    ...copy,
     ...(itinerary.flights ? { flights: strip(itinerary.flights) } : {}),
     ...(itinerary.lodging ? { lodging: strip(itinerary.lodging) } : {}),
     ...(itinerary.activities ? { activities: strip(itinerary.activities) } : {}),
@@ -255,4 +257,23 @@ export function countAttachments(itinerary: {
 }): number {
   const rows = [...(itinerary.flights ?? []), ...(itinerary.lodging ?? []), ...(itinerary.activities ?? [])];
   return rows.reduce((sum, row) => sum + (row.attachments?.length ?? 0), 0);
+}
+
+
+/** Build the photo list from an itinerary already scoped to its viewer. */
+export function sharedTripPictures(itinerary: Pick<import("@/data/itinerary").Itinerary, "coverPhoto" | "lodging" | "activities">) {
+  const cover = itinerary.coverPhoto?.kind === "photo" ? itinerary.coverPhoto.id : undefined;
+  const photos = [...itinerary.lodging, ...itinerary.activities].flatMap((stop) =>
+    (stop.attachments ?? []).filter((file) => file.kind === "photo" && file.shared === true)
+      .map((file) => ({ id: file.id, label: stop.name })),
+  );
+  return { cover, photos };
+}
+
+export function tripPictureUrls(pictures: ReturnType<typeof sharedTripPictures>, code: string) {
+  const url = (id: string) => `/api/trip-file/${encodeURIComponent(code)}?id=${encodeURIComponent(id)}`;
+  return {
+    cover: pictures.cover ? url(pictures.cover) : undefined,
+    photos: pictures.photos.map(({ id, label }) => ({ src: url(id), label })),
+  };
 }

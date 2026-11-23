@@ -29,28 +29,31 @@ export async function POST(request: NextRequest) {
   const after = body.after;
   if (after !== undefined && (typeof after !== "string" || !/^[a-f0-9-]{36}$/.test(after))) return reply({ error: "Reload the conversation." }, 400);
   const rateKey = groupKey(code);
+  const writes = action === "add-channel" || action === "remove-channel";
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const limited = await rateLimit(`trip-group:${action}:${rateKey}:${groupKey(ip)}`, { limit: action === "report" ? 5 : action === "send" ? 40 : 120, windowSeconds: 60 });
+  const limited = await rateLimit(`trip-group:${action}:${rateKey}:${groupKey(ip)}`, { limit: action === "report" ? 5 : writes ? 10 : action === "send" ? 40 : 120, windowSeconds: 60 });
   if (!limited.ok) return reply({ error: "Please wait a moment before trying again." }, 429);
   // Always resolve against the live trip. Revoking sharing closes chat too;
   // a stale cookie, raw trip id, or guessed neighboring id grants no access.
-  const legacy = action === "join" ? await getSharedItineraryByShareId(code) : await getShareOwnerEmail(code);
-  const account = legacy ? null : await getCurrentAccountSummary(request.cookies.get(accountCookieName())?.value);
+  const wholeTrip = action === "join" ? await getSharedItineraryByShareId(code) : await getShareOwnerEmail(code);
+  const legacyTraveler = wholeTrip ? null : await getSharedTraveler(code);
+  const legacyGroup = wholeTrip ? code : legacyTraveler?.internalChatKey;
+  const account = legacyGroup ? null : await getCurrentAccountSummary(request.cookies.get(accountCookieName())?.value);
   const family = account ? await getSharedTraveler(code, account.email) : null;
-  if (!legacy && !family?.privateInvite) return reply({ error: "That trip invitation is not active." }, 404);
+  if (!legacyGroup && !family?.privateInvite) return reply({ error: "That trip invitation is not active." }, 404);
 
-  const group = family?.privateInvite ? groupKey(JSON.stringify([family.ownerEmail, family.tripId])) : rateKey;
+  const group = family?.privateInvite ? groupKey(JSON.stringify([family.ownerEmail, family.tripId])) : groupKey(legacyGroup!);
   const secret = process.env.WHITE_GLOVE_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim();
   if (!secret) return reply({ error: "Trip chat is unavailable. Please try again later." }, 503);
   const cookie = memberCookieName(code);
   let member = account && family?.privateInvite
     ? { id: groupKey(JSON.stringify([group, account.email])), name: (family.ownerEmail === account.email ? account.name || "Trip organizer" : family.traveler.name).slice(0, 60), group }
-    : readMember(request.cookies.get(cookie)?.value, code, secret);
+    : readMember(request.cookies.get(cookie)?.value, code, secret, group);
   if (action === "join" && family?.privateInvite && member) return reply({ member: { id: member.id, name: member.name } });
   if (action === "join") {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name || name.length > 60) return reply({ error: "Enter your name, up to 60 characters." }, 400);
-    member = { id: member?.id ?? randomUUID(), name, group };
+    member = { id: member?.id ?? randomUUID(), name, group, credential: rateKey };
     const response = reply({ member: { id: member.id, name: member.name } });
     response.cookies.set(cookie, signMember(member, secret), {
       httpOnly: true, secure: process.env.NODE_ENV === "production" || request.nextUrl.protocol === "https:", sameSite: "lax", path: "/api/trip-group", maxAge: 60 * 60 * 24 * 180,

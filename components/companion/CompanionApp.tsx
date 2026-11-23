@@ -32,6 +32,7 @@
  * to be.
  */
 
+import { TravelerProfilePhoto } from "@/components/TripPictureEditor";
 import Footer from "@/components/Footer";
 import { Fragment, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useOnValueChange } from "@/components/useOnValueChange";
@@ -954,6 +955,7 @@ export default function CompanionApp({
   pushPublicKey,
   travelerPreview = false,
   personalWalletKey,
+  pictures,
   calendarHref,
   trip = COMPANION_DEMO_TRIP,
   chat,
@@ -973,6 +975,7 @@ export default function CompanionApp({
   pushPublicKey?: string;
   travelerPreview?: boolean;
   personalWalletKey?: string;
+  pictures?: { cover?: string; photos: { src: string; label: string }[] };
   calendarHref?: string;
   trip?: CompanionTrip;
   chat?: CompanionChat;
@@ -1624,12 +1627,16 @@ export default function CompanionApp({
 
   const homeScreen = (
     <div style={{ animation: "wgIn .28s ease both" }}>
+      {pictures?.cover && (
+        // eslint-disable-next-line @next/next/no-img-element -- trip-code-protected attachment
+        <img src={pictures.cover} alt="Trip cover photo" className="mx-auto mt-4 max-h-64 w-[calc(100%-2rem)] rounded-2xl object-cover" />
+      )}
       {showNextCard ? (
         <>
           {nextCard}
           {nextActions}
         </>
-      ) : (
+      ) : pictures?.cover ? null : (
         <div style={{ position: "relative", margin: "14px 14px 0", height: 196, borderRadius: 20, overflow: "hidden", background: `linear-gradient(150deg, ${NAVY} 0%, #1F2E5C 55%, #1F2E5C 100%)`, color: CREAM }}>
           {/* Gold on the navy rather than cream on the gold. The panel carried
               the only gold on the opening screen and has become the only blue;
@@ -1638,6 +1645,20 @@ export default function CompanionApp({
             <Icon name="suitcase" className="h-20 w-20" strokeWidth={1.1} />
           </div>
         </div>
+      )}
+      {Boolean(pictures?.photos.length) && (
+        <details className="mx-4 mt-4 rounded-xl border border-stone-200 bg-white p-3">
+          <summary className="min-h-8 cursor-pointer font-semibold">Trip photos</summary>
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {pictures?.photos.map(({ src, label }) => <li key={src}>
+              <a href={src} target="_blank" rel="noreferrer">
+                {/* eslint-disable-next-line @next/next/no-img-element -- trip-code-protected attachment */}
+                <img src={src} alt="" loading="lazy" className="aspect-video w-full rounded-lg object-cover" />
+                <span className="text-sm">{label}</span>
+              </a>
+            </li>)}
+          </ul>
+        </details>
       )}
       <div style={{ padding: "16px 20px 0", display: "flex", flexDirection: "column", gap: 7 }}>
         {/* Skipped when it would just repeat the header above it word for
@@ -2361,12 +2382,13 @@ export default function CompanionApp({
   const profileScreen = (
     <div style={{ padding: "16px 16px 28px", display: "flex", flexDirection: "column", gap: 16, animation: "wgIn .28s ease both" }}>
       <div style={{ padding: 20, borderRadius: 20, background: "#FAF8F3", display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ flex: "none", width: 54, height: 54, borderRadius: 14, background: "repeating-linear-gradient(135deg,#C7BFB1 0 7px,#ffffff 7px 14px)" }} />
+        {(!personalWalletKey || travelerPreview) && <div style={{ flex: "none", width: 54, height: 54, borderRadius: 14, background: "repeating-linear-gradient(135deg,#C7BFB1 0 7px,#ffffff 7px 14px)" }} />}
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span style={{ font: `400 21px/1.1 ${serif}` }}>{trip.family}</span>
           <span style={{ fontSize: 13, color: "#57534e" }}>{trip.familyMeta}</span>
         </div>
       </div>
+      {personalWalletKey && !travelerPreview && <TravelerProfilePhoto key={personalWalletKey} travelerKey={personalWalletKey} />}
       {calendarHref && (
         <a href={calendarHref} download className="inline-flex min-h-11 items-center self-start rounded-lg border border-stone-300 bg-white px-4 text-sm font-semibold text-[#15204A]">
           Download trip calendar

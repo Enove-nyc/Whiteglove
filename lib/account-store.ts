@@ -2,8 +2,8 @@ import { DateTime } from "luxon";
 import { createInvitedAccount } from "@/lib/account-invitations";
 import { createHash, createHmac, pbkdf2Sync, randomBytes, randomInt } from "crypto";
 import { type AccountPlan, planOf } from "@/lib/account-plans";
-import { travelerAttachments, withoutAttachments } from "@/lib/attachments";
-import { buildDays, emptyItinerary, flightRouteLabel, type Itinerary } from "@/data/itinerary";
+import { sharedTripPictures, travelerAttachments, withoutAttachments } from "@/lib/attachments";
+import { buildDays, emptyItinerary, flightRouteLabel, redactForTraveler, type Itinerary } from "@/data/itinerary";
 import { proposalOptionToItinerary, type Proposal } from "@/data/proposal";
 import type { ManualTripStage } from "@/data/trip-pipeline";
 import { formatCents, type PaymentRecord, type TripBalance } from "@/data/trip-payments";
@@ -2577,6 +2577,7 @@ export async function getSharedTraveler(shareId: string, viewerEmail?: string | 
     itinerary: rec.invitedEmail
       ? travelerAttachments(trip.travelerPublication?.itinerary ?? trip.itinerary, traveler.id)
       : withoutAttachments(trip.itinerary),
+    pictures: sharedTripPictures(redactForTraveler(rec.invitedEmail ? trip.travelerPublication?.itinerary ?? trip.itinerary : trip.itinerary, traveler.id, { individual: true })),
     currentItinerary: trip.itinerary,
     publishedAt: trip.travelerPublication?.updatedAt,
     alerts: trip.travelerPublication?.alerts ?? [],

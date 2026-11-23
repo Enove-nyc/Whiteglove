@@ -1,3 +1,4 @@
+import { tripPictureUrls } from "@/lib/attachments";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import CompanionApp from "@/components/companion/CompanionApp";
@@ -108,7 +109,7 @@ export default async function TravelerAppPage({ params, searchParams }: { params
   return (
     <main>
       {!organizer && <ClientCodeMemory path={`/t/${shareId}/app`} />}
-      <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={shared.privateInvite ? undefined : shared.walletKey} calendarHref={shared.privateInvite ? undefined : `/t/${encodeURIComponent(shareId)}/calendar`} travelerGroupCode={shared.privateInvite ? shareId : undefined} travelerInvite={shared.privateInvite} travelerName={shared.traveler.name} tripTimeZone={timeZone} pushPublicKey={process.env.VAPID_PUBLIC_KEY} syncedAt={new Date().toISOString()} initialScreen={screen === "alerts" ? "alerts" : screen === "messages" || organizer ? "messages" : undefined} />
+      <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={shared.privateInvite ? undefined : shared.walletKey} calendarHref={shared.privateInvite ? undefined : `/t/${encodeURIComponent(shareId)}/calendar`} travelerGroupCode={shared.internalChatKey ? shareId : undefined} pictures={tripPictureUrls(shared.pictures, shareId)} travelerInvite={shared.privateInvite} travelerName={shared.traveler.name} tripTimeZone={timeZone} pushPublicKey={process.env.VAPID_PUBLIC_KEY} syncedAt={new Date().toISOString()} initialScreen={screen === "alerts" ? "alerts" : screen === "messages" || organizer ? "messages" : undefined} />
     </main>
   );
 }
