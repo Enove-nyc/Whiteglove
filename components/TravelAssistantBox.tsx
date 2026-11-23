@@ -53,11 +53,13 @@ export default function TravelAssistantBox({
   labelledOutside = false,
   /** A question handed over by the site assistant. See the note below. */
   initialAsk = "",
+  clearQuestionFromUrl = true,
 }: {
   embedded?: boolean;
   examples?: readonly string[];
   labelledOutside?: boolean;
   initialAsk?: string;
+  clearQuestionFromUrl?: boolean;
 }) {
   // Which site this is. One line, and right on the first paint — see
   // components/useSiteBrand.ts.
@@ -117,11 +119,13 @@ export default function TravelAssistantBox({
   const asked = useRef(false);
   useEffect(() => {
     if (!initialAsk || asked.current) return;
-    asked.current = true;
-    const timer = setTimeout(() => void ask(initialAsk), 0);
+    const timer = setTimeout(() => {
+      asked.current = true;
+      void ask(initialAsk);
+    }, 0);
     // Taken out of the address, so a reload does not ask it again and a copied
     // link does not carry somebody else's question.
-    if (typeof window !== "undefined") {
+    if (clearQuestionFromUrl) {
       const url = new URL(window.location.href);
       url.searchParams.delete("ask");
       window.history.replaceState(null, "", url);
@@ -133,7 +137,7 @@ export default function TravelAssistantBox({
     // to sit here is gone: the rule stopped objecting once the ref made the
     // dependency honest, and a directive for a problem that no longer exists
     // is itself a warning.)
-  }, [initialAsk]);
+  }, [clearQuestionFromUrl, initialAsk]);
 
   const visible = showMoreExamples ? examples : examples.slice(0, VISIBLE_EXAMPLES);
 

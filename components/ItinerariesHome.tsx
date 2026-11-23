@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { TravelAssistantForm } from "@/components/TravelAssistantPopup";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TravelSearch, { type TravelSearchPrefill } from "@/components/TravelSearch";
@@ -124,11 +125,8 @@ export default function ItinerariesHome({
         </p>
       </div>
 
-      {/* ASK THE AI, ON THE FRONT PAGE (owner, 20 November 2026: "why can I
-          still not see the AI anywhere?"). A plain form: it opens /assistant
-          with the question already asked, so this page stays static and cached. */}
       <section aria-labelledby="ask-ai-heading" className="mx-auto max-w-6xl px-3 pt-10 sm:px-6">
-        <form action="/assistant" method="get" className="rounded-2xl border border-[#E6DCC8] bg-white p-4 shadow-[0_8px_26px_rgba(21,32,74,.06)] sm:p-6">
+        <TravelAssistantForm className="rounded-2xl border border-[#E6DCC8] bg-white p-4 shadow-[0_8px_26px_rgba(21,32,74,.06)] sm:p-6">
           <h2 id="ask-ai-heading" className="flex items-center gap-2 font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--navy-deep)]">
             <Icon name="sparkle" className="h-5 w-5 text-[var(--gold-ink)]" />
             Ask AI
@@ -147,7 +145,7 @@ export default function ItinerariesHome({
               Ask
             </button>
           </div>
-        </form>
+        </TravelAssistantForm>
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16">
