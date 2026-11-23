@@ -14,11 +14,11 @@ import { GUEST_TRIP_KEY } from "@/lib/guest-trip";
  * becomes the trip kept in this browser, the same place the guest planner keeps
  * its own, and the visitor is asked first if that would replace one.
  *
- * The dates move to start a month from today, so the copy is a plan for a
- * trip that can still happen rather than a week in the past.
+ * A start date shifts the whole sample. An empty date leaves the plans unscheduled.
  */
 export default function SampleCopyButton({ itinerary, templatePath }: { itinerary: Itinerary; templatePath: string }) {
   const router = useRouter();
+  const [start, setStart] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,14 +29,20 @@ export default function SampleCopyButton({ itinerary, templatePath }: { itinerar
       body: JSON.stringify({ type: "sample_copy", value: templatePath }),
       keepalive: true,
     }).catch(() => undefined);
-    router.push("/itinerary");
+    router.push("/itinerary?fromSample=1");
   }
 
   async function copy() {
     setBusy(true);
     setError("");
-    const start = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
-    const trip = shiftItinerary(itinerary, start);
+    const trip = start ? shiftItinerary(itinerary, start) : {
+      ...itinerary,
+      startDate: "",
+      endDate: "",
+      lodging: itinerary.lodging.map((stay) => ({ ...stay, checkIn: "", checkOut: "" })),
+      activities: itinerary.activities.map((stop) => ({ ...stop, date: "" })),
+      flights: itinerary.flights.map((flight) => ({ ...flight, date: "", arriveDate: undefined })),
+    };
     try {
       const response = await fetch("/api/account/trips", {
         method: "POST",
@@ -72,7 +78,12 @@ export default function SampleCopyButton({ itinerary, templatePath }: { itinerar
   }
 
   return (
-    <div>
+    <div className="space-y-3">
+      <label className="block max-w-xs text-sm font-semibold text-[var(--navy)]">
+        Trip start date (optional)
+        <input type="date" value={start} onChange={(event) => setStart(event.target.value)} className="mt-1 block min-h-11 w-full rounded-md border border-[var(--gold-light)] bg-white px-3" />
+      </label>
+      <p className="text-sm text-stone-600">Leave the date blank if you’re still deciding.</p>
       <button
         type="button"
         onClick={() => void copy()}

@@ -218,6 +218,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
   // and opening their only itinerary's editor instead would ignore what they
   // pressed.
   const askedForList = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("list");
+  const openedSample = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("fromSample");
   const [mode, setMode] = useState<"list" | "edit" | null>(guest ? "edit" : null);
   useEffect(() => {
     if (guest) return;
@@ -231,7 +232,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           setMode((m) => m ?? "edit");
           return;
         }
-        setMode((m) => (m === null ? (askedForList || d.trips.length >= 2 ? "list" : "edit") : m));
+        setMode((m) => (m === null ? (askedForList || (d.trips.length >= 2 && !openedSample) ? "list" : "edit") : m));
       })
       .catch(() => {
         if (active) setMode((m) => m ?? "edit");
@@ -239,7 +240,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
     return () => {
       active = false;
     };
-  }, [reloadKey, askedForList, guest]);
+  }, [reloadKey, askedForList, guest, openedSample]);
 
   // Load. A signed-in traveller's trip comes from their account and nowhere
   // else. A guest's comes from their own browser (GUEST_TRIP_KEY) — the owner's
@@ -597,6 +598,7 @@ export default function ItineraryBuilder({ crossings = [], today: serverToday = 
           <PrintableItinerary itin={itin} burials={burials} siteBrand={itineraries ? "itineraries" : "kosher"} embedded />
         </PreviewDialog>
       </div>
+      {openedSample && <p className="text-sm text-stone-700">{hasDates ? "Next, add a booking to make this trip your own." : "Next, set your trip dates or add a booking when you’re ready."}</p>}
       {/* How long until it, and once it starts, where in it you are. Above
           everything else, because on the third morning in Kraków it is the
           only part of this page anybody needs. */}

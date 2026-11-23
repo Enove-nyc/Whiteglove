@@ -71,15 +71,15 @@ export default async function TravelerAppPage({ params, searchParams }: { params
   // token that is recorded, not the trip-wide one.
   await noteShareOpened(shareId, shared.ownerEmail);
 
-  if (!shared.privateInvite && !mayServeCompanionClients(await getPlan(shared.ownerEmail))) redirect("/app");
+  const hasClientFeatures = shared.privateInvite || mayServeCompanionClients(await getPlan(shared.ownerEmail));
 
   const label = shared.traveler.family?.trim() || shared.traveler.name;
   const [brand, prefs, payment] = await Promise.all([
     shared.privateInvite ? null : readBrand(shared.ownerEmail).catch(() => null),
     getAppPrefs(shared.ownerEmail).catch(() => ({ kosherFeatures: false })),
-    shared.privateInvite ? undefined : paymentForUnit(shared.ownerEmail, shared.tripId, travelerUnitKey(shared.traveler), label, shareId).catch(() => undefined),
+    shared.privateInvite || !hasClientFeatures ? undefined : paymentForUnit(shared.ownerEmail, shared.tripId, travelerUnitKey(shared.traveler), label, shareId).catch(() => undefined),
   ]);
-  const redacted = redactForTraveler({ ...emptyItinerary(), ...shared.itinerary }, shared.traveler.id);
+  const redacted = redactForTraveler({ ...emptyItinerary(), ...shared.itinerary }, shared.traveler.id, { individual: true });
   const timeZone = tripTimeZone(redacted);
   const trip = await buildCompanionFromItinerary(redacted, {
     today: new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
@@ -108,7 +108,7 @@ export default async function TravelerAppPage({ params, searchParams }: { params
   return (
     <main>
       {!organizer && <ClientCodeMemory path={`/t/${shareId}/app`} />}
-      <CompanionApp trip={trip} chat={chat} travelerGroupCode={shared.privateInvite ? shareId : undefined} travelerInvite={shared.privateInvite} travelerName={shared.traveler.name} tripTimeZone={timeZone} pushPublicKey={process.env.VAPID_PUBLIC_KEY} syncedAt={new Date().toISOString()} initialScreen={screen === "alerts" ? "alerts" : screen === "messages" || organizer ? "messages" : undefined} />
+      <CompanionApp trip={trip} chat={hasClientFeatures ? chat : undefined} personalWalletKey={shared.privateInvite ? undefined : shared.walletKey} calendarHref={shared.privateInvite ? undefined : `/t/${encodeURIComponent(shareId)}/calendar`} travelerGroupCode={shared.privateInvite ? shareId : undefined} travelerInvite={shared.privateInvite} travelerName={shared.traveler.name} tripTimeZone={timeZone} pushPublicKey={process.env.VAPID_PUBLIC_KEY} syncedAt={new Date().toISOString()} initialScreen={screen === "alerts" ? "alerts" : screen === "messages" || organizer ? "messages" : undefined} />
     </main>
   );
 }
