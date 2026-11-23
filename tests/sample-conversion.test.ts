@@ -14,8 +14,7 @@ test("only public sample paths can increment aggregate conversion counts", async
     else process.env.UPSTASH_REDIS_REST_TOKEN = token;
   });
 
-  const fetchMock = t.mock.method(globalThis, "fetch", async (input: Parameters<typeof fetch>[0]) => {
-    const address = input instanceof Request ? input.url : String(input);
+  const fetchMock = t.mock.method(globalThis, "fetch", async (address: string) => {
     if (address.includes("zmscore/white-glove:pages")) return Response.json({ result: ["12"] });
     if (address.includes("zmscore/white-glove:sample-copies")) return Response.json({ result: [3] });
     return Response.json({ result: 1 });
@@ -25,6 +24,6 @@ test("only public sample paths can increment aggregate conversion counts", async
   assert.equal(await trackSampleCopy("/sample-itinerary?email=private"), false);
   assert.equal(fetchMock.mock.callCount(), 0);
   assert.equal(await trackSampleCopy("/sample-itinerary"), true);
-  assert.match(String(fetchMock.mock.calls[0].arguments[0]), /zincrby\/white-glove:sample-copies\/1\/%2Fsample-itinerary$/);
+  assert.match(fetchMock.mock.calls[0].arguments[0], /zincrby\/white-glove:sample-copies\/1\/%2Fsample-itinerary$/);
   assert.deepEqual((await getSampleTemplateStats())?.[0], { title: "A week on Lake Como", views: 12, copies: 3 });
 });
