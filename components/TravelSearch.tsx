@@ -87,7 +87,7 @@ export type TravelSearchState = {
   adults: number;
   rooms: number;
 };
-export function travelSearchHref(s: TravelSearchState): { href: string } | { error: string } {
+export function travelSearchHref(s: TravelSearchState, flightPartner?: "aviasales" | "kayak"): { href: string } | { error: string } {
   const query = new URLSearchParams({ page: s.page, placement: s.placement });
   // The three partner pages from "Find travel": the partner opens with the
   // place (and dates) where its link can carry them.
@@ -128,6 +128,7 @@ export function travelSearchHref(s: TravelSearchState): { href: string } | { err
     if (!s.start) return { error: "Choose the day you fly out." };
     if (!s.oneWay && !s.end) return { error: "Choose the day you fly back, or pick One way." };
     query.set("product", "flight");
+    if (flightPartner) query.set("partner", flightPartner);
     query.set("from", fromCode);
     query.set("to", toCode);
     query.set("in", s.start);
@@ -207,7 +208,10 @@ export default function TravelSearch({
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    const result = travelSearchHref({ tab, page, placement, from, to, where, dropoffSame, dropoff, start, end, oneWay, multi, legs, adults, rooms });
+    openSearch(tab === "flights" && !multi ? "aviasales" : undefined);
+  }
+  function openSearch(partner?: "aviasales" | "kayak") {
+    const result = travelSearchHref({ tab, page, placement, from, to, where, dropoffSame, dropoff, start, end, oneWay, multi, legs, adults, rooms }, partner);
     if ("error" in result) return setError(result.error);
     setError("");
     window.open(result.href, "_blank", "noopener");
@@ -455,6 +459,7 @@ export default function TravelSearch({
           >
             {SUBMIT[tab]}
           </button>
+          {tab === "flights" && <button type="button" onClick={() => openSearch("kayak")} className="mt-2 min-h-11 w-full rounded-lg border border-[var(--gold)] px-3 text-sm font-semibold text-[var(--navy)]">Compare on Kayak</button>}
         </div>
       </div>
       )}
