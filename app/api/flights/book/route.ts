@@ -29,9 +29,10 @@ export async function POST(request: NextRequest) {
 
   // A malformed body used to throw a raw SyntaxError here and 500 mid-booking;
   // treat it as the same missing-detail 400 as an incomplete one.
-  const body = (await request.json().catch(() => null)) as { offerId?: string; threeDSecureSessionId?: string; traveler?: Traveler } | null;
-  const { offerId, threeDSecureSessionId, traveler } = body ?? {};
-  if (!offerId || !threeDSecureSessionId || !traveler?.firstName || !traveler.lastName || !traveler.email || !traveler.bornOn || !traveler.title || !traveler.gender || !traveler.phone) {
+  const body = (await request.json().catch(() => null)) as { offerId?: string; threeDSecureSessionId?: string; traveler?: Traveler; travelers?: Traveler[] } | null;
+  const { offerId, threeDSecureSessionId } = body ?? {};
+  const travelers = Array.isArray(body?.travelers) ? body.travelers : body?.traveler ? [body.traveler] : [];
+  if (!offerId || !threeDSecureSessionId || !travelers.length || travelers.length > 9 || travelers.some(traveler => !traveler || ![traveler.firstName, traveler.lastName, traveler.email, traveler.bornOn, traveler.title, traveler.gender, traveler.phone].every(value => typeof value === "string" && value.trim()))) {
     return NextResponse.json({ message: "Please complete every traveler detail before booking." }, { status: 400 });
   }
 
@@ -41,14 +42,17 @@ export async function POST(request: NextRequest) {
   // An offer response missing its data would otherwise throw on the next line
   // and 500 — read it as the flight no longer being available.
   if (!offer) return NextResponse.json({ message: "This flight is no longer available. Please search again for a current price." }, { status: 409 });
-  if (offer.passenger_identity_documents_required && (!traveler.passportNumber || !traveler.passportCountry || !traveler.passportExpires)) return NextResponse.json({ message: "This flight requires passport number, issuing country, and expiry date before it can be booked." }, { status: 422 });
+  if (!Array.isArray(offer.passengers) || offer.passengers.length !== travelers.length || offer.passengers.some((passenger: { id?: string }) => !passenger.id)) {
+    return NextResponse.json({ message: "The number of travelers must match the selected fare. Please search again." }, { status: 400 });
+  }
+  if (offer.passenger_identity_documents_required && travelers.some(traveler => !traveler.passportNumber || !traveler.passportCountry || !traveler.passportExpires)) return NextResponse.json({ message: "This flight requires passport details for every traveler." }, { status: 422 });
 
-  const passenger = {
-    ...(offer.passengers?.[0]?.id ? { id: offer.passengers[0].id } : {}),
-    given_name: traveler.firstName.trim(), family_name: traveler.lastName.trim(), email: traveler.email.trim(), born_on: traveler.bornOn,
-    title: traveler.title, gender: traveler.gender, phone_number: traveler.phone.trim(),
+  const passengers = travelers.map((traveler, index) => ({
+    id: offer.passengers[index].id,
+    given_name: traveler.firstName!.trim(), family_name: traveler.lastName!.trim(), email: traveler.email!.trim(), born_on: traveler.bornOn,
+    title: traveler.title, gender: traveler.gender, phone_number: traveler.phone!.trim(),
     ...(traveler.passportNumber && traveler.passportCountry && traveler.passportExpires ? { identity_documents: [{ type: "passport", unique_identifier: traveler.passportNumber.trim(), issuing_country_code: traveler.passportCountry.trim().toUpperCase(), expires_on: traveler.passportExpires }] } : {}),
-  };
+  }));
   let customerUserId: string | undefined;
   if (isBookingHost(request.headers) && (access.kind === "test" || process.env.DUFFEL_ASSISTANT_LIVE === "1")) {
     const customer = await fetch(`${DUFFEL_API_ORIGIN}/identity/customer/users`, {
@@ -56,7 +60,7 @@ export async function POST(request: NextRequest) {
       headers: duffelApiHeaders(token),
       cache: "no-store",
       body: JSON.stringify({ data: {
-        email: passenger.email, given_name: passenger.given_name, family_name: passenger.family_name,
+        email: passengers[0].email, given_name: passengers[0].given_name, family_name: passengers[0].family_name,
       } }),
     }).catch(() => null);
     if (customer?.ok) {
@@ -67,7 +71,7 @@ export async function POST(request: NextRequest) {
   const orderResponse = await fetch("https://api.duffel.com/air/orders", {
     method: "POST", headers: duffelHeaders(token, request), cache: "no-store",
     body: JSON.stringify({ data: {
-      type: "instant", selected_offers: [offer.id], passengers: [passenger],
+      type: "instant", selected_offers: [offer.id], passengers,
       ...(customerUserId ? { users: [customerUserId] } : {}),
       payments: [{ type: "card", currency: offer.total_currency, amount: offer.total_amount, three_d_secure_session_id: threeDSecureSessionId }],
     } }),

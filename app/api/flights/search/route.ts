@@ -4,6 +4,7 @@ import { duffelRefusal } from "@/lib/duffel-guard";
 import { duffelBearer } from "@/lib/duffel-token";
 import { flightDateProblem } from "@/lib/date-range";
 import { resolveEndpoint } from "@/lib/flight-endpoint";
+import { defaultFlightFilters, filterFlightResults, timeBand, type FlightOption } from "@/lib/duffel-flight-results";
 import { redact } from "@/lib/redact";
 
 const duffelUrl = "https://api.duffel.com/air/offer_requests";
@@ -24,7 +25,7 @@ const duffelUrl = "https://api.duffel.com/air/offer_requests";
 
 
 type Carrier = { name?: string; iata_code?: string; logo_symbol_url?: string; logo_lockup_url?: string };
-type RawSegment = { origin?: { iata_code?: string; name?: string; terminal?: string }; destination?: { iata_code?: string; name?: string; terminal?: string }; departing_at?: string; arriving_at?: string; duration?: string; marketing_carrier?: Carrier; operating_carrier?: Carrier; marketing_carrier_flight_number?: string; aircraft?: { name?: string; iata_code?: string } };
+type RawSegment = { origin?: { iata_code?: string; name?: string; terminal?: string }; destination?: { iata_code?: string; name?: string; terminal?: string }; departing_at?: string; arriving_at?: string; duration?: string; marketing_carrier?: Carrier; operating_carrier?: Carrier; marketing_carrier_flight_number?: string; aircraft?: { name?: string; iata_code?: string }; passengers?: { baggages?: { type?: string; quantity?: number }[] }[] };
 
 export async function POST(request: NextRequest) {
   const refused = await duffelRefusal(request, { privateBooking: true });
@@ -36,6 +37,8 @@ export async function POST(request: NextRequest) {
   const token = access.token;
 
   const body = await request.json();
+  const passengerCount = body.passengerCount ?? 1;
+  if (!Number.isInteger(passengerCount) || passengerCount < 1 || passengerCount > 9) return NextResponse.json({ message: "Choose 1 to 9 adult travelers." }, { status: 400 });
   const { origin: submittedOrigin, destination: submittedDestination, departureDate, returnDate, maxConnections, cabin, departureTime } = body;
   // A city with several airports resolves to its IATA metropolitan code, so
   // Duffel searches all of them in one request. See lib/flight-endpoint.ts.
@@ -53,7 +56,7 @@ export async function POST(request: NextRequest) {
   if (past) return NextResponse.json({ message: past }, { status: 400 });
 
   const slices = multiCitySlices ?? [{ origin, destination, departure_date: departureDate }, ...(returnDate ? [{ origin: destination, destination: origin, departure_date: returnDate }] : [])];
-  const response = await fetch(duffelUrl, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json", "Duffel-Version": "v2", Authorization: `Bearer ${token}` }, body: JSON.stringify({ data: { slices, passengers: [{ type: "adult" }], cabin_class: ["economy", "premium_economy", "business", "first"].includes(cabin) ? cabin : "economy", max_connections: [0, 1, 2].includes(Number(maxConnections)) ? Number(maxConnections) : 2, return_offers: true } }), cache: "no-store" });
+  const response = await fetch(duffelUrl, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json", "Duffel-Version": "v2", Authorization: `Bearer ${token}` }, body: JSON.stringify({ data: { slices, passengers: Array.from({ length: passengerCount }, () => ({ type: "adult" })), cabin_class: ["economy", "premium_economy", "business", "first"].includes(cabin) ? cabin : "economy", max_connections: [0, 1, 2].includes(Number(maxConnections)) ? Number(maxConnections) : 2, return_offers: true } }), cache: "no-store" });
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "");
     const explained = explainDuffelError(response.status, errorBody);
@@ -65,17 +68,24 @@ export async function POST(request: NextRequest) {
     );
   }
   const result = await response.json();
-  const flights = (result.data?.offers ?? []).map((offer: { id: string; total_amount: string; total_currency: string; expires_at?: string; slices?: Array<{ segments?: RawSegment[] }> }) => {
-    const detailedSlices = (offer.slices ?? []).map((slice) => ({ segments: (slice.segments ?? []).map((segment) => {
+  const mapped: FlightOption[] = (result.data?.offers ?? []).map((offer: { id: string; total_amount: string; total_currency: string; expires_at?: string; conditions?: { refund_before_departure?: { allowed?: boolean }; change_before_departure?: { allowed?: boolean } }; slices?: Array<{ duration?: string; segments?: RawSegment[] }> }) => {
+    const detailedSlices = (offer.slices ?? []).map((slice) => ({ duration: slice.duration, segments: (slice.segments ?? []).map((segment) => {
       const carrier = segment.marketing_carrier ?? segment.operating_carrier;
       const carrierCode = carrier?.iata_code ?? "";
       const number = segment.marketing_carrier_flight_number ?? "";
-      return { origin: segment.origin?.iata_code ?? origin, originName: segment.origin?.name, originTerminal: segment.origin?.terminal, destination: segment.destination?.iata_code ?? destination, destinationName: segment.destination?.name, destinationTerminal: segment.destination?.terminal, departingAt: segment.departing_at ?? "", arrivingAt: segment.arriving_at ?? "", duration: segment.duration, airline: carrier?.name ?? "Airline", airlineLogo: carrier?.logo_symbol_url ?? carrier?.logo_lockup_url, flightNumber: number ? `${carrierCode}${number}` : carrierCode, aircraft: segment.aircraft?.name ?? segment.aircraft?.iata_code, operatingCarrier: segment.operating_carrier?.name };
+      const bags = (type: string) => segment.passengers?.length && segment.passengers.every(p => Array.isArray(p.baggages))
+        ? Math.min(...segment.passengers.map(p => p.baggages!.filter(b => b.type === type).reduce((sum, b) => sum + (b.quantity ?? 0), 0)))
+        : undefined;
+      return { checkedBags: bags("checked"), carryOnBags: bags("carry_on"), origin: segment.origin?.iata_code ?? origin, originName: segment.origin?.name, originTerminal: segment.origin?.terminal, destination: segment.destination?.iata_code ?? destination, destinationName: segment.destination?.name, destinationTerminal: segment.destination?.terminal, departingAt: segment.departing_at ?? "", arrivingAt: segment.arriving_at ?? "", duration: segment.duration, airline: carrier?.name ?? "Airline", airlineLogo: carrier?.logo_symbol_url ?? carrier?.logo_lockup_url, flightNumber: number ? `${carrierCode}${number}` : carrierCode, aircraft: segment.aircraft?.name ?? segment.aircraft?.iata_code, operatingCarrier: segment.operating_carrier?.name };
     }) }));
     const segments = detailedSlices.flatMap((slice) => slice.segments); const first = segments[0];
     const route = detailedSlices.map((slice) => `${slice.segments[0]?.origin ?? origin} → ${slice.segments.at(-1)?.destination ?? destination}`).join(" · ");
-    return { id: offer.id, airline: first?.airline ?? "Airline", airlineLogo: first?.airlineLogo, route, departure: first?.departingAt ?? "", stops: detailedSlices.reduce((total, slice) => total + Math.max(0, slice.segments.length - 1), 0), totalAmount: offer.total_amount, totalCurrency: offer.total_currency, expiresAt: offer.expires_at, slices: detailedSlices };
-  }).filter((flight: { departure: string }) => { const hour = new Date(flight.departure).getHours(); return departureTime === "morning" ? hour < 12 : departureTime === "afternoon" ? hour >= 12 && hour < 17 : departureTime === "evening" ? hour >= 17 : true; }).slice(0, 12);
+    return { id: offer.id, passengerCount, airline: first?.airline ?? "Airline", airlineLogo: first?.airlineLogo, route, departure: first?.departingAt ?? "", stops: detailedSlices.reduce((total, slice) => total + Math.max(0, slice.segments.length - 1), 0), totalAmount: offer.total_amount, totalCurrency: offer.total_currency, expiresAt: offer.expires_at, refundable: offer.conditions?.refund_before_departure?.allowed, changeable: offer.conditions?.change_before_departure?.allowed, slices: detailedSlices };
+  });
+  const flights = filterFlightResults(mapped.filter(flight => {
+    const band = timeBand(flight.departure);
+    return !departureTime || departureTime === "any" || departureTime === band || (departureTime === "morning" && band === "night");
+  }), defaultFlightFilters);
   // Say what was actually searched. Somebody who typed "London" should be told
   // all five airports were covered — otherwise the natural assumption is that
   // one of them was picked for them, which is exactly what used to happen.
