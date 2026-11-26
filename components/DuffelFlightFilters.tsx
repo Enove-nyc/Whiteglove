@@ -18,7 +18,7 @@ export default function DuffelFlightFilters({ flights, renderFlight }: { flights
   const results = filterFlightResults(flights, filters);
   function select(key: keyof FlightFilters, label: string, options: string[][]) {
     return <label className="text-xs font-semibold text-[var(--navy)]">{label}
-      <select className={inputClass} value={filters[key]} onChange={event => change(key, event.target.value)}>
+      <select aria-label={label} className={inputClass} value={filters[key]} onChange={event => change(key, event.target.value)}>
         {options.map(([value, name]) => <option key={value} value={value}>{name}</option>)}
       </select>
     </label>;
